@@ -105,14 +105,16 @@ erDiagram
     }
 
     %% ──────────────────────────────────────────────
-    %% 계약 신청 (BOOKING)
+    %% 계약 (CONTRACT) -- 신청부터 전체 생명주기 관리
     %% ──────────────────────────────────────────────
-    BOOKING {
-        BIGSERIAL id PK "신청 고유 ID"
-        BIGINT user_id FK "신청자 ID"
-        BIGINT space_id FK "희망 호실 ID"
-        VARCHAR status "상태 (DRAFT / PENDING / APPROVED / REJECTED / CANCELLED / CONTRACTED)"
-        VARCHAR applicant_name "이름"
+    CONTRACT {
+        BIGSERIAL id PK "계약 고유 ID"
+        BIGINT user_id FK "입주자 ID"
+        BIGINT space_id FK "계약 호실 ID"
+        VARCHAR status "상태 (DRAFT / PENDING / APPROVED / REJECTED / CANCELLED / ACTIVE / EXPIRED / TERMINATED)"
+        
+        %% 신청 단계 정보
+        VARCHAR applicant_name "이름 (신청자)"
         VARCHAR birth_date "생년월일"
         VARCHAR gender "성별 (MALE / FEMALE)"
         VARCHAR nationality "국적"
@@ -125,29 +127,14 @@ erDiagram
         VARCHAR contract_language "계약서 언어 (KO / EN)"
         BOOLEAN privacy_agreed "개인정보 동의"
         TEXT request_note "요청 사항 (최대 500자)"
-        NUMERIC confirmed_rent "확정 월 임대료 (승인 시)"
-        NUMERIC confirmed_deposit "확정 보증금 (승인 시)"
-        DATE confirmed_start_date "확정 계약 시작일 (승인 시)"
-        DATE confirmed_end_date "확정 계약 종료일 (승인 시)"
-        TEXT special_terms "특약 사항 (승인 시)"
-        TIMESTAMPTZ created_at "신청일"
-        TIMESTAMPTZ updated_at "수정일"
-    }
 
-    %% ──────────────────────────────────────────────
-    %% 계약 (CONTRACT)
-    %% ──────────────────────────────────────────────
-    CONTRACT {
-        BIGSERIAL id PK "계약 고유 ID"
-        BIGINT user_id FK "입주자 ID"
-        BIGINT space_id FK "계약 호실 ID"
-        BIGINT booking_id FK "연결된 계약 신청 ID (nullable)"
-        VARCHAR status "상태 (ACTIVE / EXPIRED / TERMINATED)"
+        %% 확정 계약 조건 (승인 또는 체결 시)
         DATE start_date "계약 시작일"
         DATE end_date "계약 종료일"
         NUMERIC monthly_rent "월 임대료 (원)"
         NUMERIC deposit "보증금 (원)"
         TEXT special_terms "특약 사항"
+        
         TIMESTAMPTZ contracted_at "계약 체결일"
         TIMESTAMPTZ created_at "생성일"
         TIMESTAMPTZ updated_at "수정일"
@@ -344,7 +331,6 @@ erDiagram
     %% 관계 (Relationships)
     %% ══════════════════════════════════════════════
 
-    USERS ||--o{ BOOKING : "신청한다"
     USERS ||--o{ CONTRACT : "계약한다"
     USERS ||--o{ RESERVATION : "예약한다"
     USERS ||--o{ POST : "작성한다"
@@ -359,7 +345,6 @@ erDiagram
 
     SPACE ||--o{ SPACE_IMAGE : "이미지를 가진다"
     SPACE ||--o{ DEVICE : "기기가 설치된다"
-    SPACE ||--o{ BOOKING : "신청 대상이다"
     SPACE ||--o{ CONTRACT : "계약 대상이다"
     SPACE ||--o{ RESERVATION : "예약 대상이다"
 
@@ -368,7 +353,6 @@ erDiagram
     DEVICE ||--o{ CONTROL_LOG : "제어된다"
 
     CONTRACT ||--o{ PAYMENT : "결제가 발생한다"
-    CONTRACT ||--o| BOOKING : "신청에서 발생한다"
     CONTRACT ||--o{ ROLE_CHANGE_LOG : "역할 변경을 유발한다"
 
     POST ||--o{ COMMENT : "댓글이 달린다"
@@ -390,22 +374,21 @@ erDiagram
 | 3 | **SPACE_IMAGE** | 공간 이미지 (사진, 평면도) | USR-ROM-01~02 |
 | 4 | **DEVICE_TYPE** | IoT 기기 종류 (동적 관리) | ADM-DEV-02 |
 | 5 | **DEVICE** | IoT 기기 인스턴스 | RES-DEV-01~02, ADM-DEV-01~06 |
-| 6 | **BOOKING** | 계약 신청 (임시저장/신청/승인/거절/계약완료) | USR-CTR-00~00-1, ADM-BKG-01 |
-| 7 | **CONTRACT** | 임대차 계약 | USR-CTR-01~02, RES-CTR-01~02, ADM-CTR-01~04 |
-| 8 | **RESERVATION** | 공용 시설 예약 | RES-RSV-01~04, ADM-RSV-01~02 |
-| 9 | **CONTROL_LOG** | IoT 기기 제어 이력 (감사 로그) | RES-DEV-02, RES-LOG-01, ADM-DEV-04, ADM-MON-02 |
-| 10 | **PAYMENT** | 결제 / 정산 | ADM-BIL-01, CMN-PRF-04 |
-| 11 | **POST** | 커뮤니티 게시글 | CMN-CMT-01~02 |
-| 12 | **POST_ATTACHMENT** | 게시글 첨부파일 (최대 5개, 파일당 10MB) | CMN-CMT-02 |
-| 13 | **POST_LINK** | 게시글 URL 링크 (최대 3개) | CMN-CMT-02 |
-| 14 | **POST_LIKE** | 게시글 좋아요 | CMN-CMT-01 |
-| 15 | **COMMENT** | 댓글 | CMN-CMT-03 |
-| 16 | **VOC** | 민원 / 문의 | ADM-VOC-01 |
-| 17 | **VOC_ATTACHMENT** | 민원 첨부파일 | ADM-VOC-01 |
-| 18 | **NOTIFICATION** | 알림 (계약 승인/거절, 예약 승인 등) | USR-CTR-00, ADM-BKG-01, ADM-RSV-02 |
-| 19 | **ROLE_CHANGE_LOG** | 역할 변경 이력 | USR-CTR-01, ADM-CTR-02~04 |
-| 20 | **REFRESH_TOKEN** | JWT 리프레시 토큰 관리 | CMN-AUTH-01~04 |
-| 21 | **TOKEN_BLACKLIST** | 무효화된 토큰 관리 | CMN-AUTH-02, ADM-CTR-04 |
+| 6 | **CONTRACT** | 임대차 계약 (신청~체결~만료) | USR-CTR-00~02, RES-CTR-01~02, ADM-CTR-01~04, ADM-BKG-01 |
+| 7 | **RESERVATION** | 공용 시설 예약 | RES-RSV-01~04, ADM-RSV-01~02 |
+| 8 | **CONTROL_LOG** | IoT 기기 제어 이력 (감사 로그) | RES-DEV-02, RES-LOG-01, ADM-DEV-04, ADM-MON-02 |
+| 9 | **PAYMENT** | 결제 / 정산 | ADM-BIL-01, CMN-PRF-04 |
+| 10 | **POST** | 커뮤니티 게시글 | CMN-CMT-01~02 |
+| 11 | **POST_ATTACHMENT** | 게시글 첨부파일 (최대 5개, 파일당 10MB) | CMN-CMT-02 |
+| 12 | **POST_LINK** | 게시글 URL 링크 (최대 3개) | CMN-CMT-02 |
+| 13 | **POST_LIKE** | 게시글 좋아요 | CMN-CMT-01 |
+| 14 | **COMMENT** | 댓글 | CMN-CMT-03 |
+| 15 | **VOC** | 민원 / 문의 | ADM-VOC-01 |
+| 16 | **VOC_ATTACHMENT** | 민원 첨부파일 | ADM-VOC-01 |
+| 17 | **NOTIFICATION** | 알림 (계약 승인/거절, 예약 승인 등) | USR-CTR-00, ADM-BKG-01, ADM-RSV-02 |
+| 18 | **ROLE_CHANGE_LOG** | 역할 변경 이력 | USR-CTR-01, ADM-CTR-02~04 |
+| 19 | **REFRESH_TOKEN** | JWT 리프레시 토큰 관리 | CMN-AUTH-01~04 |
+| 20 | **TOKEN_BLACKLIST** | 무효화된 토큰 관리 | CMN-AUTH-02, ADM-CTR-04 |
 
 ---
 
@@ -421,16 +404,17 @@ USERS ─(1:N)─ CONTRACT ─(N:1)─ SPACE
 - 한 공간(호실)에도 시간에 따라 여러 계약이 존재할 수 있다.
 - **활성 계약(ACTIVE)은 1:1 관계**: 한 시점에 하나의 호실에는 하나의 활성 계약만 존재한다.
 
-### 3.2 BOOKING → CONTRACT 흐름
+### 3.2 CONTRACT 상태 흐름 (생명주기 단일화)
 
 ```
-BOOKING (DRAFT → PENDING → APPROVED → CONTRACTED)
-                                         ↓
-                                    CONTRACT (ACTIVE)
+CONTRACT
+DRAFT → PENDING → APPROVED → ACTIVE → EXPIRED / TERMINATED
+                   ↓
+             REJECTED / CANCELLED
 ```
 
-- **유저 주도 계약**: `BOOKING` → 관리자 승인 → 유저 동의 → `CONTRACT` 생성
-- **관리자 주도 계약**: `BOOKING` 없이 직접 `CONTRACT` 생성 (booking_id = NULL)
+- **유저 주도 계약**: 유저 신청(`DRAFT`/`PENDING`) → 관리자 승인(`APPROVED`) → 유저 동의 → `ACTIVE` 전환
+- **관리자 주도 계약**: 신청 과정 없이 직접 `ACTIVE` 상태로 레코드 생성 (신청 정보 필드은 NULL)
 
 ### 3.3 DEVICE 접근 권한 체계
 
