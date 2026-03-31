@@ -1,8 +1,61 @@
-node_modules/
-build/
-dist/
-coverage/
-.DS_Store
-*.log
-.env*
+# ==========================================
+# 환경 변수 및 비밀 키 (절대 GitHub에 올라가면 안 됨)
+# ==========================================
+.env
+.env.*
 !.env.example
+*.pem
+*.key
+docker-compose.override.yml
+
+# 주의: .env.example은 팀원들이 환경변수 양식을 
+# 볼 수 있도록 GitHub에 올라가는 것이 정상입니다!
+
+# ==========================================
+# 운영체제 및 개인 IDE 설정 파일
+# ==========================================
+.DS_Store
+Thumbs.db
+Desktop.ini
+.idea/
+.vscode/
+*.swp
+*.iml
+*.iws
+*.ipr
+
+# ==========================================
+# 백엔드 (Spring Boot / Java / Gradle)
+# ==========================================
+.gradle/
+build/
+bin/
+out/
+!gradle/wrapper/gradle-wrapper.jar
+.project
+.classpath
+.settings/
+*.log
+
+# ==========================================
+# 프론트엔드 (Next.js / React / Node.js)
+# ==========================================
+node_modules/
+.npm/
+.next/
+dist/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.eslintcache
+.pnp.*
+
+# ==========================================
+# 유저 업로드 파일 & 로컬 DB 저장소 
+# (명세서의 이미지 업로드 및 컨테이너 데이터 폴더 방어)
+# ==========================================
+/uploads/
+**/public/uploads/
+**/static/uploads/
+postgres-data/
+db-data/
