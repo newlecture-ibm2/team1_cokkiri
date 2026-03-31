@@ -1,13 +1,13 @@
 services:
-  frontend:
-    build: ./frontend
-    ports:
-      - "3000:3099"
-    environment:
-      - NEXT_PUBLIC_API_URL=/api
-      - INTERNAL_BACKEND_URL=http://backend:8080
-    depends_on:
-      - backend
+  # frontend:
+  #   build: ./frontend
+  #   ports:
+  #     - "3000:3099"
+  #   environment:
+  #     - NEXT_PUBLIC_API_URL=/api
+  #     - INTERNAL_BACKEND_URL=http://backend:8080
+  #   depends_on:
+  #     - backend
 
   backend:
     build: ./backend
