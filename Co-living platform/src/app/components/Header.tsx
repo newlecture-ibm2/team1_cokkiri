@@ -1,0 +1,64 @@
+import { Link, useLocation } from "react-router";
+import { motion, useScroll, useMotionValueEvent } from "motion/react";
+import { Button } from "./ui/button";
+import { User, Menu } from "lucide-react";
+import { useState } from "react";
+
+export function Header() {
+  const location = useLocation();
+  const [isScrolled, setIsScrolled] = useState(false);
+  const { scrollY } = useScroll();
+
+  useMotionValueEvent(scrollY, "change", (latest) => {
+    setIsScrolled(latest > 50);
+  });
+
+  const navLinks = [
+    { name: "About", path: "/about" },
+    { name: "Living", path: "/listings" },
+    { name: "Profile", path: "/profile" },
+  ];
+
+  return (
+    <motion.header
+      className={`sticky top-0 z-[100] px-6 py-2 md:px-12 md:py-3 transition-all duration-500 border-b ${isScrolled ? "bg-background/80 backdrop-blur-md border-[#2C3424]/5 shadow-sm" : "bg-transparent border-transparent"
+        }`}
+      initial={{ opacity: 0, y: -20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 1, ease: [0.22, 1, 0.36, 1] }}
+    >
+      <div className="flex items-center justify-between">
+        <Link to="/" className="group flex items-center gap-2">
+          <span className="text-3xl font-black uppercase tracking-tighter text-[#2C3424]">COKKIRI</span>
+          <span className="text-xs font-black uppercase tracking-widest text-[#2C3424]/50 mb-auto mt-1 ml-1 group-hover:text-[#2C3424] transition-colors duration-500">© 26</span>
+        </Link>
+
+        <div className="flex items-center gap-10">
+          <nav className="hidden md:flex items-center gap-10">
+            {navLinks.map((link) => (
+              <Link
+                key={link.path}
+                to={link.path}
+                className={`text-sm font-black uppercase tracking-widest text-[#2C3424] transition-all duration-500 hover:opacity-100 ${location.pathname === link.path ? "opacity-100 underline underline-offset-8" : "opacity-40"
+                  }`}
+              >
+                {link.name}
+              </Link>
+            ))}
+          </nav>
+
+          <div className="flex items-center gap-4 border-l border-[#2C3424]/10 pl-4">
+            <Link to="/profile" className="hidden md:block">
+              <Button size="icon" variant="ghost" className="rounded-full h-10 w-10 text-[#2C3424] hover:bg-[#2C3424]/5 transition-all duration-500">
+                <User className="h-5 w-5" />
+              </Button>
+            </Link>
+            <Button size="icon" variant="ghost" className="md:hidden h-10 w-10 text-[#2C3424] hover:bg-[#2C3424]/5 transition-all duration-500">
+              <Menu className="h-5 w-5" />
+            </Button>
+          </div>
+        </div>
+      </div>
+    </motion.header>
+  );
+}
