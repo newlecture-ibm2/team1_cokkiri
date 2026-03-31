@@ -397,7 +397,7 @@ erDiagram
 
 | # | 엔터티 | 설명 | 관련 기능 ID | 변경 |
 |---|---|---|---|---|
-| 1 | **USERS** | 사용자 (USER / RESIDENT / ADMIN) | CMN-AUTH-00~03, CMN-PRF-01~04 | PK명 변경, soft delete 추가 |
+| 1 | **USERS** | 사용자 (USER / RESIDENT / ADMIN) | CMN-AUTH-00~05, CMN-PRF-01~04 | PK명 변경, soft delete 추가 |
 | 2 | **SPACE** | 공간 부모 테이블 (공통 속성) | USR-ROM-01~02, ADM-SPC-00~03 | 🆕 상속 패턴으로 분리 |
 | 3 | **PRIVATE_SPACE_DETAIL** | 개인 공간 전용 상세 정보 | USR-ROM-01~02 | 🆕 신규 |
 | 4 | **COMMON_SPACE_DETAIL** | 공용 공간 전용 상세 정보 | ADM-SPC-02, RES-RSV-01 | 🆕 신규 (usage_fee 추가) |
@@ -414,7 +414,7 @@ erDiagram
 | 15 | **VOC** | 민원 / 문의 | ADM-VOC-01 | 🆕 category 추가, 첨부파일 JSONB 통합 |
 | 16 | **NOTIFICATION** | 알림 | USR-CTR-00, ADM-BKG-01, ADM-RSV-02 | updated_at 추가, reference_type 변경 |
 | 17 | **ROLE_CHANGE_LOG** | 역할 변경 이력 | USR-CTR-01, ADM-CTR-02~04 | changed_by FK화, 타임스탬프 통일 |
-| 18 | **REFRESH_TOKEN** | JWT 리프레시 토큰 관리 | CMN-AUTH-01~04 | PK명 변경, soft delete 추가 |
+| 18 | **REFRESH_TOKEN** | JWT 리프레시 토큰 관리 | CMN-AUTH-01~05 | PK명 변경, soft delete 추가 |
 | 19 | **TOKEN_BLACKLIST** | 무효화된 토큰 관리 | CMN-AUTH-02, ADM-CTR-04 | PK명 변경, soft delete 추가 |
 
 **테이블 수 변화:** 21개 → **19개** (BOOKING 합병 -1, POST_ATTACHMENT 제거 -1, POST_LINK 제거 -1, VOC_ATTACHMENT 제거 -1, PRIVATE_SPACE_DETAIL 추가 +1, COMMON_SPACE_DETAIL 추가 +1)
