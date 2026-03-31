@@ -2,7 +2,7 @@ services:
   # frontend:
   #   build: ./frontend
   #   ports:
-  #     - "3000:3099"
+  #     - "3111:3000"
   #   environment:
   #     - NEXT_PUBLIC_API_URL=/api
   #     - INTERNAL_BACKEND_URL=http://backend:8080
