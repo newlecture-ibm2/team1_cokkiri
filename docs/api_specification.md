@@ -114,7 +114,7 @@ Query: `?page=0&size=20&sort=created_at,desc`
 | name | ✅ | 2~50자 |
 | birth_date | ✅ | 6자리 숫자 (YYMMDD) |
 | gender | ✅ | MALE / FEMALE |
-| nationality | | 국가명 (선택) |
+| nationality | ✅ | 국가명 |
 | phone | ✅ | 000-0000-0000 또는 11자리 |
 | email | ✅ | 이메일 형식 |
 
