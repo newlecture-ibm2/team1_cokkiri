@@ -399,6 +399,20 @@ Query: `?page=0&size=20&sort=created_at,desc`
 
 ---
 
+### 2.5 프로필 이미지 업로드
+
+| **ID** | CMN-PRF-05 | **우선순위** | Should |
+|---|---|---|---|
+| **Endpoint** | `POST /api/users/me/image` | **인증** | 🔑 Auth |
+
+**Request:** `multipart/form-data`
+
+| 필드 | 타입 | 필수 | 규칙 |
+|---|---|---|---|
+| file | File | ✅ | 1장, 최대 5MB. 기존 사진 존재 시 덮어쓰기 |
+
+---
+
 ## 3. 방 둘러보기 (Rooms) — USR-ROM
 
 ### 3.1 방 목록 조회
@@ -641,11 +655,16 @@ Query: `?page=0&size=20&sort=created_at,desc`
     "contract_id": 10,
     "status": "ACTIVE",
     "new_role": "RESIDENT",
-    "contracted_at": "2026-03-31T14:00:00+09:00"
+    "contracted_at": "2026-03-31T14:00:00+09:00",
+    "access_token": "eyJhbG...",
+    "refresh_token": "eyJhbG...(new)"
   },
   "message": "계약이 체결되었습니다."
 }
 ```
+
+> [!NOTE]
+> 계약 체결 시 `role: RESIDENT`, `contract_id`, `space_id`가 새롭게 각인된 **새로운 JWT 토큰쌍**을 즉시 응답으로 내려주어 권한 인가 오류(403)를 전면 방지합니다. 기존 토큰은 무효화됩니다.
 
 ---
 
@@ -656,6 +675,18 @@ Query: `?page=0&size=20&sort=created_at,desc`
 | **Endpoint** | `GET /api/contracts/my` | **인증** | 👤 USER+ |
 
 **Query:** `status` (ACTIVE / EXPIRED / TERMINATED / ALL)
+
+---
+
+### 4.9 내 청구/결제 내역 조회
+
+| **ID** | RES-BIL-01 | **우선순위** | Must |
+|---|---|---|---|
+| **Endpoint** | `GET /api/payments/my` | **인증** | 🏠 RESIDENT+ |
+
+**Query:** `status` (PENDING / PAID / OVERDUE), `page`, `size`
+
+> 입주자가 지불해야 할 월세, 관리비 혹은 예약에 따른 시설 이용료 등의 목록을 조회할 수 있습니다.
 
 ---
 
@@ -846,13 +877,15 @@ Query: `?page=0&size=20&sort=created_at,desc`
 
 ---
 
-### 6.4 내 예약 조회
+### 6.4 내 예약 조회 (이력 포함)
 
 | **ID** | RES-RSV-04 | **우선순위** | Must |
 |---|---|---|---|
 | **Endpoint** | `GET /api/reservations/my` | **인증** | 🏠 RESIDENT+ |
 
-**Query:** `status` (PENDING / APPROVED / CANCELLED / COMPLETED)
+**Query:** `status` (PENDING / APPROVED / CANCELLED / COMPLETED), `page`, `size`
+
+> 기존 '시설 예약 이력' 기능이 하나로 통합되었습니다. Query 조건을 통해 과거 내역 및 진행 중인 예약을 한 번에 조회합니다.
 
 ---
 
@@ -875,22 +908,6 @@ Query: `?page=0&size=20&sort=created_at,desc`
 | **Endpoint** | `GET /api/control-logs/my` | **인증** | 🏠 RESIDENT+ |
 
 **Query:** `start_date`, `end_date`, `space_type`, `device_type_code`, `result`, `page`, `size`
-
----
-
-### 7.2 시설 예약 이력
-
-| **ID** | RES-LOG-02 | **우선순위** | Should |
-|---|---|---|---|
-| **Endpoint** | `GET /api/reservations/my/history` | **인증** | 🏠 RESIDENT+ |
-
----
-
-### 7.3 내 활동 이력
-
-| **ID** | USR-HST-01 | **우선순위** | Should |
-|---|---|---|---|
-| **Endpoint** | `GET /api/users/me/history` | **인증** | 👤 USER+ |
 
 ---
 
@@ -995,7 +1012,17 @@ Query: `?page=0&size=20&sort=created_at,desc`
 { "content": "환영합니다!" }
 ```
 
-### 8.8 댓글 삭제
+### 8.8 댓글 수정
+
+| **Endpoint** | `PUT /api/comments/{commentId}` | **인증** | 🔑 Auth (본인) |
+|---|---|---|---|
+
+**Request Body:**
+```json
+{ "content": "수정된 댓글입니다." }
+```
+
+### 8.9 댓글 삭제
 
 | **Endpoint** | `DELETE /api/comments/{commentId}` | **인증** | 🔑 Auth (본인 또는 ADMIN) |
 |---|---|---|---|
@@ -1250,6 +1277,14 @@ Query: `?page=0&size=20&sort=created_at,desc`
 
 > 섹션 5.2와 동일 형식. actor_type=ADMIN으로 CONTROL_LOG에 기록.
 
+### 12.7 전체 기기 제어 이력 조회 (Audit Log)
+
+| **ID** | ADM-DEV-07 | **우선순위** | Should |
+|---|---|---|---|
+| **Endpoint** | `GET /api/admin/control-logs` | **인증** | 🔒 ADMIN |
+
+**Query:** `space_id`, `device_id`, `actor_id`, `start_date`, `end_date`, `page`, `size`
+
 ---
 
 ## 13. 관리자 — 계약 관리 (ADM-CTR, ADM-BKG)
@@ -1355,6 +1390,9 @@ Query: `?page=0&size=20&sort=created_at,desc`
 | **ID** | ADM-RSV-02 | **Endpoint** | `POST /api/admin/reservations/{reservationId}/approve` | **인증** | 🔒 ADMIN |
 |---|---|---|---|---|---|
 
+> [!NOTE]
+> 처리 로직: 예약 승인(status→APPROVED)과 동시에 요금 징수를 위한 `PAYMENT` 데이터가 자동 생성됩니다.
+
 ### 14.3 예약 취소 (관리자)
 
 | **ID** | ADM-RSV-02 | **Endpoint** | `POST /api/admin/reservations/{reservationId}/cancel` | **인증** | 🔒 ADMIN |
@@ -1426,17 +1464,17 @@ Query: `?page=0&size=20&sort=created_at,desc`
 | 도메인 | Must | Should | 합계 |
 |---|---|---|---|
 | 인증 (Auth) | 4 | 2 | 6 |
-| 프로필 (Profile) | 3 | 1 | 4 |
+| 프로필 (Profile) | 3 | 2 | 5 |
 | 방 둘러보기 (Rooms) | 2 | 0 | 2 |
-| 계약 (Contract) — 유저 | 7 | 1 | 8 |
+| 계약 (Contract) — 유저 | 8 | 1 | 9 |
 | 기기 제어 (Device) | 2 | 0 | 2 |
 | 시설 예약 (Reservation) | 5 | 0 | 5 |
-| 입주자 이력 (Logs) | 0 | 3 | 3 |
-| 커뮤니티 (Community) | 0 | 8 | 8 |
+| 입주자 이력 (Logs) | 0 | 1 | 1 |
+| 커뮤니티 (Community) | 0 | 9 | 9 |
 | 민원 VoC (유저) | 0 | 4 | 4 |
 | 알림 (Notification) | 0 | 2 | 2 |
 | 관리자 — 공간 | 3 | 2 | 5 |
-| 관리자 — 기기 | 6 | 0 | 6 |
+| 관리자 — 기기 | 6 | 1 | 7 |
 | 관리자 — 계약 | 8 | 0 | 8 |
 | 관리자 — 예약/결제/모니터링/VoC | 0 | 10 | 10 |
-| **합계** | **40** | **33** | **73** |
+| **합계** | **41** | **34** | **75** |
