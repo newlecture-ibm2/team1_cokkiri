@@ -1,0 +1,35 @@
+name: Deploy to Server
+
+on:
+  push:
+    branches: [ develop ]
+
+jobs:
+  deploy:
+    runs-on: self-hosted
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Create .env file
+        run: |
+          cat > .env << EOF
+          DB_URL=jdbc:postgresql://db:5432/coliving
+          DB_USERNAME=coliving
+          DB_PASSWORD=${{ secrets.DB_PASSWORD }}
+          JWT_SECRET=${{ secrets.JWT_SECRET }}
+          MOCK_IOT_URL=http://mock-iot:8080
+          EOF
+
+      - name: Deploy with Docker Compose
+        run: |
+          docker compose down --remove-orphans
+          docker compose up -d --build
+
+      - name: Wait and Health Check
+        run: |
+          echo "⏳ Waiting for services to start..."
+          sleep 20
+          echo "✅ Deployment triggered successfully!"
+          docker compose ps
