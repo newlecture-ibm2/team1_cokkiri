@@ -46,14 +46,33 @@ Query: `?page=0&size=20&sort=created_at,desc`
 
 ### 공통 에러 코드
 
-| HTTP | 코드 | 설명 |
-|---|---|---|
-| 400 | `VALIDATION_ERROR` | 유효성 검증 실패 |
-| 401 | `UNAUTHORIZED` | 인증 실패 / 토큰 만료 |
-| 403 | `FORBIDDEN` | 권한 부족 |
-| 404 | `NOT_FOUND` | 리소스 없음 |
-| 409 | `CONFLICT` | 비즈니스 규칙 충돌 |
-| 500 | `INTERNAL_ERROR` | 서버 내부 오류 |
+### 주요 에러 코드 (ErrorCode)
+
+| 도메인 | HTTP | 코드 | 설명 |
+|---|---|---|---|
+| **인증/회원** | 401 | `INVALID_CREDENTIALS` | 아이디 또는 비밀번호 불일치 |
+| | 401 | `ACCOUNT_DEACTIVATED` | 탈퇴한 계정 |
+| | 401 | `INVALID_PASSWORD` | 비밀번호 불일치 |
+| | 401 | `TOKEN_EXPIRED` | 토큰 만료 |
+| | 403 | `FORBIDDEN` | 접근 권한 부족 |
+| | 400 | `SAME_PASSWORD` | 현재와 동일한 비밀번호 |
+| | 409 | `ACTIVE_CONTRACT_EXISTS` | 활성 계약 존재 |
+| | 409 | `UNPAID_PAYMENT_EXISTS` | 미납금 존재 |
+| | 409 | `DUPLICATE_LOGIN_ID` | 이미 사용 중인 로그인 ID |
+| **계약/예약** | 409 | `SPACE_NOT_AVAILABLE` | 해당 호실 계약/예약 불가 |
+| | 409 | `APPLICATION_EXISTS` | 이미 진행 중인 신청 있음 |
+| | 409 | `NO_ACTIVE_CONTRACT` | 유효한 활성 계약 없음 |
+| | 409 | `TIME_SLOT_CONFLICT` | 시간대 이미 예약됨 |
+| | 409 | `INVALID_STATUS` | 현재 상태에서 수행할 수 없는 작업 |
+| **기기 제어** | 422 | `DEVICE_OFFLINE` | 기기 오프라인 |
+| | 422 | `DEVICE_INACTIVE` | 기기 비활성화 |
+| | 403 | `SPACE_MISMATCH` | 접근 권한 없음 |
+| | 403 | `NO_ACTIVE_RESERVATION` | 유효한 예약 없음 |
+| | 403 | `CCTV_ADMIN_ONLY` | CCTV 관리자 전용 |
+| | 502 | `IOT_COMMUNICATION_FAIL` | IoT 동기화 실패 |
+| | 409 | `CONTROL_LOG_EXISTS` | 제어 이력 존재 (삭제 불가) |
+| **공통** | 400 | `VALIDATION_ERROR` | 필수 항목 누락/형식 오류 |
+| | 404 | `NOT_FOUND` | 리소스 없음 |
 
 ---
 
@@ -1028,7 +1047,24 @@ Query: `?page=0&size=20&sort=created_at,desc`
 |---|---|---|---|
 | **Endpoint** | `PUT /api/admin/spaces/{spaceId}` | **인증** | 🔒 ADMIN |
 
-### 11.4 공간 배치 대시보드 조회
+### 11.4 공간 이미지 업로드
+
+| **ID** | ADM-SPC-04 | **우선순위** | Must |
+|---|---|---|---|
+| **Endpoint** | `POST /api/admin/spaces/{spaceId}/images` | **인증** | 🔒 ADMIN |
+
+**Request:** `multipart/form-data`
+
+| 필드 | 타입 | 필수 | 규칙 |
+|---|---|---|---|
+| files | File[] | ✅ | 다중 이미지 업로드 |
+| image_type | String | ✅ | PHOTO / FLOOR_PLAN |
+| is_thumbnail | Boolean | ✅ | 대표 사진 여부 |
+| sort_order | Integer | | 정렬 순서 |
+
+---
+
+### 11.5 공간 배치 대시보드 조회
 
 | **ID** | ADM-SPC-00 | **우선순위** | Should |
 |---|---|---|---|
@@ -1036,7 +1072,7 @@ Query: `?page=0&size=20&sort=created_at,desc`
 
 **Query:** `floor`
 
-### 11.5 공간 배치 좌표 저장
+### 11.6 공간 배치 좌표 저장
 
 | **ID** | ADM-SPC-00 | **우선순위** | Should |
 |---|---|---|---|
