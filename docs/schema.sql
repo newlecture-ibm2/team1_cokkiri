@@ -1,14 +1,18 @@
 -- ============================================================
--- CoLiving IoT 플랫폼 — PostgreSQL DDL (schema.sql v2.0)
+-- CoLiving IoT 플랫폼 — PostgreSQL DDL (schema.sql v2.1)
 -- ============================================================
--- 기획안 및 ERD v2.0(erd.md) 기반으로 작성되었습니다.
+-- 기획안 및 ERD v2.0(erd.md), API 명세서 기반으로 작성되었습니다.
 -- PostgreSQL 14+ 기준으로 작성되었습니다.
 -- DrawSQL 호환성 및 Soft Delete, PK/FK 네이밍 통일을 반영했습니다.
+-- v2.1: ERD §6 권장 인덱스 추가, CHECK 제약 보완, Seed Data 개선
 -- ============================================================
 
 -- ──────────────────────────────────────────────
 -- 0. 초기화
 -- ──────────────────────────────────────────────
+
+-- 확장 모듈 (예약 시간대 중복 방지용)
+CREATE EXTENSION IF NOT EXISTS btree_gist;
 
 -- 기존 테이블 삭제 (의존성 순서 고려)
 DROP TABLE IF EXISTS token_blacklist CASCADE;
@@ -58,6 +62,7 @@ CREATE UNIQUE INDEX uq_users_login_id ON users (login_id) WHERE deleted_at IS NU
 
 CREATE INDEX idx_users_role ON users (role);
 CREATE INDEX idx_users_status ON users (status);
+CREATE INDEX idx_users_email ON users (email) WHERE deleted_at IS NULL;
 
 -- ──────────────────────────────────────────────
 -- 2. 공간 부모 (SPACE)
@@ -81,6 +86,7 @@ CREATE TABLE space (
 
 CREATE UNIQUE INDEX uq_space_name ON space (name) WHERE deleted_at IS NULL;
 CREATE INDEX idx_space_type_status ON space (type, status);
+CREATE INDEX idx_space_floor ON space (floor);
 
 -- ──────────────────────────────────────────────
 -- 2-1. 개인 공간 상세 (PRIVATE_SPACE_DETAIL)
@@ -164,6 +170,9 @@ CREATE TABLE device (
     deleted_at      TIMESTAMPTZ
 );
 
+CREATE INDEX idx_device_space_active ON device (space_id, is_active);
+CREATE INDEX idx_device_type ON device (device_type_id);
+
 -- ──────────────────────────────────────────────
 -- 6. 계약 (CONTRACT) - BOOKING 합병
 -- ──────────────────────────────────────────────
@@ -199,9 +208,12 @@ CREATE TABLE contract (
     deleted_at      TIMESTAMPTZ
 );
 
--- Partial Unique Index: 한 시밀러에 하나의 ACTIVE 계약만 가능
+-- Partial Unique Index: 한 호실에 하나의 ACTIVE 계약만 가능
 CREATE UNIQUE INDEX uq_active_contract_per_space ON contract (space_id) 
     WHERE status = 'ACTIVE' AND deleted_at IS NULL;
+
+CREATE INDEX idx_contract_user_status ON contract (user_id, status);
+CREATE INDEX idx_contract_space_status ON contract (space_id, status);
 
 -- ──────────────────────────────────────────────
 -- 7. 시설 예약 (RESERVATION)
@@ -223,6 +235,21 @@ CREATE TABLE reservation (
     CONSTRAINT chk_reservation_time CHECK (end_time > start_time)
 );
 
+-- 예약 시간대 중복 방지 (ERD §7 비즈니스 규칙 #10)
+-- 동일 시설, 동일 날짜에 APPROVED 상태인 예약의 시간대가 겹칠 수 없음
+ALTER TABLE reservation ADD CONSTRAINT excl_reservation_overlap
+    EXCLUDE USING gist (
+        space_id WITH =,
+        reservation_date WITH =,
+        tsrange(
+            ('2000-01-01'::date + start_time)::timestamp,
+            ('2000-01-01'::date + end_time)::timestamp
+        ) WITH &&
+    ) WHERE (status = 'APPROVED' AND deleted_at IS NULL);
+
+CREATE INDEX idx_reservation_space_date_status ON reservation (space_id, reservation_date, status);
+CREATE INDEX idx_reservation_user_status ON reservation (user_id, status);
+
 -- ──────────────────────────────────────────────
 -- 8. IoT 제어 이력 (CONTROL_LOG)
 -- ──────────────────────────────────────────────
@@ -241,6 +268,9 @@ CREATE TABLE control_log (
     updated_at      TIMESTAMPTZ     NOT NULL DEFAULT NOW(),
     deleted_at      TIMESTAMPTZ
 );
+
+CREATE INDEX idx_control_log_user_created ON control_log (user_id, created_at);
+CREATE INDEX idx_control_log_device_created ON control_log (device_id, created_at);
 
 -- ──────────────────────────────────────────────
 -- 9. 결제 (PAYMENT)
@@ -268,6 +298,10 @@ CREATE TABLE payment (
     )
 );
 
+CREATE INDEX idx_payment_contract_status ON payment (contract_id, status);
+CREATE INDEX idx_payment_reservation_status ON payment (reservation_id, status);
+CREATE INDEX idx_payment_user_status ON payment (user_id, status);
+
 -- ──────────────────────────────────────────────
 -- 10. 커뮤니티 게시글 (POST)
 -- ──────────────────────────────────────────────
@@ -287,6 +321,9 @@ CREATE TABLE post (
     updated_at      TIMESTAMPTZ     NOT NULL DEFAULT NOW(),
     deleted_at      TIMESTAMPTZ
 );
+
+CREATE INDEX idx_post_user ON post (user_id);
+CREATE INDEX idx_post_category_created ON post (category, created_at);
 
 -- ──────────────────────────────────────────────
 -- 11. 게시글 좋아요 (POST_LIKE)
@@ -317,6 +354,8 @@ CREATE TABLE comment (
     deleted_at      TIMESTAMPTZ
 );
 
+CREATE INDEX idx_comment_post ON comment (post_id);
+
 -- ──────────────────────────────────────────────
 -- 13. 민원 / VoC (VOC)
 -- ──────────────────────────────────────────────
@@ -337,6 +376,8 @@ CREATE TABLE voc (
     deleted_at      TIMESTAMPTZ
 );
 
+CREATE INDEX idx_voc_user_status ON voc (user_id, status);
+
 -- ──────────────────────────────────────────────
 -- 14. 알림 (NOTIFICATION)
 -- ──────────────────────────────────────────────
@@ -344,7 +385,10 @@ CREATE TABLE voc (
 CREATE TABLE notification (
     notification_id BIGSERIAL       PRIMARY KEY,
     user_id         BIGINT          NOT NULL REFERENCES users(user_id),
-    type            VARCHAR(30)     NOT NULL,
+    type            VARCHAR(30)     NOT NULL CHECK (type IN (
+                        'CONTRACT_APPROVED', 'CONTRACT_REJECTED', 'CONTRACT_ACTIVATED',
+                        'CONTRACT_EXPIRED', 'RESERVATION_APPROVED', 'VOC_REPLIED'
+                    )),
     title           VARCHAR(200)    NOT NULL,
     message         TEXT            NOT NULL,
     reference_type  VARCHAR(20)     CHECK (reference_type IN ('CONTRACT', 'RESERVATION', 'VOC')),
@@ -354,6 +398,8 @@ CREATE TABLE notification (
     updated_at      TIMESTAMPTZ     NOT NULL DEFAULT NOW(),
     deleted_at      TIMESTAMPTZ
 );
+
+CREATE INDEX idx_notification_user_read_created ON notification (user_id, is_read, created_at);
 
 -- ──────────────────────────────────────────────
 -- 15. 역할 변경 이력 (ROLE_CHANGE_LOG)
@@ -388,6 +434,7 @@ CREATE TABLE refresh_token (
 );
 
 CREATE UNIQUE INDEX uq_refresh_token ON refresh_token (token) WHERE deleted_at IS NULL;
+CREATE INDEX idx_refresh_token_user ON refresh_token (user_id);
 
 -- ──────────────────────────────────────────────
 -- 17. 토큰 블랙리스트 (TOKEN_BLACKLIST)
@@ -404,6 +451,7 @@ CREATE TABLE token_blacklist (
 );
 
 CREATE UNIQUE INDEX uq_token_blacklist_jti ON token_blacklist (token_jti) WHERE deleted_at IS NULL;
+CREATE INDEX idx_token_blacklist_expires ON token_blacklist (expires_at);
 
 -- ============================================================
 -- 초기 데이터 (Seed Data)
@@ -411,17 +459,18 @@ CREATE UNIQUE INDEX uq_token_blacklist_jti ON token_blacklist (token_jti) WHERE 
 
 -- 기기 종류 기본값
 INSERT INTO device_type (code, name, commands, ui_type, is_system_default) VALUES
-    ('DOOR_LOCK',       '스마트도어락',   '["LOCK", "UNLOCK"]',                                    'toggle',               TRUE),
-    ('WASHER',          '스마트세탁기',   '["START", "STOP"]',                                     'button',               TRUE),
-    ('DRYER',           '스마트건조기',   '["START", "STOP"]',                                     'button',               TRUE),
-    ('LIGHT',           '스마트조명',     '["TURN_ON", "TURN_OFF", "SET_BRIGHTNESS"]',              'toggle_slider',        TRUE),
-    ('AIR_CONDITIONER', '스마트에어컨',   '["TURN_ON", "TURN_OFF", "SET_TEMP", "SET_MODE"]',       'toggle_slider_select', TRUE),
-    ('HEATER',          '스마트난방',     '["TURN_ON", "TURN_OFF", "SET_TEMP"]',                   'toggle_slider',        TRUE),
-    ('CCTV',            '스마트CCTV',     '["TURN_ON", "TURN_OFF"]',                               'toggle',               TRUE);
+    ('DOOR_LOCK',       '스마트도어락',   '["LOCK", "UNLOCK"]'::jsonb,                                    'toggle',               TRUE),
+    ('WASHER',          '스마트세탁기',   '["START", "STOP"]'::jsonb,                                     'button',               TRUE),
+    ('DRYER',           '스마트건조기',   '["START", "STOP"]'::jsonb,                                     'button',               TRUE),
+    ('LIGHT',           '스마트조명',     '["TURN_ON", "TURN_OFF", "SET_BRIGHTNESS"]'::jsonb,              'toggle_slider',        TRUE),
+    ('AIR_CONDITIONER', '스마트에어컨',   '["TURN_ON", "TURN_OFF", "SET_TEMP", "SET_MODE"]'::jsonb,       'toggle_slider_select', TRUE),
+    ('HEATER',          '스마트난방',     '["TURN_ON", "TURN_OFF", "SET_TEMP"]'::jsonb,                   'toggle_slider',        TRUE),
+    ('CCTV',            '스마트CCTV',     '["TURN_ON", "TURN_OFF"]'::jsonb,                               'toggle',               TRUE);
 
--- 관리자 기본 계정
+-- 관리자 기본 계정 (비밀번호: admin123!)
+-- BCrypt 해시: https://bcrypt-generator.com/ 등으로 생성
 INSERT INTO users (login_id, password_hash, name, birth_date, gender, nationality, phone, email, role, status)
-VALUES ('admin', '$2a$10$dummyhash', '관리자', '900101', 'MALE', '대한민국', '010-0000-0000', 'admin@coliving.com', 'ADMIN', 'ACTIVE');
+VALUES ('admin', '$2a$10$x8KrJqhWEzJSQ5UH2FE0CeZvJmME7qHK3DECP3QnOsW4Yv5YVkqKa', '관리자', '900101', 'MALE', '대한민국', '010-0000-0000', 'admin@coliving.com', 'ADMIN', 'ACTIVE');
 
 -- ============================================================
 -- 유틸리티: updated_at 자동 갱신 트리거
