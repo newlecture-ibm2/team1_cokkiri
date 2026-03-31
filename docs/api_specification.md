@@ -71,6 +71,10 @@ Query: `?page=0&size=20&sort=created_at,desc`
 | | 403 | `CCTV_ADMIN_ONLY` | CCTV 관리자 전용 |
 | | 502 | `IOT_COMMUNICATION_FAIL` | IoT 동기화 실패 |
 | | 409 | `CONTROL_LOG_EXISTS` | 제어 이력 존재 (삭제 불가) |
+| | 409 | `DEVICE_ACTIVE` | 활성화 상태 기기 삭제 불가 |
+| **계정 찾기** | 404 | `ACCOUNT_NOT_FOUND` | 일치하는 계정 없음 |
+| | 500 | `EMAIL_SEND_FAILED` | 이메일 발송 실패 |
+| | 429 | `TOO_MANY_REQUESTS` | 요청 횟수 초과 |
 | **공통** | 400 | `VALIDATION_ERROR` | 필수 항목 누락/형식 오류 |
 | | 404 | `NOT_FOUND` | 리소스 없음 |
 
@@ -110,6 +114,7 @@ Query: `?page=0&size=20&sort=created_at,desc`
 | name | ✅ | 2~50자 |
 | birth_date | ✅ | 6자리 숫자 (YYMMDD) |
 | gender | ✅ | MALE / FEMALE |
+| nationality | | 국가명 (선택) |
 | phone | ✅ | 000-0000-0000 또는 11자리 |
 | email | ✅ | 이메일 형식 |
 
@@ -216,6 +221,96 @@ Query: `?page=0&size=20&sort=created_at,desc`
 
 > [!NOTE]
 > RESIDENT의 경우, 갱신 시 계약 상태를 재확인합니다. 만료/해지된 계약이면 role=USER로 변경된 토큰이 발급됩니다.
+
+---
+
+### 1.5 아이디 찾기
+
+| 항목 | 내용 |
+|---|---|
+| **ID** | CMN-AUTH-04 |
+| **우선순위** | Should |
+| **Endpoint** | `POST /api/auth/find-id` |
+| **인증** | 🔓 Public |
+
+**Request Body:**
+```json
+{ "name": "홍길동", "email": "hong@example.com" }
+```
+
+| 필드 | 필수 | 규칙 |
+|---|---|---|
+| name | ✅ | 2~50자, 가입 시 등록한 이름 |
+| email | ✅ | 이메일 형식, 가입 시 등록한 이메일 |
+
+**Response (200):**
+```json
+{
+  "success": true,
+  "data": {
+    "masked_login_id": "us****",
+    "created_at": "2026-01-15"
+  },
+  "message": "아이디를 찾았습니다."
+}
+```
+
+> [!NOTE]
+> **마스킹 규칙:** 앞 2자리만 표시, 나머지 `*` 처리 (예: `user01` → `us****`)
+> 탈퇴(DEACTIVATED) 계정과 미존재 계정은 동일한 404 응답을 반환하여 계정 존재 여부가 노출되지 않도록 합니다.
+
+| 에러 HTTP | 코드 | 상황 |
+|---|---|---|
+| 404 | ACCOUNT_NOT_FOUND | 일치하는 계정 없음 (탈퇴 계정 포함) |
+| 400 | VALIDATION_ERROR | 이름/이메일 형식 오류 |
+
+---
+
+### 1.6 비밀번호 찾기 (임시 비밀번호 발급)
+
+| 항목 | 내용 |
+|---|---|
+| **ID** | CMN-AUTH-05 |
+| **우선순위** | Should |
+| **Endpoint** | `POST /api/auth/reset-password` |
+| **인증** | 🔓 Public |
+
+**Request Body:**
+```json
+{ "login_id": "user01", "email": "hong@example.com" }
+```
+
+| 필드 | 필수 | 규칙 |
+|---|---|---|
+| login_id | ✅ | 4~50자, 가입 시 등록한 로그인 ID |
+| email | ✅ | 이메일 형식, 가입 시 등록한 이메일 |
+
+**Response (200):**
+```json
+{
+  "success": true,
+  "data": null,
+  "message": "등록하신 이메일로 임시 비밀번호가 발송되었습니다."
+}
+```
+
+**처리 로직:**
+1. login_id + email 일치하는 ACTIVE 계정 조회
+2. 임시 비밀번호 생성 (12자, 영문 대소문자+숫자+특수문자)
+3. DB의 password_hash를 임시 비밀번호 해시로 업데이트
+4. 등록된 이메일로 임시 비밀번호 발송
+5. 기존 Refresh Token 전체 무효화 (재로그인 유도)
+
+> [!WARNING]
+> **Rate Limiting:** 동일 login_id 또는 IP에 대해 **5분 내 최대 5회**까지만 허용. 초과 시 429 응답.
+> 임시 비밀번호 발급 시 기존 비밀번호는 즉시 무효화됩니다.
+
+| 에러 HTTP | 코드 | 상황 |
+|---|---|---|
+| 404 | ACCOUNT_NOT_FOUND | 일치하는 계정 없음 (탈퇴 계정 포함) |
+| 500 | EMAIL_SEND_FAILED | 이메일 발송 실패 |
+| 429 | TOO_MANY_REQUESTS | 5분 내 요청 횟수 초과 |
+| 400 | VALIDATION_ERROR | 입력값 형식 오류 |
 
 ---
 
@@ -1330,7 +1425,7 @@ Query: `?page=0&size=20&sort=created_at,desc`
 
 | 도메인 | Must | Should | 합계 |
 |---|---|---|---|
-| 인증 (Auth) | 4 | 0 | 4 |
+| 인증 (Auth) | 4 | 2 | 6 |
 | 프로필 (Profile) | 3 | 1 | 4 |
 | 방 둘러보기 (Rooms) | 2 | 0 | 2 |
 | 계약 (Contract) — 유저 | 7 | 1 | 8 |
@@ -1344,4 +1439,4 @@ Query: `?page=0&size=20&sort=created_at,desc`
 | 관리자 — 기기 | 6 | 0 | 6 |
 | 관리자 — 계약 | 8 | 0 | 8 |
 | 관리자 — 예약/결제/모니터링/VoC | 0 | 10 | 10 |
-| **합계** | **40** | **31** | **71** |
+| **합계** | **40** | **33** | **73** |
