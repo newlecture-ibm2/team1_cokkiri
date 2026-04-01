@@ -11,7 +11,7 @@
 5. [MR Convention](#5-mr-convention)
 6. [Merge 전략](#6-merge-전략)
 7. [자주 쓰는 Git 명령어](#7-자주-쓰는-git-명령어)
-8. [Jira 컨벤션](#8-jira-컨벤션)
+8. [GitHub Projects 컨벤션](#8-github-projects-컨벤션)
 9. [응답 템플릿](#9-응답-템플릿)
 
 ---
@@ -114,20 +114,23 @@ docs: [CMN] README 작성
 
 ### ⚠️ Gitmoji 자동 변환 설정 (필수)
 
-커밋 이모지 자동 변환을 사용하려면 **최초 1회** 아래 명령어를 실행하세요:
+**아래 두 가지 방법 중 하나만 선택하세요:**
+
+#### 방법 A. 수동 설정 (1회)
+
+프로젝트 루트에서 아래 명령어를 실행합니다:
 
 ```bash
-# 프로젝트 루트에서 실행
 git config core.hooksPath .githooks
 ```
 
-자동화하려면 `Co-living platform/package.json`의 `scripts`에 아래를 추가합니다:
+#### 방법 B. `npm install` 시 자동 설정
+
+[`Co-living platform/package.json`](../../Co-living%20platform/package.json)의 `scripts`에 아래를 추가하면, `npm install` 시 자동으로 Hook이 등록됩니다:
 
 ```json
 "postinstall": "cd .. && bash .githooks/setup.sh"
 ```
-
-이후 `npm install` 시 자동으로 Hook이 등록됩니다.
 
 ---
 
@@ -202,22 +205,25 @@ feat/이슈번호
 
 ---
 
-## 8. Jira 컨벤션
+## 8. GitHub Projects 컨벤션
 
-### 에픽 (Epic)
+### Milestone (에픽 대응)
+
+도메인 단위의 큰 기능 묶음을 Milestone으로 관리합니다.
 
 - `[도메인] 큰 기능 이름` → 예) `[USR] 회원가입`, `[RSV] 예약 관리`
 
-### 이슈 (Issue)
+### Issue (이슈)
 
 | 항목         | 규칙                                                                 |
 | ------------ | -------------------------------------------------------------------- |
-| **이슈 유형** | `스토리`                                                             |
-| **상태**     | 시작 시 `ToDo` → 진행 시 `In Progress` → 완료 시 `Done`             |
-| **Epic Link** | 해당 에픽 선택                                                      |
-| **Sprint**   | 해당 주차 스프린트 선택                                              |
+| **상태**     | `Todo` → `In Progress` → `Done`                                     |
+| **Milestone** | 해당 Milestone 선택                                                 |
+| **Iteration** | 해당 주차 스프린트 선택                                             |
+| **Labels**   | 도메인 라벨 + 유형 라벨 지정                                         |
+| **Assignees** | 담당자 지정                                                         |
 
-### 이슈 요약 작성법
+### Issue 제목 작성법
 
 ```
 [도메인] 세부 기능 이름
@@ -230,15 +236,21 @@ feat/이슈번호
 - `[CMN] 데일리 스크럼(월)`
 - `[CMN] 회고(금)`
 
-### 컴포넌트 분류
+### Labels
 
-- 회의 (데일리 스크럼 포함) — 단체
-- 학습
-- 개발
-- 설계 — 개인
-- 문서작성
+**도메인 라벨**
 
-> 컴포넌트는 위 유형 중 **하나를** 선택하여 넣어주세요.
+`USR`, `SPC`, `CTR`, `RSV`, `IOT`, `CS`, `CMN`
+
+**유형 라벨**
+
+- `회의` — 데일리 스크럼 포함
+- `학습`
+- `개발`
+- `설계`
+- `문서작성`
+
+> 각 Issue에 **도메인 라벨 1개** + **유형 라벨 1개**를 지정합니다.
 
 ---
 
