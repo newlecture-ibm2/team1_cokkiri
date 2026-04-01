@@ -198,7 +198,7 @@ export function Home() {
               transition={{ duration: 0.8 }}
               viewport={{ once: true }}
             >
-              <h2 className="text-7xl md:text-9xl font-black tracking-tighter leading-none mb-16 underline-offset-[2vw]">SMART<br /><span className="text-accent underline">LIVING.</span></h2>
+              <h2 className="text-5xl md:text-7xl lg:text-9xl font-black tracking-tighter leading-none mb-16 underline-offset-[2vw]">SMART<br /><span className="text-accent underline">LIVING.</span></h2>
               <div className="space-y-12 max-w-xl border-t border-white/10 pt-16">
                 <div className="flex gap-8">
                   <Globe className="h-8 w-8 shrink-0 opacity-40" />
