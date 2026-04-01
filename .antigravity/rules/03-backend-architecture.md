@@ -255,6 +255,6 @@ admin/{feature}/
 
 ## 3. Mock IoT Server 연동 (매우 중요)
 
-- 기기 제어 요청을 보낼 때는, 외부 목업 서버인 `http://mock-iot:8080` (도커 컨테이너) 주소로 `RestTemplate` 또는 `WebClient`를 이용해 HTTP 통신을 시도해야 합니다. 백엔드 자체 서버 메모리에 가짜 데이터를 만들거나 제어 상태를 저장하지 않습니다.
+- 기기 제어 요청을 보낼 때는, 외부 목업 서버인 `http://mock-iot:8000` (도커 컨테이너) 주소로 `RestTemplate` 또는 `WebClient`를 이용해 HTTP 통신을 시도해야 합니다. 백엔드 자체 서버 메모리에 가짜 데이터를 만들거나 제어 상태를 저장하지 않습니다.
 - **확장성:** 현시점은 Mock 서버와 통신하지만, 추후 진짜 '삼성 SmartThings API'로 교체될 것을 염두에 두고 반드시 `IotAdapter` 라는 추상 인터페이스를 두고, `MockIotAdapter` 구현체 내부에서만 HTTP 통신 로직을 구현하는 OCP(개방 폐쇄 원칙)를 지킵니다.
 - **내결함성(Resilience):** Mock 서버가 느려도 백엔드가 터지지 않도록 Timeout 설정을 반드시 짧게 (예: 5초) 제어합니다.

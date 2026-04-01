@@ -23,7 +23,7 @@ services:
       - DB_USERNAME=${DB_USERNAME:-coliving}
       - DB_PASSWORD=${DB_PASSWORD}
       - JWT_SECRET=${JWT_SECRET}
-      - MOCK_IOT_URL=${MOCK_IOT_URL:-http://mock-iot:8080}
+      - MOCK_IOT_URL=${MOCK_IOT_URL:-http://mock-iot:8000}
     depends_on:
       db: { condition: service_healthy }
 
@@ -47,6 +47,7 @@ services:
     container_name: team1-cokkiri-mock-iot
     image: wiremock/wiremock:3.5.4
     restart: unless-stopped
+    command: [ "--port", "8000" ]
     volumes:
       - ./mock-iot/mappings:/home/wiremock/mappings
 
