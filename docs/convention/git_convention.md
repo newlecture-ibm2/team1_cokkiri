@@ -94,17 +94,42 @@ main
 ### 커밋 메시지 형식
 
 ```
-:이모지: [도메인] 커밋메세지
+타입: [도메인] 커밋메세지
 ```
 
 **예시:**
 
 ```
-:sparkles: [USR] 소셜 로그인 API 구현
-:bug: [RSV] 예약 목록 렌더링 오류 수정
-:wrench: [CMN] CI/CD 파이프라인 설정
-:memo: [CMN] README 작성
+feat: [USR] 소셜 로그인 API 구현
+fix: [RSV] 예약 목록 렌더링 오류 수정
+chore: [CMN] CI/CD 파이프라인 설정
+docs: [CMN] README 작성
 ```
+
+> 💡 **Git Hook 자동 변환:** 위와 같이 텍스트 타입으로 커밋하면, `prepare-commit-msg` Hook이 자동으로 이모지로 변환합니다.
+>
+> `feat: [USR] 소셜 로그인 구현` → `✨ [USR] 소셜 로그인 구현`
+
+---
+
+### ⚠️ Gitmoji 자동 변환 설정 (필수)
+
+커밋 이모지 자동 변환을 사용하려면 **최초 1회** 아래 명령어를 실행하세요:
+
+```bash
+# 프로젝트 루트에서 실행
+git config core.hooksPath .githooks
+```
+
+자동화하려면 `Co-living platform/package.json`의 `scripts`에 아래를 추가합니다:
+
+```json
+"postinstall": "cd .. && bash .githooks/setup.sh"
+```
+
+이후 `npm install` 시 자동으로 Hook이 등록됩니다.
+
+---
 
 ### 브랜치 생성 규칙
 

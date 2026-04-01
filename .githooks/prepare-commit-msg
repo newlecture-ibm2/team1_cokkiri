@@ -1,0 +1,35 @@
+#!/bin/bash
+
+COMMIT_MSG_FILE=$1
+COMMIT_SOURCE=$2
+
+# merge 커밋이나 amend일 경우 변환하지 않음
+if [ "$COMMIT_SOURCE" = "merge" ] || [ "$COMMIT_SOURCE" = "squash" ]; then
+  exit 0
+fi
+
+MSG=$(cat "$COMMIT_MSG_FILE")
+
+# 커밋 타입 → 이모지 매핑
+declare -A EMOJI_MAP
+EMOJI_MAP["feat"]="✨"
+EMOJI_MAP["fix"]="🐛"
+EMOJI_MAP["docs"]="📝"
+EMOJI_MAP["style"]="💄"
+EMOJI_MAP["refactor"]="♻️"
+EMOJI_MAP["test"]="✅"
+EMOJI_MAP["chore"]="🔧"
+EMOJI_MAP["env"]="🔧"
+EMOJI_MAP["merge"]="🔀"
+
+# "타입: 메시지" 또는 "타입: [도메인] 메시지" 형식 감지 후 변환
+if [[ "$MSG" =~ ^([a-z]+):\ (.+)$ ]]; then
+  TYPE="${BASH_REMATCH[1]}"
+  BODY="${BASH_REMATCH[2]}"
+
+  EMOJI="${EMOJI_MAP[$TYPE]}"
+
+  if [[ -n "$EMOJI" ]]; then
+    echo "$EMOJI $BODY" > "$COMMIT_MSG_FILE"
+  fi
+fi
