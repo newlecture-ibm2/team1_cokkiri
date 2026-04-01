@@ -202,7 +202,7 @@ export function Home() {
               transition={{ duration: 0.8 }}
               viewport={{ once: true }}
             >
-              <h2 className="mb-16 text-7xl leading-none font-black tracking-tighter underline-offset-[2vw] md:text-9xl">
+              <h2 className="mb-16 text-5xl leading-none font-black tracking-tighter underline-offset-[2vw] md:text-7xl lg:text-9xl">
                 SMART
                 <br />
                 <span className="text-accent underline">LIVING.</span>

@@ -105,12 +105,12 @@ export function ListingDetail() {
         </div>
 
         {/* Image Nav — 모바일: 하단 중앙 가로 / 데스크톱: 우측 세로 */}
-        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 md:left-auto md:translate-x-0 md:right-6 md:bottom-12 md:top-auto flex flex-row md:flex-col gap-3 md:gap-4">
+        <div className="absolute bottom-6 left-1/2 flex -translate-x-1/2 flex-row gap-3 md:left-auto md:right-6 md:bottom-12 md:top-auto md:translate-x-0 md:flex-col md:gap-4">
           {listing.images.map((img, i) => (
             <button
               key={i}
               onClick={() => setSelectedImage(i)}
-              className={`h-16 w-16 overflow-hidden rounded-lg border-2 transition-all ${selectedImage === i ? "scale-110 border-white" : "border-transparent opacity-50 hover:opacity-100"}`}
+              className={`h-12 w-12 overflow-hidden rounded-lg border-2 transition-all md:h-16 md:w-16 ${selectedImage === i ? "scale-110 border-white" : "border-transparent opacity-50 hover:opacity-100"}`}
             >
               <ImageWithFallback src={img} className="h-full w-full object-cover" />
             </button>
@@ -389,24 +389,24 @@ export function ListingDetail() {
       </section>
 
       {/* Related Section or Visual Break */}
-      <section className="h-[60vh] overflow-hidden">
-        <div className="flex h-full">
-          <div className="w-1/2 overflow-hidden grayscale transition-all duration-1000 hover:grayscale-0">
+      <section className="min-h-[50vh] overflow-hidden md:h-[60vh]">
+        <div className="flex h-full flex-col md:flex-row">
+          <div className="h-[40vh] w-full overflow-hidden grayscale transition-all duration-1000 hover:grayscale-0 md:h-full md:w-1/2">
             <ImageWithFallback
               src="https://images.unsplash.com/photo-1772475385426-ebd50c772229?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxtb2Rlcm4lMjBraXRjaGVuJTIwaXNsYW5kJTIwbWluaW1hbCUyMGRlc2lnbiUyMGFlc3RoZXRpY3xlbnwxfHx8fDE3NzQ5Mzc2ODB8MA&ixlib=rb-4.1.0&q=80&w=1080"
               className="h-full w-full object-cover"
             />
           </div>
-          <div className="flex w-1/2 items-center justify-center bg-[#030213] p-12">
+          <div className="flex w-full items-center justify-center bg-[#030213] p-8 py-16 md:w-1/2 md:p-12 md:py-12">
             <div className="space-y-6 text-center text-white">
-              <h3 className="text-4xl font-black tracking-tighter md:text-6xl">
+              <h3 className="text-3xl font-black tracking-tighter md:text-4xl lg:text-6xl">
                 Join the collective.
               </h3>
               <p className="mx-auto max-w-sm text-xs font-black tracking-[0.3em] text-white/40 uppercase">
                 Become a resident of the future.
               </p>
               <Button
-                className="rounded-full border-none bg-[#768064] px-12 py-10 text-xl font-black tracking-[0.2em] text-white shadow-lg shadow-[#768064]/20 transition-all hover:bg-[#8A9678]"
+                className="rounded-full border-none bg-[#768064] px-8 py-6 text-base font-black tracking-[0.2em] text-white shadow-lg shadow-[#768064]/20 transition-all hover:bg-[#8A9678] md:px-12 md:py-10 md:text-xl"
                 style={{ fontFamily: "'Outfit', sans-serif" }}
               >
                 APPLY NOW
