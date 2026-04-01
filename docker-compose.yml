@@ -2,6 +2,7 @@ services:
   frontend:
     container_name: team1-cokkiri-frontend
     build: ./frontend
+    restart: unless-stopped
     ports:
       - "3111:3000"
     environment:
@@ -13,6 +14,7 @@ services:
   backend:
     container_name: team1-cokkiri-backend
     build: ./backend
+    restart: unless-stopped
     environment:
       - SPRING_PROFILES_ACTIVE=dev
       - DB_URL=${DB_URL:-jdbc:postgresql://db:5432/coliving}
@@ -26,6 +28,7 @@ services:
   db:
     container_name: team1-cokkiri-db
     image: postgres:16-alpine
+    restart: unless-stopped
     environment:
       POSTGRES_DB: coliving
       POSTGRES_USER: ${DB_USERNAME:-coliving}
@@ -34,13 +37,17 @@ services:
       - postgres-data:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${DB_USERNAME:-coliving} -d coliving"]
-      interval: 5s
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   mock-iot:
     container_name: team1-cokkiri-mock-iot
     image: wiremock/wiremock:3.5.4
+    restart: unless-stopped
     volumes:
       - ./mock-iot/mappings:/home/wiremock/mappings
 
 volumes:
   postgres-data:
+    name: team1-cokkiri-pg-data
