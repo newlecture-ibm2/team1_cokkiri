@@ -17,36 +17,37 @@ export function Listings() {
   const filteredListings = useMemo(() => {
     return listings.filter((listing) => {
       const matchesFilter = activeFilter === "All" || listing.roomType === activeFilter;
-      const matchesSearch = listing.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      const matchesSearch =
+        listing.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
         listing.location.toLowerCase().includes(searchQuery.toLowerCase());
       return matchesFilter && matchesSearch;
     });
   }, [activeFilter, searchQuery]);
 
   return (
-    <div className="min-h-screen bg-background text-foreground selection:bg-[#2C3424] selection:text-[#DADED8] pb-32">
+    <div className="bg-background text-foreground min-h-screen pb-32 selection:bg-[#2C3424] selection:text-[#DADED8]">
       <Header />
 
       {/* Page Header */}
-      <section className="pt-48 pb-24 px-6 md:px-12 lg:px-24">
-        <div className="max-w-[1400px] mx-auto">
+      <section className="px-6 pt-48 pb-24 md:px-12 lg:px-24">
+        <div className="mx-auto max-w-[1400px]">
           <motion.div
             initial={{ opacity: 0, y: 40 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 1, ease: [0.22, 1, 0.36, 1] }}
-            className="flex flex-col md:flex-row justify-between items-end gap-12 border-b border-[#2C3424]/10 pb-16"
+            className="flex flex-col items-end justify-between gap-12 border-b border-[#2C3424]/10 pb-16 md:flex-row"
           >
-            <div className="space-y-6 max-w-2xl">
-              <h1 className="text-8xl md:text-[10rem] font-black tracking-tighter leading-[0.85]">
+            <div className="max-w-2xl space-y-6">
+              <h1 className="text-8xl leading-[0.85] font-black tracking-tighter md:text-[10rem]">
                 SPACES.
               </h1>
-              <p className="text-1xl md:text-2xl font-medium leading-tight opacity-70">
+              <p className="text-1xl leading-tight font-medium opacity-70 md:text-2xl">
                 나만의 감각과 스마트한 일상이 공존하는 공간
               </p>
             </div>
 
             <div className="text-right">
-              <p className="text-[10px] font-black uppercase tracking-[0.3em] opacity-40 mb-2"></p>
+              <p className="mb-2 text-[10px] font-black tracking-[0.3em] uppercase opacity-40"></p>
               <div className="text-2xl font-black"></div>
             </div>
           </motion.div>
@@ -54,18 +55,18 @@ export function Listings() {
       </section>
 
       {/* Filter Bar */}
-      <section className="sticky top-0 z-40 bg-background/80 backdrop-blur-md px-6 md:px-12 lg:px-24 py-8 border-b border-border">
-        <div className="max-w-[1400px] mx-auto flex flex-col md:flex-row justify-between items-center gap-8">
-
+      <section className="bg-background/80 border-border sticky top-0 z-40 border-b px-6 py-8 backdrop-blur-md md:px-12 lg:px-24">
+        <div className="mx-auto flex max-w-[1400px] flex-col items-center justify-between gap-8 md:flex-row">
           <div className="flex flex-wrap gap-2">
             {filters.map((f) => (
               <button
                 key={f}
                 onClick={() => setActiveFilter(f)}
-                className={`px-6 py-2 rounded-full text-xs font-black uppercase tracking-widest transition-all duration-500 border ${activeFilter === f
-                  ? "bg-[#2C3424] text-white border-[#2C3424]"
-                  : "bg-transparent text-[#2C3424]/40 border-[#2C3424]/10 hover:border-[#2C3424]/40"
-                  }`}
+                className={`rounded-full border px-6 py-2 text-xs font-black tracking-widest uppercase transition-all duration-500 ${
+                  activeFilter === f
+                    ? "border-[#2C3424] bg-[#2C3424] text-[#DADED8]"
+                    : "border-[#2C3424]/20 bg-transparent text-[#2C3424]/70 hover:border-[#2C3424]/40"
+                }`}
               >
                 {f}
               </button>
@@ -84,18 +85,23 @@ export function Listings() {
                   <input
                     autoFocus
                     placeholder="Search locations..."
-                    className="bg-transparent text-sm font-bold uppercase tracking-widest focus:outline-none min-w-[200px]"
+                    className="min-w-[200px] bg-transparent text-sm font-bold tracking-widest uppercase focus:outline-none"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                   />
-                  <button onClick={() => { setIsSearchOpen(false); setSearchQuery(""); }}>
+                  <button
+                    onClick={() => {
+                      setIsSearchOpen(false);
+                      setSearchQuery("");
+                    }}
+                  >
                     <X className="h-4 w-4" />
                   </button>
                 </motion.div>
               ) : (
                 <button
                   onClick={() => setIsSearchOpen(true)}
-                  className="flex items-center gap-2 text-xs font-black uppercase tracking-widest hover:text-black/60 transition-colors"
+                  className="flex items-center gap-2 text-xs font-black tracking-widest uppercase transition-colors hover:text-black/60"
                 >
                   <Search className="h-4 w-4" />
                   Search
@@ -103,7 +109,7 @@ export function Listings() {
               )}
             </AnimatePresence>
 
-            <button className="flex items-center gap-2 text-xs font-black uppercase tracking-widest hover:text-black/60 transition-colors">
+            <button className="flex items-center gap-2 text-xs font-black tracking-widest uppercase transition-colors hover:text-black/60">
               <Filter className="h-4 w-4" />
               Sort
             </button>
@@ -113,20 +119,23 @@ export function Listings() {
 
       {/* Grid */}
       <section className="mt-24 px-6 md:px-12 lg:px-24">
-        <div className="max-w-[1400px] mx-auto">
+        <div className="mx-auto max-w-[1400px]">
           {filteredListings.length === 0 ? (
-            <div className="py-48 text-center space-y-8">
+            <div className="space-y-8 py-48 text-center">
               <h3 className="text-4xl font-bold tracking-tight opacity-20">NO SPACES FOUND</h3>
               <Button
                 variant="ghost"
-                onClick={() => { setActiveFilter("All"); setSearchQuery(""); }}
-                className="text-sm font-black uppercase tracking-widest"
+                onClick={() => {
+                  setActiveFilter("All");
+                  setSearchQuery("");
+                }}
+                className="text-sm font-black tracking-widest uppercase"
               >
                 Reset Archive
               </Button>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-12 gap-y-24">
+            <div className="grid grid-cols-1 gap-x-12 gap-y-24 md:grid-cols-2 lg:grid-cols-3">
               <AnimatePresence mode="popLayout">
                 {filteredListings.map((listing) => (
                   <ListingCard key={listing.id} listing={listing} />
@@ -139,14 +148,14 @@ export function Listings() {
 
       {/* Bottom CTA */}
       <section className="mt-48 px-6 md:px-12 lg:px-24">
-        <div className="max-w-[1400px] mx-auto p-12 md:p-24 bg-[#030213] text-white rounded-[4rem] text-center space-y-12">
-          <h2 className="text-6xl md:text-8xl font-black tracking-tighter leading-none">
+        <div className="mx-auto max-w-[1400px] space-y-12 rounded-[4rem] bg-[#030213] p-12 text-center text-white md:p-24">
+          <h2 className="text-6xl leading-none font-black tracking-tighter md:text-8xl">
             READY TO <span className="text-accent underline underline-offset-8">EXPERIENCE?</span>
           </h2>
-          <p className="text-xl md:text-2xl text-white/40 max-w-2xl mx-auto font-medium">
+          <p className="mx-auto max-w-2xl text-xl font-medium text-white/40 md:text-2xl">
             COKKIRI의 새로운 스페이스 소식을 가장 먼저 받아보세요.
           </p>
-          <Button className="h-24 px-16 rounded-2xl bg-[#2C3424] text-white hover:bg-[#768064] hover:text-white transition-all duration-500 text-xl font-black uppercase tracking-[0.2em] border-none">
+          <Button className="h-24 rounded-2xl border-none bg-[#2C3424] px-16 text-xl font-black tracking-[0.2em] text-white uppercase transition-all duration-500 hover:bg-[#768064] hover:text-white">
             Join Waitlist
           </Button>
         </div>
