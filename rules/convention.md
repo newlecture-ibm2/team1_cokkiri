@@ -1,0 +1,1 @@
+- 변수/함수명: camelCase (예: saveMenu)- 클래스명: PascalCase (예: MenuService)- DB 테이블/컬럼: snake_case (예: user_id)- API 응답: 항상 공통 DTO(`ResponseDTO<T>`)를 사용하여 포맷 통일- 주석: 주요 로직 위에 한글로 간단히 설명 작성
