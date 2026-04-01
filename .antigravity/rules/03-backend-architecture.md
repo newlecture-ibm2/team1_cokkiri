@@ -258,3 +258,19 @@ admin/{feature}/
 - 기기 제어 요청을 보낼 때는, 외부 목업 서버인 `http://mock-iot:8000` (도커 컨테이너) 주소로 `RestTemplate` 또는 `WebClient`를 이용해 HTTP 통신을 시도해야 합니다. 백엔드 자체 서버 메모리에 가짜 데이터를 만들거나 제어 상태를 저장하지 않습니다.
 - **확장성:** 현시점은 Mock 서버와 통신하지만, 추후 진짜 '삼성 SmartThings API'로 교체될 것을 염두에 두고 반드시 `IotAdapter` 라는 추상 인터페이스를 두고, `MockIotAdapter` 구현체 내부에서만 HTTP 통신 로직을 구현하는 OCP(개방 폐쇄 원칙)를 지킵니다.
 - **내결함성(Resilience):** Mock 서버가 느려도 백엔드가 터지지 않도록 Timeout 설정을 반드시 짧게 (예: 5초) 제어합니다.
+
+---
+
+## 4. JSON 프라퍼티 직렬화 전략 (camelCase 통일)
+
+- **프론트-백엔드 camelCase 일치:** Java와 TypeScript(Next.js) 객체의 네이밍 컨벤션 표준인 **`camelCase`**를 REST API JSON 통신에도 100% 동일하게 적용합니다. (예: `userId`, `createdAt`)
+- 이를 위해 `application.yml`에서 `spring.jackson.property-naming-strategy` 같은 snake_case 설정을 제거하여 기본값(`LOWER_CAMEL_CASE`)을 사용합니다.
+- DTO 클래스나 필드에 `@JsonProperty`를 달아 부분적으로 `snake_case`로 강제 변환하는 행위를 엄격히 금지합니다.
+
+---
+
+## 5. 트랜잭션 및 JPA 영속화 룰 (Dirty Checking vs Explicit Save)
+
+- **Service 계층의 책임:** 데이터를 생성/변경/Soft Delete 하는 모듈의 모든 구체적인 서비스(Service) 메서드에는 반드시 **`@Transactional`** 어노테이션이 명시되어 있어야 합니다. (영속성 컨텍스트 보장)
+- **Persistence Adapter의 명시적 보장 (강제 사항):** JPA의 기본 개념인 더티 체킹(Dirty Checking) 방식에만 몰래 의존하여 데이터 수정을 방치(?)하지 않습니다. 
+- 어댑터(Adapter)는 육각형 외부를 담당하는 뚜렷한 책임을 갖습니다. 따라서 데이터를 변경한 직후에는 아무리 트랜잭션 안이라도 반드시 **`jpaRepository.save(entity)`를 명시적으로 코딩하여 호출**하십시오. 이는 "어댑터가 포트의 요청을 받아 DB에 성공적으로 영속시켰다"는 맥락을 읽는 이에게 명확히 전달하며, 예기치 않은 트랜잭션 롤백 누락이나 증발 사고를 막아줍니다.

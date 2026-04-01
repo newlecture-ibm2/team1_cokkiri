@@ -17,7 +17,7 @@
 
 **실패:**
 ```json
-{ "success": false, "data": null, "message": "에러 메시지", "error_code": "ERROR_CODE" }
+{ "success": false, "data": null, "message": "에러 메시지", "errorCode": "ERROR_CODE" }
 ```
 
 ### 페이지네이션 (목록 API 공통)
@@ -27,12 +27,12 @@
   "content": [ ... ],
   "page": 0,
   "size": 20,
-  "total_elements": 150,
-  "total_pages": 8
+  "totalElements": 150,
+  "totalPages": 8
 }
 ```
 
-Query: `?page=0&size=20&sort=created_at,desc`
+Query: `?page=0&size=20&sort=createdAt,desc`
 
 ### 인증 레벨
 
@@ -94,11 +94,11 @@ Query: `?page=0&size=20&sort=created_at,desc`
 **Request Body:**
 ```json
 {
-  "login_id": "user01",
+  "loginId": "user01",
   "password": "Password1!",
-  "password_confirm": "Password1!",
+  "passwordConfirm": "Password1!",
   "name": "홍길동",
-  "birth_date": "990115",
+  "birthDate": "990115",
   "gender": "MALE",
   "nationality": "대한민국",
   "phone": "010-1234-5678",
@@ -108,11 +108,11 @@ Query: `?page=0&size=20&sort=created_at,desc`
 
 | 필드 | 필수 | 규칙 |
 |---|---|---|
-| login_id | ✅ | 4~50자, 영문+숫자, 중복 불가 |
+| loginId | ✅ | 4~50자, 영문+숫자, 중복 불가 |
 | password | ✅ | 8자 이상, 영문+숫자+특수문자 |
-| password_confirm | ✅ | password와 일치 |
+| passwordConfirm | ✅ | password와 일치 |
 | name | ✅ | 2~50자 |
-| birth_date | ✅ | 6자리 숫자 (YYMMDD) |
+| birthDate | ✅ | 6자리 숫자 (YYMMDD) |
 | gender | ✅ | MALE / FEMALE |
 | nationality | ✅ | 국가명 |
 | phone | ✅ | 000-0000-0000 또는 11자리 |
@@ -122,7 +122,7 @@ Query: `?page=0&size=20&sort=created_at,desc`
 ```json
 {
   "success": true,
-  "data": { "user_id": 1, "login_id": "user01", "role": "USER" },
+  "data": { "userId": 1, "loginId": "user01", "role": "USER" },
   "message": "회원가입이 완료되었습니다."
 }
 ```
@@ -145,7 +145,7 @@ Query: `?page=0&size=20&sort=created_at,desc`
 
 **Request Body:**
 ```json
-{ "login_id": "user01", "password": "Password1!" }
+{ "loginId": "user01", "password": "Password1!" }
 ```
 
 **Response (200):**
@@ -153,17 +153,17 @@ Query: `?page=0&size=20&sort=created_at,desc`
 {
   "success": true,
   "data": {
-    "access_token": "eyJhbG...",
-    "refresh_token": "eyJhbG...",
-    "token_type": "Bearer",
-    "expires_in": 1800,
+    "accessToken": "eyJhbG...",
+    "refreshToken": "eyJhbG...",
+    "tokenType": "Bearer",
+    "expiresIn": 1800,
     "user": {
-      "user_id": 1,
-      "login_id": "user01",
+      "userId": 1,
+      "loginId": "user01",
       "name": "홍길동",
       "role": "RESIDENT",
-      "contract_id": 5,
-      "space_id": 3
+      "contractId": 5,
+      "spaceId": 3
     }
   }
 }
@@ -203,7 +203,7 @@ Query: `?page=0&size=20&sort=created_at,desc`
 
 **Request Body:**
 ```json
-{ "refresh_token": "eyJhbG..." }
+{ "refreshToken": "eyJhbG..." }
 ```
 
 **Response (200):**
@@ -211,10 +211,10 @@ Query: `?page=0&size=20&sort=created_at,desc`
 {
   "success": true,
   "data": {
-    "access_token": "eyJhbG...(new)",
-    "refresh_token": "eyJhbG...(new)",
-    "token_type": "Bearer",
-    "expires_in": 1800
+    "accessToken": "eyJhbG...(new)",
+    "refreshToken": "eyJhbG...(new)",
+    "tokenType": "Bearer",
+    "expiresIn": 1800
   }
 }
 ```
@@ -248,8 +248,8 @@ Query: `?page=0&size=20&sort=created_at,desc`
 {
   "success": true,
   "data": {
-    "masked_login_id": "us****",
-    "created_at": "2026-01-15"
+    "maskedLoginId": "us****",
+    "createdAt": "2026-01-15"
   },
   "message": "아이디를 찾았습니다."
 }
@@ -277,12 +277,12 @@ Query: `?page=0&size=20&sort=created_at,desc`
 
 **Request Body:**
 ```json
-{ "login_id": "user01", "email": "hong@example.com" }
+{ "loginId": "user01", "email": "hong@example.com" }
 ```
 
 | 필드 | 필수 | 규칙 |
 |---|---|---|
-| login_id | ✅ | 4~50자, 가입 시 등록한 로그인 ID |
+| loginId | ✅ | 4~50자, 가입 시 등록한 로그인 ID |
 | email | ✅ | 이메일 형식, 가입 시 등록한 이메일 |
 
 **Response (200):**
@@ -295,14 +295,14 @@ Query: `?page=0&size=20&sort=created_at,desc`
 ```
 
 **처리 로직:**
-1. login_id + email 일치하는 ACTIVE 계정 조회
+1. loginId + email 일치하는 ACTIVE 계정 조회
 2. 임시 비밀번호 생성 (12자, 영문 대소문자+숫자+특수문자)
 3. DB의 password_hash를 임시 비밀번호 해시로 업데이트
 4. 등록된 이메일로 임시 비밀번호 발송
 5. 기존 Refresh Token 전체 무효화 (재로그인 유도)
 
 > [!WARNING]
-> **Rate Limiting:** 동일 login_id 또는 IP에 대해 **5분 내 최대 5회**까지만 허용. 초과 시 429 응답.
+> **Rate Limiting:** 동일 loginId 또는 IP에 대해 **5분 내 최대 5회**까지만 허용. 초과 시 429 응답.
 > 임시 비밀번호 발급 시 기존 비밀번호는 즉시 무효화됩니다.
 
 | 에러 HTTP | 코드 | 상황 |
@@ -327,19 +327,19 @@ Query: `?page=0&size=20&sort=created_at,desc`
 {
   "success": true,
   "data": {
-    "user_id": 1,
-    "login_id": "user01",
+    "userId": 1,
+    "loginId": "user01",
     "name": "홍길동",
-    "birth_date": "990115",
+    "birthDate": "990115",
     "gender": "MALE",
     "nationality": "대한민국",
     "phone": "010-1234-5678",
     "email": "hong@example.com",
     "role": "RESIDENT",
-    "profile_image": "/uploads/profiles/user01.jpg",
-    "created_at": "2026-03-01T09:00:00+09:00",
-    "contract_summary": { "space_name": "301호", "status": "ACTIVE" },
-    "reservation_count": 2
+    "profileImage": "/uploads/profiles/user01.jpg",
+    "createdAt": "2026-03-01T09:00:00+09:00",
+    "contractSummary": { "spaceName": "301호", "status": "ACTIVE" },
+    "reservationCount": 2
   }
 }
 ```
@@ -368,9 +368,9 @@ Query: `?page=0&size=20&sort=created_at,desc`
 **Request Body:**
 ```json
 {
-  "current_password": "Password1!",
-  "new_password": "NewPassword2@",
-  "new_password_confirm": "NewPassword2@"
+  "currentPassword": "Password1!",
+  "newPassword": "NewPassword2@",
+  "newPasswordConfirm": "NewPassword2@"
 }
 ```
 
@@ -425,9 +425,9 @@ Query: `?page=0&size=20&sort=created_at,desc`
 
 | 파라미터 | 타입 | 설명 |
 |---|---|---|
-| room_type | String | SINGLE/DOUBLE/STUDIO/SUITE |
-| min_rent | Number | 최소 월 임대료 |
-| max_rent | Number | 최대 월 임대료 |
+| roomType | String | SINGLE/DOUBLE/STUDIO/SUITE |
+| minRent | Number | 최소 월 임대료 |
+| maxRent | Number | 최대 월 임대료 |
 | floor | Integer | 층 |
 | page, size | Integer | 페이지네이션 |
 
@@ -438,19 +438,19 @@ Query: `?page=0&size=20&sort=created_at,desc`
   "data": {
     "content": [
       {
-        "space_id": 1,
+        "spaceId": 1,
         "name": "301호",
         "floor": 3,
         "area": 25.0,
         "status": "AVAILABLE",
-        "thumbnail_url": "/uploads/spaces/301_thumb.jpg",
-        "room_type": "SINGLE",
-        "monthly_rent": 500000,
+        "thumbnailUrl": "/uploads/spaces/301_thumb.jpg",
+        "roomType": "SINGLE",
+        "monthlyRent": 500000,
         "deposit": 5000000,
         "direction": "남향"
       }
     ],
-    "page": 0, "size": 20, "total_elements": 8, "total_pages": 1
+    "page": 0, "size": 20, "totalElements": 8, "totalPages": 1
   }
 }
 ```
@@ -471,24 +471,24 @@ Query: `?page=0&size=20&sort=created_at,desc`
 {
   "success": true,
   "data": {
-    "space_id": 1,
+    "spaceId": 1,
     "name": "301호",
     "floor": 3,
     "area": 25.0,
     "status": "AVAILABLE",
     "description": "남향 원룸, 넓은 창문과 붙박이장 완비",
     "amenities": ["에어컨", "냉장고", "세탁기", "인터넷"],
-    "room_type": "SINGLE",
-    "room_count": 1,
-    "bathroom_count": 1,
+    "roomType": "SINGLE",
+    "roomCount": 1,
+    "bathroomCount": 1,
     "direction": "남향",
     "deposit": 5000000,
-    "monthly_rent": 500000,
-    "maintenance_fee": 50000,
-    "parking_available": true,
+    "monthlyRent": 500000,
+    "maintenanceFee": 50000,
+    "parkingAvailable": true,
     "images": [
-      { "image_url": "/uploads/spaces/301_01.jpg", "image_type": "PHOTO", "is_thumbnail": true },
-      { "image_url": "/uploads/spaces/301_floor.jpg", "image_type": "FLOOR_PLAN", "is_thumbnail": false }
+      { "imageUrl": "/uploads/spaces/301_01.jpg", "imageType": "PHOTO", "isThumbnail": true },
+      { "imageUrl": "/uploads/spaces/301_floor.jpg", "imageType": "FLOOR_PLAN", "isThumbnail": false }
     ]
   }
 }
@@ -507,33 +507,33 @@ Query: `?page=0&size=20&sort=created_at,desc`
 **Request Body:**
 ```json
 {
-  "space_id": 1,
+  "spaceId": 1,
   "address": "서울시 강남구 테헤란로 123",
-  "bank_account": "국민은행 123-456-789012",
-  "desired_start_date": "2026-05-01",
-  "desired_duration_months": 6,
-  "contract_language": "KO",
-  "privacy_agreed": true,
-  "request_note": "반려동물 가능 여부 확인 부탁드립니다.",
-  "is_draft": false
+  "bankAccount": "국민은행 123-456-789012",
+  "desiredStartDate": "2026-05-01",
+  "desiredDurationMonths": 6,
+  "contractLanguage": "KO",
+  "privacyAgreed": true,
+  "requestNote": "반려동물 가능 여부 확인 부탁드립니다.",
+  "isDraft": false
 }
 ```
 
 | 파라미터 | 설명 |
 |---|---|
-| is_draft=true | 임시저장 (status=DRAFT, 유효성 검증 완화) |
-| is_draft=false | 최종 제출 (status=PENDING, 모든 검증 수행) |
+| isDraft=true | 임시저장 (status=DRAFT, 유효성 검증 완화) |
+| isDraft=false | 최종 제출 (status=PENDING, 모든 검증 수행) |
 
 **Response (201):**
 ```json
 {
   "success": true,
   "data": {
-    "contract_id": 10,
+    "contractId": 10,
     "status": "PENDING",
     "origin": "USER_INITIATED",
-    "space_name": "301호",
-    "created_at": "2026-03-31T12:00:00+09:00"
+    "spaceName": "301호",
+    "createdAt": "2026-03-31T12:00:00+09:00"
   },
   "message": "계약 신청이 완료되었습니다."
 }
@@ -578,12 +578,12 @@ Query: `?page=0&size=20&sort=created_at,desc`
   "success": true,
   "data": [
     {
-      "contract_id": 10,
-      "space_name": "301호",
+      "contractId": 10,
+      "spaceName": "301호",
       "status": "PENDING",
-      "desired_start_date": "2026-05-01",
-      "desired_duration_months": 6,
-      "created_at": "2026-03-31T12:00:00+09:00"
+      "desiredStartDate": "2026-05-01",
+      "desiredDurationMonths": 6,
+      "createdAt": "2026-03-31T12:00:00+09:00"
     }
   ]
 }
@@ -612,15 +612,15 @@ Query: `?page=0&size=20&sort=created_at,desc`
 {
   "success": true,
   "data": {
-    "contract_id": 10,
-    "space_name": "301호",
+    "contractId": 10,
+    "spaceName": "301호",
     "floor": 3,
     "area": 25.0,
-    "start_date": "2026-05-01",
-    "end_date": "2026-10-31",
-    "monthly_rent": 500000,
+    "startDate": "2026-05-01",
+    "endDate": "2026-10-31",
+    "monthlyRent": 500000,
     "deposit": 5000000,
-    "special_terms": "반려동물 불가",
+    "specialTerms": "반려동물 불가",
     "status": "APPROVED"
   }
 }
@@ -636,13 +636,13 @@ Query: `?page=0&size=20&sort=created_at,desc`
 
 **Request Body:**
 ```json
-{ "terms_agreed": true, "policy_agreed": true }
+{ "termsAgreed": true, "policyAgreed": true }
 ```
 
 **처리 로직:**
 1. APPROVED 상태 확인
 2. Space.status → OCCUPIED
-3. Contract.status → ACTIVE, contracted_at 기록
+3. Contract.status → ACTIVE, contractedAt 기록
 4. User.role → RESIDENT
 5. ROLE_CHANGE_LOG 기록
 6. NOTIFICATION 생성
@@ -652,19 +652,19 @@ Query: `?page=0&size=20&sort=created_at,desc`
 {
   "success": true,
   "data": {
-    "contract_id": 10,
+    "contractId": 10,
     "status": "ACTIVE",
-    "new_role": "RESIDENT",
-    "contracted_at": "2026-03-31T14:00:00+09:00",
-    "access_token": "eyJhbG...",
-    "refresh_token": "eyJhbG...(new)"
+    "newRole": "RESIDENT",
+    "contractedAt": "2026-03-31T14:00:00+09:00",
+    "accessToken": "eyJhbG...",
+    "refreshToken": "eyJhbG...(new)"
   },
   "message": "계약이 체결되었습니다."
 }
 ```
 
 > [!NOTE]
-> 계약 체결 시 `role: RESIDENT`, `contract_id`, `space_id`가 새롭게 각인된 **새로운 JWT 토큰쌍**을 즉시 응답으로 내려주어 권한 인가 오류(403)를 전면 방지합니다. 기존 토큰은 무효화됩니다.
+> 계약 체결 시 `role: RESIDENT`, `contractId`, `spaceId`가 새롭게 각인된 **새로운 JWT 토큰쌍**을 즉시 응답으로 내려주어 권한 인가 오류(403)를 전면 방지합니다. 기존 토큰은 무효화됩니다.
 
 ---
 
@@ -703,37 +703,37 @@ Query: `?page=0&size=20&sort=created_at,desc`
 {
   "success": true,
   "data": {
-    "private_devices": [
+    "privateDevices": [
       {
-        "device_id": 1,
+        "deviceId": 1,
         "name": "거실 조명",
-        "device_type": {
+        "deviceType": {
           "code": "LIGHT",
           "name": "스마트조명",
           "commands": ["TURN_ON", "TURN_OFF", "SET_BRIGHTNESS"],
-          "ui_type": "slider"
+          "uiType": "slider"
         },
-        "space_name": "301호",
-        "space_type": "PRIVATE",
+        "spaceName": "301호",
+        "spaceType": "PRIVATE",
         "status": "ONLINE",
-        "is_active": true
+        "isActive": true
       }
     ],
-    "common_devices": [
+    "commonDevices": [
       {
-        "device_id": 10,
+        "deviceId": 10,
         "name": "세탁기 #1",
-        "device_type": {
+        "deviceType": {
           "code": "WASHER",
           "name": "스마트세탁기",
           "commands": ["START", "STOP"],
-          "ui_type": "button"
+          "uiType": "button"
         },
-        "space_name": "공용 세탁실",
-        "space_type": "COMMON",
+        "spaceName": "공용 세탁실",
+        "spaceType": "COMMON",
         "status": "ONLINE",
-        "is_active": true,
-        "has_active_reservation": true
+        "isActive": true,
+        "hasActiveReservation": true
       }
     ]
   }
@@ -742,7 +742,7 @@ Query: `?page=0&size=20&sort=created_at,desc`
 
 > [!NOTE]
 > CCTV 타입 기기는 입주자 목록에서 제외됩니다.
-> 공용 기기의 `has_active_reservation`은 현재 시각 기준 APPROVED 예약 여부입니다.
+> 공용 기기의 `hasActiveReservation`은 현재 시각 기준 APPROVED 예약 여부입니다.
 
 ---
 
@@ -762,7 +762,7 @@ Query: `?page=0&size=20&sort=created_at,desc`
 
 **권한 검증:**
 1. JWT에서 role 확인 (RESIDENT / ADMIN)
-2. RESIDENT — 개인 기기: JWT.space_id == device.space_id
+2. RESIDENT — 개인 기기: JWT.spaceId == device.spaceId
 3. RESIDENT — 공용 기기: 현재 시각에 APPROVED 예약 존재
 4. ADMIN: 제한 없음
 
@@ -771,11 +771,11 @@ Query: `?page=0&size=20&sort=created_at,desc`
 {
   "success": true,
   "data": {
-    "device_id": 1,
+    "deviceId": 1,
     "command": "SET_TEMP",
     "result": "SUCCESS",
-    "control_log_id": 42,
-    "executed_at": "2026-03-31T14:30:00+09:00"
+    "controlLogId": 42,
+    "executedAt": "2026-03-31T14:30:00+09:00"
   }
 }
 ```
@@ -805,12 +805,12 @@ Query: `?page=0&size=20&sort=created_at,desc`
   "success": true,
   "data": [
     {
-      "space_id": 11,
+      "spaceId": 11,
       "name": "공용 회의실",
       "floor": 2,
-      "operating_hours": "06:00-23:00",
-      "max_capacity": 10,
-      "usage_fee": 5000,
+      "operatingHours": "06:00-23:00",
+      "maxCapacity": 10,
+      "usageFee": 5000,
       "status": "AVAILABLE"
     }
   ]
@@ -835,16 +835,16 @@ Query: `?page=0&size=20&sort=created_at,desc`
 {
   "success": true,
   "data": {
-    "space_id": 11,
-    "space_name": "공용 회의실",
-    "operating_hours": "06:00-23:00",
+    "spaceId": 11,
+    "spaceName": "공용 회의실",
+    "operatingHours": "06:00-23:00",
     "slots": [
       {
         "date": "2026-04-01",
-        "time_slots": [
-          { "start_time": "06:00", "end_time": "07:00", "status": "AVAILABLE" },
-          { "start_time": "07:00", "end_time": "08:00", "status": "RESERVED_BY_OTHERS" },
-          { "start_time": "14:00", "end_time": "16:00", "status": "MY_RESERVATION", "reservation_id": 5 }
+        "timeSlots": [
+          { "startTime": "06:00", "endTime": "07:00", "status": "AVAILABLE" },
+          { "startTime": "07:00", "endTime": "08:00", "status": "RESERVED_BY_OTHERS" },
+          { "startTime": "14:00", "endTime": "16:00", "status": "MY_RESERVATION", "reservationId": 5 }
         ]
       }
     ]
@@ -863,10 +863,10 @@ Query: `?page=0&size=20&sort=created_at,desc`
 **Request Body:**
 ```json
 {
-  "space_id": 11,
-  "reservation_date": "2026-04-01",
-  "start_time": "10:00",
-  "end_time": "12:00"
+  "spaceId": 11,
+  "reservationDate": "2026-04-01",
+  "startTime": "10:00",
+  "endTime": "12:00"
 }
 ```
 
@@ -907,7 +907,7 @@ Query: `?page=0&size=20&sort=created_at,desc`
 |---|---|---|---|
 | **Endpoint** | `GET /api/control-logs/my` | **인증** | 🏠 RESIDENT+ |
 
-**Query:** `start_date`, `end_date`, `space_type`, `device_type_code`, `result`, `page`, `size`
+**Query:** `startDate`, `endDate`, `space_type`, `device_type_code`, `result`, `page`, `size`
 
 ---
 
@@ -934,28 +934,28 @@ Query: `?page=0&size=20&sort=created_at,desc`
 {
   "success": true,
   "data": {
-    "post_id": 1,
+    "postId": 1,
     "category": "FREE",
     "title": "이사 인사드립니다",
     "content": "안녕하세요, 301호에 입주한 홍길동입니다.",
     "attachments": [
-      { "file_url": "/uploads/posts/img1.jpg", "file_name": "사진.jpg", "file_size": 102400 }
+      { "fileUrl": "/uploads/posts/img1.jpg", "fileName": "사진.jpg", "fileSize": 102400 }
     ],
     "links": [{ "url": "https://example.com" }],
-    "view_count": 42,
-    "like_count": 5,
-    "comment_count": 3,
+    "viewCount": 42,
+    "likeCount": 5,
+    "commentCount": 3,
     "is_liked_by_me": true,
-    "author": { "user_id": 1, "name": "홍길동", "profile_image": "/uploads/profiles/user01.jpg" },
+    "author": { "userId": 1, "name": "홍길동", "profileImage": "/uploads/profiles/user01.jpg" },
     "comments": [
       {
-        "comment_id": 1,
+        "commentId": 1,
         "content": "환영합니다!",
-        "author": { "user_id": 2, "name": "김철수" },
-        "created_at": "2026-03-31T15:00:00+09:00"
+        "author": { "userId": 2, "name": "김철수" },
+        "createdAt": "2026-03-31T15:00:00+09:00"
       }
     ],
-    "created_at": "2026-03-31T12:00:00+09:00"
+    "createdAt": "2026-03-31T12:00:00+09:00"
   }
 }
 ```
@@ -1078,14 +1078,14 @@ Query: `?page=0&size=20&sort=created_at,desc`
   "data": {
     "content": [
       {
-        "notification_id": 1,
+        "notificationId": 1,
         "type": "CONTRACT_APPROVED",
         "title": "계약 신청이 승인되었습니다",
         "message": "301호 계약 신청이 승인되었습니다. 계약 조건을 확인해주세요.",
-        "reference_type": "CONTRACT",
-        "reference_id": 10,
-        "is_read": false,
-        "created_at": "2026-03-31T12:00:00+09:00"
+        "referenceType": "CONTRACT",
+        "referenceId": 10,
+        "isRead": false,
+        "createdAt": "2026-03-31T12:00:00+09:00"
       }
     ]
   }
@@ -1129,15 +1129,15 @@ Query: `?page=0&size=20&sort=created_at,desc`
   "area": 25.0,
   "description": "남향 원룸",
   "amenities": ["에어컨", "냉장고"],
-  "private_detail": {
-    "room_type": "SINGLE",
-    "room_count": 1,
-    "bathroom_count": 1,
+  "privateDetail": {
+    "roomType": "SINGLE",
+    "roomCount": 1,
+    "bathroomCount": 1,
     "direction": "남향",
     "deposit": 5000000,
-    "monthly_rent": 500000,
-    "maintenance_fee": 50000,
-    "parking_available": true
+    "monthlyRent": 500000,
+    "maintenanceFee": 50000,
+    "parkingAvailable": true
   }
 }
 ```
@@ -1150,11 +1150,11 @@ Query: `?page=0&size=20&sort=created_at,desc`
   "floor": 2,
   "area": 40.0,
   "description": "화이트보드, 프로젝터 완비",
-  "common_detail": {
-    "max_capacity": 10,
-    "operating_hours": "06:00-23:00",
-    "is_reservable": true,
-    "usage_fee": 5000
+  "commonDetail": {
+    "maxCapacity": 10,
+    "operatingHours": "06:00-23:00",
+    "isReservable": true,
+    "usageFee": 5000
   }
 }
 ```
@@ -1180,8 +1180,8 @@ Query: `?page=0&size=20&sort=created_at,desc`
 | 필드 | 타입 | 필수 | 규칙 |
 |---|---|---|---|
 | files | File[] | ✅ | 다중 이미지 업로드 |
-| image_type | String | ✅ | PHOTO / FLOOR_PLAN |
-| is_thumbnail | Boolean | ✅ | 대표 사진 여부 |
+| imageType | String | ✅ | PHOTO / FLOOR_PLAN |
+| isThumbnail | Boolean | ✅ | 대표 사진 여부 |
 | sort_order | Integer | | 정렬 순서 |
 
 ---
@@ -1204,8 +1204,8 @@ Query: `?page=0&size=20&sort=created_at,desc`
 ```json
 {
   "positions": [
-    { "space_id": 1, "position_x": 100, "position_y": 200 },
-    { "space_id": 2, "position_x": 300, "position_y": 200 }
+    { "spaceId": 1, "positionX": 100, "positionY": 200 },
+    { "spaceId": 2, "positionX": 300, "positionY": 200 }
   ]
 }
 ```
@@ -1220,7 +1220,7 @@ Query: `?page=0&size=20&sort=created_at,desc`
 |---|---|---|---|
 | **Endpoint** | `GET /api/admin/devices` | **인증** | 🔒 ADMIN |
 
-**Query:** `space_id`, `device_type_id`, `status`, `is_active`, `page`, `size`
+**Query:** `spaceId`, `device_type_id`, `status`, `isActive`, `page`, `size`
 
 ### 12.2 기기 등록
 
@@ -1231,11 +1231,11 @@ Query: `?page=0&size=20&sort=created_at,desc`
 **Request Body:**
 ```json
 {
-  "space_id": 1,
+  "spaceId": 1,
   "device_type_id": 4,
   "name": "거실 천장 조명",
-  "model_name": "LG LED 시스템 조명 55W",
-  "mock_endpoint": "http://mock-iot:8081/devices/light-01"
+  "modelName": "LG LED 시스템 조명 55W",
+  "mockEndpoint": "http://mock-iot:8081/devices/light-01"
 }
 ```
 
@@ -1255,7 +1255,7 @@ Query: `?page=0&size=20&sort=created_at,desc`
 
 **Request Body:**
 ```json
-{ "is_active": false }
+{ "isActive": false }
 ```
 
 ### 12.5 기기 삭제
@@ -1283,7 +1283,7 @@ Query: `?page=0&size=20&sort=created_at,desc`
 |---|---|---|---|
 | **Endpoint** | `GET /api/admin/control-logs` | **인증** | 🔒 ADMIN |
 
-**Query:** `space_id`, `device_id`, `actor_id`, `start_date`, `end_date`, `page`, `size`
+**Query:** `spaceId`, `deviceId`, `actor_id`, `startDate`, `endDate`, `page`, `size`
 
 ---
 
@@ -1295,7 +1295,7 @@ Query: `?page=0&size=20&sort=created_at,desc`
 |---|---|---|---|
 | **Endpoint** | `GET /api/admin/contracts` | **인증** | 🔒 ADMIN |
 
-**Query:** `status`, `origin`, `space_name`, `user_name`, `page`, `size`
+**Query:** `status`, `origin`, `spaceName`, `user_name`, `page`, `size`
 
 ### 13.2 계약 직접 등록 (관리자 주도)
 
@@ -1306,13 +1306,13 @@ Query: `?page=0&size=20&sort=created_at,desc`
 **Request Body:**
 ```json
 {
-  "user_id": 2,
-  "space_id": 3,
-  "start_date": "2026-04-01",
-  "end_date": "2027-03-31",
-  "monthly_rent": 600000,
+  "userId": 2,
+  "spaceId": 3,
+  "startDate": "2026-04-01",
+  "endDate": "2027-03-31",
+  "monthlyRent": 600000,
   "deposit": 6000000,
-  "special_terms": "1년 계약 할인 적용"
+  "specialTerms": "1년 계약 할인 적용"
 }
 ```
 
@@ -1355,11 +1355,11 @@ Query: `?page=0&size=20&sort=created_at,desc`
 **Request Body (계약 조건 확정):**
 ```json
 {
-  "start_date": "2026-05-01",
-  "end_date": "2026-10-31",
-  "monthly_rent": 500000,
+  "startDate": "2026-05-01",
+  "endDate": "2026-10-31",
+  "monthlyRent": 500000,
   "deposit": 5000000,
-  "special_terms": ""
+  "specialTerms": ""
 }
 ```
 
@@ -1373,7 +1373,7 @@ Query: `?page=0&size=20&sort=created_at,desc`
 
 **Request Body:**
 ```json
-{ "rejected_reason": "해당 호실은 현재 리모델링 예정입니다." }
+{ "rejectedReason": "해당 호실은 현재 리모델링 예정입니다." }
 ```
 
 ---
@@ -1418,7 +1418,7 @@ Query: `?page=0&size=20&sort=created_at,desc`
 | **ID** | ADM-MON-02 | **Endpoint** | `GET /api/admin/monitoring/energy` | **인증** | 🔒 ADMIN |
 |---|---|---|---|---|---|
 
-**Query:** `period` (DAILY/WEEKLY/MONTHLY), `space_id`, `device_type_id`
+**Query:** `period` (DAILY/WEEKLY/MONTHLY), `spaceId`, `device_type_id`
 
 ### 14.8 대시보드 홈
 
@@ -1432,9 +1432,9 @@ Query: `?page=0&size=20&sort=created_at,desc`
   "data": {
     "occupancy": { "total": 10, "occupied": 7, "available": 2, "maintenance": 1 },
     "devices": { "total": 20, "online": 17, "offline": 2, "error": 1 },
-    "today_reservations": { "total": 5, "pending_approval": 2 },
-    "recent_voc": [
-      { "voc_id": 1, "title": "세탁기 고장 신고", "status": "OPEN", "created_at": "..." }
+    "todayReservations": { "total": 5, "pendingApproval": 2 },
+    "recentVoc": [
+      { "vocId": 1, "title": "세탁기 고장 신고", "status": "OPEN", "createdAt": "..." }
     ]
   }
 }

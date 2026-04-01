@@ -17,10 +17,11 @@
   - 소문자 `kebab-case` 및 복수형(Plural) 명사 사용 원칙 (예: `/api/v1/devices`, `/api/v1/contracts`).
 
 ### 2. Core Policies (핵심 데이터 규칙)
-- **Soft Delete (물리 삭제 절대 불가):**
-  - 데이터베이스의 어떤 테이블에서도 `DELETE` 쿼리 사용을 금지합니다.
-  - 대신 각 테이블 생성 시 `deleted_at (TIMESTAMP)` 컬럼을 활용하여 논리적으로만 삭제 처리합니다.
-  - Spring Boot JPA에서는 `@SQLRestriction("deleted_at IS NULL")` 등의 어노테이션으로 응용 단위에서 물리 삭제된 것처럼 보장합니다.
+- **Soft Delete 지침 (BaseEntity 활용 강제):**
+  - 시스템 내 모든 JPA 엔티티는 반드시 **`BaseEntity`**(`com.coliving.global.entity.BaseEntity`)를 상속(`extends`)받아 공통 필드(`created_at`, `updated_at`, `deleted_at`)를 상속받아야 합니다.
+  - 데이터베이스의 어떤 테이블에서도 `DELETE` 쿼리 사용(물리 삭제)을 엄격히 금지합니다.
+  - 데이터 삭제 시에는 영속성 상태의 엔티티 객체에서 **`softDelete()`** 메서드를 호출해 삭제 시간을 기록하고, 어댑터 계층에서 반드시 **`jpaRepository.save(entity)`를 명시적으로 호출**하여 더티 체킹에 의존하지 않습니다.
+  - 모든 엔티티 클래스 선언부 상단에는 `@SQLRestriction("deleted_at IS NULL")` 어노테이션을 달아, 이후의 모든 쿼리에서 삭제된 데이터가 자동으로 필터링되게끔 강제합니다.
 
 ### 3. Role & Permission (역할 통제)
 - 시스템에 접근하는 모든 사용자는 다음 3가지 역할(Role) 중 하나를 갖습니다.
