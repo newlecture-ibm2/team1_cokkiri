@@ -37,7 +37,47 @@ export function Home() {
           >
             <h1 className="text-[12vw] md:text-[10vw] font-black leading-[0.85] tracking-tighter mb-12">
               CO-LIVING<br />
-              <span className="inline-block translate-x-[5vw] md:translate-x-[10vw] italic font-light decoration-[#768064] underline-offset-[2vw]">REDEFINED.</span>
+              <motion.span 
+                className="inline-block translate-x-[5vw] md:translate-x-[10vw] italic font-light decoration-[#768064] underline-offset-[2vw]"
+                initial="hidden"
+                animate="visible"
+                variants={{
+                  hidden: { opacity: 1 },
+                  visible: {
+                    opacity: 1,
+                    transition: {
+                      delayChildren: 1.2,
+                      staggerChildren: 0.1,
+                    }
+                  }
+                }}
+              >
+                {"REDEFINED.".split("").map((char, index) => (
+                  <motion.span
+                    key={index}
+                    variants={{
+                      hidden: { opacity: 0 },
+                      visible: { opacity: 1 }
+                    }}
+                  >
+                    {char}
+                  </motion.span>
+                ))}
+                <motion.span
+                  className="inline-block w-[1vw] h-[10.5vw] bg-[#768064]/40 ml-2 align-middle"
+                  variants={{
+                    hidden: { opacity: 0 },
+                    visible: { 
+                      opacity: [0, 1, 0],
+                      transition: {
+                        duration: 0.8,
+                        repeat: Infinity,
+                        ease: "linear"
+                      }
+                    }
+                  }}
+                />
+              </motion.span>
             </h1>
           </motion.div>
 
