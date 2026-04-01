@@ -1,0 +1,6 @@
+node_modules
+dist
+.next
+.git
+package-lock.json
+*.md
