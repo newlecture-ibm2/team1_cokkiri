@@ -5,7 +5,7 @@
 ### 1. Naming Conventions (명명 규칙)
 - **Database / SQL Schema:** 
   - 철저한 `snake_case` 사용.
-  - 테이블명은 단수를 사용 (예: `users` ❌ -> `user` ⭕, `devices` ❌ -> `device` ⭕).
+  - 테이블명은 복수를 사용 (예: `users` ⭕, `devices` ⭕).
 - **Backend (Java/Spring Boot):**
   - 변수, 메서드, 파라미터는 `camelCase` 사용.
   - 클래스, 인터페이스는 `PascalCase` 사용.
