@@ -103,6 +103,3 @@ AI에게 코딩을 요청할 때 다음 지시사항을 포함하세요:
 ### 🔝 네비게이션 스크롤 제어 (Scroll Management)
 - 모든 페이지 이동 시, 중앙 `ScrollToTop` 레이아웃 컴포넌트를 통해 사용자가 항상 페이지 최상단부터 감상할 수 있도록 강제합니다.
 
----
-
-🌿 **COKKIRI — TOGETHERNESS REDEFINED.**
