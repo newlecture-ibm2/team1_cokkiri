@@ -1,4 +1,5 @@
 
+
 # Backend Hexagonal Architecture — Directory & Naming Convention
 
 > **레퍼런스 모듈**: `menu/` (user-facing) · `admin/menu/` (admin)
