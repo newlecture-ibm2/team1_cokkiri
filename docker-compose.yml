@@ -1,6 +1,7 @@
 services:
   frontend:
     container_name: team1-cokkiri-frontend
+    image: team1-cokkiri-frontend:latest
     build: ./frontend
     restart: unless-stopped
     ports:
@@ -13,6 +14,7 @@ services:
 
   backend:
     container_name: team1-cokkiri-backend
+    image: team1-cokkiri-backend:latest
     build: ./backend
     restart: unless-stopped
     environment:
