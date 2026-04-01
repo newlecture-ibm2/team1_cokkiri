@@ -1,4 +1,5 @@
 import { Link } from "react-router";
+import { useState, useEffect } from "react";
 import { ArrowRight, Globe, LifeBuoy, Zap } from "lucide-react";
 import { motion, useScroll, useTransform, useSpring } from "motion/react";
 import { Button } from "../components/ui/button";
@@ -38,11 +39,11 @@ export function Home() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
           >
-            <h1 className="mb-12 text-[12vw] leading-[0.85] font-black tracking-tighter md:text-[10vw]">
+            <h1 className="text-[14vw] md:text-[12vw] lg:text-[10vw] font-black leading-[0.85] tracking-tighter mb-12">
               CO-LIVING
               <br />
               <motion.span
-                className="inline-block translate-x-[5vw] font-light italic decoration-[#768064] underline-offset-[2vw] md:translate-x-[10vw]"
+                className="inline-block translate-x-0 md:translate-x-[10vw] font-light italic decoration-[#768064] underline-offset-[2vw]"
                 initial="hidden"
                 animate="visible"
                 variants={{
@@ -161,7 +162,7 @@ export function Home() {
       </section>
 
       {/* Featured Grid Section - Asymmetric */}
-      <section className="px-6 py-32 md:px-12 lg:px-24">
+      <section className="py-20 md:py-32 px-6 md:px-12 lg:px-24">
         <div className="mx-auto max-w-[1400px]">
           <motion.div
             className="mb-24 flex flex-col items-baseline justify-between border-b border-[#2C3424]/10 pb-8 md:flex-row"
@@ -193,7 +194,7 @@ export function Home() {
       </section>
 
       {/* Philosophy Section */}
-      <section className="relative overflow-hidden bg-[#030213] py-48 text-white">
+      <section className="py-24 md:py-48 bg-[#030213] text-white overflow-hidden relative">
         <div className="container mx-auto px-6">
           <div className="grid grid-cols-1 items-center gap-24 md:grid-cols-2">
             <motion.div
@@ -202,41 +203,46 @@ export function Home() {
               transition={{ duration: 0.8 }}
               viewport={{ once: true }}
             >
-              <h2 className="mb-16 text-5xl leading-none font-black tracking-tighter underline-offset-[2vw] md:text-7xl lg:text-9xl">
-                SMART
-                <br />
-                <span className="text-accent underline">LIVING.</span>
-              </h2>
-              <div className="max-w-xl space-y-12 border-t border-white/10 pt-16">
-                <div className="flex gap-8">
-                  <Globe className="h-8 w-8 shrink-0 opacity-40" />
-                  <div>
-                    <h4 className="text-accent mb-2 text-lg font-black tracking-widest uppercase">
+              <div className="mb-12 md:mb-20">
+                <h2 className="text-6xl md:text-8xl lg:text-9xl font-black leading-[0.9] tracking-tighter">
+                  SMART
+                  <br />
+                  <span className="text-accent underline underline-offset-[1vw] decoration-2">LIVING.</span>
+                </h2>
+              </div>
+              
+              <div className="max-w-xl space-y-12 border-t border-white/10 pt-12 md:pt-20">
+                <div className="flex gap-8 group">
+                  <Globe className="h-8 w-8 shrink-0 text-white/20 transition-colors group-hover:text-accent" />
+                  <div className="space-y-3">
+                    <h4 className="text-[#8A9678] text-xl md:text-2xl font-black tracking-tight uppercase">
                       지능형 보안 시스템
                     </h4>
-                    <p className="text-base leading-relaxed text-balance opacity-60">
+                    <p className="text-sm md:text-base leading-relaxed opacity-60 font-medium">
                       IoT 기술을 활용하여 24시간 언제 어디서나 당신의 안전을 지킵니다.
                     </p>
                   </div>
                 </div>
-                <div className="flex gap-8">
-                  <LifeBuoy className="h-8 w-8 shrink-0 opacity-40" />
-                  <div>
-                    <h4 className="text-accent mb-2 text-lg font-black tracking-widest uppercase">
+
+                <div className="flex gap-8 group">
+                  <LifeBuoy className="h-8 w-8 shrink-0 text-white/20 transition-colors group-hover:text-accent" />
+                  <div className="space-y-3">
+                    <h4 className="text-[#8A9678] text-xl md:text-2xl font-black tracking-tight uppercase">
                       편리한 관리 서비스
                     </h4>
-                    <p className="text-base leading-relaxed text-balance opacity-60">
+                    <p className="text-sm md:text-base leading-relaxed opacity-60 font-medium">
                       청소부터 공과금 납부까지, 생활에 필요한 모든 것을 앱 하나로 관리하세요.
                     </p>
                   </div>
                 </div>
-                <div className="flex gap-8">
-                  <Zap className="h-8 w-8 shrink-0 opacity-40" />
-                  <div>
-                    <h4 className="text-accent mb-2 text-lg font-black tracking-widest uppercase">
+
+                <div className="flex gap-8 group">
+                  <Zap className="h-8 w-8 shrink-0 text-white/20 transition-colors group-hover:text-accent" />
+                  <div className="space-y-3">
+                    <h4 className="text-[#8A9678] text-xl md:text-2xl font-black tracking-tight uppercase">
                       지속 가능한 공유 가치
                     </h4>
-                    <p className="text-base leading-relaxed text-balance opacity-60">
+                    <p className="text-sm md:text-base leading-relaxed opacity-60 font-medium">
                       불필요한 낭비를 줄이고 자원을 효율적으로 공유하여 더 나은 미래를 만듭니다.
                     </p>
                   </div>
@@ -280,10 +286,19 @@ function ListingItem({ listing, size }: { listing: any; size: "large" | "medium"
     offset: ["start end", "end start"],
   });
 
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 768);
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
   const y = useTransform(
     scrollYProgress,
     [0, 1],
-    [0, size === "small" ? -100 : size === "large" ? 100 : -50],
+    [0, isMobile ? 0 : size === "small" ? -100 : size === "large" ? 100 : -50],
   );
 
   return (
@@ -298,10 +313,10 @@ function ListingItem({ listing, size }: { listing: any; size: "large" | "medium"
               src={listing.images[0]}
               alt={listing.title}
               className={`w-full object-cover transition-all duration-700 ${size === "large"
-                  ? "aspect-[16/10]"
-                  : size === "medium"
-                    ? "aspect-[4/5]"
-                    : "aspect-square"
+                ? "aspect-[16/10]"
+                : size === "medium"
+                  ? "aspect-[4/5]"
+                  : "aspect-square"
                 }`}
             />
           </motion.div>

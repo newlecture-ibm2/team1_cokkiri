@@ -91,36 +91,52 @@ export function ListingDetail() {
               >
                 <ArrowLeft className="h-6 w-6 transition-transform group-hover:-translate-x-1" />
                 <span
-                  className="text-lg font-medium tracking-[0.2em] uppercase"
+                  className="text-sm font-medium tracking-[0.1em] uppercase"
                   style={{ fontFamily: "'Outfit', sans-serif" }}
                 >
                   Return to Spaces
                 </span>
               </Link>
-              <h1 className="mb-4 text-5xl leading-[0.9] font-black tracking-tighter text-white md:text-8xl">
+              <h1 className="text-5xl md:text-8xl font-black text-white tracking-tighter mb-4 leading-[0.9] max-w-[80%] md:max-w-[70%]">
                 {listing.title}
               </h1>
             </motion.div>
           </div>
         </div>
 
-        {/* Image Nav — 모바일: 하단 중앙 가로 / 데스크톱: 우측 세로 */}
-        <div className="absolute bottom-6 left-1/2 flex -translate-x-1/2 flex-row gap-3 md:left-auto md:right-6 md:bottom-12 md:top-auto md:translate-x-0 md:flex-col md:gap-4">
+        {/* Image Nav (Desktop Only) */}
+        <div className="hidden md:flex absolute right-6 bottom-12 flex-col gap-4">
           {listing.images.map((img, i) => (
             <button
               key={i}
               onClick={() => setSelectedImage(i)}
-              className={`h-12 w-12 overflow-hidden rounded-lg border-2 transition-all md:h-16 md:w-16 ${selectedImage === i ? "scale-110 border-white" : "border-transparent opacity-50 hover:opacity-100"}`}
+              className={`h-16 w-16 overflow-hidden rounded-lg border-2 transition-all ${selectedImage === i ? "scale-110 border-white" : "border-transparent opacity-50 hover:opacity-100"
+                }`}
             >
               <ImageWithFallback src={img} className="h-full w-full object-cover" />
             </button>
           ))}
         </div>
+
       </section>
+
+      {/* Image Nav — Mobile Only (Dedicated Row) */}
+      <div className="flex md:hidden items-center justify-center gap-3 px-6 py-6 border-b border-[#2C3424]/05">
+        {listing.images.map((img, i) => (
+          <button
+            key={i}
+            onClick={() => setSelectedImage(i)}
+            className={`overflow-hidden rounded-xl border-2 transition-all transition-all h-14 w-14 ${selectedImage === i ? "scale-105 border-[#2C3424]" : "border-transparent opacity-40 hover:opacity-100"
+              }`}
+          >
+            <ImageWithFallback src={img} className="h-full w-full object-cover" />
+          </button>
+        ))}
+      </div>
 
       {/* Content Section */}
       <section className="px-6 py-24 md:px-12 lg:px-24">
-        <div className="mx-auto grid max-w-[1400px] grid-cols-1 gap-24 lg:grid-cols-12">
+        <div className="mx-auto grid max-w-[1400px] grid-cols-1 gap-24 lg:grid-cols-12 lg:gap-32">
           {/* Left: Details */}
           <div className="space-y-16 lg:col-span-7">
             <motion.div
@@ -133,7 +149,7 @@ export function ListingDetail() {
                 The Concept
               </h2>
               <p
-                className="text-lg leading-relaxed font-medium tracking-tight opacity-60 md:text-xl"
+                className="text-base leading-relaxed font-medium tracking-tight opacity-60 text-balance break-words md:text-lg lg:text-xl"
                 style={{ fontFamily: "'Outfit', sans-serif" }}
               >
                 COKKIRI는 스마트 IoT 기술과
@@ -143,11 +159,8 @@ export function ListingDetail() {
                 새로운 주거 기준을 제시합니다.
                 <br />
                 <br />
-                개인의 프라이버시를 존중하면서도
-                <br />
-                지능형 공유 공간을 통해 자연스럽게 연결되는
-                <br />
-                특별한 일상을 경험해 보세요.
+                개인의 프라이버시를 존중하면서도 지능형 공유 공간을 통해
+                자연스럽게 연결되는 특별한 일상을 경험해 보세요.
               </p>
             </motion.div>
 
@@ -235,25 +248,23 @@ export function ListingDetail() {
             </div>
 
             {/* Host Section */}
-            <div className="flex flex-col items-center gap-8 rounded-[2rem] bg-[#DADED8]/20 p-12 md:flex-row">
-              <div className="h-32 w-32 overflow-hidden rounded-full">
+            <div className="flex flex-col items-center gap-8 rounded-[2rem] bg-[#DADED8]/20 p-8 md:p-12 md:flex-row">
+              <div className="h-24 w-24 md:h-32 md:w-32 overflow-hidden rounded-full shrink-0">
                 <ImageWithFallback
                   src={listing.host.avatar}
                   className="h-full w-full object-cover"
                 />
               </div>
               <div className="text-center md:text-left">
-                <p className="mb-2 text-sm font-black tracking-widest text-[#2C3424]/30 uppercase">
+                <p className="mb-1 md:mb-2 text-xs md:text-sm font-black tracking-widest text-[#2C3424]/30 uppercase">
                   Hosted by
                 </p>
-                <h4 className="mb-2 text-3xl font-black">{listing.host.name}</h4>
+                <h4 className="mb-2 text-2xl md:text-3xl font-black">{listing.host.name}</h4>
                 <p
-                  className="max-w-sm tracking-tight text-[#2C3424]/60"
+                  className="max-w-sm text-sm tracking-tight text-[#2C3424]/60"
                   style={{ fontFamily: "'Outfit', sans-serif" }}
                 >
-                  신뢰 기반의 공동체를 만들어가는 전담 공간 큐레이터
-                  <br />
-                  {listing.host.joinedDate}년부터 Cokkiri와 함께하고 있습니다.
+                  신뢰 기반의 공동체를 만들어가는 전담 공간 큐레이터. {listing.host.joinedDate}년부터 함께하고 있습니다.
                 </p>
               </div>
             </div>
@@ -262,35 +273,27 @@ export function ListingDetail() {
           {/* Right: Booking Sticky */}
           <div className="lg:col-span-5">
             <motion.div
-              className="sticky top-32 rounded-[2.5rem] border border-white/5 bg-[#0F120D] p-12 text-[#DADED8] shadow-[0_32px_64px_-16px_rgba(0,0,0,0.5)]"
+              className="sticky top-32 rounded-[2rem] md:rounded-[2.5rem] border border-white/5 bg-[#0F120D] p-6 text-[#DADED8] shadow-[0_32px_64px_-16px_rgba(0,0,0,0.5)] md:p-12"
               initial={{ opacity: 0, x: 40 }}
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
             >
-              <div className="mb-12 flex items-baseline justify-between">
-                <h3
-                  className="text-2xl font-bold tracking-tighter"
-                  style={{ fontFamily: "'Outfit', sans-serif" }}
-                >
-                  Reserve
-                </h3>
+              <div className="mb-8 flex items-baseline justify-between">
+                <h3 className="text-xl md:text-2xl font-black tracking-tighter">Reserve</h3>
                 <div className="text-right">
-                  <div
-                    className="text-4xl font-bold"
-                    style={{ fontFamily: "'Outfit', sans-serif" }}
-                  >
+                  <p className="text-2xl md:text-3xl font-black text-white">
                     ₩{listing.price.toLocaleString()}
-                  </div>
-                  <div className="text-sm font-black tracking-[0.2em] uppercase opacity-40">
-                    / {listing.priceUnit}
-                  </div>
+                  </p>
+                  <p className="text-[10px] md:text-xs font-black tracking-[0.3em] opacity-40 uppercase">
+                    / Month
+                  </p>
                 </div>
               </div>
 
-              <div className="mb-12 space-y-8">
+              <div className="mb-8 space-y-6">
                 <div className="space-y-2">
                   <label
-                    className="mb-3 block text-[12px] font-black tracking-[0.3em] uppercase opacity-40"
+                    className="mb-2 block text-[10px] md:text-[12px] font-black tracking-[0.3em] uppercase opacity-40"
                     style={{ fontFamily: "'Outfit', sans-serif" }}
                   >
                     Preferred Move-in
@@ -299,16 +302,16 @@ export function ListingDetail() {
                     <PopoverTrigger asChild>
                       <button
                         className={cn(
-                          "group relative w-full rounded-2xl border border-white/10 bg-white/[0.03] p-5 pl-14 text-left text-sm font-bold transition-all focus:border-white/30",
+                          "group relative w-full rounded-2xl border border-white/10 bg-white/[0.03] p-4 md:p-5 pl-14 text-left text-xs md:text-sm font-bold transition-all focus:border-white/30",
                           !date && "text-white/30",
                         )}
                         style={{ fontFamily: "'Outfit', sans-serif" }}
                       >
-                        <LucideCalendar className="absolute top-1/2 left-5 h-5 w-5 -translate-y-1/2 opacity-30 transition-opacity group-hover:opacity-100" />
+                        <LucideCalendar className="absolute top-1/2 left-5 h-4 w-4 md:h-5 md:w-5 -translate-y-1/2 opacity-30 transition-opacity group-hover:opacity-100" />
                         {date ? (
                           format(date, "PPP")
                         ) : (
-                          <span className="opacity-40">언제 입주할까요?</span>
+                          <span className="opacity-40 text-[10px] md:text-sm">언제 입주할까요?</span>
                         )}
                       </button>
                     </PopoverTrigger>
@@ -352,7 +355,7 @@ export function ListingDetail() {
                 </div>
                 <div className="space-y-2">
                   <label
-                    className="text-[12px] font-black tracking-[0.3em] uppercase opacity-50"
+                    className="text-[10px] md:text-[12px] font-black tracking-[0.3em] uppercase opacity-50"
                     style={{ fontFamily: "'Outfit', sans-serif" }}
                   >
                     Duration
@@ -361,7 +364,7 @@ export function ListingDetail() {
                     {["3M", "6M", "12M"].map((m) => (
                       <button
                         key={m}
-                        className="rounded-xl border border-white/10 p-3 text-xs font-bold tracking-widest text-white/70 uppercase transition-all hover:border-transparent hover:bg-[#768064] hover:text-white"
+                        className="rounded-xl border border-white/10 p-2.5 text-[10px] md:text-xs font-bold tracking-widest text-white/70 uppercase transition-all hover:border-transparent hover:bg-[#768064] hover:text-white"
                         style={{ fontFamily: "'Outfit', sans-serif" }}
                       >
                         {m}
@@ -373,14 +376,14 @@ export function ListingDetail() {
 
               <Button
                 onClick={handleBooking}
-                className="text-md group h-20 w-full rounded-2xl border-none bg-[#768064] font-black tracking-[0.2em] text-white uppercase shadow-lg shadow-[#768064]/20 transition-all hover:bg-[#8A9678]"
+                className="group h-16 md:h-20 w-full rounded-2xl border-none bg-[#768064] text-sm md:text-xl font-black tracking-[0.2em] text-white uppercase shadow-lg shadow-[#768064]/20 transition-all hover:bg-[#8A9678]"
                 style={{ fontFamily: "'Outfit', sans-serif" }}
               >
                 BOOKING
-                <ArrowRight className="ml-4 h-8 w-8 transition-transform group-hover:translate-x-2" />
+                <ArrowRight className="ml-3 h-5 w-5 md:ml-4 md:h-8 md:w-8 transition-transform group-hover:translate-x-2" />
               </Button>
 
-              <p className="mt-6 text-center text-[10px] font-bold tracking-[0.2em] uppercase opacity-30">
+              <p className="mt-4 text-center text-[9px] md:text-[10px] font-bold tracking-[0.2em] uppercase opacity-30">
                 No payment required until agreement is signed
               </p>
             </motion.div>
@@ -389,24 +392,24 @@ export function ListingDetail() {
       </section>
 
       {/* Related Section or Visual Break */}
-      <section className="min-h-[50vh] overflow-hidden md:h-[60vh]">
-        <div className="flex h-full flex-col md:flex-row">
+      <section className="min-h-[60vh] overflow-hidden">
+        <div className="flex min-h-[60vh] flex-col md:flex-row">
           <div className="h-[40vh] w-full overflow-hidden grayscale transition-all duration-1000 hover:grayscale-0 md:h-full md:w-1/2">
             <ImageWithFallback
               src="https://images.unsplash.com/photo-1772475385426-ebd50c772229?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxtb2Rlcm4lMjBraXRjaGVuJTIwaXNsYW5kJTIwbWluaW1hbCUyMGRlc2lnbiUyMGFlc3RoZXRpY3xlbnwxfHx8fDE3NzQ5Mzc2ODB8MA&ixlib=rb-4.1.0&q=80&w=1080"
               className="h-full w-full object-cover"
             />
           </div>
-          <div className="flex w-full items-center justify-center bg-[#030213] p-8 py-16 md:w-1/2 md:p-12 md:py-12">
+          <div className="flex w-full items-center justify-center bg-[#030213] p-12 py-24 md:w-1/2 md:p-12">
             <div className="space-y-6 text-center text-white">
-              <h3 className="text-3xl font-black tracking-tighter md:text-4xl lg:text-6xl">
+              <h3 className="text-4xl font-black tracking-tighter md:text-6xl">
                 Join the collective.
               </h3>
               <p className="mx-auto max-w-sm text-xs font-black tracking-[0.3em] text-white/40 uppercase">
                 Become a resident of the future.
               </p>
               <Button
-                className="rounded-full border-none bg-[#768064] px-8 py-6 text-base font-black tracking-[0.2em] text-white shadow-lg shadow-[#768064]/20 transition-all hover:bg-[#8A9678] md:px-12 md:py-10 md:text-xl"
+                className="rounded-full border-none bg-[#768064] px-12 py-10 text-xl font-black tracking-[0.2em] text-white shadow-lg shadow-[#768064]/20 transition-all hover:bg-[#8A9678]"
                 style={{ fontFamily: "'Outfit', sans-serif" }}
               >
                 APPLY NOW
