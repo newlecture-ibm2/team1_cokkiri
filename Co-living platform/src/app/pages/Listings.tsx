@@ -1,5 +1,5 @@
-import { useState, useMemo } from "react";
-import { motion, AnimatePresence } from "motion/react";
+import { useState, useMemo, useRef } from "react";
+import { motion, AnimatePresence, useScroll, useTransform } from "motion/react";
 import { Header } from "../components/Header";
 import { Footer } from "../components/Footer";
 import { ListingCard } from "../components/ListingCard";
@@ -11,6 +11,14 @@ export function Listings() {
   const [activeFilter, setActiveFilter] = useState("All");
   const [searchQuery, setSearchQuery] = useState("");
   const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  const { scrollY } = useScroll();
+  const scale = useTransform(scrollY, [0, 300], [1, 0.7]);
+  const opacity = useTransform(scrollY, [0, 300], [1, 0]);
+  const y = useTransform(scrollY, [0, 300], [0, -80]);
+  const paddingTop = useTransform(scrollY, [0, 300], ["6rem", "2rem"]);
+  const paddingBottom = useTransform(scrollY, [0, 300], ["1rem", "0rem"]);
 
   const filters = ["All", "Private Suite", "Entire Space", "Shared Atelier"];
 
@@ -25,20 +33,27 @@ export function Listings() {
   }, [activeFilter, searchQuery]);
 
   return (
-    <div className="bg-background text-foreground min-h-screen pb-32 selection:bg-[#2C3424] selection:text-[#DADED8]">
+    <div
+      ref={containerRef}
+      className="bg-background text-foreground min-h-screen pb-32 selection:bg-[#2C3424] selection:text-[#DADED8]"
+    >
       <Header />
 
       {/* Page Header */}
-      <section className="px-6 pt-48 pb-24 md:px-12 lg:px-24">
+      <motion.section
+        style={{ paddingTop, paddingBottom }}
+        className="px-6 md:px-12 lg:px-24 overflow-hidden bg-background"
+      >
         <div className="mx-auto max-w-[1400px]">
           <motion.div
+            style={{ scale, opacity, y }}
             initial={{ opacity: 0, y: 40 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 1, ease: [0.22, 1, 0.36, 1] }}
-            className="flex flex-col items-end justify-between gap-12 border-b border-[#2C3424]/10 pb-16 md:flex-row"
+            className="flex flex-col items-end justify-between gap-12 border-b border-[#2C3424]/10 pb-8 md:flex-row"
           >
             <div className="max-w-2xl space-y-6">
-              <h1 className="text-8xl leading-[0.85] font-black tracking-tighter md:text-[10rem]">
+              <h1 className="text-6xl md:text-8xl lg:text-[10rem] font-black tracking-tighter leading-[0.85]">
                 SPACES.
               </h1>
               <p className="text-1xl leading-tight font-medium opacity-70 md:text-2xl">
@@ -52,28 +67,28 @@ export function Listings() {
             </div>
           </motion.div>
         </div>
-      </section>
+      </motion.section>
 
       {/* Filter Bar */}
-      <section className="bg-background/80 border-border sticky top-0 z-40 border-b px-6 py-8 backdrop-blur-md md:px-12 lg:px-24">
-        <div className="mx-auto flex max-w-[1400px] flex-col items-center justify-between gap-8 md:flex-row">
-          <div className="flex flex-wrap gap-2">
+      <section className="bg-background px-6 md:px-12 lg:px-24 py-6 md:py-8 border-b border-[#2C3424]/05">
+        <div className="mx-auto flex max-w-[1400px] flex-col md:flex-row justify-between items-stretch md:items-center gap-6">
+          {/* Categories Grid: 2 per row on mobile */}
+          <div className="grid grid-cols-2 gap-2 md:flex md:flex-wrap md:gap-3">
             {filters.map((f) => (
               <button
                 key={f}
                 onClick={() => setActiveFilter(f)}
-                className={`rounded-full border px-6 py-2 text-xs font-black tracking-widest uppercase transition-all duration-500 ${
-                  activeFilter === f
-                    ? "border-[#2C3424] bg-[#2C3424] text-[#DADED8]"
-                    : "border-[#2C3424]/20 bg-transparent text-[#2C3424]/70 hover:border-[#2C3424]/40"
-                }`}
+                className={`px-3 md:px-6 py-2 md:py-2.5 rounded-full text-[10px] md:text-xs font-black uppercase tracking-widest transition-all duration-500 border ${activeFilter === f
+                    ? "bg-[#2C3424] text-[#DADED8] border-[#2C3424]"
+                    : "bg-transparent text-[#2C3424]/70 border-[#2C3424]/20 hover:border-[#2C3424]/40"
+                  }`}
               >
                 {f}
               </button>
             ))}
           </div>
 
-          <div className="relative flex items-center gap-6">
+          <div className="relative flex items-center justify-end gap-6 self-end md:self-auto">
             <AnimatePresence mode="wait">
               {isSearchOpen ? (
                 <motion.div
@@ -85,7 +100,7 @@ export function Listings() {
                   <input
                     autoFocus
                     placeholder="Search locations..."
-                    className="min-w-[200px] bg-transparent text-sm font-bold tracking-widest uppercase focus:outline-none"
+                    className="bg-transparent text-[10px] md:text-xs font-bold uppercase tracking-widest focus:outline-none min-w-[140px] md:min-w-[200px]"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                   />
@@ -95,22 +110,22 @@ export function Listings() {
                       setSearchQuery("");
                     }}
                   >
-                    <X className="h-4 w-4" />
+                    <X className="h-3 w-3 md:h-4 md:w-4" />
                   </button>
                 </motion.div>
               ) : (
                 <button
                   onClick={() => setIsSearchOpen(true)}
-                  className="flex items-center gap-2 text-xs font-black tracking-widest uppercase transition-colors hover:text-black/60"
+                  className="flex items-center gap-2 text-[10px] md:text-xs font-black uppercase tracking-widest hover:text-black/60 transition-colors"
                 >
-                  <Search className="h-4 w-4" />
+                  <Search className="h-3.5 w-3.5 md:h-4 md:w-4" />
                   Search
                 </button>
               )}
             </AnimatePresence>
 
-            <button className="flex items-center gap-2 text-xs font-black tracking-widest uppercase transition-colors hover:text-black/60">
-              <Filter className="h-4 w-4" />
+            <button className="flex items-center gap-2 text-[10px] md:text-xs font-black uppercase tracking-widest hover:text-black/60 transition-colors">
+              <Filter className="h-3.5 w-3.5 md:h-4 md:w-4" />
               Sort
             </button>
           </div>
@@ -118,7 +133,7 @@ export function Listings() {
       </section>
 
       {/* Grid */}
-      <section className="mt-24 px-6 md:px-12 lg:px-24">
+      <section className="mt-12 md:mt-24 px-6 md:px-12 lg:px-24">
         <div className="mx-auto max-w-[1400px]">
           {filteredListings.length === 0 ? (
             <div className="space-y-8 py-48 text-center">
@@ -147,15 +162,15 @@ export function Listings() {
       </section>
 
       {/* Bottom CTA */}
-      <section className="mt-48 px-6 md:px-12 lg:px-24">
-        <div className="mx-auto max-w-[1400px] space-y-12 rounded-[4rem] bg-[#030213] p-12 text-center text-white md:p-24">
-          <h2 className="text-6xl leading-none font-black tracking-tighter md:text-8xl">
+      <section className="mt-24 md:mt-48 px-6 md:px-12 lg:px-24">
+        <div className="mx-auto max-w-[1400px] space-y-6 md:space-y-12 rounded-[2rem] md:rounded-[4rem] bg-[#030213] p-8 py-8 md:p-24 text-center text-white">
+          <h2 className="text-2xl md:text-8xl font-black tracking-tighter leading-none">
             READY TO <span className="text-accent underline underline-offset-8">EXPERIENCE?</span>
           </h2>
-          <p className="mx-auto max-w-2xl text-xl font-medium text-white/40 md:text-2xl">
+          <p className="mx-auto max-w-2xl text-sm md:text-2xl font-medium text-white/40">
             COKKIRI의 새로운 스페이스 소식을 가장 먼저 받아보세요.
           </p>
-          <Button className="h-24 rounded-2xl border-none bg-[#2C3424] px-16 text-xl font-black tracking-[0.2em] text-white uppercase transition-all duration-500 hover:bg-[#768064] hover:text-white">
+          <Button className="h-12 md:h-24 px-8 md:px-16 rounded-xl md:rounded-2xl bg-[#2C3424] text-white hover:bg-[#768064] hover:text-white transition-all duration-500 text-xs md:text-xl font-black uppercase tracking-[0.2em] border-none w-full md:w-auto">
             Join Waitlist
           </Button>
         </div>

@@ -51,7 +51,7 @@ export function ListingCard({ listing }: ListingCardProps) {
             <h3 className="text-2xl font-black tracking-tighter text-[#2C3424] transition-colors duration-500 group-hover:text-[#768064]">
               {listing.title}
             </h3>
-            <span className="text-base font-black text-[#2C3424] opacity-10">
+            <span className="text-base font-black text-[#2C3424] opacity-10 whitespace-nowrap">
               / {listing.id.padStart(2, "0")}
             </span>
           </div>

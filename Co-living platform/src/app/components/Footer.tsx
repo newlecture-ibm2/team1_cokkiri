@@ -26,16 +26,16 @@ export function Footer() {
   };
 
   return (
-    <footer className="bg-background text-foreground border-t border-[#2C3424]/10 px-6 pt-32 pb-12 md:px-12 lg:px-24">
+    <footer className="bg-background text-foreground border-t border-[#2C3424]/10 px-6 pt-16 pb-12 md:px-12 lg:px-24">
       <div className="mx-auto max-w-[1400px]">
         {/* Branding & Newsletter */}
-        <div className="mb-32 grid grid-cols-1 gap-24 lg:grid-cols-12">
+        <div className="mb-16 grid grid-cols-1 gap-16 lg:grid-cols-12">
           <div className="lg:col-span-8">
-            <Link to="/" className="group mb-12 inline-block">
-              <span className="block text-[12vw] leading-[0.8] font-black tracking-tighter uppercase md:text-[8vw]">
+            <Link to="/" className="group mb-8 inline-block">
+              <span className="block text-[15vw] leading-[0.8] font-black tracking-tighter uppercase md:text-[8vw]">
                 COKKIRI<span className="text-[#768064]">.</span>
               </span>
-              <span className="text-xs font-black tracking-[0.4em] uppercase opacity-50 transition-opacity duration-500 group-hover:opacity-100">
+              <span className="block text-[min(10vw,15px)] md:text-xs font-black tracking-[0.2em] md:tracking-[0.4em] uppercase opacity-50 transition-opacity duration-500 group-hover:opacity-100 whitespace-nowrap">
                 Togetherness Redefined © 26
               </span>
             </Link>
@@ -58,7 +58,7 @@ export function Footer() {
           </div>
 
           <div className="flex flex-col items-start justify-end lg:col-span-4 lg:items-end">
-            <div className="flex gap-10">
+            <div className="flex gap-8">
               {[Instagram, Twitter, Linkedin].map((Icon, i) => (
                 <motion.a
                   key={i}
@@ -66,7 +66,7 @@ export function Footer() {
                   whileHover={{ y: -8, color: "#768064" }}
                   className="text-[#2C3424]/60 transition-colors"
                 >
-                  <Icon className="h-8 w-8" />
+                  <Icon className="h-6 w-6 md:h-8 md:w-8" />
                 </motion.a>
               ))}
             </div>
@@ -74,17 +74,17 @@ export function Footer() {
         </div>
 
         {/* Links Grid */}
-        <div className="mb-32 grid grid-cols-2 gap-12 border-t border-[#2C3424]/20 pt-20 md:grid-cols-3 lg:grid-cols-4">
+        <div className="mb-16 grid grid-cols-2 gap-10 border-t border-[#2C3424]/20 pt-12 md:grid-cols-3 lg:grid-cols-4">
           <div>
-            <h5 className="mb-10 text-[12px] font-black tracking-[0.3em] text-balance text-[#2C3424]/50 uppercase">
+            <h5 className="mb-6 text-[11px] font-black tracking-[0.3em] text-balance text-[#2C3424]/50 uppercase">
               Navigation / 01
             </h5>
-            <ul className="space-y-6">
+            <ul className="space-y-4">
               {footerLinks.explore.map((link) => (
                 <li key={link.name}>
                   <Link
                     to={link.path}
-                    className="text-base font-black tracking-widest uppercase transition-colors hover:text-[#768064]"
+                    className="text-sm font-black tracking-widest uppercase transition-colors hover:text-[#768064]"
                   >
                     {link.name}
                   </Link>
@@ -93,15 +93,15 @@ export function Footer() {
             </ul>
           </div>
           <div>
-            <h5 className="mb-10 text-[12px] font-black tracking-[0.3em] text-balance text-[#2C3424]/50 uppercase">
+            <h5 className="mb-6 text-[11px] font-black tracking-[0.3em] text-balance text-[#2C3424]/50 uppercase">
               Community / 02
             </h5>
-            <ul className="space-y-6">
+            <ul className="space-y-4">
               {footerLinks.community.map((link) => (
                 <li key={link.name}>
                   <Link
                     to={link.path}
-                    className="text-base font-black tracking-widest uppercase transition-colors hover:text-[#768064]"
+                    className="text-sm font-black tracking-widest uppercase transition-colors hover:text-[#768064]"
                   >
                     {link.name}
                   </Link>
@@ -110,15 +110,15 @@ export function Footer() {
             </ul>
           </div>
           <div>
-            <h5 className="mb-10 text-[12px] font-black tracking-[0.3em] text-balance text-[#2C3424]/50 uppercase">
+            <h5 className="mb-6 text-[11px] font-black tracking-[0.3em] text-balance text-[#2C3424]/50 uppercase">
               Legal / 03
             </h5>
-            <ul className="space-y-6">
+            <ul className="space-y-4">
               {footerLinks.support.map((link) => (
                 <li key={link.name}>
                   <Link
                     to={link.path}
-                    className="text-base font-black tracking-widest uppercase transition-colors hover:text-[#768064]"
+                    className="text-sm font-black tracking-widest uppercase transition-colors hover:text-[#768064]"
                   >
                     {link.name}
                   </Link>
@@ -127,7 +127,7 @@ export function Footer() {
             </ul>
           </div>
           <div className="col-span-2 flex flex-col items-end justify-end lg:col-span-1">
-            <p className="text-right text-[14px] font-black tracking-[0.5em] uppercase">
+            <p className="text-right text-[11px] md:text-[14px] font-black tracking-[0.4em] md:tracking-[0.5em] uppercase">
               SMART LIVING
               <br />
               SINCE 2026
@@ -136,11 +136,11 @@ export function Footer() {
         </div>
 
         {/* Bottom Bar */}
-        <div className="flex flex-col items-center justify-between gap-8 border-t border-[#2C3424]/10 pt-12 md:flex-row">
-          <p className="text-xs font-black tracking-widest uppercase opacity-40">
+        <div className="flex flex-col items-center justify-between gap-6 border-t border-[#2C3424]/10 pt-10 md:flex-row">
+          <p className="text-[10px] font-black tracking-widest uppercase opacity-40">
             © {currentYear} COKKIRI CO-LIVING PLATFORM. ALL RIGHTS RESERVED.
           </p>
-          <div className="flex gap-12 text-xs font-black tracking-widest uppercase opacity-40">
+          <div className="flex gap-8 text-[10px] font-black tracking-widest uppercase opacity-40">
             <span>DESIGN BY OLHA</span>
             <span>POWERED BY AI</span>
           </div>
