@@ -1,1 +1,34 @@
-/* Placeholder for theme.css */
+@theme inline {
+  /* UI Guideline: Moss & Aloe Color Palette */
+  --color-background: #DADED8;
+  --color-foreground: #2C3424;
+  
+  --color-primary: #2C3424;
+  --color-primary-foreground: #DADED8;
+  
+  --color-secondary: #768064;
+  --color-secondary-foreground: #FFFFFF;
+  
+  --color-accent: #8A9678;
+  --color-accent-foreground: #FFFFFF;
+  
+  --color-muted: #C8CDC4;
+  --color-muted-foreground: #2C3424;
+  
+  --color-destructive: #721C24;
+  --color-destructive-foreground: #F8D7DA;
+  
+  --color-border: #BEC3BC;
+  --color-input: #C8CDC4;
+  --color-ring: #2C3424;
+  
+  --radius-xl: 2rem;
+  --radius-2xl: 4rem;
+
+  --font-sans: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+}
+
+:root {
+  --background: #DADED8;
+  --foreground: #2C3424;
+}
