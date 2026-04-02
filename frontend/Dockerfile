@@ -1,7 +1,3 @@
-<<<<<<< HEAD
-#  Placeholder for Dockerfile
-FROM node:20-alpine
-=======
 # ── Stage 1: 의존성 설치 ──
 FROM node:20-alpine AS deps
 WORKDIR /app
@@ -26,4 +22,3 @@ COPY --from=builder /app/.next/static ./.next/static
 
 EXPOSE 3000
 CMD ["node", "server.js"]
->>>>>>> 0bd2d7f443bf51f623bc079d057e960f8b62a210
