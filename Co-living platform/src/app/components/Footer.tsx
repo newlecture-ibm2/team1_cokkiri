@@ -1,5 +1,5 @@
-import { Link } from "react-router";
-import { motion } from "motion/react";
+import Link from "next/link";
+import { motion } from "framer-motion";
 import { ArrowRight, Instagram, Linkedin, Twitter } from "lucide-react";
 
 export function Footer() {
@@ -31,7 +31,7 @@ export function Footer() {
         {/* Branding & Newsletter */}
         <div className="mb-16 grid grid-cols-1 gap-16 lg:grid-cols-12">
           <div className="lg:col-span-8">
-            <Link to="/" className="group mb-8 inline-block">
+            <Link href="/" className="group mb-8 inline-block">
               <span className="block text-[15vw] leading-[0.8] font-black tracking-tighter uppercase md:text-[8vw]">
                 COKKIRI<span className="text-[#768064]">.</span>
               </span>
@@ -83,7 +83,7 @@ export function Footer() {
               {footerLinks.explore.map((link) => (
                 <li key={link.name}>
                   <Link
-                    to={link.path}
+                    href={link.path}
                     className="text-sm font-black tracking-widest uppercase transition-colors hover:text-[#768064]"
                   >
                     {link.name}
@@ -100,7 +100,7 @@ export function Footer() {
               {footerLinks.community.map((link) => (
                 <li key={link.name}>
                   <Link
-                    to={link.path}
+                    href={link.path}
                     className="text-sm font-black tracking-widest uppercase transition-colors hover:text-[#768064]"
                   >
                     {link.name}
@@ -117,7 +117,7 @@ export function Footer() {
               {footerLinks.support.map((link) => (
                 <li key={link.name}>
                   <Link
-                    to={link.path}
+                    href={link.path}
                     className="text-sm font-black tracking-widest uppercase transition-colors hover:text-[#768064]"
                   >
                     {link.name}

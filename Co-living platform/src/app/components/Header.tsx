@@ -1,11 +1,12 @@
-import { Link, useLocation } from "react-router";
-import { motion, useScroll, useMotionValueEvent, AnimatePresence } from "motion/react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { motion, useScroll, useMotionValueEvent, AnimatePresence } from "framer-motion";
 import { Button } from "./ui/button";
 import { User, Menu, X } from "lucide-react";
 import { useState, useEffect } from "react";
 
 export function Header() {
-  const location = useLocation();
+  const pathname = usePathname();
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { scrollY } = useScroll();
@@ -17,7 +18,8 @@ export function Header() {
   // 페이지 이동 시 메뉴 닫기
   useEffect(() => {
     setIsMobileMenuOpen(false);
-  }, [location.pathname]);
+  }, [pathname]);
+
 
   // 메뉴 열림 시 body 스크롤 잠금
   useEffect(() => {
@@ -50,7 +52,7 @@ export function Header() {
         transition={{ duration: 1, ease: [0.22, 1, 0.36, 1] }}
       >
         <div className="flex items-center justify-between">
-          <Link to="/" className="group flex items-center gap-2">
+          <Link href="/" className="group flex items-center gap-2">
             <span className="text-3xl font-black tracking-tighter text-[#2C3424] uppercase">
               COKKIRI
             </span>
@@ -64,9 +66,9 @@ export function Header() {
               {navLinks.map((link) => (
                 <Link
                   key={link.path}
-                  to={link.path}
+                  href={link.path}
                   className={`text-sm font-black tracking-widest text-[#2C3424] uppercase transition-all duration-500 hover:opacity-100 ${
-                    location.pathname === link.path
+                    pathname === link.path
                       ? "underline underline-offset-8 opacity-100"
                       : "opacity-40"
                   }`}
@@ -77,7 +79,7 @@ export function Header() {
             </nav>
 
             <div className="flex items-center gap-4 border-l border-[#2C3424]/10 pl-4">
-              <Link to="/profile" className="hidden md:block">
+              <Link href="/profile" className="hidden md:block">
                 <Button
                   size="icon"
                   variant="ghost"
@@ -154,10 +156,10 @@ export function Header() {
                     transition={{ delay: index * 0.1, duration: 0.4 }}
                   >
                     <Link
-                      to={link.path}
+                      href={link.path}
                       onClick={() => setIsMobileMenuOpen(false)}
                       className={`block border-b border-[#2C3424]/5 py-4 text-lg font-black tracking-[0.2em] uppercase transition-all duration-300 ${
-                        location.pathname === link.path
+                        pathname === link.path
                           ? "border-l-2 border-l-[#768064] pl-4 text-[#2C3424]"
                           : "text-[#2C3424]/40 hover:pl-4 hover:text-[#2C3424]"
                       }`}
@@ -174,7 +176,7 @@ export function Header() {
                   className="pt-6"
                 >
                   <Link
-                    to="/profile"
+                    href="/profile"
                     onClick={() => setIsMobileMenuOpen(false)}
                     className="flex items-center gap-3 text-xs font-black tracking-[0.3em] text-[#768064] uppercase"
                   >

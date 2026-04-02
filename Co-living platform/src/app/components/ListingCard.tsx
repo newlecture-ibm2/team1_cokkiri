@@ -1,6 +1,6 @@
-import { Link } from "react-router";
+import Link from "next/link";
 import { Star, ArrowUpRight } from "lucide-react";
-import { motion } from "motion/react";
+import { motion } from "framer-motion";
 import { Listing } from "../data/mockData";
 import { ImageWithFallback } from "./figma/ImageWithFallback";
 
@@ -10,7 +10,7 @@ interface ListingCardProps {
 
 export function ListingCard({ listing }: ListingCardProps) {
   return (
-    <Link to={`/listings/${listing.id}`} className="group block">
+    <Link href={`/listings/${listing.id}`} className="group block">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}

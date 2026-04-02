@@ -1,5 +1,7 @@
+"use client";
+
 import { useState, useMemo, useRef } from "react";
-import { motion, AnimatePresence, useScroll, useTransform } from "motion/react";
+import { motion, AnimatePresence, useScroll, useTransform } from "framer-motion";
 import { Header } from "../components/Header";
 import { Footer } from "../components/Footer";
 import { ListingCard } from "../components/ListingCard";
@@ -7,7 +9,7 @@ import { Button } from "../components/ui/button";
 import { listings } from "../data/mockData";
 import { Search, X, Filter } from "lucide-react";
 
-export function Listings() {
+export default function ListingsPage() {
   const [activeFilter, setActiveFilter] = useState("All");
   const [searchQuery, setSearchQuery] = useState("");
   const [isSearchOpen, setIsSearchOpen] = useState(false);
@@ -56,13 +58,11 @@ export function Listings() {
               <h1 className="text-6xl md:text-8xl lg:text-[10rem] font-black tracking-tighter leading-[0.85]">
                 SPACES.
               </h1>
-              <p className="text-1xl leading-tight font-medium opacity-70 md:text-2xl">
+              <p className="text-sm leading-tight font-medium opacity-70 md:text-2xl">
                 나만의 감각과 스마트한 일상이 공존하는 공간
               </p>
             </div>
-
             <div className="text-right">
-              <p className="mb-2 text-[10px] font-black tracking-[0.3em] uppercase opacity-40"></p>
               <div className="text-2xl font-black"></div>
             </div>
           </motion.div>
@@ -72,15 +72,14 @@ export function Listings() {
       {/* Filter Bar */}
       <section className="bg-background px-6 md:px-12 lg:px-24 py-6 md:py-8 border-b border-[#2C3424]/05">
         <div className="mx-auto flex max-w-[1400px] flex-col md:flex-row justify-between items-stretch md:items-center gap-6">
-          {/* Categories Grid: 2 per row on mobile */}
           <div className="grid grid-cols-2 gap-2 md:flex md:flex-wrap md:gap-3">
             {filters.map((f) => (
               <button
                 key={f}
                 onClick={() => setActiveFilter(f)}
                 className={`px-3 md:px-6 py-2 md:py-2.5 rounded-full text-[10px] md:text-xs font-black uppercase tracking-widest transition-all duration-500 border ${activeFilter === f
-                    ? "bg-[#2C3424] text-[#DADED8] border-[#2C3424]"
-                    : "bg-transparent text-[#2C3424]/70 border-[#2C3424]/20 hover:border-[#2C3424]/40"
+                  ? "bg-[#2C3424] text-[#DADED8] border-[#2C3424]"
+                  : "bg-transparent text-[#2C3424]/70 border-[#2C3424]/20 hover:border-[#2C3424]/40"
                   }`}
               >
                 {f}
@@ -175,6 +174,8 @@ export function Listings() {
           </Button>
         </div>
       </section>
+
+      <Footer />
     </div>
   );
 }

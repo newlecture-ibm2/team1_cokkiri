@@ -1,15 +1,17 @@
-import { Link } from "react-router";
+"use client";
+
+import Link from "next/link";
 import { useState, useEffect } from "react";
 import { ArrowRight, Globe, LifeBuoy, Zap } from "lucide-react";
-import { motion, useScroll, useTransform, useSpring } from "motion/react";
-import { Button } from "../components/ui/button";
-import { Header } from "../components/Header";
-import { Footer } from "../components/Footer";
-import { listings } from "../data/mockData";
-import { ImageWithFallback } from "../components/figma/ImageWithFallback";
+import { motion, useScroll, useTransform, useSpring } from "framer-motion";
+import { Button } from "./components/ui/button";
+import { Header } from "./components/Header";
+import { Footer } from "./components/Footer";
+import { listings } from "./data/mockData";
+import { ImageWithFallback } from "./components/figma/ImageWithFallback";
 import { useRef } from "react";
 
-export function Home() {
+export default function Home() {
   const featuredListings = listings.slice(0, 3);
   const containerRef = useRef(null);
 
@@ -86,9 +88,9 @@ export function Home() {
             </h1>
           </motion.div>
 
-          <div className="flex flex-col items-end justify-between gap-12 md:flex-row">
+          <div className="flex flex-col items-start justify-between gap-10 md:flex-row">
             <motion.p
-              className="max-w-2xl text-2xl leading-tight font-medium opacity-80 md:text-3xl"
+              className="max-w-2xl text-xl leading-tight font-medium opacity-80 md:text-3xl"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.8, duration: 1 }}
@@ -97,11 +99,12 @@ export function Home() {
             </motion.p>
 
             <motion.div
+              className="self-end md:self-auto"
               initial={{ opacity: 0, scale: 0.8 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: 1, duration: 0.8 }}
             >
-              <Link to="/listings" className="group relative inline-block">
+              <Link href="/listings" className="group relative inline-block">
                 <motion.div
                   className="border-primary/20 relative flex h-32 w-32 flex-col items-center justify-center overflow-hidden border p-0 md:h-44 md:w-44"
                   animate={{
@@ -118,7 +121,6 @@ export function Home() {
                   }}
                   whileHover="hover"
                 >
-                  {/* Filler Background */}
                   <motion.div
                     className="bg-primary absolute inset-0 origin-bottom"
                     initial={{ scaleY: 0 }}
@@ -128,7 +130,6 @@ export function Home() {
                     transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
                   />
 
-                  {/* Button Content */}
                   <div className="relative z-10 flex flex-col items-center justify-center">
                     <motion.span
                       className="mb-2 text-sm font-black tracking-[0.3em] uppercase"
@@ -154,14 +155,13 @@ export function Home() {
           </div>
         </div>
 
-        {/* Floating Abstract Element */}
         <motion.div
           className="absolute top-1/4 -right-20 -z-10 h-[40vw] w-[40vw] rounded-full bg-[#f5f5f5]"
           style={{ y: useTransform(smoothProgress, [0, 1], [0, -200]) }}
         />
       </section>
 
-      {/* Featured Grid Section - Asymmetric */}
+      {/* Featured Grid Section */}
       <section className="py-20 md:py-32 px-6 md:px-12 lg:px-24">
         <div className="mx-auto max-w-[1400px]">
           <motion.div
@@ -171,21 +171,15 @@ export function Home() {
             viewport={{ once: true }}
           >
             <h2 className="text-5xl font-black tracking-tighter md:text-7xl">CURATED SPACES</h2>
-            <p className="text-lg font-black tracking-widest uppercase opacity-40"></p>
           </motion.div>
 
           <div className="grid grid-cols-1 gap-12 md:grid-cols-12 lg:gap-24">
-            {/* First Item - Large */}
             <div className="md:col-span-8">
               <ListingItem listing={featuredListings[0]} size="large" />
             </div>
-
-            {/* Second Item - Small Offset */}
             <div className="md:col-span-4 md:mt-48">
               <ListingItem listing={featuredListings[1]} size="small" />
             </div>
-
-            {/* Third Item - Centered Medium */}
             <div className="md:col-span-6 md:col-start-4">
               <ListingItem listing={featuredListings[2]} size="medium" />
             </div>
@@ -210,7 +204,7 @@ export function Home() {
                   <span className="text-accent underline underline-offset-[1vw] decoration-2">LIVING.</span>
                 </h2>
               </div>
-              
+
               <div className="max-w-xl space-y-12 border-t border-white/10 pt-12 md:pt-20">
                 <div className="flex gap-8 group">
                   <Globe className="h-8 w-8 shrink-0 text-white/20 transition-colors group-hover:text-accent" />
@@ -268,7 +262,6 @@ export function Home() {
           </div>
         </div>
 
-        {/* Marquee Style Text Background */}
         <div className="pointer-events-none absolute top-1/2 left-0 -translate-y-1/2 text-[30vw] font-bold whitespace-nowrap italic opacity-[0.02] select-none">
           TOGETHERNESS. TOGETHERNESS.
         </div>
@@ -303,7 +296,7 @@ function ListingItem({ listing, size }: { listing: any; size: "large" | "medium"
 
   return (
     <motion.div ref={ref} style={{ y }} className="group">
-      <Link to={`/listings/${listing.id}`}>
+      <Link href={`/listings/${listing.id}`}>
         <div className="relative mb-8 overflow-hidden">
           <motion.div
             whileHover={{ scale: 1.05 }}
@@ -325,11 +318,11 @@ function ListingItem({ listing, size }: { listing: any; size: "large" | "medium"
         <div className="space-y-4">
           <div className="flex items-baseline justify-between">
             <h3
-              className={`font-black tracking-tighter ${size === "large" ? "text-4xl" : "text-2xl"}`}
+              className="text-2xl font-black tracking-tighter"
             >
               {listing.title}
             </h3>
-            <span className="text-sm font-black opacity-10">/ {listing.id.padStart(2, "0")}</span>
+            <span className="text-sm font-black opacity-10 whitespace-nowrap">/ {listing.id.padStart(2, "0")}</span>
           </div>
           <div className="flex flex-col gap-1">
             <div className="flex items-center justify-between text-xs font-black tracking-widest text-[#768064] uppercase">
