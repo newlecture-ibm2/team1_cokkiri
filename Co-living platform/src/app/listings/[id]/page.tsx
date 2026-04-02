@@ -98,7 +98,7 @@ export default function ListingDetailPage() {
                   Return to Spaces
                 </span>
               </Link>
-              <h1 className="text-5xl md:text-8xl font-black text-white tracking-tighter mb-4 leading-[0.9] max-w-[80%] md:max-w-[70%]">
+              <h1 className="text-4xl sm:text-5xl md:text-7xl lg:text-8xl xl:text-9xl font-black text-white tracking-tighter mb-4 leading-[0.85] max-w-[95%] md:max-w-[80%]">
                 {listing.title}
               </h1>
             </motion.div>
@@ -135,81 +135,172 @@ export default function ListingDetailPage() {
       </div>
 
       {/* Content Section */}
-      <section className="px-6 py-24 md:px-12 lg:px-24">
-        <div className="mx-auto grid max-w-[1400px] grid-cols-1 gap-24 lg:grid-cols-12 lg:gap-32">
-          <div className="space-y-16 lg:col-span-7">
-            <motion.div
-              initial={{ opacity: 0, y: 40 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              className="space-y-6"
-            >
-              <h2 className="text-lg font-black tracking-tighter uppercase opacity-40">
-                The Concept
-              </h2>
-              <p className="text-base leading-relaxed font-medium tracking-tight opacity-60 text-balance break-words md:text-lg lg:text-xl">
-                COKKIRI는 스마트 IoT 기술과 공동체의 따뜻함이 공존하는 새로운 주거 기준을 제시합니다.
-              </p>
-            </motion.div>
+      <section className="px-6 py-16 md:px-12 lg:px-24 md:py-32">
+        <div className="mx-auto max-w-[1200px] space-y-32">
+          <div className="space-y-20">
+            {/* Status & Intro */}
+            <div className="space-y-8">
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+              >
+                <Badge
+                  className={cn(
+                    "px-6 py-2.5 text-xs md:text-sm font-black tracking-[0.2em] uppercase rounded-full border",
+                    listing.status === "AVAILABLE"
+                      ? "bg-[#768064]/10 text-[#768064] border-[#768064]/20"
+                      : listing.status === "OCCUPIED"
+                        ? "bg-red-50 text-red-600 border-red-100"
+                        : "bg-yellow-50 text-yellow-600 border-yellow-100"
+                  )}
+                >
+                  {listing.status === "AVAILABLE"
+                    ? "계약 가능"
+                    : listing.status === "OCCUPIED"
+                      ? "입주 중"
+                      : "점검 중"}
+                </Badge>
+              </motion.div>
 
-            <Separator className="bg-[#2C3424]/05" />
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                className="max-w-4xl"
+              >
+                <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-black tracking-tight text-[#2C3424] mb-6 md:mb-10 leading-[1.1] break-keep">
+                  도시의 중심에서 누리는 진정한 휴식의 공간.
+                </h2>
+                <p className="text-base sm:text-lg md:text-xl lg:text-2xl leading-relaxed font-medium text-[#2C3424]/70 text-balance italic">
+                  &ldquo;{listing.description}&rdquo;
+                </p>
+              </motion.div>
+            </div>
 
-            <div className="grid grid-cols-1 gap-12 md:grid-cols-2">
-              <div className="space-y-6">
-                <h3 className="text-lg font-black tracking-tighter uppercase opacity-40">
-                  Amenities
+            <Separator className="bg-[#2C3424]/10" />
+
+            {/* Room Details Grid */}
+            <div className="space-y-12">
+              <h3 className="text-sm md:text-base font-black tracking-[0.3em] uppercase opacity-30">
+                Space Information
+              </h3>
+              <div className="grid grid-cols-2 gap-3 md:gap-4 lg:grid-cols-3">
+                {[
+                  { label: "호실명", value: listing.title },
+                  { label: "방 유형", value: listing.roomType },
+                  { label: "층", value: listing.floor },
+                  { label: "면적", value: listing.size },
+                  { label: "방 수 / 욕실 수", value: `${listing.rooms}개 / ${listing.bathrooms}개` },
+                  { label: "수용 가능 인원", value: `${listing.maxCapacity}명` },
+                  { label: "방향", value: listing.direction },
+                  { label: "주차 가능 여부", value: listing.parking ? "가능" : "불가능" },
+                  { label: "계약 상태", value: listing.status === "AVAILABLE" ? "가능" : "불가" },
+                ].map((item) => (
+                  <div
+                    key={item.label}
+                    className={cn(
+                      "p-4 md:p-6 rounded-2xl bg-[#2C3424]/[0.02] border border-[#2C3424]/[0.05] space-y-1 md:space-y-2",
+                      item.label === "호실명" ? "col-span-2 lg:col-span-1" : "col-span-1"
+                    )}
+                  >
+                    <span className="text-[10px] md:text-xs font-black tracking-[0.2em] uppercase opacity-20 block">
+                      {item.label}
+                    </span>
+                    <span className="text-sm md:text-base font-bold text-[#2C3424] block leading-tight">{item.value}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <Separator className="bg-[#2C3424]/10" />
+
+            {/* Pricing Info */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-16 lg:gap-24">
+              <div className="space-y-12">
+                <h3 className="text-sm md:text-base font-black tracking-[0.3em] uppercase opacity-30">
+                  Pricing Details
                 </h3>
-                <ul className="grid grid-cols-1 gap-4">
-                  {listing.amenities.map((item) => (
-                    <li key={item} className="group flex items-center gap-4">
-                      <div className="bg-[#2C3424]/05 flex h-4 w-4 items-center justify-center rounded-full transition-all group-hover:bg-[#768064] group-hover:text-white">
-                        <Plus className="h-2.5 w-2.5" />
-                      </div>
-                      <span className="text-sm font-black tracking-tight opacity-70 group-hover:opacity-100">
-                        {amenityMap[item] || item}
+                <div className="space-y-6">
+                  {[
+                    { label: "보증금", value: `₩${listing.deposit.toLocaleString()}` },
+                    { label: "월 임대료", value: `₩${listing.price.toLocaleString()}` },
+                    { label: "관리비", value: `₩${listing.maintenanceFee.toLocaleString()} / 월` },
+                  ].map((item) => (
+                    <div key={item.label} className="flex justify-between items-baseline group">
+                      <span className="text-base md:text-lg lg:text-xl font-bold tracking-tight text-[#2C3424]/50">
+                        {item.label}
                       </span>
-                    </li>
+                      <div className="flex-1 mx-4 border-b border-dotted border-[#2C3424]/20" />
+                      <span className="text-lg md:text-xl lg:text-3xl font-black text-[#2C3424]">{item.value}</span>
+                    </div>
                   ))}
-                </ul>
+                </div>
               </div>
 
-              <div className="space-y-6">
-                <h3 className="text-lg font-black tracking-tighter uppercase opacity-40">
-                  Details
+              {/* Amenities & Features */}
+              <div className="space-y-12">
+                <h3 className="text-sm md:text-base font-black tracking-[0.3em] uppercase opacity-30">
+                  Amenities & Atmosphere
                 </h3>
-                <div className="space-y-8">
-                  <div className="border-[#2C3424]/05 flex justify-between border-b pb-4">
-                    <span className="text-sm font-bold tracking-widest uppercase opacity-40">평형</span>
-                    <span className="text-sm font-bold">{listing.size}</span>
-                  </div>
+                <div className="flex flex-wrap gap-3">
+                  {[...listing.amenities, ...listing.features].map((item) => (
+                    <Badge
+                      key={item}
+                      variant="outline"
+                      className="px-4 py-2 border-[#2C3424]/10 bg-[#DADED8]/50 text-[#2C3424] font-bold text-xs rounded-full"
+                    >
+                      {amenityMap[item] || item}
+                    </Badge>
+                  ))}
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Right: Booking Sticky */}
-          <div className="lg:col-span-5">
-            <motion.div
-              className="sticky top-32 rounded-[25rem] border border-white/5 bg-[#0F120D] p-6 text-[#DADED8] md:p-12"
-              initial={{ opacity: 0, x: 40 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true }}
-            >
-              <div className="mb-8 flex items-baseline justify-between">
-                <h3 className="text-xl md:text-2xl font-black tracking-tighter">Reserve</h3>
-                <div className="text-right">
-                  <p className="text-2xl md:text-3xl font-black text-white">₩{listing.price.toLocaleString()}</p>
+          {/* Reserve CTA Section */}
+          <motion.div
+            className="relative overflow-hidden rounded-[32px] md:rounded-[40px] bg-[#2C3424] p-6 md:p-16 text-white"
+            initial={{ opacity: 0, y: 40 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+          >
+            <div className="relative z-10 flex flex-col gap-8 md:flex-row md:items-center md:justify-between">
+              <div className="space-y-6">
+                <div>
+                  <h3 className="text-sm md:text-base font-black tracking-[0.4em] uppercase opacity-50 mb-4">Make it Yours</h3>
+                  <p className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-black tracking-tighter leading-tight">
+                    이 특별한 공간의<br />새로운 주인공이 되세요.
+                  </p>
+                </div>
+
+                <div className="flex flex-wrap gap-x-12 gap-y-6 pt-4">
+                  <div className="space-y-1">
+                    <span className="text-xs md:text-sm font-bold tracking-widest uppercase opacity-40 block">Total Monthly</span>
+                    <p className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black">₩{(listing.price + listing.maintenanceFee).toLocaleString()}</p>
+                  </div>
+                  <div className="space-y-1">
+                    <span className="text-xs md:text-sm font-bold tracking-widest uppercase opacity-40 block">Deposit</span>
+                    <p className="text-xl sm:text-2xl md:text-3xl font-bold opacity-70">₩{listing.deposit.toLocaleString()}</p>
+                  </div>
                 </div>
               </div>
+
               <Button
                 onClick={handleBooking}
-                className="group h-16 md:h-20 w-full rounded-2xl border-none bg-[#768064] text-sm md:text-xl font-black tracking-[0.2em] text-white uppercase"
+                disabled={listing.status !== "AVAILABLE"}
+                variant="editorial"
+                size="xl"
+                className="group text-sm md:text-base font-black tracking-widest transition-all hover:scale-105"
               >
-                BOOKING
-                <ArrowRight className="ml-3 h-5 w-5 md:ml-4 md:h-8 md:w-8 transition-transform group-hover:translate-x-2" />
+                {listing.status === "AVAILABLE" ? "\u00A0Apply Now" : "Fully Booked"}
+                <ArrowRight className="ml-3 h-5 w-5 transition-transform group-hover:translate-x-1" />
               </Button>
-            </motion.div>
-          </div>
+            </div>
+
+            {/* Decorative background element */}
+            <div className="absolute top-0 right-0 w-1/2 h-full bg-gradient-to-l from-white/5 to-transparent pointer-events-none" />
+          </motion.div>
         </div>
       </section>
 
