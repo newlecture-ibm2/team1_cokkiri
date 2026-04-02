@@ -1,1 +1,0 @@
-- Layered Architecture 준수: Controller -> Service -> Repository- Entity와 DTO를 엄격히 분리할 것- DB 설계 시 3차 정규화(3NF) 원칙을 준수하고 PK/FK 관계를 명시할 것
