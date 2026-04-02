@@ -1,11 +1,10 @@
 package com.coliving.common.community.adapter.out.persistence;
 
-import com.coliving.common.community.adapter.out.jpa.CommentEntity;
-import com.coliving.common.community.adapter.out.jpa.CommentJpaRepository;
 import com.coliving.common.community.adapter.out.jpa.PostEntity;
 import com.coliving.common.community.adapter.out.jpa.PostJpaRepository;
 import com.coliving.common.community.adapter.out.jpa.PostLikeEntity;
 import com.coliving.common.community.adapter.out.jpa.PostLikeJpaRepository;
+import com.coliving.common.comment.application.port.out.CommentRepositoryPort;
 import com.coliving.common.community.application.port.out.CommunityRepositoryPort;
 import com.coliving.common.community.model.Comment;
 import com.coliving.common.community.model.Post;
@@ -30,16 +29,16 @@ public class CommunityPersistenceAdapter implements CommunityRepositoryPort {
 
     private final PostJpaRepository postJpaRepository;
     private final PostLikeJpaRepository postLikeJpaRepository;
-    private final CommentJpaRepository commentJpaRepository;
+    private final CommentRepositoryPort commentRepositoryPort;
     private final ObjectMapper objectMapper;
 
     public CommunityPersistenceAdapter(PostJpaRepository postJpaRepository,
                                        PostLikeJpaRepository postLikeJpaRepository,
-                                       CommentJpaRepository commentJpaRepository,
+                                       CommentRepositoryPort commentRepositoryPort,
                                        ObjectMapper objectMapper) {
         this.postJpaRepository = postJpaRepository;
         this.postLikeJpaRepository = postLikeJpaRepository;
-        this.commentJpaRepository = commentJpaRepository;
+        this.commentRepositoryPort = commentRepositoryPort;
         this.objectMapper = objectMapper;
     }
 
@@ -58,9 +57,7 @@ public class CommunityPersistenceAdapter implements CommunityRepositoryPort {
 
     @Override
     public List<Comment> findCommentsByPostId(Long postId, Sort sort) {
-        return commentJpaRepository.findByPostId(postId, sort).stream()
-                .map(this::mapCommentEntityToModel)
-                .toList();
+        return commentRepositoryPort.findCommentsByPostId(postId, sort);
     }
 
     @Override
@@ -139,17 +136,12 @@ public class CommunityPersistenceAdapter implements CommunityRepositoryPort {
     public void softDeletePost(Long postId) {
         PostEntity entity = postJpaRepository.findById(postId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND));
+        // 게시글 삭제 시 댓글도 함께 삭제 + 파생 데이터(commentCount)도 0으로 정합성 유지
+        entity.setCommentCount(0);
         entity.softDelete();
         postJpaRepository.save(entity);
 
-        // 게시글 삭제 시(soft delete) 연관 댓글도 함께 soft delete
-        // CommentEntity는 deleted_at IS NULL 조건이 걸려있어, 이후 조회에서 자동으로 제외됩니다.
-        Sort sort = Sort.by(Sort.Direction.ASC, "commentId");
-        List<CommentEntity> comments = commentJpaRepository.findByPostId(postId, sort);
-        for (CommentEntity comment : comments) {
-            comment.softDelete();
-        }
-        commentJpaRepository.saveAll(comments);
+        commentRepositoryPort.softDeleteCommentsByPostId(postId);
     }
 
     @Override
@@ -164,49 +156,22 @@ public class CommunityPersistenceAdapter implements CommunityRepositoryPort {
 
     @Override
     public Comment createComment(Long postId, Long userId, String content) {
-        PostEntity postEntity = postJpaRepository.findById(postId)
-                .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND));
-
-        CommentEntity entity = new CommentEntity();
-        entity.setPostId(postId);
-        entity.setUserId(userId);
-        entity.setContent(content);
-        entity = commentJpaRepository.save(entity);
-
-        postEntity.increaseCommentCount();
-        postJpaRepository.save(postEntity);
-
-        return mapCommentEntityToModel(entity);
+        return commentRepositoryPort.createComment(postId, userId, content);
     }
 
     @Override
     public Optional<Comment> findCommentById(Long commentId) {
-        return commentJpaRepository.findByCommentId(commentId).map(this::mapCommentEntityToModel);
+        return commentRepositoryPort.findCommentById(commentId);
     }
 
     @Override
     public Comment updateComment(Long commentId, String content) {
-        CommentEntity entity = commentJpaRepository.findByCommentId(commentId)
-                .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND));
-        entity.setContent(content);
-        entity = commentJpaRepository.save(entity);
-        return mapCommentEntityToModel(entity);
+        return commentRepositoryPort.updateComment(commentId, content);
     }
 
     @Override
     public void softDeleteComment(Long commentId) {
-        CommentEntity entity = commentJpaRepository.findByCommentId(commentId)
-                .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND));
-
-        Long postId = entity.getPostId();
-
-        entity.softDelete();
-        commentJpaRepository.save(entity);
-
-        PostEntity postEntity = postJpaRepository.findById(postId)
-                .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND));
-        postEntity.decreaseCommentCount();
-        postJpaRepository.save(postEntity);
+        commentRepositoryPort.softDeleteComment(commentId);
     }
 
     private Post mapPostEntityToModel(PostEntity entity) {
@@ -226,16 +191,6 @@ public class CommunityPersistenceAdapter implements CommunityRepositoryPort {
                 .commentCount(entity.getCommentCount())
                 .createdAt(entity.getCreatedAt())
                 .updatedAt(entity.getUpdatedAt())
-                .build();
-    }
-
-    private Comment mapCommentEntityToModel(CommentEntity entity) {
-        return Comment.builder()
-                .commentId(entity.getCommentId())
-                .postId(entity.getPostId())
-                .userId(entity.getUserId())
-                .content(entity.getContent())
-                .createdAt(entity.getCreatedAt())
                 .build();
     }
 

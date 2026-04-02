@@ -1,4 +1,4 @@
-package com.coliving.common.community.adapter.out.jpa;
+package com.coliving.common.comment.adapter.out.jpa;
 
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -11,5 +11,7 @@ public interface CommentJpaRepository extends JpaRepository<CommentEntity, Long>
     Optional<CommentEntity> findByCommentId(Long commentId);
 
     List<CommentEntity> findByPostId(Long postId, Sort sort);
+
+    List<CommentEntity> findByPostId(Long postId);
 }
 

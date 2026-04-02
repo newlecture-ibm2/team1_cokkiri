@@ -1,8 +1,6 @@
 package com.coliving.common.community.adapter.in.web;
 
-import com.coliving.common.community.adapter.in.web.dto.req.CreateCommentRequestDto;
 import com.coliving.common.community.adapter.in.web.dto.req.CreatePostRequestDto;
-import com.coliving.common.community.adapter.in.web.dto.req.UpdateCommentRequestDto;
 import com.coliving.common.community.application.command.*;
 import com.coliving.common.community.application.port.in.CommunityUseCase;
 import com.coliving.common.community.application.result.*;
@@ -215,76 +213,8 @@ public class CommunityController {
         return ApiResponse.ok(response);
     }
 
-    @PostMapping(value = "/api/posts/{postId}/comments", consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ApiResponse<CommentMutationResponseDto> createComment(
-            @PathVariable Long postId,
-            @Valid @RequestBody CreateCommentRequestDto request
-    ) {
-        ActorInfo actor = getActorInfo();
-
-        CreateCommentCommand command = CreateCommentCommand.builder()
-                .actorId(actor.actorId)
-                .actorRole(actor.role)
-                .postId(postId)
-                .content(request.getContent())
-                .build();
-
-        CommentResult result = useCase.createComment(command);
-
-        CommentMutationResponseDto response = CommentMutationResponseDto.builder()
-                .commentId(result.getCommentId())
-                .postId(result.getPostId())
-                .createdAt(result.getCreatedAt())
-                .build();
-
-        return ApiResponse.ok(response);
-    }
-
-    @PutMapping(value = "/api/comments/{commentId}", consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ApiResponse<CommentMutationResponseDto> updateComment(
-            @PathVariable Long commentId,
-            @Valid @RequestBody UpdateCommentRequestDto request
-    ) {
-        ActorInfo actor = getActorInfo();
-
-        UpdateCommentCommand command = UpdateCommentCommand.builder()
-                .actorId(actor.actorId)
-                .actorRole(actor.role)
-                .commentId(commentId)
-                .content(request.getContent())
-                .build();
-
-        CommentResult result = useCase.updateComment(command);
-
-        CommentMutationResponseDto response = CommentMutationResponseDto.builder()
-                .commentId(result.getCommentId())
-                .postId(result.getPostId())
-                .createdAt(result.getCreatedAt())
-                .build();
-
-        return ApiResponse.ok(response);
-    }
-
-    @DeleteMapping("/api/comments/{commentId}")
-    public ApiResponse<CommentMutationResponseDto> deleteComment(@PathVariable Long commentId) {
-        ActorInfo actor = getActorInfo();
-
-        DeleteCommentCommand command = DeleteCommentCommand.builder()
-                .actorId(actor.actorId)
-                .actorRole(actor.role)
-                .commentId(commentId)
-                .build();
-
-        CommentResult result = useCase.deleteComment(command);
-
-        CommentMutationResponseDto response = CommentMutationResponseDto.builder()
-                .commentId(result.getCommentId())
-                .postId(result.getPostId())
-                .createdAt(result.getCreatedAt())
-                .build();
-
-        return ApiResponse.ok(response);
-    }
+    // /api/posts/{postId}/comments, /api/comments/{commentId} 관련 엔드포인트는
+    // com.coliving.common.comment 도메인 컨트롤러에서 처리합니다.
 
     private PostCommentResponseDto toCommentDto(Comment comment) {
         PostAuthorResponseDto author = PostAuthorResponseDto.builder()
@@ -320,14 +250,11 @@ public class CommunityController {
 
     private ActorRole extractRole(Authentication authentication) {
         GrantedAuthority authority = authentication.getAuthorities().stream()
+                .filter(a -> a != null && a.getAuthority() != null && a.getAuthority().startsWith("ROLE_"))
                 .findFirst()
                 .orElseThrow(() -> new BusinessException(ErrorCode.FORBIDDEN));
 
         String raw = authority.getAuthority(); // ROLE_ADMIN
-        if (!raw.startsWith("ROLE_")) {
-            throw new BusinessException(ErrorCode.FORBIDDEN);
-        }
-
         String role = raw.substring("ROLE_".length());
         try {
             return ActorRole.valueOf(role);

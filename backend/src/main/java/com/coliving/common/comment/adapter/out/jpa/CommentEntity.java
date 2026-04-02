@@ -1,4 +1,4 @@
-package com.coliving.common.community.adapter.out.jpa;
+package com.coliving.common.comment.adapter.out.jpa;
 
 import com.coliving.global.entity.BaseEntity;
 import jakarta.persistence.Column;
