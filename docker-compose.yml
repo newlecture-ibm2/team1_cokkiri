@@ -1,16 +1,16 @@
 services:
-  # frontend:
-  #   container_name: team1-cokkiri-frontend
-  #   image: team1-cokkiri-frontend:latest
-  #   build: ./frontend
-  #   restart: unless-stopped
-  #   ports:
-  #     - "3111:3000"
-  #   environment:
-  #     - NEXT_PUBLIC_API_URL=/api
-  #     - INTERNAL_BACKEND_URL=http://backend:8080
-  #   depends_on:
-  #     - backend
+  frontend:
+    container_name: team1-cokkiri-frontend
+    image: team1-cokkiri-frontend:latest
+    build: ./frontend
+    restart: unless-stopped
+    ports:
+      - "3111:3000"
+    environment:
+      - NEXT_PUBLIC_API_URL=/api
+      - INTERNAL_BACKEND_URL=http://backend:8080
+    depends_on:
+      - backend
 
   backend:
     container_name: team1-cokkiri-backend
@@ -48,6 +48,8 @@ services:
     image: wiremock/wiremock:3.5.4
     restart: unless-stopped
     command: [ "--port", "8000" ]
+    expose:
+      - "8000"
     volumes:
       - ./mock-iot/mappings:/home/wiremock/mappings
 
