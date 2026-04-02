@@ -42,6 +42,9 @@ public class DeviceEntity extends BaseEntity {
     @Column(name = "status", nullable = false, length = 20)
     private DeviceStatus status = DeviceStatus.OFFLINE;
 
+    @Column(name = "current_state", columnDefinition = "jsonb")
+    private String currentState;
+
     @Column(name = "is_active", nullable = false)
     private Boolean isActive = true;
 
@@ -53,7 +56,8 @@ public class DeviceEntity extends BaseEntity {
 
     @Builder
     public DeviceEntity(Long spaceId, DeviceTypeEntity deviceType, String name,
-                        String modelName, String mockEndpoint, DeviceStatus status,
+                        String modelName, String mockEndpoint,
+                        DeviceStatus status, String currentState,
                         Boolean isActive, OffsetDateTime installedAt) {
         this.spaceId = spaceId;
         this.deviceType = deviceType;
@@ -61,6 +65,7 @@ public class DeviceEntity extends BaseEntity {
         this.modelName = modelName;
         this.mockEndpoint = mockEndpoint;
         this.status = status != null ? status : DeviceStatus.OFFLINE;
+        this.currentState = currentState != null ? currentState : "{}";
         this.isActive = isActive != null ? isActive : true;
         this.installedAt = installedAt;
     }
