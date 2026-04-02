@@ -1,1 +1,6 @@
-// Placeholder for .prettierignore
+node_modules
+.next
+out
+build
+coverage
+public

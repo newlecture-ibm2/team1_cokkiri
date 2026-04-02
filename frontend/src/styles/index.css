@@ -1,1 +1,14 @@
-/* Placeholder for index.css */
+@import './theme.css';
+@import './fonts.css';
+@import './tailwind.css';
+
+/* Global Overrides and Special Layouts */
+:root {
+  --app-max-width: 1400px;
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+}
