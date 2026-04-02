@@ -141,6 +141,15 @@ public class CommunityPersistenceAdapter implements CommunityRepositoryPort {
                 .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND));
         entity.softDelete();
         postJpaRepository.save(entity);
+
+        // 게시글 삭제 시(soft delete) 연관 댓글도 함께 soft delete
+        // CommentEntity는 deleted_at IS NULL 조건이 걸려있어, 이후 조회에서 자동으로 제외됩니다.
+        Sort sort = Sort.by(Sort.Direction.ASC, "commentId");
+        List<CommentEntity> comments = commentJpaRepository.findByPostId(postId, sort);
+        for (CommentEntity comment : comments) {
+            comment.softDelete();
+        }
+        commentJpaRepository.saveAll(comments);
     }
 
     @Override

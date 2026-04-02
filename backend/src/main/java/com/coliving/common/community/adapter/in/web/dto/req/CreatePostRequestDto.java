@@ -2,7 +2,6 @@ package com.coliving.common.community.adapter.in.web.dto.req;
 
 import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -18,8 +17,8 @@ public class CreatePostRequestDto {
     @NotBlank
     private String content;
 
-    private List<MultipartFile> files;
+    private List<com.coliving.common.community.model.PostAttachment> attachments;
 
-    private List<String> links;
+    private List<com.coliving.common.community.model.PostLink> links;
 }
 

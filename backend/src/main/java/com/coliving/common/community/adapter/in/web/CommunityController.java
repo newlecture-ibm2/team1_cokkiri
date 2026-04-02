@@ -9,9 +9,7 @@ import com.coliving.common.community.application.result.*;
 import com.coliving.common.community.adapter.in.web.dto.res.*;
 import com.coliving.common.community.model.ActorRole;
 import com.coliving.common.community.model.Comment;
-import com.coliving.common.community.model.PostAttachment;
 import com.coliving.common.community.model.PostCategory;
-import com.coliving.common.community.model.PostLink;
 import com.coliving.global.dto.ApiResponse;
 import com.coliving.global.error.BusinessException;
 import com.coliving.global.error.ErrorCode;
@@ -21,11 +19,8 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 
-import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
 
 @RestController
 public class CommunityController {
@@ -120,15 +115,12 @@ public class CommunityController {
         return ApiResponse.ok(response);
     }
 
-    @PostMapping(value = "/api/posts", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PostMapping(value = "/api/posts", consumes = "application/json")
     public ApiResponse<PostIdResponseDto> createPost(
-            @Valid @ModelAttribute CreatePostRequestDto request
+            @Valid @RequestBody CreatePostRequestDto request
     ) {
         ActorInfo actor = getActorInfo();
         PostCategory category = parseCategoryOrThrow(request.getCategory());
-
-        List<PostAttachment> attachments = toPostAttachments(request.getFiles());
-        List<PostLink> links = toPostLinks(request.getLinks());
 
         CreatePostCommand command = CreatePostCommand.builder()
                 .actorId(actor.actorId)
@@ -136,8 +128,8 @@ public class CommunityController {
                 .category(category)
                 .title(request.getTitle())
                 .content(request.getContent())
-                .attachments(attachments)
-                .links(links)
+                .attachments(request.getAttachments())
+                .links(request.getLinks())
                 .build();
 
         CreatePostResult result = useCase.createPost(command);
@@ -151,16 +143,13 @@ public class CommunityController {
         return ApiResponse.ok(response);
     }
 
-    @PutMapping(value = "/api/posts/{postId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PutMapping(value = "/api/posts/{postId}", consumes = "application/json")
     public ApiResponse<PostIdResponseDto> updatePost(
             @PathVariable Long postId,
-            @Valid @ModelAttribute CreatePostRequestDto request
+            @Valid @RequestBody CreatePostRequestDto request
     ) {
         ActorInfo actor = getActorInfo();
         PostCategory category = parseCategoryOrThrow(request.getCategory());
-
-        List<PostAttachment> attachments = toPostAttachments(request.getFiles());
-        List<PostLink> links = toPostLinks(request.getLinks());
 
         UpdatePostCommand command = UpdatePostCommand.builder()
                 .actorId(actor.actorId)
@@ -169,8 +158,8 @@ public class CommunityController {
                 .category(category)
                 .title(request.getTitle())
                 .content(request.getContent())
-                .attachments(attachments)
-                .links(links)
+                .attachments(request.getAttachments())
+                .links(request.getLinks())
                 .build();
 
         UpdatePostResult result = useCase.updatePost(command);
@@ -362,34 +351,7 @@ public class CommunityController {
         }
     }
 
-    private List<PostAttachment> toPostAttachments(List<MultipartFile> files) {
-        if (files == null || files.isEmpty()) {
-            return Collections.emptyList();
-        }
-
-        return files.stream()
-                .filter(Objects::nonNull)
-                .filter(f -> f.getOriginalFilename() != null && !f.getOriginalFilename().isBlank())
-                .map(f -> PostAttachment.builder()
-                        .fileName(f.getOriginalFilename())
-                        .fileSize(f.getSize())
-                        .fileUrl("/uploads/posts/" + f.getOriginalFilename())
-                        .build())
-                .toList();
-    }
-
-    private List<PostLink> toPostLinks(List<String> links) {
-        if (links == null || links.isEmpty()) {
-            return Collections.emptyList();
-        }
-
-        return links.stream()
-                .filter(Objects::nonNull)
-                .map(String::trim)
-                .filter(s -> !s.isBlank())
-                .map(url -> PostLink.builder().url(url).build())
-                .toList();
-    }
+    // attachments/links는 request body의 JSON 배열을 그대로 사용합니다.
 
     private static class ActorInfo {
         private final Long actorId;
