@@ -716,6 +716,7 @@ Query: `?page=0&size=20&sort=createdAt,desc`
         "spaceName": "301호",
         "spaceType": "PRIVATE",
         "status": "ONLINE",
+        "currentState": { "power": true, "brightness": 80 },
         "isActive": true
       }
     ],
@@ -732,6 +733,7 @@ Query: `?page=0&size=20&sort=createdAt,desc`
         "spaceName": "공용 세탁실",
         "spaceType": "COMMON",
         "status": "ONLINE",
+        "currentState": { "running": false },
         "isActive": true,
         "hasActiveReservation": true
       }
@@ -774,6 +776,7 @@ Query: `?page=0&size=20&sort=createdAt,desc`
     "deviceId": 1,
     "command": "SET_TEMP",
     "result": "SUCCESS",
+    "currentState": { "power": true, "temperature": 24, "mode": "COOL" },
     "controlLogId": 42,
     "executedAt": "2026-03-31T14:30:00+09:00"
   }
