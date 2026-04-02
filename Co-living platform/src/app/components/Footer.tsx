@@ -35,7 +35,7 @@ export function Footer() {
               <span className="block text-[15vw] leading-[0.8] font-black tracking-tighter uppercase md:text-[8vw]">
                 COKKIRI<span className="text-[#768064]">.</span>
               </span>
-              <span className="block text-[min(10vw,15px)] md:text-xs font-black tracking-[0.2em] md:tracking-[0.4em] uppercase opacity-50 transition-opacity duration-500 group-hover:opacity-100 whitespace-nowrap">
+              <span className="mt-4 md:mt-6 block text-[min(10vw,15px)] md:text-xs font-black tracking-[0.2em] md:tracking-[0.4em] uppercase opacity-50 transition-opacity duration-500 group-hover:opacity-100 whitespace-nowrap">
                 Togetherness Redefined © 26
               </span>
             </Link>
