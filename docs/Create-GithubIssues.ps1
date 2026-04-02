@@ -1,4 +1,4 @@
-﻿$csvPath = Join-Path $PSScriptRoot "wbs.csv"
+$csvPath = Join-Path $PSScriptRoot "wbs_allocated.csv"
 
 if (-not (Test-Path $csvPath)) {
     Write-Host "File not found: $csvPath" -ForegroundColor Red
@@ -27,8 +27,9 @@ foreach ($row in $data) {
 
     $taskName = $row.$colTask
     $roleType = $row.$colComponent
+    $domainCode = ($row.$colWbsId -split '-')[0]
     
-    $title = "[$roleType] $taskName"
+    $title = "[$domainCode] $taskName"
     
     $body = @"
 ### 작업 설명
@@ -47,11 +48,17 @@ $($row.$colDesc)
 ### 컨트롤 가이드 (Reminder)
 
 - **Branch:** feat/#이슈번호
-- **Commit:** :이모지: [$roleType] 커밋메세지
-- **MR:** [$roleType/feat] $taskName
+- **Commit:** :이모지: [$domainCode] 커밋메세지
+- **MR:** [$domainCode/feat] $taskName
 "@
 
-    $labels = $row.$colLabels
+    $csvLabels = $row.$colLabels
+    # 도메인 코드(예: USR)를 기본 라벨로 포함
+    $labelsArray = @($domainCode)
+    if (-not [string]::IsNullOrWhiteSpace($csvLabels)) {
+        $labelsArray += $csvLabels -split ','
+    }
+
     $assignee = $row.$colGitHubId
 
     $commandArgs = @("issue", "create")
@@ -60,9 +67,9 @@ $($row.$colDesc)
     $commandArgs += "--body"
     $commandArgs += $body
     
-    if (-not [string]::IsNullOrWhiteSpace($labels)) {
+    foreach ($label in $labelsArray) {
         $commandArgs += "--label"
-        $commandArgs += $labels
+        $commandArgs += $label.Trim()
     }
 
     if (-not [string]::IsNullOrWhiteSpace($assignee)) {
