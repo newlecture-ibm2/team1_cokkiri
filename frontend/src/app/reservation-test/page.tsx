@@ -7,8 +7,11 @@ export default function ReservationTestPage() {
   const [adminId, setAdminId] = useState("999");
 
   // State
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [facilities, setFacilities] = useState<any[]>([]);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [myReservations, setMyReservations] = useState<any[]>([]);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [adminReservations, setAdminReservations] = useState<any[]>([]);
 
   // Form State
@@ -29,8 +32,10 @@ export default function ReservationTestPage() {
           setSpaceId(data.data[0].spaceId.toString());
         }
       }
-    } catch (err: any) {
-      setMessage("Facilities Fetch Error: " + err.message);
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        setMessage("Facilities Fetch Error: " + err.message);
+      }
     }
   };
 
@@ -45,8 +50,10 @@ export default function ReservationTestPage() {
       } else {
         setMessage("My Reservations Error: " + JSON.stringify(data));
       }
-    } catch (err: any) {
-      setMessage("My Reservations Fetch Error: " + err.message);
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        setMessage("My Reservations Fetch Error: " + err.message);
+      }
     }
   };
 
@@ -61,8 +68,10 @@ export default function ReservationTestPage() {
       } else {
         setMessage("Admin Reservations Error: " + JSON.stringify(data));
       }
-    } catch (err: any) {
-      setMessage("Admin Reservations Fetch Error: " + err.message);
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        setMessage("Admin Reservations Fetch Error: " + err.message);
+      }
     }
   };
 
@@ -89,8 +98,10 @@ export default function ReservationTestPage() {
       } else {
         setMessage("Create Error: " + JSON.stringify(data));
       }
-    } catch (err: any) {
-      setMessage("Create Request Error: " + err.message);
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        setMessage("Create Request Error: " + err.message);
+      }
     }
   };
 
@@ -108,8 +119,10 @@ export default function ReservationTestPage() {
       } else {
         setMessage("Cancel Error: " + JSON.stringify(data));
       }
-    } catch (err: any) {
-      setMessage("Cancel Request Error: " + err.message);
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        setMessage("Cancel Request Error: " + err.message);
+      }
     }
   };
 
@@ -127,8 +140,10 @@ export default function ReservationTestPage() {
       } else {
         setMessage(`Admin ${action} Error: ` + JSON.stringify(data));
       }
-    } catch (err: any) {
-      setMessage(`Admin ${action} Request Error: ` + err.message);
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        setMessage(`Admin ${action} Request Error: ` + err.message);
+      }
     }
   };
 
