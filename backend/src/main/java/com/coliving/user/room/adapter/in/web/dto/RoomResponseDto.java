@@ -32,6 +32,17 @@ public class RoomResponseDto {
 
     // 이미지
     private String thumbnailUrl;
+    private List<SpaceImageDto> images;
+
+    @Getter
+    @Builder
+    public static class SpaceImageDto {
+        private Long spaceImageId;
+        private String imageUrl;
+        private String imageType;
+        private Integer sortOrder;
+        private Boolean isThumbnail;
+    }
 
     public static RoomResponseDto from(Room room) {
         return RoomResponseDto.builder()
@@ -51,6 +62,15 @@ public class RoomResponseDto {
                 .maintenanceFee(room.getMaintenanceFee())
                 .parkingAvailable(room.getParkingAvailable())
                 .thumbnailUrl(room.getThumbnailUrl())
+                .images(room.getImages() != null ? room.getImages().stream()
+                        .map(img -> SpaceImageDto.builder()
+                                .spaceImageId(img.getSpaceImageId())
+                                .imageUrl(img.getImageUrl())
+                                .imageType(img.getImageType() != null ? img.getImageType().name() : null)
+                                .sortOrder(img.getSortOrder())
+                                .isThumbnail(img.getIsThumbnail())
+                                .build())
+                        .toList() : null)
                 .build();
     }
 }

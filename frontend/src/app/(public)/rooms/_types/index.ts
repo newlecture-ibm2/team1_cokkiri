@@ -1,3 +1,11 @@
+export interface SpaceImageDTO {
+  spaceImageId: number;
+  imageUrl: string;
+  imageType: 'PHOTO' | 'FLOOR_PLAN';
+  sortOrder: number;
+  isThumbnail: boolean;
+}
+
 export interface RoomDTO {
   spaceId: number;
   name: string;
@@ -15,6 +23,7 @@ export interface RoomDTO {
   maintenanceFee?: number;
   parkingAvailable?: boolean;
   thumbnailUrl?: string;
+  images?: SpaceImageDTO[];
 }
 
 export interface PageResponse<T> {
