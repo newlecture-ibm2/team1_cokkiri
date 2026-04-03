@@ -129,6 +129,7 @@ erDiagram
         VARCHAR model_name "모델명 (제조사 제품명)"
         VARCHAR mock_endpoint "목업 IoT 엔드포인트 URL"
         VARCHAR status "연결 상태 (ONLINE / OFFLINE / ERROR)"
+        JSONB current_state "기기 현재 운전 상태 (power, temperature, brightness 등)"
         BOOLEAN is_active "활성화 여부"
         TIMESTAMPTZ installed_at "설치일"
         TIMESTAMPTZ last_online_at "마지막 온라인 시각"
@@ -403,7 +404,7 @@ erDiagram
 | 4 | **COMMON_SPACE_DETAIL** | 공용 공간 전용 상세 정보 | ADM-SPC-02, RES-RSV-01 | 🆕 신규 (usage_fee 추가) |
 | 5 | **SPACE_IMAGE** | 공간 이미지 (사진, 평면도) | USR-ROM-01~02 | PK/FK명 변경, soft delete 추가 |
 | 6 | **DEVICE_TYPE** | IoT 기기 종류 (동적 관리) | ADM-DEV-02 | 코드값 통일, PK명 변경 |
-| 7 | **DEVICE** | IoT 기기 인스턴스 | RES-DEV-01~02, ADM-DEV-01~06 | PK명 변경, soft delete 추가 |
+| 7 | **DEVICE** | IoT 기기 인스턴스 | RES-DEV-01~02, ADM-DEV-01~06 | PK명 변경, soft delete 추가, current_state(JSONB) 추가 |
 | 8 | **CONTRACT** | 계약 (신청~계약 전 과정 통합) | USR-CTR-00~02, ADM-CTR-01~04, ADM-BKG-01 | 🆕 BOOKING 합병, 속성 추가 |
 | 9 | **RESERVATION** | 공용 시설 예약 | RES-RSV-01~04, ADM-RSV-01~02 | approved_by 추가, soft delete |
 | 10 | **CONTROL_LOG** | IoT 기기 제어 이력 (감사 로그) | RES-DEV-02, ADM-DEV-04 | 타임스탬프 통일, FK명 통일 |

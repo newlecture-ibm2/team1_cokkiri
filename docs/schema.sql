@@ -162,6 +162,7 @@ CREATE TABLE device (
     model_name      VARCHAR(100),
     mock_endpoint   VARCHAR(500),
     status          VARCHAR(15)     NOT NULL DEFAULT 'OFFLINE' CHECK (status IN ('ONLINE', 'OFFLINE', 'ERROR')),
+    current_state   JSONB           DEFAULT '{}',
     is_active       BOOLEAN         NOT NULL DEFAULT TRUE,
     installed_at    TIMESTAMPTZ,
     last_online_at  TIMESTAMPTZ,
