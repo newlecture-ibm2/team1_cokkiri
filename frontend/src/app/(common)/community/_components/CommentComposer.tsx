@@ -48,7 +48,7 @@ export function CommentComposer({ postId }: { postId: number }) {
         onChange={(e) => setContent(e.target.value)}
         rows={3}
         placeholder="댓글을 입력하세요"
-        className="w-full resize-y rounded-xl border border-input bg-background px-4 py-3 font-medium tracking-tight text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        className="w-full resize-y rounded-xl border border-input bg-surface px-4 py-3 font-medium tracking-tight text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
       />
       <div className="mt-4 flex justify-end">
         <motion.button

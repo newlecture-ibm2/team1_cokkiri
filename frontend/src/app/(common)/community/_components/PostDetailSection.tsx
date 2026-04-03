@@ -5,6 +5,7 @@ import { POST_CATEGORIES } from "../_types/community";
 import { LikeToggle } from "./LikeToggle";
 import { CommentComposer } from "./CommentComposer";
 import { PostEditDeleteActions } from "./PostEditDeleteActions";
+import { CommentItem } from "./CommentItem";
 
 function categoryLabel(code: string) {
   return POST_CATEGORIES.find((c) => c.value === code)?.label ?? code;
@@ -151,25 +152,15 @@ export function PostDetailSection({
         </h2>
         <ul className="mt-8 space-y-6">
           {(detail.comments ?? []).map((c) => (
-            <li
+            <CommentItem
               key={c.commentId}
-              className="rounded-[2rem] border border-border bg-background/80 p-6 backdrop-blur-sm md:p-8"
-            >
-              <div className="flex flex-wrap items-center justify-between gap-2">
-                <span className="font-black text-[10px] uppercase tracking-[0.2em] text-foreground">
-                  {c.author?.name ?? "익명"}
-                </span>
-                <time
-                  dateTime={c.createdAt}
-                  className="font-black text-[10px] uppercase tracking-[0.2em] text-muted-foreground"
-                >
-                  {formatDate(c.createdAt)}
-                </time>
-              </div>
-              <p className="mt-3 whitespace-pre-wrap font-medium tracking-tight text-balance text-foreground">
-                {c.content}
-              </p>
-            </li>
+              commentId={c.commentId}
+              content={c.content}
+              authorUserId={c.author.userId}
+              authorName={c.author.name}
+              createdAt={c.createdAt}
+              currentUser={currentUser}
+            />
           ))}
         </ul>
         <CommentComposer postId={detail.postId} />
