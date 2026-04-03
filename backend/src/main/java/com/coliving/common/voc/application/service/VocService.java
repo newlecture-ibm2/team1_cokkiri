@@ -1,0 +1,151 @@
+package com.coliving.common.voc.application.service;
+
+import com.coliving.common.voc.application.command.CancelVocCommand;
+import com.coliving.common.voc.application.command.CreateVocCommand;
+import com.coliving.common.voc.application.command.ListMyVocsCommand;
+import com.coliving.common.voc.application.command.UpdateVocCommand;
+import com.coliving.common.voc.application.port.in.VocUseCase;
+import com.coliving.common.notification.application.port.out.NotificationRepositoryPort;
+import com.coliving.common.notification.model.ReferenceType;
+import com.coliving.common.voc.application.port.out.VocRepositoryPort;
+import com.coliving.common.voc.application.result.VocListItemResult;
+import com.coliving.common.voc.application.result.VocListResult;
+import com.coliving.common.voc.application.result.VocResult;
+import com.coliving.common.voc.model.Voc;
+import com.coliving.common.voc.model.VocStatus;
+import com.coliving.global.error.BusinessException;
+import com.coliving.global.error.ErrorCode;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
+
+@Service
+public class VocService implements VocUseCase {
+
+    private final VocRepositoryPort vocRepositoryPort;
+    private final NotificationRepositoryPort notificationRepositoryPort;
+
+    public VocService(VocRepositoryPort vocRepositoryPort,
+                      NotificationRepositoryPort notificationRepositoryPort) {
+        this.vocRepositoryPort = vocRepositoryPort;
+        this.notificationRepositoryPort = notificationRepositoryPort;
+    }
+
+    @Override
+    @Transactional
+    public VocResult createVoc(CreateVocCommand command) {
+        Voc created = vocRepositoryPort.create(
+                command.getUserId(),
+                command.getCategory(),
+                command.getTitle(),
+                command.getContent(),
+                command.getAttachments()
+        );
+        return toVocResult(created);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public VocListResult listMyVocs(ListMyVocsCommand command) {
+        Sort sort = parseSort(command.getSort());
+        PageRequest pageRequest = PageRequest.of(command.getPage(), command.getSize(), sort);
+
+        Page<Voc> page = vocRepositoryPort.findByUserId(command.getUserId(), pageRequest);
+
+        List<VocListItemResult> content = page.getContent().stream()
+                .map(v -> VocListItemResult.builder()
+                        .vocId(v.getVocId())
+                        .category(v.getCategory())
+                        .title(v.getTitle())
+                        .status(v.getStatus())
+                        .createdAt(v.getCreatedAt())
+                        .build())
+                .toList();
+
+        return VocListResult.builder()
+                .content(content)
+                .page(page.getNumber())
+                .size(page.getSize())
+                .totalElements(page.getTotalElements())
+                .totalPages(page.getTotalPages())
+                .build();
+    }
+
+    @Override
+    @Transactional
+    public VocResult updateVoc(UpdateVocCommand command) {
+        Voc existing = vocRepositoryPort.findByVocIdAndUserId(command.getVocId(), command.getUserId())
+                .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND));
+
+        if (existing.getStatus() != VocStatus.OPEN) {
+            throw new BusinessException(ErrorCode.INVALID_STATUS);
+        }
+
+        Voc updated = vocRepositoryPort.updateOwned(
+                command.getVocId(),
+                command.getUserId(),
+                command.getCategory(),
+                command.getTitle(),
+                command.getContent(),
+                command.getAttachments()
+        );
+        return toVocResult(updated);
+    }
+
+    @Override
+    @Transactional
+    public VocResult cancelVoc(CancelVocCommand command) {
+        Voc existing = vocRepositoryPort.findByVocIdAndUserId(command.getVocId(), command.getUserId())
+                .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND));
+
+        if (existing.getStatus() != VocStatus.OPEN) {
+            throw new BusinessException(ErrorCode.INVALID_STATUS);
+        }
+
+        vocRepositoryPort.cancelOwned(command.getVocId(), command.getUserId());
+        notificationRepositoryPort.softDeleteByReference(ReferenceType.VOC, command.getVocId());
+
+        Voc cancelled = vocRepositoryPort.findByVocIdAndUserId(command.getVocId(), command.getUserId())
+                .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND));
+        return toVocResult(cancelled);
+    }
+
+    private VocResult toVocResult(Voc v) {
+        return VocResult.builder()
+                .vocId(v.getVocId())
+                .userId(v.getUserId())
+                .category(v.getCategory())
+                .title(v.getTitle())
+                .content(v.getContent())
+                .attachments(v.getAttachments())
+                .status(v.getStatus())
+                .adminReply(v.getAdminReply())
+                .replyUserId(v.getReplyUserId())
+                .repliedAt(v.getRepliedAt())
+                .createdAt(v.getCreatedAt())
+                .updatedAt(v.getUpdatedAt())
+                .build();
+    }
+
+    private Sort parseSort(String sort) {
+        if (sort == null || sort.isBlank()) {
+            return Sort.by(Sort.Direction.DESC, "createdAt");
+        }
+
+        String[] parts = sort.split(",");
+        if (parts.length != 2) {
+            return Sort.by(Sort.Direction.DESC, "createdAt");
+        }
+
+        String property = parts[0].trim();
+        Sort.Direction direction = "asc".equalsIgnoreCase(parts[1].trim())
+                ? Sort.Direction.ASC
+                : Sort.Direction.DESC;
+
+        return Sort.by(direction, property.isBlank() ? "createdAt" : property);
+    }
+}
