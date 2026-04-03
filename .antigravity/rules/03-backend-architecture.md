@@ -9,7 +9,6 @@
 모듈 분리 기준: 철저하게 **도메인 중심**으로 패키지를 나눕니다. 기술 중심(`controllers/`, `services/` 한 곳에 전부 몰아넣기) 구조를 **지양**합니다.
 
 ### 1-1. 아키텍처 레이어 흐름
-
 ```
 Client (HTTP)
   → adapter/in/web (Controller, DTO)
@@ -24,20 +23,17 @@ Client (HTTP)
 ### 1-2. 최상위 패키지 구조
 
 베이스 패키지 `com.coliving` 아래 **역할 기반**으로 최상위 패키지를 구분합니다.
-
 ```
 src/main/java/com/coliving/
 ├── CoLivingApplication.java
-│
-├── global/                          # ── 횡단 관심사 (Cross-Cutting) ──
+├── global/                          # 횡단 관심사 (Cross-Cutting)
 │   ├── config/                      # SecurityConfig, JpaConfig, WebConfig, SwaggerConfig
 │   ├── security/                    # JwtTokenProvider, JwtAuthenticationFilter, CustomUserDetailsService
 │   ├── error/                       # ErrorCode, BusinessException, GlobalExceptionHandler
 │   ├── dto/                         # ApiResponse<T>
 │   ├── entity/                      # BaseEntity (공통 부모 엔티티)
 │   └── filter/                      # CorrelationIdFilter
-│
-├── admin/                           # ── 관리자 유스케이스 ──
+├── admin/                           # 관리자 유스케이스
 │   ├── contract/                    # 입주민 계약 관리, 신청 승인/거절
 │   ├── space/                       # 공간(Space) CRUD
 │   ├── device/                      # 기기 등록 및 전체 공간 기기 제어
@@ -46,29 +42,24 @@ src/main/java/com/coliving/
 │   ├── monitoring/                  # 장애 모니터링 및 에너지 통계
 │   ├── dashboard/                   # 대시보드 통계 요약
 │   └── voc/                         # 민원 조회 및 답변 처리
-│
-├── user/                            # ── 일반 유저 유스케이스 ──
+├── user/                            # 일반 유저 유스케이스
 │   ├── room/                        # 방(공간) 둘러보기
 │   ├── contract/                    # 개인 공간 계약 신청
 │   └── history/                     # 내 활동 이력 및 신청 목록
-│
-├── resident/                        # ── 입주자 유스케이스 ──
+├── resident/                        # 입주자 유스케이스
 │   ├── device/                      # 본인 방/공용 공간 기기 제어
 │   ├── booking/                     # 공용 시설 예약 신청 및 취소
 │   └── log/                         # 기기 제어 이력 및 예약 이력
-│
-├── common/                          # ── 공통 유스케이스 (전체 역할) ──
+├── common/                          # 공통 유스케이스 (전체 역할)
 │   ├── auth/                        # 로그인, 회원가입, JWT 검증
 │   ├── profile/                     # 내 정보, 비밀번호 변경, 회원 탈퇴
 │   ├── community/                   # 커뮤니티 게시판 조회 및 작성
 │   ├── voc/                         # 민원 등록 및 내 민원 조회
 │   └── notification/                # 알림 목록 조회 및 읽음 처리
-│
-└── infra/                           # ── 외부 연동 어댑터 (Outbound) ──
+└── infra/                           # 외부 연동 어댑터 (Outbound)
     ├── iot/                         # MockIotClient (→ 추후 SmartThings 교체)
     └── persistence/                 # JPA 설정 및 공용 Repository 어댑터
 ```
-
 > `global/`은 모든 도메인 모듈이 공유하는 횡단 관심사입니다. 개별 도메인 로직이 여기에 들어가면 안 됩니다.
 > `infra/`는 외부 시스템과의 연동 어댑터를 모읍니다. 도메인별 Persistence Adapter는 각 도메인 모듈 내부에 위치합니다.
 
@@ -76,90 +67,59 @@ src/main/java/com/coliving/
 
 위 최상위 패키지의 **각 도메인 모듈 내부**는 아래 구조를 **그대로** 사용합니다.
 `{feature}` 자리에 도메인 이름을 넣습니다 (소문자 단수형, 예: `space`, `device`, `contract`).
-
+**Admin 모듈**은 `admin/{feature}/` 경로에 동일 구조로 별도 생성하며, 클래스명에 `Admin` 접두사를 붙입니다.
 ```
-{feature}/
-├── adapter/
-│   ├── in/
-│   │   └── web/
-│   │       ├── {Feature}Controller.java              ← REST Controller
-│   │       └── dto/
-│   │           ├── req/                               ← Request DTO (CRUD 모듈)
-│   │           │   ├── Create{Feature}RequestDto.java
-│   │           │   ├── Update{Feature}RequestDto.java
-│   │           │   └── {Feature}ListRequestDto.java
-│   │           └── res/                               ← Response DTO
-│   │               ├── {Feature}ResponseDto.java
-│   │               ├── {Feature}DetailResponseDto.java
-│   │               ├── {Feature}ListResponseDto.java
-│   │               ├── Create{Feature}ResponseDto.java
-│   │               └── Update{Feature}ResponseDto.java
-│   └── out/
-│       ├── jpa/                                       ← JPA Entity & Repository
-│       │   ├── {Feature}Entity.java
-│       │   └── {Feature}JpaRepository.java
-│       └── persistence/                               ← Port 구현 어댑터
+{feature}/                                          admin/{feature}/
+├── adapter/                                        ├── adapter/
+│   ├── in/web/                                     │   ├── in/web/
+│   │   ├── {Feature}Controller.java                │   │   ├── Admin{Feature}Controller.java
+│   │   └── dto/                                    │   │   └── dto/
+│   │       ├── req/                                │   │       ├── req/  ← Admin은 항상 req/res 분리
+│   │       │   ├── Create{Feature}RequestDto.java  │   │       └── res/
+│   │       │   ├── Update{Feature}RequestDto.java  │   └── out/persistence/
+│   │       │   └── {Feature}ListRequestDto.java    │       └── Admin{Feature}PersistenceAdapter.java
+│   │       └── res/                                ├── application/
+│   │           ├── {Feature}ResponseDto.java       │   ├── command/
+│   │           ├── {Feature}DetailResponseDto.java │   ├── port/
+│   │           ├── {Feature}ListResponseDto.java   │   │   ├── in/  ← Admin{Feature}UseCase 등
+│   │           ├── Create{Feature}ResponseDto.java │   │   └── out/ ← Admin{Feature}RepositoryPort
+│   │           └── Update{Feature}ResponseDto.java │   ├── result/
+│   └── out/                                        │   └── service/
+│       ├── jpa/                                    │       └── Admin{Feature}Service.java
+│       │   ├── {Feature}Entity.java                └── model/
+│       │   └── {Feature}JpaRepository.java             └── Admin{Feature}.java (필요 시)
+│       └── persistence/
 │           └── {Feature}PersistenceAdapter.java
 ├── application/
-│   ├── command/                                       ← Service 입력 VO (불변 객체)
+│   ├── command/                    ← Service 입력 VO (불변 객체)
 │   │   ├── Create{Feature}Command.java
 │   │   ├── Update{Feature}Command.java
 │   │   ├── Delete{Feature}Command.java
 │   │   ├── Get{Feature}Command.java
 │   │   └── {Feature}ListCommand.java
 │   ├── port/
-│   │   ├── in/                                        ← UseCase 인터페이스
-│   │   │   ├── {Feature}UseCase.java                  ← 통합 인터페이스 (선택)
+│   │   ├── in/                     ← UseCase 인터페이스
+│   │   │   ├── {Feature}UseCase.java (통합, 선택)
 │   │   │   ├── Create{Feature}UseCase.java
 │   │   │   ├── Update{Feature}UseCase.java
 │   │   │   ├── Delete{Feature}UseCase.java
 │   │   │   └── View{Feature}ListUseCase.java
-│   │   └── out/                                       ← Repository 포트
+│   │   └── out/                    ← Repository 포트
 │   │       └── {Feature}RepositoryPort.java
-│   ├── result/                                        ← Service 출력 VO (불변 객체)
+│   ├── result/                     ← Service 출력 VO (불변 객체)
 │   │   ├── Create{Feature}Result.java
 │   │   ├── Update{Feature}Result.java
 │   │   ├── Get{Feature}Result.java
 │   │   └── {Feature}ListResult.java
-│   └── service/                                       ← UseCase 구현
+│   └── service/
 │       └── {Feature}Service.java
-└── model/                                             ← 도메인 모델 (순수 Java 객체)
+└── model/                          ← 도메인 모델 (순수 Java 객체)
     └── {Feature}.java
 ```
-
 > 조회 전용 모듈(읽기만 있는 모듈)은 `dto/` 폴더에 DTO를 플랫하게 배치해도 됩니다. CRUD가 있는 모듈은 반드시 `dto/req/` · `dto/res/` 로 분리합니다.
-
-### 1-4. Admin 모듈 구조
-
-Admin 기능이 필요한 경우 `admin/{feature}/` 경로에 **동일한 구조**를 별도로 생성합니다.
-
-```
-admin/{feature}/
-├── adapter/
-│   ├── in/web/
-│   │   ├── Admin{Feature}Controller.java
-│   │   └── dto/
-│   │       ├── req/     ← Admin은 CRUD가 기본이므로 항상 req/res 분리
-│   │       └── res/
-│   └── out/
-│       └── persistence/
-│           └── Admin{Feature}PersistenceAdapter.java
-├── application/
-│   ├── command/
-│   ├── port/
-│   │   ├── in/           ← Admin{Feature}UseCase, Create/Update/Delete UseCase 등
-│   │   └── out/          ← Admin{Feature}RepositoryPort
-│   ├── result/
-│   └── service/
-│       └── Admin{Feature}Service.java
-└── model/
-    └── Admin{Feature}.java   ← (필요 시)
-```
-
-> Admin 모듈 내 클래스에는 `Admin` 접두사를 사용합니다.
 > User-facing 모듈 클래스에는 접두사 없음 (기본).
 
-### 1-5. 레이어별 책임
+### 1-4. 레이어별 책임
 
 | 레이어 | 패키지 | 책임 |
 |--------|--------|------|
@@ -173,8 +133,7 @@ admin/{feature}/
 | **Application (Service)** | `application/service/` | UseCase 구현, 비즈니스 로직 |
 | **Model** | `model/` | 도메인 모델 (순수 Java 객체) |
 
-### 1-6. 데이터 흐름
-
+### 1-5. 데이터 흐름
 ```
 1. Client → Controller : HTTP Request
 2. Controller           : RequestDto → Command 변환
@@ -190,7 +149,7 @@ admin/{feature}/
 12. Controller → Client  : HTTP Response
 ```
 
-### 1-7. 폴더 이름 규칙
+### 1-6. 폴더 이름 규칙
 
 | 항목 | 규칙 | 예시 |
 |------|------|------|
@@ -199,7 +158,7 @@ admin/{feature}/
 | 하위 패키지 | 고정 이름 사용 | `adapter`, `in`, `out`, `web`, `dto`, `req`, `res`, `jpa`, `persistence`, `application`, `command`, `port`, `result`, `service`, `model` |
 | 도메인 모델 폴더 | **`model/`** 으로 통일 | ~~`domain/model/`~~ 사용 금지 |
 
-### 1-8. 파일(클래스) 네이밍 규칙
+### 1-7. 파일(클래스) 네이밍 규칙
 
 | 요소 | 접미사 | 금지 |
 |------|--------|------|
@@ -215,7 +174,7 @@ admin/{feature}/
 | Service | `Service` | `~Impl`, `~ServiceImpl` |
 | Domain Model | `{Feature}.java` (접미사 없음) | - |
 
-### 1-9. 새 모듈 추가 체크리스트
+### 1-8. 새 모듈 추가 체크리스트
 
 새 도메인 `{feature}`를 추가할 때 아래 순서대로 생성합니다:
 
@@ -231,7 +190,7 @@ admin/{feature}/
 10. `{feature}/adapter/in/web/dto/` — Request/Response DTO들
 11. Admin이 필요하면 `admin/{feature}/` 동일 구조로 별도 생성
 
-### 1-10. ❌ 금지 사항
+### 1-9. ❌ 금지 사항
 
 1. **`domain/model/` 폴더 사용 금지** → `model/` 로 통일
 2. **DTO에 비즈니스 로직 금지** → 변환만 담당
@@ -244,33 +203,32 @@ admin/{feature}/
 
 ## 2. Global Response Standard (전역 응답 규격 정규화)
 
-- **API 응답 통합:** 클라이언트(Next.js)에게 전달되는 모든 JSON 응답값은 성공과 실패를 막론하고 `ApiResponse<T>` 객체로 통일해야 합니다.
+- **API 응답 통합:** 모든 JSON 응답은 `ApiResponse<T>` 객체로 통일합니다.
   - `success`: boolean (`true`/`false`)
   - `data`: 실제 데이터(T) 페이로드 또는 null
   - `message`: 클라이언트 지향적인 문자열 정보 또는 null
   - `errorCode`: 에러 코드 문자열 (실패 시에만 포함)
-- **Global Error Handling:** 각각의 Service 계층 안에서 `try-catch`로 HTTP 응답을 뱉지 않습니다. 도메인 예외를 던지면(`BusinessException`) 전역 계층인 `GlobalExceptionHandler`가 이를 낚아채서 일관된 Error 형태의 `ApiResponse`와 올바른 HTTP Status 코드로 자동 포장해야 합니다.
+- **Global Error Handling:** Service에서 `try-catch`로 HTTP 응답을 뱉지 않습니다. 도메인 예외를 던지면(`BusinessException`) `GlobalExceptionHandler`가 일관된 `ApiResponse`와 올바른 HTTP Status 코드로 자동 포장합니다.
 
 ---
 
 ## 3. Mock IoT Server 연동 (매우 중요)
 
-- 기기 제어 요청을 보낼 때는, 외부 목업 서버인 `http://mock-iot:8000` (도커 컨테이너) 주소로 `RestTemplate` 또는 `WebClient`를 이용해 HTTP 통신을 시도해야 합니다. 백엔드 자체 서버 메모리에 가짜 데이터를 만들거나 제어 상태를 저장하지 않습니다.
-- **확장성:** 현시점은 Mock 서버와 통신하지만, 추후 진짜 '삼성 SmartThings API'로 교체될 것을 염두에 두고 반드시 `IotAdapter` 라는 추상 인터페이스를 두고, `MockIotAdapter` 구현체 내부에서만 HTTP 통신 로직을 구현하는 OCP(개방 폐쇄 원칙)를 지킵니다.
-- **내결함성(Resilience):** Mock 서버가 느려도 백엔드가 터지지 않도록 Timeout 설정을 반드시 짧게 (예: 5초) 제어합니다.
+- 기기 제어 요청은 `http://mock-iot:8000` (도커 컨테이너)으로 `RestTemplate` 또는 `WebClient` HTTP 통신. 백엔드 자체 메모리에 가짜 데이터/제어 상태 저장 금지.
+- **확장성:** `IotAdapter` 추상 인터페이스 → `MockIotAdapter` 구현체에서만 HTTP 통신. 추후 SmartThings 교체 시 구현체만 교체 (OCP).
+- **내결함성:** Timeout 5초. Mock 서버 지연 시 백엔드 미영향.
 
 ---
 
-## 4. JSON 프라퍼티 직렬화 전략 (camelCase 통일)
+## 4. JSON 직렬화 전략 (camelCase 통일)
 
-- **프론트-백엔드 camelCase 일치:** Java와 TypeScript(Next.js) 객체의 네이밍 컨벤션 표준인 **`camelCase`**를 REST API JSON 통신에도 100% 동일하게 적용합니다. (예: `userId`, `createdAt`)
-- 이를 위해 `application.yml`에서 `spring.jackson.property-naming-strategy` 같은 snake_case 설정을 제거하여 기본값(`LOWER_CAMEL_CASE`)을 사용합니다.
-- DTO 클래스나 필드에 `@JsonProperty`를 달아 부분적으로 `snake_case`로 강제 변환하는 행위를 엄격히 금지합니다.
+- **프론트-백엔드 camelCase 일치:** `userId`, `createdAt` 등 REST API JSON에도 100% camelCase 적용.
+- `application.yml`에서 `spring.jackson.property-naming-strategy` snake_case 설정 제거 → 기본값(`LOWER_CAMEL_CASE`) 사용.
+- DTO에 `@JsonProperty`로 snake_case 강제 변환 **엄격 금지**.
 
 ---
 
-## 5. 트랜잭션 및 JPA 영속화 룰 (Dirty Checking vs Explicit Save)
+## 5. 트랜잭션 및 JPA 영속화 룰
 
-- **Service 계층의 책임:** 데이터를 생성/변경/Soft Delete 하는 모듈의 모든 구체적인 서비스(Service) 메서드에는 반드시 **`@Transactional`** 어노테이션이 명시되어 있어야 합니다. (영속성 컨텍스트 보장)
-- **Persistence Adapter의 명시적 보장 (강제 사항):** JPA의 기본 개념인 더티 체킹(Dirty Checking) 방식에만 몰래 의존하여 데이터 수정을 방치(?)하지 않습니다. 
-- 어댑터(Adapter)는 육각형 외부를 담당하는 뚜렷한 책임을 갖습니다. 따라서 데이터를 변경한 직후에는 아무리 트랜잭션 안이라도 반드시 **`jpaRepository.save(entity)`를 명시적으로 코딩하여 호출**하십시오. 이는 "어댑터가 포트의 요청을 받아 DB에 성공적으로 영속시켰다"는 맥락을 읽는 이에게 명확히 전달하며, 예기치 않은 트랜잭션 롤백 누락이나 증발 사고를 막아줍니다.
+- **Service 계층:** 생성/변경/Soft Delete Service 메서드에 반드시 **`@Transactional`** 명시. (영속성 컨텍스트 보장)
+- **Persistence Adapter:** 더티 체킹에만 의존 금지. 변경 후 반드시 **`jpaRepository.save(entity)`를 명시적으로 호출**. 어댑터가 포트의 요청을 받아 DB에 영속시켰다는 맥락을 명확히 전달하며, 예기치 않은 트랜잭션 롤백 누락을 방지합니다.
