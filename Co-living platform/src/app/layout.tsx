@@ -3,6 +3,7 @@ import "../styles/index.css";
 import "../styles/tailwind.css";
 import "../styles/theme.css";
 import "../styles/fonts.css";
+import { Toaster } from "sonner";
 
 export const metadata: Metadata = {
   title: "Co-living platform",
@@ -16,7 +17,10 @@ export default function RootLayout({
 }) {
   return (
     <html lang="ko">
-      <body>{children}</body>
+      <body>
+        {children}
+        <Toaster richColors position="top-right" closeButton />
+      </body>
     </html>
   );
 }

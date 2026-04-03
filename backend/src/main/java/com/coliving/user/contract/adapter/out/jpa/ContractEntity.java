@@ -76,6 +76,9 @@ public class ContractEntity extends BaseEntity {
     @Column(name = "privacy_agreed")
     private Boolean privacyAgreed;
 
+    @Column(name = "usage_purpose", length = 200)
+    private String usagePurpose;
+
     @Column(name = "request_note", columnDefinition = "TEXT")
     private String requestNote;
 
@@ -108,6 +111,15 @@ public class ContractEntity extends BaseEntity {
     private OffsetDateTime contractedAt;
 
     // ── 상태 변경 메서드 ──
+
+    public void applyDraft(LocalDate desiredStartDate, Integer desiredDurationMonths, 
+                           String usagePurpose, String requestNote, Boolean privacyAgreed) {
+        this.desiredStartDate = desiredStartDate;
+        this.desiredDurationMonths = desiredDurationMonths;
+        this.usagePurpose = usagePurpose;
+        this.requestNote = requestNote;
+        this.privacyAgreed = privacyAgreed;
+    }
 
     public void updateStatus(ContractStatus status) {
         this.status = status;
