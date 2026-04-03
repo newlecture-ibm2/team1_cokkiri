@@ -116,6 +116,14 @@ public class CommunityService implements CommunityUseCase {
             throw new BusinessException(ErrorCode.FORBIDDEN);
         }
 
+        if (post.getCategory() == PostCategory.NOTICE && command.getActorRole() != ActorRole.ADMIN) {
+            throw new BusinessException(ErrorCode.FORBIDDEN);
+        }
+
+        if (command.getCategory() == PostCategory.NOTICE && command.getActorRole() != ActorRole.ADMIN) {
+            throw new BusinessException(ErrorCode.FORBIDDEN);
+        }
+
         Post updated = repositoryPort.updatePost(
                 command.getPostId(),
                 command.getCategory(),
