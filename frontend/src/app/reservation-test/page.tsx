@@ -2,14 +2,30 @@
 
 import React, { useState, useEffect } from "react";
 
+interface Facility {
+  spaceId: number;
+  spaceName: string;
+}
+
+interface Reservation {
+  id: number;
+  spaceId: number;
+  userId?: number;
+  status: string;
+  reservationDate: string;
+  startTime: string;
+  endTime: string;
+  approvedBy?: string;
+}
+
 export default function ReservationTestPage() {
   const [userId, setUserId] = useState("1");
   const [adminId, setAdminId] = useState("999");
 
   // State
-  const [facilities, setFacilities] = useState<any[]>([]);
-  const [myReservations, setMyReservations] = useState<any[]>([]);
-  const [adminReservations, setAdminReservations] = useState<any[]>([]);
+  const [facilities, setFacilities] = useState<Facility[]>([]);
+  const [myReservations, setMyReservations] = useState<Reservation[]>([]);
+  const [adminReservations, setAdminReservations] = useState<Reservation[]>([]);
 
   // Form State
   const [spaceId, setSpaceId] = useState("");
@@ -29,8 +45,8 @@ export default function ReservationTestPage() {
           setSpaceId(data.data[0].spaceId.toString());
         }
       }
-    } catch (err: any) {
-      setMessage("Facilities Fetch Error: " + err.message);
+    } catch (err: unknown) {
+      setMessage("Facilities Fetch Error: " + (err instanceof Error ? err.message : String(err)));
     }
   };
 
@@ -45,8 +61,8 @@ export default function ReservationTestPage() {
       } else {
         setMessage("My Reservations Error: " + JSON.stringify(data));
       }
-    } catch (err: any) {
-      setMessage("My Reservations Fetch Error: " + err.message);
+    } catch (err: unknown) {
+      setMessage("My Reservations Fetch Error: " + (err instanceof Error ? err.message : String(err)));
     }
   };
 
@@ -61,8 +77,8 @@ export default function ReservationTestPage() {
       } else {
         setMessage("Admin Reservations Error: " + JSON.stringify(data));
       }
-    } catch (err: any) {
-      setMessage("Admin Reservations Fetch Error: " + err.message);
+    } catch (err: unknown) {
+      setMessage("Admin Reservations Fetch Error: " + (err instanceof Error ? err.message : String(err)));
     }
   };
 
@@ -89,8 +105,8 @@ export default function ReservationTestPage() {
       } else {
         setMessage("Create Error: " + JSON.stringify(data));
       }
-    } catch (err: any) {
-      setMessage("Create Request Error: " + err.message);
+    } catch (err: unknown) {
+      setMessage("Create Request Error: " + (err instanceof Error ? err.message : String(err)));
     }
   };
 
@@ -108,8 +124,8 @@ export default function ReservationTestPage() {
       } else {
         setMessage("Cancel Error: " + JSON.stringify(data));
       }
-    } catch (err: any) {
-      setMessage("Cancel Request Error: " + err.message);
+    } catch (err: unknown) {
+      setMessage("Cancel Request Error: " + (err instanceof Error ? err.message : String(err)));
     }
   };
 
@@ -127,8 +143,8 @@ export default function ReservationTestPage() {
       } else {
         setMessage(`Admin ${action} Error: ` + JSON.stringify(data));
       }
-    } catch (err: any) {
-      setMessage(`Admin ${action} Request Error: ` + err.message);
+    } catch (err: unknown) {
+      setMessage(`Admin ${action} Request Error: ` + (err instanceof Error ? err.message : String(err)));
     }
   };
 

@@ -26,6 +26,7 @@ export function RoomCard({ room, index }: RoomCardProps) {
         {/* Thumbnail */}
         <div className="h-48 rounded-[2rem] bg-[var(--color-muted)] overflow-hidden mb-4 relative">
           {room.thumbnailUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
             <img
               src={room.thumbnailUrl}
               alt={room.name}
