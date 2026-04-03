@@ -1,5 +1,6 @@
 package com.coliving.reservation.adapter.out.jpa;
 
+import com.coliving.common.auth.adapter.out.jpa.UserEntity;
 import com.coliving.global.entity.BaseEntity;
 import com.coliving.reservation.model.ReservationStatus;
 import jakarta.persistence.*;
@@ -19,24 +20,11 @@ import java.time.LocalTime;
  * schema.sql의 reservation 테이블에 매핑된다.
  *
  * ┌──────────────────────────────────────────────────────────────────┐
- * │ [TODO - SPC-2.1/USR-1.1 머지 시 수정 필요]                       │
+ * │ 관계 전환 현황 (USR-1.1 머지 완료)                                 │
  * │                                                                  │
- * │ 현재 user_id, space_id, approved_by 필드가 Long 타입으로          │
- * │ 선언되어 있습니다. User/Space 엔티티가 완성되면 아래와 같이          │
- * │ @ManyToOne 관계로 변경해야 합니다:                                 │
- * │                                                                  │
- * │ [변경 전]                                                         │
- * │   @Column(name = "user_id", nullable = false)                    │
- * │   private Long userId;                                           │
- * │                                                                  │
- * │ [변경 후]                                                         │
- * │   @ManyToOne(fetch = FetchType.LAZY)                             │
- * │   @JoinColumn(name = "user_id", nullable = false)                │
- * │   private User user;                                             │
- * │                                                                  │
- * │ space_id → SpaceEntity, approved_by → User 도 동일하게 변경       │
- * │                                                                  │
- * │ 관련 담당: User(이우석 USR-1.1), Space(정찬우 SPC-2.1)             │
+ * │ ✅ user    → @ManyToOne UserEntity (USR-1.1 머지 완료)            │
+ * │ ⏳ spaceId → Long FK 유지 (SPC-2.1 SpaceEntity 미완성)            │
+ * │ ⏳ approvedBy → Long FK 유지 (도메인 분리 원칙 유지)               │
  * └──────────────────────────────────────────────────────────────────┘
  */
 @Entity
@@ -51,13 +39,12 @@ public class ReservationEntity extends BaseEntity {
     @Column(name = "reservation_id")
     private Long id;
 
-    // TODO: User 엔티티 완성 후 @ManyToOne(fetch = LAZY) + @JoinColumn 으로 변경
-    @Column(name = "user_id", nullable = false)
-    private Long userId;
+    // USR-1.1 머지 완료 → @ManyToOne 전환
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false)
+    private UserEntity user;
 
-    // TODO: SpaceEntity 통합 후 @ManyToOne(fetch = LAZY) + @JoinColumn 으로 변경
-    // 현재 SpaceEntity는 com.coliving.user.room.adapter.out.jpa 패키지에 존재하나,
-    // 모듈 간 직접 참조를 피하기 위해 Long FK를 유지합니다.
+    // SPC-2.1 미완성 → 도메인 분리 원칙으로 Long FK 유지
     @Column(name = "space_id", nullable = false)
     private Long spaceId;
 
@@ -74,19 +61,29 @@ public class ReservationEntity extends BaseEntity {
     @Column(name = "end_time", nullable = false)
     private LocalTime endTime;
 
-    // TODO: User 엔티티 완성 후 @ManyToOne(fetch = LAZY) + @JoinColumn 으로 변경
+    // 도메인 분리 원칙으로 Long FK 유지 (승인자 ID만 저장)
     @Column(name = "approved_by")
     private Long approvedBy;
 
     @Builder
-    public ReservationEntity(Long userId, Long spaceId, LocalDate reservationDate,
+    public ReservationEntity(UserEntity user, Long spaceId, LocalDate reservationDate,
                              LocalTime startTime, LocalTime endTime) {
-        this.userId = userId;
+        this.user = user;
         this.spaceId = spaceId;
         this.reservationDate = reservationDate;
         this.startTime = startTime;
         this.endTime = endTime;
         this.status = ReservationStatus.PENDING;
+    }
+
+    /** 예약자 ID 편의 getter (FK 직접 노출 없이 ID만 반환) */
+    public Long getUserId() {
+        return this.user != null ? this.user.getUserId() : null;
+    }
+
+    /** 예약자 이름 편의 getter */
+    public String getUserName() {
+        return this.user != null ? this.user.getName() : null;
     }
 
     // ── 상태 전환 비즈니스 메서드 ──

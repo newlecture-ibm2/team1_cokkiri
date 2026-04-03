@@ -25,8 +25,8 @@ public class ReservationQueryService implements ReservationQueryUseCase {
     @Override
     public List<UserReservationResponse> getUserReservations(Long userId) {
         List<ReservationEntity> reservations = reservationRepository
-                .findByUserIdOrderByReservationDateDescStartTimeDesc(userId);
-        
+                .findByUser_UserIdOrderByReservationDateDescStartTimeDesc(userId);
+
         return reservations.stream()
                 .map(UserReservationResponse::fromEntity)
                 .collect(Collectors.toList());
