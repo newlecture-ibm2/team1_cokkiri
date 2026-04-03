@@ -40,7 +40,7 @@ dependencies {
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'org.springframework.security:spring-security-test'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
-    testRuntimeOnly 'com.h2database:h2'                     // H2 인메모리 DB (Repository 통합 테스트)
+    runtimeOnly 'com.h2database:h2'                         // H2 인메모리 DB (로컬 테스트용)
     testCompileOnly 'org.projectlombok:lombok'
     testAnnotationProcessor 'org.projectlombok:lombok'
 }

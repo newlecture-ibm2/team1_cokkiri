@@ -50,6 +50,7 @@ public class ReservationCommandService implements ReservationCommandUseCase {
                 .userId(userId)
                 .spaceId(request.getSpaceId())
                 .reservationDate(request.getReservationDate())
+                .startTime(request.getStartTime())
                 .endTime(request.getEndTime())
                 .build();
 
