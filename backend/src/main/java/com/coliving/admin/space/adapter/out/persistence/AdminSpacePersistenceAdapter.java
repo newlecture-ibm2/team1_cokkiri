@@ -3,7 +3,6 @@ package com.coliving.admin.space.adapter.out.persistence;
 import com.coliving.admin.space.application.port.out.AdminSpaceRepositoryPort;
 import com.coliving.admin.space.model.AdminSpace;
 import com.coliving.user.room.adapter.out.jpa.*;
-import com.coliving.user.room.model.SpaceType;
 import com.coliving.global.error.BusinessException;
 import com.coliving.global.error.ErrorCode;
 
@@ -31,10 +30,27 @@ public class AdminSpacePersistenceAdapter implements AdminSpaceRepositoryPort {
     @Override
     public AdminSpace save(AdminSpace adminSpace) {
         if (adminSpace.getSpaceId() != null) {
-            throw new UnsupportedOperationException("Space 수정 기능은 feat/59 범위입니다.");
+            // === 수정(Update) ===
+            SpaceEntity existing = spaceJpaRepository.findById(adminSpace.getSpaceId())
+                    .orElseThrow(() -> new BusinessException(ErrorCode.SPACE_NOT_FOUND));
+
+            existing.update(
+                    adminSpace.getName(),
+                    adminSpace.getStatus(),
+                    adminSpace.getFloor(),
+                    adminSpace.getArea(),
+                    toAmenitiesJson(adminSpace.getAmenities()),
+                    adminSpace.getDescription()
+            );
+            SpaceEntity savedSpace = spaceJpaRepository.save(existing);
+
+            // 상세 정보 수정
+            updateDetail(savedSpace, adminSpace);
+
+            return toAdminSpace(savedSpace);
         }
 
-        // 1. 부모 Entity 생성
+        // === 신규 생성(Create) ===
         SpaceEntity entity = SpaceEntity.builder()
                 .name(adminSpace.getName())
                 .type(adminSpace.getType())
@@ -47,10 +63,7 @@ public class AdminSpacePersistenceAdapter implements AdminSpaceRepositoryPort {
                 .positionY(adminSpace.getPositionY())
                 .build();
 
-        // 2. 부모 먼저 Save (PK 획득)
         SpaceEntity savedSpace = spaceJpaRepository.save(entity);
-
-        // 3. 자식 Entity 생성 및 Save (직접 레포지토리에 저장 - Cascade 대신 명시적 할당)
         createDetail(savedSpace, adminSpace);
 
         return toAdminSpace(savedSpace);
@@ -73,7 +86,10 @@ public class AdminSpacePersistenceAdapter implements AdminSpaceRepositoryPort {
 
     @Override
     public void softDelete(Long spaceId) {
-        throw new UnsupportedOperationException("Space 삭제 기능은 feat/59 범위입니다.");
+        SpaceEntity entity = spaceJpaRepository.findById(spaceId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.SPACE_NOT_FOUND));
+        entity.softDelete();
+        spaceJpaRepository.save(entity);
     }
 
     @Override
@@ -110,6 +126,38 @@ public class AdminSpacePersistenceAdapter implements AdminSpaceRepositoryPort {
                     .isReservable(adminSpace.getCommonDetail().getIsReservable())
                     .usageFee(adminSpace.getCommonDetail().getUsageFee())
                     .build());
+        }
+    }
+
+    private void updateDetail(SpaceEntity savedSpace, AdminSpace adminSpace) {
+        if (adminSpace.getType() == com.coliving.user.room.model.SpaceType.PRIVATE && adminSpace.getPrivateDetail() != null) {
+            if (savedSpace.getPrivateDetail() != null) {
+                savedSpace.getPrivateDetail().update(
+                        adminSpace.getPrivateDetail().getRoomType(),
+                        adminSpace.getPrivateDetail().getRoomCount(),
+                        adminSpace.getPrivateDetail().getBathroomCount(),
+                        adminSpace.getPrivateDetail().getDirection(),
+                        adminSpace.getPrivateDetail().getDeposit(),
+                        adminSpace.getPrivateDetail().getMonthlyRent(),
+                        adminSpace.getPrivateDetail().getMaintenanceFee(),
+                        adminSpace.getPrivateDetail().getParkingAvailable()
+                );
+                privateSpaceDetailJpaRepository.save(savedSpace.getPrivateDetail());
+            } else {
+                createDetail(savedSpace, adminSpace);
+            }
+        } else if (adminSpace.getType() == com.coliving.user.room.model.SpaceType.COMMON && adminSpace.getCommonDetail() != null) {
+            if (savedSpace.getCommonDetail() != null) {
+                savedSpace.getCommonDetail().update(
+                        adminSpace.getCommonDetail().getMaxCapacity(),
+                        adminSpace.getCommonDetail().getOperatingHours(),
+                        adminSpace.getCommonDetail().getIsReservable(),
+                        adminSpace.getCommonDetail().getUsageFee()
+                );
+                commonSpaceDetailJpaRepository.save(savedSpace.getCommonDetail());
+            } else {
+                createDetail(savedSpace, adminSpace);
+            }
         }
     }
 

@@ -61,3 +61,27 @@ export const uploadSpaceImage = async (spaceId: number, file: File, isThumbnail:
   if (!res.ok) throw new Error('Failed to upload image');
   return res.json();
 };
+
+export const fetchSpace = async (spaceId: number) => {
+  const res = await fetch(`/api/bff/admin/spaces/${spaceId}`);
+  if (!res.ok) throw new Error('Failed to fetch space');
+  return res.json();
+};
+
+export const updateSpace = async (spaceId: number, data: Partial<SpaceDTO>) => {
+  const res = await fetch(`/api/bff/admin/spaces/${spaceId}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) throw new Error('Failed to update space');
+  return res.json();
+};
+
+export const deleteSpace = async (spaceId: number) => {
+  const res = await fetch(`/api/bff/admin/spaces/${spaceId}`, {
+    method: 'DELETE',
+  });
+  if (!res.ok) throw new Error('Failed to delete space');
+  return res.json();
+};
