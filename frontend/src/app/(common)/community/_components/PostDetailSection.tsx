@@ -4,6 +4,7 @@ import type { PostDetail } from "../_types/community";
 import { POST_CATEGORIES } from "../_types/community";
 import { LikeToggle } from "./LikeToggle";
 import { CommentComposer } from "./CommentComposer";
+import { PostEditDeleteActions } from "./PostEditDeleteActions";
 
 function categoryLabel(code: string) {
   return POST_CATEGORIES.find((c) => c.value === code)?.label ?? code;
@@ -26,7 +27,18 @@ function normalizeLiked(d: PostDetail & { isLikedByMe?: boolean }) {
   return false;
 }
 
-export function PostDetailSection({ detail }: { detail: PostDetail }) {
+type CurrentUser = {
+  userId: number;
+  role?: string | null;
+};
+
+export function PostDetailSection({
+  detail,
+  currentUser,
+}: {
+  detail: PostDetail;
+  currentUser?: CurrentUser;
+}) {
   const liked = normalizeLiked(detail as PostDetail & { isLikedByMe?: boolean });
 
   return (
@@ -70,6 +82,16 @@ export function PostDetailSection({ detail }: { detail: PostDetail }) {
           </span>
         </div>
       </header>
+
+      <PostEditDeleteActions
+        postId={detail.postId}
+        authorUserId={detail.author.userId}
+        currentUser={currentUser}
+        initialCategory={detail.category}
+        initialTitle={detail.title}
+        initialContent={detail.content}
+        initialLinks={detail.links}
+      />
 
       <div className="mt-10 font-medium leading-relaxed tracking-tight text-balance text-foreground md:text-lg">
         <div className="whitespace-pre-wrap">{detail.content}</div>

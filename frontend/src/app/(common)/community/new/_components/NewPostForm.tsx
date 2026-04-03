@@ -4,15 +4,15 @@ import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { ArrowLeft, Loader2 } from "lucide-react";
+import { ArrowLeft, ChevronDown, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { POST_CATEGORIES } from "../../_types/community";
 
 const labelClass =
-  "block font-black text-[10px] uppercase tracking-[0.3em] text-muted-foreground";
+  "block font-black text-sm uppercase tracking-[0.3em] text-muted-foreground";
 
 const fieldClass =
-  "mt-3 w-full rounded-xl border border-input bg-background px-4 py-3 font-medium tracking-tight text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring";
+  "mt-3 w-full rounded-xl border border-input bg-surface px-4 py-4 font-medium tracking-tight text-lg text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring";
 
 export function NewPostForm() {
   const router = useRouter();
@@ -31,21 +31,20 @@ export function NewPostForm() {
       .map((s) => s.trim())
       .filter(Boolean)
       .slice(0, 3);
-    const links = linkLines.map((url) => ({ url }));
 
     startTransition(async () => {
       try {
+        const formData = new FormData();
+        formData.append("category", category);
+        formData.append("title", title.trim());
+        formData.append("content", content.trim());
+        // backend spec: links: String[] (multipart/form-data)
+        linkLines.forEach((url) => formData.append("links", url));
+
         const res = await fetch("/api/bff/posts", {
           method: "POST",
           credentials: "include",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            category,
-            title: title.trim(),
-            content: content.trim(),
-            attachments: [],
-            links: links.length ? links : undefined,
-          }),
+          body: formData,
         });
         const json = await res.json();
         if (!res.ok || !json.success) return;
@@ -62,7 +61,7 @@ export function NewPostForm() {
     <form onSubmit={submit} className="mx-auto max-w-2xl space-y-10">
       <Link
         href="/community"
-        className="group inline-flex items-center gap-2 font-black text-[10px] uppercase tracking-[0.3em] text-secondary transition-colors hover:text-foreground"
+        className="group inline-flex items-center gap-2 font-black text-xs uppercase tracking-[0.3em] text-secondary transition-colors hover:text-foreground"
       >
         <ArrowLeft className="size-4 transition-transform group-hover:-translate-x-0.5" aria-hidden />
         목록으로
@@ -72,19 +71,25 @@ export function NewPostForm() {
         <label htmlFor="category" className={labelClass}>
           카테고리
         </label>
-        <select
-          id="category"
-          value={category}
-          onChange={(e) => setCategory(e.target.value)}
-          className={fieldClass}
-        >
-          {POST_CATEGORIES.map((c) => (
-            <option key={c.value} value={c.value}>
-              {c.label}
-            </option>
-          ))}
-        </select>
-        <p className="mt-2 text-xs font-medium tracking-tight text-muted-foreground">
+        <div className="relative">
+          <select
+            id="category"
+            value={category}
+            onChange={(e) => setCategory(e.target.value)}
+            className={cn(fieldClass, "appearance-none pr-10 leading-none py-0 h-14")}
+          >
+            {POST_CATEGORIES.map((c) => (
+              <option key={c.value} value={c.value}>
+                {c.label}
+              </option>
+            ))}
+          </select>
+          <ChevronDown
+            className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 size-4 text-muted-foreground"
+            aria-hidden
+          />
+        </div>
+        <p className="mt-2 text-sm font-medium tracking-tight text-muted-foreground">
           공지(NOTICE)는 관리자만 등록할 수 있습니다.
         </p>
       </div>
@@ -133,7 +138,7 @@ export function NewPostForm() {
       <div className="flex justify-end gap-4">
         <Link
           href="/community"
-          className="rounded-xl border border-border px-6 py-3 text-xs font-black uppercase tracking-wider text-foreground transition-transform duration-200 hover:-translate-y-0.5"
+          className="rounded-xl border border-border px-6 py-3 text-sm font-black uppercase tracking-wider text-foreground transition-transform duration-200 hover:-translate-y-0.5"
         >
           취소
         </Link>
@@ -143,7 +148,7 @@ export function NewPostForm() {
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
           className={cn(
-            "inline-flex items-center gap-2 rounded-xl bg-primary px-6 py-3 text-xs font-black uppercase tracking-wider text-primary-foreground",
+            "inline-flex items-center gap-2 rounded-xl bg-primary px-6 py-3 text-sm font-black uppercase tracking-wider text-primary-foreground",
             pending && "opacity-60",
           )}
         >

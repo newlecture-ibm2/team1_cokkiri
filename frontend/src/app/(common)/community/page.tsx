@@ -45,10 +45,10 @@ export default async function CommunityPage({ searchParams }: { searchParams: Se
   return (
     <CommunityShell>
       <MotionEnter>
-        <div className="mx-auto max-w-4xl">
+        <div className="mx-auto max-w-5xl">
           <header className="flex flex-col gap-12 md:flex-row md:items-end md:justify-between">
             <div className="space-y-6">
-              <h1 className="text-[12vw] font-black uppercase leading-[0.85] tracking-tighter text-foreground sm:text-[10vw] md:text-[7vw] lg:text-[4.5rem]">
+              <h1 className="whitespace-nowrap text-balance text-[12vw] font-black uppercase leading-[0.85] tracking-tighter text-foreground sm:text-[10vw] md:text-[7vw] lg:text-[4.5rem]">
                 커뮤
                 <span className="underline decoration-secondary decoration-2 underline-offset-[0.18em]">
                   니티

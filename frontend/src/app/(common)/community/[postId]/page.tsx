@@ -34,10 +34,22 @@ export default async function CommunityPostDetailPage({ params }: { params: Para
   const body = (await res.json()) as ApiResponse<PostDetail>;
   if (!body.success || !body.data) notFound();
 
+  type MeData = {
+    userId: number;
+    role?: string | null;
+  };
+
+  let currentUser: MeData | undefined;
+  const meRes = await bffGet(`users/me`);
+  if (meRes.ok) {
+    const meBody = (await meRes.json()) as ApiResponse<MeData>;
+    if (meBody.success && meBody.data) currentUser = meBody.data;
+  }
+
   return (
     <CommunityShell>
       <MotionEnter>
-        <PostDetailSection detail={body.data} />
+        <PostDetailSection detail={body.data} currentUser={currentUser} />
       </MotionEnter>
     </CommunityShell>
   );

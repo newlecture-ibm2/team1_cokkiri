@@ -1,10 +1,16 @@
+import { Header } from "@/components/shared/Header";
+import { Footer } from "@/components/shared/Footer";
 import { ScrollToTop } from "./ScrollToTop";
 
 export function CommunityShell({ children }: { children: React.ReactNode }) {
   return (
-    <div className="min-h-screen bg-background py-24 md:py-32">
+    <div className="min-h-screen bg-background">
+      <Header />
       <ScrollToTop />
-      <div className="mx-auto w-full max-w-[1400px] px-6 md:px-12 lg:px-24">{children}</div>
+      <main className="mx-auto w-full max-w-[1400px] px-6 pt-20 md:px-12 md:pt-24 lg:px-24 lg:pt-24 pb-24 md:pb-32">
+        {children}
+      </main>
+      <Footer />
     </div>
   );
 }

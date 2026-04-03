@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useRef } from "react";
+import { useEffect, useRef } from "react";
 import { ArrowRight, Globe, LifeBuoy, Zap } from "lucide-react";
 import { motion, useScroll, useTransform, useSpring } from "framer-motion";
 import { Header } from "@/components/shared/Header";
@@ -9,6 +9,13 @@ import { Footer } from "@/components/shared/Footer";
 import { listings } from "@/data/landingListings";
 import { ImageWithFallback } from "@/components/shared/ImageWithFallback";
 import { LandingFeaturedListing } from "@/components/shared/LandingFeaturedListing";
+
+function ScrollToTop() {
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+  return null;
+}
 
 export default function Home() {
   const featuredListings = listings.slice(0, 3);
@@ -30,6 +37,7 @@ export default function Home() {
       ref={containerRef}
       className="relative min-h-screen bg-background text-foreground selection:bg-primary selection:text-primary-foreground"
     >
+      <ScrollToTop />
       <Header />
 
       <section className="relative flex h-screen flex-col justify-center overflow-hidden px-6 md:px-12 lg:px-24">
@@ -130,19 +138,17 @@ export default function Home() {
 
                   <div className="relative z-10 flex flex-col items-center justify-center">
                     <motion.span
-                      className="mb-2 text-sm font-black tracking-[0.3em] uppercase"
-                      variants={{
-                        hover: { color: "#FFFFFF" },
-                      }}
+                      className="mb-2 text-sm font-black tracking-[0.3em] uppercase text-primary transition-colors duration-300 group-hover:text-secondary-foreground"
                       transition={{ duration: 0.4 }}
                     >
                       EXPLORE
                     </motion.span>
                     <motion.div
                       variants={{
-                        hover: { color: "#FFFFFF", y: -2 },
+                        hover: { y: -2 },
                       }}
                       transition={{ duration: 0.4 }}
+                      className="text-primary transition-colors duration-300 group-hover:text-secondary-foreground"
                     >
                       <ArrowRight className="h-6 w-6 opacity-50" />
                     </motion.div>
@@ -184,7 +190,7 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="relative overflow-hidden bg-[#030213] py-24 text-white md:py-48">
+      <section className="relative overflow-hidden bg-editorial py-24 text-secondary-foreground md:py-48">
         <div className="container mx-auto px-6">
           <div className="grid grid-cols-1 items-center gap-24 md:grid-cols-2">
             <motion.div
@@ -201,9 +207,9 @@ export default function Home() {
                 </h2>
               </div>
 
-              <div className="max-w-xl space-y-12 border-t border-white/10 pt-12 md:pt-20">
+              <div className="max-w-xl space-y-12 border-t border-secondary-foreground/10 pt-12 md:pt-20">
                 <div className="group flex gap-8">
-                  <Globe className="h-8 w-8 shrink-0 text-white/20 transition-colors group-hover:text-accent" />
+                  <Globe className="h-8 w-8 shrink-0 text-secondary-foreground/20 transition-colors group-hover:text-accent" />
                   <div className="space-y-3">
                     <h4 className="text-xl font-black tracking-tight text-accent uppercase md:text-2xl">
                       지능형 보안 시스템
@@ -215,7 +221,7 @@ export default function Home() {
                 </div>
 
                 <div className="group flex gap-8">
-                  <LifeBuoy className="h-8 w-8 shrink-0 text-white/20 transition-colors group-hover:text-accent" />
+                  <LifeBuoy className="h-8 w-8 shrink-0 text-secondary-foreground/20 transition-colors group-hover:text-accent" />
                   <div className="space-y-3">
                     <h4 className="text-xl font-black tracking-tight text-accent uppercase md:text-2xl">
                       편리한 관리 서비스
@@ -227,7 +233,7 @@ export default function Home() {
                 </div>
 
                 <div className="group flex gap-8">
-                  <Zap className="h-8 w-8 shrink-0 text-white/20 transition-colors group-hover:text-accent" />
+                  <Zap className="h-8 w-8 shrink-0 text-secondary-foreground/20 transition-colors group-hover:text-accent" />
                   <div className="space-y-3">
                     <h4 className="text-xl font-black tracking-tight text-accent uppercase md:text-2xl">
                       지속 가능한 공유 가치
