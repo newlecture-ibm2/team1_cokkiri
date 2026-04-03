@@ -3,9 +3,9 @@ import { ArrowLeft, Eye, MessageCircle } from "lucide-react";
 import type { PostDetail } from "../_types/community";
 import { POST_CATEGORIES } from "../_types/community";
 import { LikeToggle } from "./LikeToggle";
-import { CommentComposer } from "./CommentComposer";
 import { PostEditDeleteActions } from "./PostEditDeleteActions";
-import { CommentItem } from "./CommentItem";
+import { CommentComposer } from "../../comment/_components/CommentComposer";
+import { CommentItem } from "../../comment/_components/CommentItem";
 
 function categoryLabel(code: string) {
   return POST_CATEGORIES.find((c) => c.value === code)?.label ?? code;
