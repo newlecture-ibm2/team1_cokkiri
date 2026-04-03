@@ -1,7 +1,9 @@
 package com.coliving.reservation.adapter.in.web;
 
 import com.coliving.reservation.adapter.in.web.dto.ReservationCreateRequest;
+import com.coliving.reservation.adapter.in.web.dto.UserReservationResponse;
 import com.coliving.reservation.application.port.in.ReservationCommandUseCase;
+import com.coliving.reservation.application.port.in.ReservationQueryUseCase;
 import com.coliving.reservation.exception.ReservationOverlapException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.DisplayName;
@@ -21,6 +23,8 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -35,6 +39,9 @@ class ReservationControllerTest {
 
     @MockBean
     private ReservationCommandUseCase reservationCommandUseCase;
+
+    @MockBean
+    private ReservationQueryUseCase reservationQueryUseCase;
 
     private ReservationCreateRequest createRequest(LocalTime startTime, LocalTime endTime) {
         ReservationCreateRequest request = new ReservationCreateRequest();
@@ -81,5 +88,34 @@ class ReservationControllerTest {
                 .andExpect(status().isConflict())
                 .andExpect(jsonPath("$.success").value(false))
                 .andExpect(jsonPath("$.errorCode").value("TIME_SLOT_CONFLICT"));
+    }
+
+    @Test
+    @WithMockUser
+    @DisplayName("본인의 예약 내역을 조회할 수 있다")
+    void getMyReservations_Success() throws Exception {
+        UserReservationResponse response = UserReservationResponse.builder()
+                .id(999L)
+                .spaceId(1L)
+                .build();
+                
+        given(reservationQueryUseCase.getUserReservations(1L)).willReturn(java.util.List.of(response));
+
+        mockMvc.perform(get("/api/reservations")
+                        .header("X-User-Id", 1L))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.data[0].id").value(999L));
+    }
+
+    @Test
+    @WithMockUser
+    @DisplayName("예약 취소 API 호출 시 상태가 전환된다")
+    void cancelReservation_Success() throws Exception {
+        mockMvc.perform(patch("/api/reservations/999/cancel")
+                        .with(csrf())
+                        .header("X-User-Id", 1L))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true));
     }
 }

@@ -5,6 +5,8 @@ import com.coliving.reservation.adapter.out.jpa.ReservationEntity;
 import com.coliving.reservation.adapter.out.jpa.ReservationJpaRepository;
 import com.coliving.reservation.application.port.in.ReservationCommandUseCase;
 import com.coliving.reservation.exception.ReservationOverlapException;
+import com.coliving.global.error.BusinessException;
+import com.coliving.global.error.ErrorCode;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -58,5 +60,19 @@ public class ReservationCommandService implements ReservationCommandUseCase {
                 savedReservation.getId(), savedReservation.getSpaceId(), savedReservation.getUserId());
         
         return savedReservation.getId();
+    }
+
+    @Override
+    @Transactional
+    public void cancelReservation(Long userId, Long reservationId) {
+        ReservationEntity reservation = reservationRepository.findById(reservationId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND, "예약을 찾을 수 없습니다."));
+
+        if (!reservation.getUserId().equals(userId)) {
+            throw new BusinessException(ErrorCode.FORBIDDEN, "본인의 예약만 취소할 수 있습니다.");
+        }
+
+        reservation.cancel();
+        log.info("예약 취소 성공 - reservationId: {}, userId: {}", reservationId, userId);
     }
 }
