@@ -8,9 +8,9 @@ import { User, Menu, X } from "lucide-react";
 import { useState, useEffect } from "react";
 
 const navLinks = [
+  { name: "My Contracts", path: "/my-contracts" },
+  { name: "Apply Now", path: "/contract-apply" },
   { name: "Community", path: "/community" },
-  { name: "Living", path: "/rooms" },
-  { name: "Profile", path: "/profile" },
 ];
 
 export function Header() {

@@ -41,13 +41,17 @@ public class Contract {
     private OffsetDateTime contractedAt;
 
     public void applyDraft(LocalDate desiredStartDate, Integer desiredDurationMonths,
+                           String address, String bankAccount,
                            String usagePurpose, String requestNote, Boolean privacyAgreed) {
         this.desiredStartDate = desiredStartDate;
         this.desiredDurationMonths = desiredDurationMonths;
+        this.address = address;
+        this.bankAccount = bankAccount;
         this.usagePurpose = usagePurpose;
         this.requestNote = requestNote;
         this.privacyAgreed = privacyAgreed;
     }
+
 
     public void updateStatus(ContractStatus status) {
         this.status = status;

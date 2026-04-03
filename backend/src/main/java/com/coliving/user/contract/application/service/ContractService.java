@@ -30,6 +30,8 @@ public class ContractService implements ContractUseCase {
             contract.applyDraft(
                     command.getDesiredStartDate(),
                     command.getDesiredDurationMonths(),
+                    command.getAddress(),
+                    command.getBankAccount(),
                     command.getUsagePurpose(),
                     command.getRequestNote(),
                     command.getPrivacyAgreed()
@@ -52,6 +54,8 @@ public class ContractService implements ContractUseCase {
             contract.applyDraft(
                     command.getDesiredStartDate(),
                     command.getDesiredDurationMonths(),
+                    command.getAddress(),
+                    command.getBankAccount(),
                     command.getUsagePurpose(),
                     command.getRequestNote(),
                     command.getPrivacyAgreed()
@@ -69,6 +73,8 @@ public class ContractService implements ContractUseCase {
                 .spaceId(command.getSpaceId())
                 .origin(ContractOrigin.USER_INITIATED)
                 .status(status)
+                .address(command.getAddress())
+                .bankAccount(command.getBankAccount())
                 .desiredStartDate(command.getDesiredStartDate())
                 .desiredDurationMonths(command.getDesiredDurationMonths())
                 .usagePurpose(command.getUsagePurpose())
@@ -77,3 +83,4 @@ public class ContractService implements ContractUseCase {
                 .build();
     }
 }
+

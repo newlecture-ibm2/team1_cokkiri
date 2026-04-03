@@ -24,6 +24,12 @@ public class ContractApplyRequestDto {
     @NotNull(message = "계약 기간은 필수입니다.")
     private Integer desiredDurationMonths;
 
+    @NotBlank(message = "현재 거주지 주소는 필수입니다.")
+    private String address;
+
+    @NotBlank(message = "결제 및 반환 계좌 정보는 필수입니다.")
+    private String bankAccount;
+
     @NotBlank(message = "입주 목적을 입력해주세요.")
     private String usagePurpose;
 
@@ -32,3 +38,4 @@ public class ContractApplyRequestDto {
 
     private String requestNote;
 }
+

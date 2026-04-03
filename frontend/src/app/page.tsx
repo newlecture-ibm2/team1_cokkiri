@@ -110,7 +110,7 @@ export default function Home() {
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: 1, duration: 0.8 }}
             >
-              <Link href="/rooms" className="group relative inline-block">
+              <Link href="/my-contracts" className="group relative inline-block">
                 <motion.div
                   className="relative flex h-32 w-32 flex-col items-center justify-center overflow-hidden border border-primary/20 p-0 md:h-44 md:w-44"
                   animate={{
@@ -141,7 +141,7 @@ export default function Home() {
                       className="mb-2 text-sm font-black tracking-[0.3em] uppercase text-primary transition-colors duration-300 group-hover:text-secondary-foreground"
                       transition={{ duration: 0.4 }}
                     >
-                      EXPLORE
+                      MY CONTRACTS
                     </motion.span>
                     <motion.div
                       variants={{
@@ -165,30 +165,8 @@ export default function Home() {
         />
       </section>
 
-      <section className="px-6 py-20 md:px-12 md:py-32 lg:px-24">
-        <div className="mx-auto max-w-[1400px]">
-          <motion.div
-            className="mb-24 flex flex-col items-baseline justify-between border-b border-primary/10 pb-8 md:flex-row"
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            viewport={{ once: true }}
-          >
-            <h2 className="text-5xl font-black tracking-tighter md:text-7xl">CURATED SPACES</h2>
-          </motion.div>
+      {/* CURATED SPACES section hidden for focus on Contract domain */}
 
-          <div className="grid grid-cols-1 gap-12 md:grid-cols-12 lg:gap-24">
-            <div className="md:col-span-8">
-              <LandingFeaturedListing listing={featuredListings[0]} size="large" />
-            </div>
-            <div className="md:col-span-4 md:mt-48">
-              <LandingFeaturedListing listing={featuredListings[1]} size="small" />
-            </div>
-            <div className="md:col-span-6 md:col-start-4">
-              <LandingFeaturedListing listing={featuredListings[2]} size="medium" />
-            </div>
-          </div>
-        </div>
-      </section>
 
       <section className="relative overflow-hidden bg-editorial py-24 text-secondary-foreground md:py-48">
         <div className="container mx-auto px-6">

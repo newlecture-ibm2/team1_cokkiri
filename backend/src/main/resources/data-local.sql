@@ -13,6 +13,24 @@ CREATE TABLE IF NOT EXISTS space (
     deleted_at TIMESTAMP
 );
 
+-- 임시 유저 테이블 생성
+CREATE TABLE IF NOT EXISTS users (
+    user_id BIGINT PRIMARY KEY,
+    login_id VARCHAR(50),
+    name VARCHAR(50),
+    password_hash VARCHAR(255),
+    birth_date VARCHAR(6),
+    gender VARCHAR(10),
+    nationality VARCHAR(50),
+    phone VARCHAR(20),
+    email VARCHAR(100),
+    role VARCHAR(20),
+    status VARCHAR(20),
+    created_at TIMESTAMP,
+    updated_at TIMESTAMP,
+    deleted_at TIMESTAMP
+);
+
 CREATE TABLE IF NOT EXISTS common_space_detail (
     space_id BIGINT PRIMARY KEY,
     max_capacity INT,
@@ -34,6 +52,11 @@ CREATE TABLE IF NOT EXISTS space_image (
 -- ====================================================
 
 -- 데이터 삽입
+-- 1. 테스트 유저
+INSERT INTO users (user_id, login_id, name, password_hash, birth_date, gender, nationality, phone, email, role, status, created_at, updated_at)
+VALUES (1, 'tester', '테스터', 'hash', '900101', 'MALE', 'KR', '010-1234-5678', 'test@example.com', 'USER', 'ACTIVE', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+ON CONFLICT (user_id) DO NOTHING;
+
 -- 1. 메인 로비 미팅룸 (예약 가능)
 INSERT INTO space (space_id, name, type, status, floor, area, description, position_x, position_y) 
 VALUES (1, '메인 로비 미팅룸', 'COMMON', 'AVAILABLE', 1, 30.5, '공용 공간 로비에 위치한 회의실입니다.', 10, 20);

@@ -9,23 +9,22 @@ export function Footer() {
 
   const footerLinks = {
     explore: [
-      { name: "Living Spaces", path: "/rooms" },
+      { name: "My Contracts", path: "/my-contracts" },
+      { name: "Apply Now", path: "/contract-apply" },
       { name: "Community", path: "/community" },
       { name: "VOC", path: "/voc" },
-      { name: "IoT Guide", path: "/rooms" },
     ],
     community: [
       { name: "Residents", path: "/profile" },
       { name: "Community", path: "/community" },
-      { name: "Archive", path: "/rooms" },
       { name: "Philosophy", path: "/" },
     ],
     support: [
       { name: "Concierge", path: "/voc" },
-      { name: "Safe & Secure", path: "/community" },
       { name: "Terms & Privacy", path: "/community" },
     ],
   };
+
 
   return (
     <footer className="border-t border-primary/10 bg-background px-6 pt-16 pb-12 text-foreground md:px-12 lg:px-24">

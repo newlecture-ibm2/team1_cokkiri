@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @Tag(name = "Contract", description = "입주 계약 관련 API")
 @RestController
-@RequestMapping("/api/v1/contracts")
+@RequestMapping("/api/contracts")
 @RequiredArgsConstructor
 public class ContractController {
 
@@ -24,7 +24,7 @@ public class ContractController {
 
     @Operation(summary = "계약서 임시저장", description = "작성 중인 계약 정보를 유효성 검사 없이 임시 저장합니다.")
     @PostMapping("/draft")
-    public ApiResponse<Long> saveDraft(@RequestBody @Valid ContractApplyRequestDto request) {
+    public ApiResponse<Long> saveDraft(@RequestBody ContractApplyRequestDto request) {
         Long userId = 1L;
         ContractApplyCommand command = toCommand(request);
         ContractResult result = contractUseCase.saveDraft(userId, command);
@@ -45,9 +45,12 @@ public class ContractController {
                 .spaceId(dto.getSpaceId())
                 .desiredStartDate(dto.getDesiredStartDate())
                 .desiredDurationMonths(dto.getDesiredDurationMonths())
+                .address(dto.getAddress())
+                .bankAccount(dto.getBankAccount())
                 .usagePurpose(dto.getUsagePurpose())
                 .privacyAgreed(dto.getPrivacyAgreed())
                 .requestNote(dto.getRequestNote())
                 .build();
     }
 }
+

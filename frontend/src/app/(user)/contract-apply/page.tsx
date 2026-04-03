@@ -1,19 +1,58 @@
-import { Suspense } from "react";
+"use client";
+
+import React, { Suspense } from "react";
+import { motion } from "framer-motion";
+import { Loader2 } from "lucide-react";
 import ContractApplyForm from "./_components/ContractApplyForm";
 
+/**
+ * 입주 신청 페이지 (Contract Apply)
+ * Moss & Aloe Editorial 무드를 반영한 대담한 레이아웃
+ */
 export default function ContractApplyPage() {
   return (
-    <div className="min-h-screen bg-slate-50 py-12 px-4 sm:px-6">
-      <div className="max-w-7xl mx-auto mb-10 text-center">
-        <h1 className="text-4xl font-extrabold text-slate-800 tracking-tight">계약 신청</h1>
-        <p className="mt-3 text-lg text-slate-500 max-w-2xl mx-auto italic">
-          꿈꾸던 생활 공간에서의 조화로운 시작을 위해 신청서를 작성해주세요.
-        </p>
-      </div>
+    <div className="min-h-screen bg-background text-primary">
+      {/* Editorial Header Section */}
+      <section className="px-6 pt-24 pb-12 md:px-12 md:pt-32 lg:px-24">
+        <div className="max-w-[1400px] mx-auto border-b-2 border-primary pb-12">
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+            className="flex flex-col lg:flex-row lg:items-end justify-between gap-12"
+          >
+            <div className="space-y-4">
+              <span className="text-[10px] font-black uppercase tracking-[0.4em] text-accent">
+                APPLICATION / STEP 01-04
+              </span>
+              <h1 className="text-[10vw] md:text-[8vw] lg:text-[6vw] font-black leading-[0.85] tracking-tighter uppercase">
+                CO-LIVING<br />APPLICATION
+              </h1>
+              <p className="max-w-xl text-lg font-medium tracking-tight opacity-70 border-l-2 border-accent pl-6 mt-8">
+                코끼리 하우스는 단순한 거주 공간 이상의 가치를 지향합니다. 
+                당신의 새로운 라이프스타일을 위한 신청을 시작하세요.
+              </p>
+            </div>
+          </motion.div>
+        </div>
+      </section>
 
-      <Suspense fallback={<div className="flex justify-center p-10"><div className="w-10 h-10 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin"></div></div>}>
-        <ContractApplyForm />
-      </Suspense>
+      {/* Main Form Section */}
+      <main className="max-w-[1400px] mx-auto px-6 md:px-12 lg:px-24 py-12 md:py-24">
+        <Suspense fallback={
+          <div className="flex flex-col items-center justify-center py-40 gap-6">
+            <Loader2 className="w-12 h-12 text-accent animate-spin" />
+            <span className="text-[10px] font-black tracking-[0.3em] uppercase">LOADING SYSTEM...</span>
+          </div>
+        }>
+          <ContractApplyForm />
+        </Suspense>
+      </main>
+
+      {/* Background Decor */}
+      <div className="fixed top-0 right-0 p-12 pointer-events-none opacity-[0.03]">
+        <span className="text-[15vw] font-black uppercase leading-none select-none">COKKIRI</span>
+      </div>
     </div>
   );
 }
