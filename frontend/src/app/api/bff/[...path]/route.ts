@@ -13,17 +13,20 @@ async function handler(req: NextRequest, { params }: { params: Promise<{ path: s
   const cookieStore = await cookies();
   const accessToken = cookieStore.get('access_token')?.value;
 
-  const headers: HeadersInit = {
-    'Content-Type': req.headers.get('Content-Type') || 'application/json',
-  };
+  const headers: HeadersInit = {};
+  const contentType = req.headers.get('Content-Type');
+  if (contentType) headers['Content-Type'] = contentType;
   if (accessToken) {
     headers['Authorization'] = `Bearer ${accessToken}`;
   }
 
+  const body =
+    ['GET', 'HEAD'].includes(req.method) ? undefined : await req.arrayBuffer();
+
   const response = await fetch(url, {
     method: req.method,
     headers,
-    body: ['GET', 'HEAD'].includes(req.method) ? undefined : await req.text(),
+    body,
   });
 
   return new NextResponse(response.body, {

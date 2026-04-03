@@ -20,7 +20,12 @@
   
   --color-border: #BEC3BC;
   --color-input: #C8CDC4;
+  --color-surface: #F4F4EF;
+  --color-surface-foreground: #2C3424;
   --color-ring: #2C3424;
+
+  /* 랜딩 SMART LIVING 등 다크 에디토리얼 섹션 (컴포넌트에서는 bg-editorial 등 토큰만 사용) */
+  --color-editorial: #030213;
   
   --radius-xl: 2rem;
   --radius-2xl: 4rem;
