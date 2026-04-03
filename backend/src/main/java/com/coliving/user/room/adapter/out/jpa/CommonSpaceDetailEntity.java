@@ -50,5 +50,11 @@ public class CommonSpaceDetailEntity extends BaseEntity {
         this.usageFee = usageFee;
     }
 
-
+    public void update(Integer maxCapacity, String operatingHours,
+                       Boolean isReservable, BigDecimal usageFee) {
+        this.maxCapacity = maxCapacity;
+        this.operatingHours = operatingHours;
+        this.isReservable = isReservable;
+        this.usageFee = usageFee;
+    }
 }

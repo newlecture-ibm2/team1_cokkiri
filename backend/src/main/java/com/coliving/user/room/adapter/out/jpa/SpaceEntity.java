@@ -81,5 +81,17 @@ public class SpaceEntity extends BaseEntity {
         this.positionY = positionY;
     }
 
-
+    /**
+     * 공간 기본 정보를 수정합니다.
+     * type은 변경 불가 (비즈니스 룰: OCCUPIED 검사는 Service 레이어에서 수행)
+     */
+    public void update(String name, SpaceStatus status, Integer floor,
+                       BigDecimal area, String amenities, String description) {
+        this.name = name;
+        this.status = status;
+        this.floor = floor;
+        this.area = area;
+        this.amenities = amenities;
+        this.description = description;
+    }
 }
