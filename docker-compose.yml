@@ -31,6 +31,8 @@ services:
     container_name: team1-cokkiri-db
     image: postgres:16-alpine
     restart: unless-stopped
+    ports:
+      - "5432:5432"
     environment:
       POSTGRES_DB: coliving
       POSTGRES_USER: ${DB_USERNAME:-coliving}
