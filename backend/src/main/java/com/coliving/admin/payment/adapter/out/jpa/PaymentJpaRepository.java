@@ -15,7 +15,7 @@ public interface PaymentJpaRepository extends JpaRepository<PaymentEntity, Long>
     /**
      * 특정 계약의 결제 목록 조회
      */
-    List<PaymentEntity> findByContractIdOrderByBillingDateDesc(Long contractId);
+    List<PaymentEntity> findByContract_ContractIdOrderByBillingDateDesc(Long contractId);
 
     /**
      * 특정 유저의 결제 목록 조회 (최신순)
@@ -30,7 +30,7 @@ public interface PaymentJpaRepository extends JpaRepository<PaymentEntity, Long>
     /**
      * 특정 계약에 미납(UNPAID) 결제가 있는지 확인
      */
-    boolean existsByContractIdAndStatus(Long contractId, PaymentStatus status);
+    boolean existsByContract_ContractIdAndStatus(Long contractId, PaymentStatus status);
 
     /**
      * 특정 예약의 결제 조회

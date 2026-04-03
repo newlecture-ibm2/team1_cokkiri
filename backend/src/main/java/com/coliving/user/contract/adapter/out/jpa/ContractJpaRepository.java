@@ -9,7 +9,7 @@ import java.util.Optional;
 /**
  * Contract JPA Repository
  */
-public interface ContractJpaRepository extends JpaRepository<ContractEntity, Long> {
+public interface ContractJpaRepository extends JpaRepository<ContractEntity, Long>, ContractQueryRepository {
 
     /**
      * 특정 유저의 계약 목록 조회 (최신순)

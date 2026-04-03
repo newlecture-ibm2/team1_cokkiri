@@ -1,20 +1,21 @@
 package com.coliving.user.contract.adapter.out.jpa;
 
+import com.coliving.admin.payment.adapter.out.jpa.PaymentEntity;
 import com.coliving.global.entity.BaseEntity;
 import com.coliving.user.contract.model.ContractLanguage;
 import com.coliving.user.contract.model.ContractOrigin;
 import com.coliving.user.contract.model.ContractStatus;
+import com.coliving.user.contract.model.ContractStatusConverter;
 import jakarta.persistence.*;
-import lombok.AccessLevel;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.SQLRestriction;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * CONTRACT 테이블 매핑 JPA Entity
@@ -26,7 +27,9 @@ import java.time.OffsetDateTime;
 @SQLDelete(sql = "UPDATE contract SET deleted_at = CURRENT_TIMESTAMP WHERE contract_id = ?")
 @SQLRestriction("deleted_at IS NULL")
 @Getter
+@Builder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class ContractEntity extends BaseEntity {
 
     @Id
@@ -44,9 +47,13 @@ public class ContractEntity extends BaseEntity {
     @Column(name = "origin", nullable = false, length = 20)
     private ContractOrigin origin;
 
-    @Enumerated(EnumType.STRING)
+    @Convert(converter = ContractStatusConverter.class)
     @Column(name = "status", nullable = false, length = 15)
     private ContractStatus status;
+
+    @Builder.Default
+    @OneToMany(mappedBy = "contract", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<PaymentEntity> payments = new ArrayList<>();
 
     // ── 신청 정보 (유저 신청 시) ──
 
@@ -100,37 +107,6 @@ public class ContractEntity extends BaseEntity {
     @Column(name = "contracted_at")
     private OffsetDateTime contractedAt;
 
-    // ── Builder ──
-
-    @Builder
-    public ContractEntity(Long userId, Long spaceId, ContractOrigin origin, ContractStatus status,
-                          String address, String bankAccount, LocalDate desiredStartDate,
-                          Integer desiredDurationMonths, ContractLanguage contractLanguage,
-                          Boolean privacyAgreed, String requestNote,
-                          LocalDate startDate, LocalDate endDate,
-                          BigDecimal monthlyRent, BigDecimal deposit, String specialTerms,
-                          Long approvedBy, String rejectedReason, OffsetDateTime contractedAt) {
-        this.userId = userId;
-        this.spaceId = spaceId;
-        this.origin = origin;
-        this.status = status;
-        this.address = address;
-        this.bankAccount = bankAccount;
-        this.desiredStartDate = desiredStartDate;
-        this.desiredDurationMonths = desiredDurationMonths;
-        this.contractLanguage = contractLanguage;
-        this.privacyAgreed = privacyAgreed;
-        this.requestNote = requestNote;
-        this.startDate = startDate;
-        this.endDate = endDate;
-        this.monthlyRent = monthlyRent;
-        this.deposit = deposit;
-        this.specialTerms = specialTerms;
-        this.approvedBy = approvedBy;
-        this.rejectedReason = rejectedReason;
-        this.contractedAt = contractedAt;
-    }
-
     // ── 상태 변경 메서드 ──
 
     public void updateStatus(ContractStatus status) {
@@ -163,7 +139,17 @@ public class ContractEntity extends BaseEntity {
         this.status = ContractStatus.TERMINATED;
     }
 
+    public void expire() {
+        this.status = ContractStatus.EXPIRED;
+    }
+
     public void cancel() {
         this.status = ContractStatus.CANCELLED;
+    }
+
+    // ── 연관관계 편의 메서드 ──
+    public void addPayment(PaymentEntity payment) {
+        this.payments.add(payment);
+        payment.assignContract(this);
     }
 }

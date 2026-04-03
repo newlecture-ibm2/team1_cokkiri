@@ -4,11 +4,9 @@ import com.coliving.admin.payment.model.PaymentMethod;
 import com.coliving.admin.payment.model.PaymentStatus;
 import com.coliving.admin.payment.model.PaymentType;
 import com.coliving.global.entity.BaseEntity;
+import com.coliving.user.contract.adapter.out.jpa.ContractEntity;
 import jakarta.persistence.*;
-import lombok.AccessLevel;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.SQLRestriction;
 
@@ -33,8 +31,9 @@ public class PaymentEntity extends BaseEntity {
     @Column(name = "payment_id")
     private Long paymentId;
 
-    @Column(name = "contract_id")
-    private Long contractId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "contract_id")
+    private ContractEntity contract;
 
     @Column(name = "reservation_id")
     private Long reservationId;
@@ -66,10 +65,10 @@ public class PaymentEntity extends BaseEntity {
     // ── Builder ──
 
     @Builder
-    public PaymentEntity(Long contractId, Long reservationId, Long userId,
-                         PaymentType type, BigDecimal amount, PaymentStatus status,
-                         PaymentMethod paymentMethod, LocalDate billingDate, LocalDate paidDate) {
-        this.contractId = contractId;
+    public PaymentEntity(ContractEntity contract, Long reservationId, Long userId,
+            PaymentType type, BigDecimal amount, PaymentStatus status,
+            PaymentMethod paymentMethod, LocalDate billingDate, LocalDate paidDate) {
+        this.contract = contract;
         this.reservationId = reservationId;
         this.userId = userId;
         this.type = type;
@@ -96,5 +95,9 @@ public class PaymentEntity extends BaseEntity {
      */
     public void markPending() {
         this.status = PaymentStatus.PENDING;
+    }
+
+    public void assignContract(ContractEntity contract) {
+        this.contract = contract;
     }
 }
