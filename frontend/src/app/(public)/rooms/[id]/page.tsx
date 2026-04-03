@@ -1,8 +1,4 @@
-export default function RoomDetailPage({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
+export default function RoomDetailPage() {
   return (
     <div>
       <h1 className="text-3xl font-bold">방 상세</h1>
