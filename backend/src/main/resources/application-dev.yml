@@ -1,6 +1,6 @@
 spring:
   datasource:
-    url: ${DB_URL:jdbc:postgresql://db:5432/coliving}
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/coliving}
     username: ${DB_USERNAME:coliving}
     password: ${DB_PASSWORD:coliving123}
   jpa:
