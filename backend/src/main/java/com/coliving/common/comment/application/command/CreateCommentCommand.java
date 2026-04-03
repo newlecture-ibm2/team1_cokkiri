@@ -1,0 +1,15 @@
+package com.coliving.common.comment.application.command;
+
+import com.coliving.common.community.model.ActorRole;
+import lombok.Builder;
+import lombok.Getter;
+
+@Getter
+@Builder
+public class CreateCommentCommand {
+    private final Long actorId;
+    private final ActorRole actorRole;
+    private final Long postId;
+    private final String content;
+}
+
