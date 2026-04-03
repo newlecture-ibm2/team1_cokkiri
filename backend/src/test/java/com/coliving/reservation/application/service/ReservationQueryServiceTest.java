@@ -56,4 +56,33 @@ class ReservationQueryServiceTest {
         assertThat(responses.get(0).getSpaceId()).isEqualTo(10L);
         assertThat(responses.get(0).getStatus()).isEqualTo(ReservationStatus.APPROVED);
     }
+
+    @Test
+    @DisplayName("관리자가 모든 예약을 역순으로 조회한다.")
+    void getAllReservations_Success() {
+        // given
+        ReservationEntity entity = ReservationEntity.builder()
+                .userId(2L)
+                .spaceId(11L)
+                .reservationDate(LocalDate.of(2026, 5, 2))
+                .startTime(LocalTime.of(10, 0))
+                .endTime(LocalTime.of(12, 0))
+                .build();
+
+        org.springframework.test.util.ReflectionTestUtils.setField(entity, "id", 200L);
+        org.springframework.test.util.ReflectionTestUtils.setField(entity, "status", ReservationStatus.PENDING);
+
+        given(reservationRepository.findAllByOrderByReservationDateDescStartTimeDesc())
+                .willReturn(List.of(entity));
+
+        // when
+        var responses = reservationQueryService.getAllReservations();
+
+        // then
+        assertThat(responses).hasSize(1);
+        assertThat(responses.get(0).getId()).isEqualTo(200L);
+        assertThat(responses.get(0).getUserId()).isEqualTo(2L);
+        assertThat(responses.get(0).getSpaceId()).isEqualTo(11L);
+        assertThat(responses.get(0).getStatus()).isEqualTo(ReservationStatus.PENDING);
+    }
 }

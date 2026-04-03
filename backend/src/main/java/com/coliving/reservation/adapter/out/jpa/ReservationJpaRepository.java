@@ -27,6 +27,9 @@ import java.util.List;
  */
 public interface ReservationJpaRepository extends JpaRepository<ReservationEntity, Long> {
 
+    /** 모든 예약 목록 조회 (최신순 정렬) - 관리자용 */
+    List<ReservationEntity> findAllByOrderByReservationDateDescStartTimeDesc();
+
     // ── 사용자별 조회 ──
 
     /** 특정 사용자의 예약 목록 조회 (상태 필터링) */

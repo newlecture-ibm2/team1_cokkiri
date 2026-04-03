@@ -11,8 +11,14 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import org.springframework.test.util.ReflectionTestUtils;
+
+import java.time.LocalDate;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.Optional;
+
+import com.coliving.reservation.model.ReservationStatus;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -106,5 +112,54 @@ class ReservationCommandServiceTest {
         assertThatThrownBy(() -> reservationCommandService.reserveFacility(userId, request))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("종료 시간은 시작 시간보다 이후여야 합니다");
+    }
+
+    @Test
+    @DisplayName("관리자가 예약을 정상적으로 승인한다.")
+    void approveReservation_Success() {
+        // given
+        Long reservationId = 100L;
+        Long adminId = 999L;
+        ReservationEntity pending = ReservationEntity.builder()
+                .userId(1L)
+                .spaceId(10L)
+                .reservationDate(LocalDate.of(2026, 5, 1))
+                .startTime(LocalTime.of(14, 0))
+                .endTime(LocalTime.of(16, 0))
+                .build();
+        ReflectionTestUtils.setField(pending, "status", ReservationStatus.PENDING);
+
+        given(reservationJpaRepository.findById(reservationId)).willReturn(Optional.of(pending));
+
+        // when
+        reservationCommandService.approveReservation(adminId, reservationId);
+
+        // then
+        assertThat(pending.getStatus()).isEqualTo(ReservationStatus.APPROVED);
+        assertThat(pending.getApprovedBy()).isEqualTo(adminId);
+    }
+
+    @Test
+    @DisplayName("관리자가 예약을 반려(취소)한다.")
+    void rejectReservation_Success() {
+        // given
+        Long reservationId = 100L;
+        Long adminId = 999L;
+        ReservationEntity pending = ReservationEntity.builder()
+                .userId(1L)
+                .spaceId(10L)
+                .reservationDate(LocalDate.of(2026, 5, 1))
+                .startTime(LocalTime.of(14, 0))
+                .endTime(LocalTime.of(16, 0))
+                .build();
+        ReflectionTestUtils.setField(pending, "status", ReservationStatus.PENDING);
+
+        given(reservationJpaRepository.findById(reservationId)).willReturn(Optional.of(pending));
+
+        // when
+        reservationCommandService.rejectReservation(adminId, reservationId);
+
+        // then
+        assertThat(pending.getStatus()).isEqualTo(ReservationStatus.CANCELLED);
     }
 }

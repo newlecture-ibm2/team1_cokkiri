@@ -1,5 +1,6 @@
 package com.coliving.reservation.application.service;
 
+import com.coliving.reservation.adapter.in.web.dto.AdminReservationResponse;
 import com.coliving.reservation.adapter.in.web.dto.UserReservationResponse;
 import com.coliving.reservation.adapter.out.jpa.ReservationEntity;
 import com.coliving.reservation.adapter.out.jpa.ReservationJpaRepository;
@@ -28,6 +29,16 @@ public class ReservationQueryService implements ReservationQueryUseCase {
         
         return reservations.stream()
                 .map(UserReservationResponse::fromEntity)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<AdminReservationResponse> getAllReservations() {
+        List<ReservationEntity> reservations = reservationRepository
+                .findAllByOrderByReservationDateDescStartTimeDesc();
+        
+        return reservations.stream()
+                .map(AdminReservationResponse::fromEntity)
                 .collect(Collectors.toList());
     }
 }

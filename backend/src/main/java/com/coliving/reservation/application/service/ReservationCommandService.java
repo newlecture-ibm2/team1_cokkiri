@@ -75,4 +75,25 @@ public class ReservationCommandService implements ReservationCommandUseCase {
         reservation.cancel();
         log.info("예약 취소 성공 - reservationId: {}, userId: {}", reservationId, userId);
     }
+
+    @Override
+    @Transactional
+    public void approveReservation(Long adminId, Long reservationId) {
+        ReservationEntity reservation = reservationRepository.findById(reservationId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND, "예약을 찾을 수 없습니다."));
+
+        reservation.approve(adminId);
+        log.info("예약 승인 성공 - reservationId: {}, adminId: {}", reservationId, adminId);
+    }
+
+    @Override
+    @Transactional
+    public void rejectReservation(Long adminId, Long reservationId) {
+        ReservationEntity reservation = reservationRepository.findById(reservationId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND, "예약을 찾을 수 없습니다."));
+
+        // Entity의 cancel() 메서드가 PENDING, APPROVED 상태에서 CANCELLED로 전환되도록 보장함
+        reservation.cancel();
+        log.info("예약 반려(취소) 성공 - reservationId: {}, adminId: {}", reservationId, adminId);
+    }
 }
