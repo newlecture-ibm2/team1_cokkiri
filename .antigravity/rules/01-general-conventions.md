@@ -14,7 +14,9 @@
   - React **컴포넌트 및 Type/Interface**는 무조건 `PascalCase` 사용.
   - 파일 및 폴더 이름(URL 경로 포함)은 무조건 `kebab-case` 사용 (예: `/my-devices`, `contract-apply`).
 - **REST API 엔드포인트 URL:** 
-  - 소문자 `kebab-case` 및 복수형(Plural) 명사 사용 원칙 (예: `/api/v1/devices`, `/api/v1/contracts`).
+  - 모든 공개 API는 **`api/...`** 경로 규칙을 따른다 (HTTP 매핑 시 선행 슬래시 포함 **`/api/...`**).
+  - **`/api/v1`** 등 버전 세그먼트는 사용하지 않는다.
+  - 소문자 `kebab-case`, 리소스 세그먼트는 **복수형(Plural)** (예: `/api/posts`, `/api/vocs`, `/api/devices`).
 
 ### 2. Core Policies (핵심 데이터 규칙)
 - **Soft Delete 지침 (BaseEntity 활용 강제):**

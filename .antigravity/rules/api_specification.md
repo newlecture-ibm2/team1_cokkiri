@@ -1460,6 +1460,13 @@ Query: `?page=0&size=20&sort=createdAt,desc`
 
 > VOC.admin_reply, reply_user_id, replied_at 업데이트. status→IN_PROGRESS 또는 RESOLVED. NOTIFICATION 발송.
 
+### 14.11 민원 처리 완료 (resolve)
+
+| **ID** | ADM-VOC-03 | **Endpoint** | `POST /api/admin/voc/{vocId}/resolve` | **인증** | 🔒 ADMIN |
+|---|---|---|---|---|---|
+
+> 관리자가 민원을 처리 완료로 처리한다. Request Body 없음. `status`·`admin_reply` 등 필드 갱신 규칙은 서버 구현과 동일하게 적용.
+
 ---
 
 ## API 요약
