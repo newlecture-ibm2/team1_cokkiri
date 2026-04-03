@@ -1,0 +1,20 @@
+{
+  "request": {
+    "method": "GET",
+    "urlPathPattern": "/api/devices/([0-9]+)/status"
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "jsonBody": {
+      "success": true,
+      "status": "ONLINE",
+      "isActive": true,
+      "lastOnlineAt": "{{now}}",
+      "message": "기기가 정상 작동 중입니다."
+    },
+    "transformers": ["response-template"]
+  }
+}
