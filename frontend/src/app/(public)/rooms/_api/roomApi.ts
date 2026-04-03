@@ -1,38 +1,8 @@
-export interface RoomDTO {
-  spaceId: number;
-  name: string;
-  status: string;
-  floor?: number;
-  area?: number;
-  description?: string;
-  amenities: string[];
-  roomType?: string;
-  roomCount?: number;
-  bathroomCount?: number;
-  direction?: string;
-  deposit?: number;
-  monthlyRent?: number;
-  maintenanceFee?: number;
-  parkingAvailable?: boolean;
-  thumbnailUrl?: string;
-}
+import type { RoomDTO, PageResponse, RoomFilterParams } from '../_types';
 
-export interface PageResponse<T> {
-  content: T[];
-  totalPages: number;
-  totalElements: number;
-  number: number;
-  size: number;
-}
+export type { RoomDTO, PageResponse, RoomFilterParams };
 
-export const fetchRooms = async (params?: {
-  roomType?: string;
-  minRent?: number;
-  maxRent?: number;
-  floor?: number;
-  page?: number;
-  size?: number;
-}) => {
+export const fetchRooms = async (params?: RoomFilterParams) => {
   const searchParams = new URLSearchParams();
   if (params?.roomType) searchParams.set('roomType', params.roomType);
   if (params?.minRent !== undefined) searchParams.set('minRent', String(params.minRent));
