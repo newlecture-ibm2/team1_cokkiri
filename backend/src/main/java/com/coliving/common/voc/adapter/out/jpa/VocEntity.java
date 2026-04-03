@@ -21,7 +21,7 @@ import java.time.OffsetDateTime;
 
 @Getter
 @Entity
-@Table(name = "voc")
+@Table(name = "vocs")
 @SQLRestriction("deleted_at IS NULL")
 public class VocEntity extends BaseEntity {
 
@@ -44,7 +44,7 @@ public class VocEntity extends BaseEntity {
     private String content;
 
     @JdbcTypeCode(SqlTypes.JSON)
-    @Column(name = "attachments", columnDefinition = "jsonb")
+    @Column(name = "attachments")
     private JsonNode attachments;
 
     @Enumerated(EnumType.STRING)

@@ -16,7 +16,7 @@ import org.hibernate.annotations.SQLRestriction;
 
 @Getter
 @Entity
-@Table(name = "notification")
+@Table(name = "notifications")
 @SQLRestriction("deleted_at IS NULL")
 public class NotificationEntity extends BaseEntity {
 

@@ -3,7 +3,14 @@ spring:
   jpa:
     hibernate.ddl-auto: validate
     open-in-view: false
-    properties.hibernate.format_sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        default_batch_fetch_size: 16
+        jdbc:
+          batch_size: 20
+        order_inserts: true
+        order_updates: true
   jackson:
     time-zone: Asia/Seoul
   servlet:

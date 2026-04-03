@@ -1,6 +1,7 @@
 package com.coliving.common.comment.adapter.out.jpa;
 
 import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
@@ -10,8 +11,9 @@ public interface CommentJpaRepository extends JpaRepository<CommentEntity, Long>
 
     Optional<CommentEntity> findByCommentId(Long commentId);
 
-    List<CommentEntity> findByPostId(Long postId, Sort sort);
+    @EntityGraph(attributePaths = {"post"})
+    List<CommentEntity> findByPost_PostId(Long postId, Sort sort);
 
-    List<CommentEntity> findByPostId(Long postId);
+    @EntityGraph(attributePaths = {"post"})
+    List<CommentEntity> findByPost_PostId(Long postId);
 }
-
