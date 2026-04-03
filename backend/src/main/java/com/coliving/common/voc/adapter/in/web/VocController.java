@@ -39,7 +39,7 @@ public class VocController {
         this.vocUseCase = vocUseCase;
     }
 
-    @PostMapping("/api/voc")
+    @PostMapping("/api/vocs")
     public ApiResponse<VocDetailResponseDto> createVoc(@Valid @RequestBody CreateVocRequestDto request) {
         Long userId = getAuthenticatedUserId();
 
@@ -55,7 +55,7 @@ public class VocController {
         return ApiResponse.ok(toDetailDto(result), "민원이 등록되었습니다.");
     }
 
-    @GetMapping("/api/voc/my")
+    @GetMapping("/api/vocs/my")
     public ApiResponse<VocListResponseDto> listMyVocs(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size,
@@ -83,7 +83,7 @@ public class VocController {
         return ApiResponse.ok(response);
     }
 
-    @PutMapping("/api/voc/{vocId}")
+    @PutMapping("/api/vocs/{vocId}")
     public ApiResponse<VocDetailResponseDto> updateVoc(
             @PathVariable Long vocId,
             @Valid @RequestBody UpdateVocRequestDto request
@@ -103,7 +103,7 @@ public class VocController {
         return ApiResponse.ok(toDetailDto(result));
     }
 
-    @PostMapping("/api/voc/{vocId}/cancel")
+    @PostMapping("/api/vocs/{vocId}/cancel")
     public ApiResponse<VocDetailResponseDto> cancelVoc(@PathVariable Long vocId) {
         Long userId = getAuthenticatedUserId();
 

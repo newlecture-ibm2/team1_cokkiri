@@ -79,7 +79,7 @@ import java.util.List;
 import java.util.Map;
 
 @Entity
-@Table(name = "POST")
+@Table(name = "posts")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class PostEntity extends BaseEntity {
@@ -129,7 +129,7 @@ import lombok.NoArgsConstructor;
 import com.coliving.global.entity.BaseEntity;
 
 @Entity
-@Table(name = "COMMENT")
+@Table(name = "comments")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class CommentEntity extends BaseEntity {
@@ -160,7 +160,7 @@ import lombok.NoArgsConstructor;
 import com.coliving.global.entity.BaseEntity;
 
 @Entity
-@Table(name = "POST_LIKE")
+@Table(name = "post_likes")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class PostLikeEntity extends BaseEntity {

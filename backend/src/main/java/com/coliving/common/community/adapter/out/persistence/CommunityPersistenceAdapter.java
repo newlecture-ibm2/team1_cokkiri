@@ -62,7 +62,7 @@ public class CommunityPersistenceAdapter implements CommunityRepositoryPort {
 
     @Override
     public boolean isLikedByMe(Long postId, Long userId) {
-        return postLikeJpaRepository.findByPostIdAndUserId(postId, userId).isPresent();
+        return postLikeJpaRepository.findByPost_PostIdAndUserId(postId, userId).isPresent();
     }
 
     @Override
@@ -70,7 +70,7 @@ public class CommunityPersistenceAdapter implements CommunityRepositoryPort {
         PostEntity postEntity = postJpaRepository.findById(postId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND));
 
-        Optional<PostLikeEntity> existingLike = postLikeJpaRepository.findByPostIdAndUserId(postId, userId);
+        Optional<PostLikeEntity> existingLike = postLikeJpaRepository.findByPost_PostIdAndUserId(postId, userId);
 
         if (existingLike.isPresent()) {
             PostLikeEntity likeEntity = existingLike.get();
@@ -81,7 +81,7 @@ public class CommunityPersistenceAdapter implements CommunityRepositoryPort {
             postJpaRepository.save(postEntity);
         } else {
             PostLikeEntity likeEntity = new PostLikeEntity();
-            likeEntity.setPostId(postId);
+            likeEntity.setPost(postEntity);
             likeEntity.setUserId(userId);
             postLikeJpaRepository.save(likeEntity);
 

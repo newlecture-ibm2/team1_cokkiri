@@ -9,6 +9,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import lombok.Getter;
+import org.hibernate.annotations.BatchSize;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.annotations.SQLRestriction;
 import org.hibernate.type.SqlTypes;
@@ -17,7 +18,8 @@ import java.time.OffsetDateTime;
 
 @Getter
 @Entity
-@Table(name = "post")
+@Table(name = "posts")
+@BatchSize(size = 16)
 @SQLRestriction("deleted_at IS NULL")
 public class PostEntity extends BaseEntity {
 
@@ -39,11 +41,11 @@ public class PostEntity extends BaseEntity {
     private String content;
 
     @JdbcTypeCode(SqlTypes.JSON)
-    @Column(name = "attachments", nullable = false, columnDefinition = "jsonb")
+    @Column(name = "attachments", nullable = false)
     private JsonNode attachments;
 
     @JdbcTypeCode(SqlTypes.JSON)
-    @Column(name = "links", nullable = false, columnDefinition = "jsonb")
+    @Column(name = "links", nullable = false)
     private JsonNode links;
 
     @Column(name = "view_count", nullable = false)
