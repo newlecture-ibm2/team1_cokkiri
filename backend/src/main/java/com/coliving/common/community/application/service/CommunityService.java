@@ -6,6 +6,7 @@ import com.coliving.common.community.application.port.out.CommunityRepositoryPor
 import com.coliving.common.community.application.result.*;
 import com.coliving.common.community.model.ActorRole;
 import com.coliving.common.community.model.Post;
+import com.coliving.common.community.model.PostAttachment;
 import com.coliving.common.community.model.PostCategory;
 import com.coliving.common.community.model.Comment;
 import com.coliving.global.error.BusinessException;
@@ -16,6 +17,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -65,8 +67,7 @@ public class CommunityService implements CommunityUseCase {
         Sort commentSort = Sort.by(Sort.Direction.ASC, "createdAt");
         List<Comment> comments = repositoryPort.findCommentsByPostId(command.getPostId(), commentSort);
 
-        boolean likedByMe = command.getActorId() != null
-                && repositoryPort.isLikedByMe(command.getPostId(), command.getActorId());
+        boolean likedByMe = repositoryPort.isLikedByMe(command.getPostId(), command.getActorId());
 
         return PostDetailResult.builder()
                 .postId(post.getPostId())
@@ -125,12 +126,24 @@ public class CommunityService implements CommunityUseCase {
             throw new BusinessException(ErrorCode.FORBIDDEN);
         }
 
+        List<PostAttachment> attachmentDelta = command.getAttachments();
+        List<PostAttachment> base = post.getAttachments() == null
+                ? new ArrayList<>()
+                : new ArrayList<>(post.getAttachments());
+        List<PostAttachment> attachmentsToSave;
+        if (attachmentDelta == null || attachmentDelta.isEmpty()) {
+            attachmentsToSave = base;
+        } else {
+            base.addAll(attachmentDelta);
+            attachmentsToSave = base;
+        }
+
         Post updated = repositoryPort.updatePost(
                 command.getPostId(),
                 command.getCategory(),
                 command.getTitle(),
                 command.getContent(),
-                command.getAttachments(),
+                attachmentsToSave,
                 command.getLinks()
         );
 
