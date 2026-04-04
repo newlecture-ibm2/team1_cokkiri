@@ -65,7 +65,8 @@ public class CommunityService implements CommunityUseCase {
         Sort commentSort = Sort.by(Sort.Direction.ASC, "createdAt");
         List<Comment> comments = repositoryPort.findCommentsByPostId(command.getPostId(), commentSort);
 
-        boolean likedByMe = repositoryPort.isLikedByMe(command.getPostId(), command.getActorId());
+        boolean likedByMe = command.getActorId() != null
+                && repositoryPort.isLikedByMe(command.getPostId(), command.getActorId());
 
         return PostDetailResult.builder()
                 .postId(post.getPostId())

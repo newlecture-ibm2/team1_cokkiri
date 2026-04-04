@@ -13,12 +13,14 @@ import com.coliving.global.error.BusinessException;
 import com.coliving.global.error.ErrorCode;
 import jakarta.validation.Valid;
 import org.springframework.http.MediaType;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 public class CommunityController {
@@ -36,12 +38,12 @@ public class CommunityController {
             @RequestParam(defaultValue = "20") int size,
             @RequestParam(required = false, defaultValue = "createdAt,desc") String sort
     ) {
-        ActorInfo actor = getActorInfo();
+        Optional<ActorInfo> actor = tryResolveActor();
         PostCategory parsedCategory = parseCategoryOrNull(category);
 
         GetPostListCommand command = GetPostListCommand.builder()
-                .actorId(actor.actorId)
-                .actorRole(actor.role)
+                .actorId(actor.map(a -> a.actorId).orElse(null))
+                .actorRole(actor.map(a -> a.role).orElse(null))
                 .category(parsedCategory)
                 .page(page)
                 .size(size)
@@ -74,11 +76,11 @@ public class CommunityController {
 
     @GetMapping("/api/posts/{postId}")
     public ApiResponse<PostDetailResponseDto> getPostDetail(@PathVariable Long postId) {
-        ActorInfo actor = getActorInfo();
+        Optional<ActorInfo> actor = tryResolveActor();
 
         GetPostDetailCommand command = GetPostDetailCommand.builder()
-                .actorId(actor.actorId)
-                .actorRole(actor.role)
+                .actorId(actor.map(a -> a.actorId).orElse(null))
+                .actorRole(actor.map(a -> a.role).orElse(null))
                 .postId(postId)
                 .build();
 
@@ -231,21 +233,29 @@ public class CommunityController {
                 .build();
     }
 
-    private ActorInfo getActorInfo() {
+    /**
+     * 비로그인(또는 익명)일 때는 empty — 게시글 조회 API에서만 사용합니다.
+     */
+    private Optional<ActorInfo> tryResolveActor() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication == null || authentication.getName() == null) {
-            throw new BusinessException(ErrorCode.FORBIDDEN);
+        if (authentication == null
+                || !authentication.isAuthenticated()
+                || authentication instanceof AnonymousAuthenticationToken
+                || "anonymousUser".equals(authentication.getName())) {
+            return Optional.empty();
         }
-
-        Long actorId;
         try {
-            actorId = Long.parseLong(authentication.getName());
-        } catch (NumberFormatException e) {
-            throw new BusinessException(ErrorCode.FORBIDDEN);
+            long actorId = Long.parseLong(authentication.getName());
+            ActorRole role = extractRole(authentication);
+            return Optional.of(new ActorInfo(actorId, role));
+        } catch (RuntimeException e) {
+            return Optional.empty();
         }
+    }
 
-        ActorRole role = extractRole(authentication);
-        return new ActorInfo(actorId, role);
+    private ActorInfo getActorInfo() {
+        return tryResolveActor()
+                .orElseThrow(() -> new BusinessException(ErrorCode.FORBIDDEN));
     }
 
     private ActorRole extractRole(Authentication authentication) {

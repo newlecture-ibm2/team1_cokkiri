@@ -44,6 +44,9 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.POST, "/api/auth/register", "/api/auth/login",
                         "/api/auth/refresh", "/api/auth/find-id", "/api/auth/reset-password").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/rooms/**").permitAll()
+                // 커뮤니티 게시글 목록·상세는 비회원도 조회 가능 (좋아요/댓글 작성 등은 인증 필요)
+                .requestMatchers(HttpMethod.GET, "/api/posts").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/posts/*").permitAll()
                 .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html").permitAll()
 
                 // ADMIN only (임시 테스트 허용)
