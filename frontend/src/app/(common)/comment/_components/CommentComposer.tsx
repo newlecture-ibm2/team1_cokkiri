@@ -4,11 +4,13 @@ import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { motion } from "framer-motion";
 import { Send } from "lucide-react";
+import { bffErrorMessageFromResponse } from "@/lib/bff-error-message";
 import { cn } from "@/lib/utils";
 
 export function CommentComposer({ postId }: { postId: number }) {
   const router = useRouter();
   const [content, setContent] = useState("");
+  const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
 
   function submit(e: React.FormEvent) {
@@ -16,6 +18,7 @@ export function CommentComposer({ postId }: { postId: number }) {
     const text = content.trim();
     if (!text || pending) return;
 
+    setError(null);
     startTransition(async () => {
       try {
         const res = await fetch(`/api/bff/posts/${postId}/comments`, {
@@ -27,9 +30,11 @@ export function CommentComposer({ postId }: { postId: number }) {
         if (res.ok) {
           setContent("");
           router.refresh();
+          return;
         }
+        setError(await bffErrorMessageFromResponse(res));
       } catch {
-        /* ignore */
+        setError("연결에 실패했습니다. 잠시 후 다시 시도해 주세요.");
       }
     });
   }
@@ -45,11 +50,22 @@ export function CommentComposer({ postId }: { postId: number }) {
       <textarea
         id={`comment-${postId}`}
         value={content}
-        onChange={(e) => setContent(e.target.value)}
+        onChange={(e) => {
+          setContent(e.target.value);
+          if (error) setError(null);
+        }}
         rows={3}
         placeholder="댓글을 입력하세요"
-        className="w-full resize-y rounded-xl border border-input bg-background px-4 py-3 font-medium tracking-tight text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        className="w-full resize-y rounded-xl border border-input bg-surface px-4 py-3 font-medium tracking-tight text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
       />
+      {error ? (
+        <p
+          role="alert"
+          className="mt-4 rounded-xl border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm font-medium tracking-tight text-destructive"
+        >
+          {error}
+        </p>
+      ) : null}
       <div className="mt-4 flex justify-end">
         <motion.button
           type="submit"

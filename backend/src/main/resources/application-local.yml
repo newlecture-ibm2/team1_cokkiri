@@ -28,4 +28,4 @@ jwt:
   refresh-expiration: 604800000
 
 mock-iot:
-  base-url: http://localhost:8000
+  base-url: http://mock-iot:8000

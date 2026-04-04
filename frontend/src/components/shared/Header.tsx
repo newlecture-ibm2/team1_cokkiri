@@ -9,9 +9,16 @@ import { useState, useEffect } from "react";
 
 const navLinks = [
   { name: "Community", path: "/community" },
+  { name: "VoC", path: "/voc" },
   { name: "Living", path: "/rooms" },
   { name: "Profile", path: "/profile" },
 ];
+
+function navLinkActive(pathname: string, linkPath: string) {
+  if (pathname === linkPath) return true;
+  if (linkPath === "/") return false;
+  return pathname.startsWith(`${linkPath}/`);
+}
 
 export function Header() {
   const pathname = usePathname();
@@ -65,7 +72,7 @@ export function Header() {
                   key={link.path}
                   href={link.path}
                   className={`text-sm font-black tracking-widest text-primary uppercase transition-all duration-500 hover:opacity-100 ${
-                    pathname === link.path ? "underline underline-offset-8 opacity-100" : "opacity-40"
+                    navLinkActive(pathname, link.path) ? "underline underline-offset-8 opacity-100" : "opacity-40"
                   }`}
                 >
                   {link.name}
@@ -154,7 +161,7 @@ export function Header() {
                       href={link.path}
                       onClick={() => setIsMobileMenuOpen(false)}
                       className={`block border-b border-primary/5 py-4 text-lg font-black tracking-[0.2em] uppercase transition-all duration-300 ${
-                        pathname === link.path
+                        navLinkActive(pathname, link.path)
                           ? "border-l-2 border-l-secondary pl-4 text-primary"
                           : "text-primary/40 hover:pl-4 hover:text-primary"
                       }`}

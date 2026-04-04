@@ -5,20 +5,10 @@ import { motion } from "framer-motion";
 import { MessageCircle, Eye, Heart } from "lucide-react";
 import type { PostListItem } from "../_types/community";
 import { POST_CATEGORIES } from "../_types/community";
+import { formatDateTimeKo } from "@/lib/format-date";
 
 function categoryLabel(code: string) {
   return POST_CATEGORIES.find((c) => c.value === code)?.label ?? code;
-}
-
-function formatDate(iso: string) {
-  try {
-    return new Date(iso).toLocaleString("ko-KR", {
-      dateStyle: "medium",
-      timeStyle: "short",
-    });
-  } catch {
-    return iso;
-  }
 }
 
 export function PostCard({ post }: { post: PostListItem }) {
@@ -34,7 +24,7 @@ export function PostCard({ post }: { post: PostListItem }) {
             {categoryLabel(post.category)}
           </span>
           <span className="font-black text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
-            {formatDate(post.createdAt)}
+            {formatDateTimeKo(post.createdAt)}
           </span>
         </div>
         <h2 className="mt-4 line-clamp-2 text-xl font-black uppercase leading-tight tracking-tighter text-foreground md:text-2xl">

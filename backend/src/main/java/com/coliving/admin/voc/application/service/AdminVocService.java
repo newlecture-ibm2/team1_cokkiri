@@ -1,5 +1,6 @@
 package com.coliving.admin.voc.application.service;
 
+import com.coliving.admin.voc.application.command.GetAdminVocCommand;
 import com.coliving.admin.voc.application.command.ListAdminVocsCommand;
 import com.coliving.admin.voc.application.command.ReplyVocCommand;
 import com.coliving.admin.voc.application.command.ResolveVocCommand;
@@ -13,6 +14,8 @@ import com.coliving.common.notification.model.ReferenceType;
 import com.coliving.common.voc.application.port.out.VocRepositoryPort;
 import com.coliving.common.voc.application.result.VocResult;
 import com.coliving.common.voc.model.Voc;
+import com.coliving.global.error.BusinessException;
+import com.coliving.global.error.ErrorCode;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -59,6 +62,14 @@ public class AdminVocService implements AdminVocUseCase {
                 .totalElements(page.getTotalElements())
                 .totalPages(page.getTotalPages())
                 .build();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public VocResult getVoc(GetAdminVocCommand command) {
+        Voc voc = vocRepositoryPort.findByVocId(command.getVocId())
+                .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND));
+        return toVocResult(voc);
     }
 
     @Override

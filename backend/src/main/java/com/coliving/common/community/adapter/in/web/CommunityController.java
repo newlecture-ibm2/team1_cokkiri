@@ -1,21 +1,25 @@
 package com.coliving.common.community.adapter.in.web;
 
-import com.coliving.common.community.adapter.in.web.dto.req.CreatePostRequestDto;
+import com.coliving.common.community.adapter.in.web.dto.req.PostMultipartRequestDto;
 import com.coliving.common.community.application.command.*;
 import com.coliving.common.community.application.port.in.CommunityUseCase;
 import com.coliving.common.community.application.result.*;
 import com.coliving.common.community.adapter.in.web.dto.res.*;
 import com.coliving.common.community.model.ActorRole;
 import com.coliving.common.community.model.Comment;
+import com.coliving.common.community.model.PostAttachment;
 import com.coliving.common.community.model.PostCategory;
+import com.coliving.common.community.model.PostLink;
 import com.coliving.global.dto.ApiResponse;
 import com.coliving.global.error.BusinessException;
 import com.coliving.global.error.ErrorCode;
+import com.coliving.global.storage.LocalMultipartFileStorage;
 import jakarta.validation.Valid;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -24,16 +28,18 @@ import java.util.List;
 public class CommunityController {
 
     private final CommunityUseCase useCase;
+    private final LocalMultipartFileStorage multipartFileStorage;
 
-    public CommunityController(CommunityUseCase useCase) {
+    public CommunityController(CommunityUseCase useCase, LocalMultipartFileStorage multipartFileStorage) {
         this.useCase = useCase;
+        this.multipartFileStorage = multipartFileStorage;
     }
 
     @GetMapping("/api/posts")
     public ApiResponse<PostListResponseDto> getPostList(
             @RequestParam(required = false) String category,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int size,
+            @RequestParam(value = "p", defaultValue = "0") int page,
+            @RequestParam(value = "s", defaultValue = "20") int size,
             @RequestParam(required = false, defaultValue = "createdAt,desc") String sort
     ) {
         ActorInfo actor = getActorInfo();
@@ -113,21 +119,20 @@ public class CommunityController {
         return ApiResponse.ok(response);
     }
 
-    @PostMapping(value = "/api/posts", consumes = "application/json")
-    public ApiResponse<PostIdResponseDto> createPost(
-            @Valid @RequestBody CreatePostRequestDto request
-    ) {
+    @PostMapping(value = "/api/posts", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ApiResponse<PostIdResponseDto> createPost(@Valid @ModelAttribute PostMultipartRequestDto form) {
         ActorInfo actor = getActorInfo();
-        PostCategory category = parseCategoryOrThrow(request.getCategory());
+        PostCategory category = parseCategoryOrThrow(form.getCategory());
+        List<PostAttachment> attachments = multipartFileStorage.storePostFiles(form.getFiles());
 
         CreatePostCommand command = CreatePostCommand.builder()
                 .actorId(actor.actorId)
                 .actorRole(actor.role)
                 .category(category)
-                .title(request.getTitle())
-                .content(request.getContent())
-                .attachments(request.getAttachments())
-                .links(request.getLinks())
+                .title(form.getTitle())
+                .content(form.getContent())
+                .attachments(attachments)
+                .links(toPostLinks(form.getLinks()))
                 .build();
 
         CreatePostResult result = useCase.createPost(command);
@@ -141,23 +146,25 @@ public class CommunityController {
         return ApiResponse.ok(response);
     }
 
-    @PutMapping(value = "/api/posts/{postId}", consumes = "application/json")
+    @PutMapping(value = "/api/posts/{postId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ApiResponse<PostIdResponseDto> updatePost(
             @PathVariable Long postId,
-            @Valid @RequestBody CreatePostRequestDto request
+            @Valid @ModelAttribute PostMultipartRequestDto form
     ) {
         ActorInfo actor = getActorInfo();
-        PostCategory category = parseCategoryOrThrow(request.getCategory());
+        PostCategory category = parseCategoryOrThrow(form.getCategory());
+        List<PostAttachment> uploaded = multipartFileStorage.storePostFiles(form.getFiles());
+        List<PostAttachment> attachmentDelta = uploaded.isEmpty() ? null : uploaded;
 
         UpdatePostCommand command = UpdatePostCommand.builder()
                 .actorId(actor.actorId)
                 .actorRole(actor.role)
                 .postId(postId)
                 .category(category)
-                .title(request.getTitle())
-                .content(request.getContent())
-                .attachments(request.getAttachments())
-                .links(request.getLinks())
+                .title(form.getTitle())
+                .content(form.getContent())
+                .attachments(attachmentDelta)
+                .links(toPostLinks(form.getLinks()))
                 .build();
 
         UpdatePostResult result = useCase.updatePost(command);
@@ -213,8 +220,15 @@ public class CommunityController {
         return ApiResponse.ok(response);
     }
 
-    // /api/posts/{postId}/comments, /api/comments/{commentId} 관련 엔드포인트는
-    // com.coliving.common.comment 도메인 컨트롤러에서 처리합니다.
+    private List<PostLink> toPostLinks(List<String> links) {
+        if (links == null) {
+            return List.of();
+        }
+        return links.stream()
+                .filter(StringUtils::hasText)
+                .map(u -> PostLink.builder().url(u.trim()).build())
+                .toList();
+    }
 
     private PostCommentResponseDto toCommentDto(Comment comment) {
         PostAuthorResponseDto author = PostAuthorResponseDto.builder()
@@ -237,7 +251,7 @@ public class CommunityController {
             throw new BusinessException(ErrorCode.FORBIDDEN);
         }
 
-        Long actorId;
+        long actorId;
         try {
             actorId = Long.parseLong(authentication.getName());
         } catch (NumberFormatException e) {
@@ -254,10 +268,10 @@ public class CommunityController {
                 .findFirst()
                 .orElseThrow(() -> new BusinessException(ErrorCode.FORBIDDEN));
 
-        String raw = authority.getAuthority(); // ROLE_ADMIN
-        String role = raw.substring("ROLE_".length());
+        String raw = authority.getAuthority();
+        String roleName = raw.substring("ROLE_".length());
         try {
-            return ActorRole.valueOf(role);
+            return ActorRole.valueOf(roleName);
         } catch (IllegalArgumentException e) {
             throw new BusinessException(ErrorCode.FORBIDDEN);
         }
@@ -278,8 +292,6 @@ public class CommunityController {
         }
     }
 
-    // attachments/links는 request body의 JSON 배열을 그대로 사용합니다.
-
     private static class ActorInfo {
         private final Long actorId;
         private final ActorRole role;
@@ -290,4 +302,3 @@ public class CommunityController {
         }
     }
 }
-

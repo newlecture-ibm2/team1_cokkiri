@@ -45,7 +45,7 @@ public class CommunityPersistenceAdapter implements CommunityRepositoryPort {
     @Override
     public Page<Post> findPosts(PostCategory category, Pageable pageable) {
         if (category == null) {
-            return postJpaRepository.findAll(pageable).map(this::mapPostEntityToModel);
+            return postJpaRepository.findAllNoticeFirst(pageable).map(this::mapPostEntityToModel);
         }
         return postJpaRepository.findByCategory(category.name(), pageable).map(this::mapPostEntityToModel);
     }
