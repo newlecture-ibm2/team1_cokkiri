@@ -4,22 +4,13 @@ import { useEffect, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { Edit3, Trash2 } from "lucide-react";
+import { bffErrorMessageFromResponse } from "@/lib/bff-error-message";
+import { formatDateTimeKo } from "@/lib/format-date";
 
 type CurrentUser = {
   userId: number;
   role?: string | null;
 };
-
-function formatDate(iso: string) {
-  try {
-    return new Date(iso).toLocaleString("ko-KR", {
-      dateStyle: "medium",
-      timeStyle: "short",
-    });
-  } catch {
-    return iso;
-  }
-}
 
 export function CommentItem({
   commentId,
@@ -44,6 +35,7 @@ export function CommentItem({
 
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(content);
+  const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
 
   useEffect(() => {
@@ -51,6 +43,7 @@ export function CommentItem({
   }, [content, editing]);
 
   function startEdit() {
+    setError(null);
     setDraft(content);
     setEditing(true);
   }
@@ -58,6 +51,7 @@ export function CommentItem({
   function cancelEdit() {
     setEditing(false);
     setDraft(content);
+    setError(null);
   }
 
   function save() {
@@ -65,16 +59,23 @@ export function CommentItem({
     const text = draft.trim();
     if (!text || pending) return;
 
+    setError(null);
     startTransition(async () => {
-      const res = await fetch(`/api/bff/comments/${commentId}`, {
-        method: "PUT",
-        credentials: "include",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ content: text }),
-      });
-      if (res.ok) {
-        setEditing(false);
-        router.refresh();
+      try {
+        const res = await fetch(`/api/bff/comments/${commentId}`, {
+          method: "PUT",
+          credentials: "include",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ content: text }),
+        });
+        if (res.ok) {
+          setEditing(false);
+          router.refresh();
+          return;
+        }
+        setError(await bffErrorMessageFromResponse(res));
+      } catch {
+        setError("연결에 실패했습니다. 잠시 후 다시 시도해 주세요.");
       }
     });
   }
@@ -83,12 +84,21 @@ export function CommentItem({
     if (!canMutate) return;
     if (!confirm("이 댓글을 삭제할까요?")) return;
 
+    setError(null);
     startTransition(async () => {
-      const res = await fetch(`/api/bff/comments/${commentId}`, {
-        method: "DELETE",
-        credentials: "include",
-      });
-      if (res.ok) router.refresh();
+      try {
+        const res = await fetch(`/api/bff/comments/${commentId}`, {
+          method: "DELETE",
+          credentials: "include",
+        });
+        if (res.ok) {
+          router.refresh();
+          return;
+        }
+        setError(await bffErrorMessageFromResponse(res));
+      } catch {
+        setError("연결에 실패했습니다. 잠시 후 다시 시도해 주세요.");
+      }
     });
   }
 
@@ -102,7 +112,7 @@ export function CommentItem({
           dateTime={createdAt}
           className="font-black text-[10px] uppercase tracking-[0.2em] text-muted-foreground"
         >
-          {formatDate(createdAt)}
+          {formatDateTimeKo(createdAt)}
         </time>
       </div>
 
@@ -111,6 +121,14 @@ export function CommentItem({
           <p className="mt-3 whitespace-pre-wrap font-medium tracking-tight text-balance text-foreground">
             {content}
           </p>
+          {error ? (
+            <p
+              role="alert"
+              className="mt-4 rounded-xl border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm font-medium tracking-tight text-destructive"
+            >
+              {error}
+            </p>
+          ) : null}
           {canMutate && (
             <div className="mt-4 flex flex-wrap items-center justify-end gap-2">
               <motion.button
@@ -147,10 +165,21 @@ export function CommentItem({
         >
           <textarea
             value={draft}
-            onChange={(e) => setDraft(e.target.value)}
+            onChange={(e) => {
+              setDraft(e.target.value);
+              if (error) setError(null);
+            }}
             rows={4}
             className="w-full resize-y rounded-xl border border-input bg-surface px-4 py-3 font-medium tracking-tight text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           />
+          {error ? (
+            <p
+              role="alert"
+              className="rounded-xl border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm font-medium tracking-tight text-destructive"
+            >
+              {error}
+            </p>
+          ) : null}
           <div className="flex flex-wrap items-center justify-end gap-3">
             <button
               type="button"

@@ -6,20 +6,10 @@ import { LikeToggle } from "./LikeToggle";
 import { PostEditDeleteActions } from "./PostEditDeleteActions";
 import { CommentComposer } from "../../comment/_components/CommentComposer";
 import { CommentItem } from "../../comment/_components/CommentItem";
+import { formatDateTimeKo } from "@/lib/format-date";
 
 function categoryLabel(code: string) {
   return POST_CATEGORIES.find((c) => c.value === code)?.label ?? code;
-}
-
-function formatDate(iso: string) {
-  try {
-    return new Date(iso).toLocaleString("ko-KR", {
-      dateStyle: "medium",
-      timeStyle: "short",
-    });
-  } catch {
-    return iso;
-  }
 }
 
 function normalizeLiked(d: PostDetail & { isLikedByMe?: boolean }) {
@@ -41,6 +31,7 @@ export function PostDetailSection({
   currentUser?: CurrentUser;
 }) {
   const liked = normalizeLiked(detail as PostDetail & { isLikedByMe?: boolean });
+  const comments = detail.comments ?? [];
 
   return (
     <article className="mx-auto max-w-3xl">
@@ -58,7 +49,7 @@ export function PostDetailSection({
             {categoryLabel(detail.category)}
           </span>
           <span className="font-black text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
-            {formatDate(detail.createdAt)}
+            {formatDateTimeKo(detail.createdAt)}
           </span>
         </div>
         <h1 className="mt-6 text-balance font-black uppercase leading-[0.92] tracking-tighter text-foreground text-[min(8vw,2.75rem)] md:text-4xl lg:text-[2.85rem]">
@@ -150,19 +141,35 @@ export function PostDetailSection({
         <h2 className="font-black text-[10px] uppercase tracking-[0.3em] text-muted-foreground">
           댓글
         </h2>
-        <ul className="mt-8 space-y-6">
-          {(detail.comments ?? []).map((c) => (
-            <CommentItem
-              key={c.commentId}
-              commentId={c.commentId}
-              content={c.content}
-              authorUserId={c.author.userId}
-              authorName={c.author.name}
-              createdAt={c.createdAt}
-              currentUser={currentUser}
+        {comments.length === 0 ? (
+          <div
+            className="mt-8 flex flex-col items-center justify-center gap-4 rounded-[2rem] border border-dashed border-border bg-background/60 px-8 py-14 text-center backdrop-blur-sm md:px-12"
+            aria-live="polite"
+          >
+            <MessageCircle
+              className="size-10 text-muted-foreground opacity-80"
+              strokeWidth={1.25}
+              aria-hidden
             />
-          ))}
-        </ul>
+            <p className="max-w-sm font-medium tracking-tight text-balance text-muted-foreground md:text-base">
+              아직 댓글이 없습니다. 첫 댓글을 남겨 대화를 시작해 보세요.
+            </p>
+          </div>
+        ) : (
+          <ul className="mt-8 space-y-6">
+            {comments.map((c) => (
+              <CommentItem
+                key={c.commentId}
+                commentId={c.commentId}
+                content={c.content}
+                authorUserId={c.author.userId}
+                authorName={c.author.name}
+                createdAt={c.createdAt}
+                currentUser={currentUser}
+              />
+            ))}
+          </ul>
+        )}
         <CommentComposer postId={detail.postId} />
       </section>
     </article>
