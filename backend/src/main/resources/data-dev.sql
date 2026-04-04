@@ -1,53 +1,12 @@
 -- ============================================================
--- CoLiving 개발환경 시드 데이터 (data-dev.sql)
+-- Space 도메인 시드 데이터 (data-dev.sql)
 -- ============================================================
 -- Docker PostgreSQL 환경(SPRING_PROFILES_ACTIVE=dev)에서 Spring이 자동 실행합니다.
 -- 테이블은 Hibernate ddl-auto: update 가 JPA Entity 기반으로 생성합니다.
--- 이 파일은 운영 데이터가 아닌 개발/테스트 편의용 데이터만 포함합니다.
 -- ============================================================
 
 -- ──────────────────────────────────────────────
--- 1. 시스템 필수 데이터 (배포 시에도 필요)
--- ──────────────────────────────────────────────
-
--- 관리자 기본 계정 (비밀번호: admin123!)
-INSERT INTO users (login_id, password_hash, name, birth_date, gender, nationality, phone, email, role, status)
-SELECT 'admin', '$2a$10$x8KrJqhWEzJSQ5UH2FE0CeZvJmME7qHK3DECP3QnOsW4Yv5YVkqKa',
-       '관리자', '900101', 'MALE', '대한민국', '010-0000-0000', 'admin@coliving.com', 'ADMIN', 'ACTIVE'
-WHERE NOT EXISTS (SELECT 1 FROM users WHERE login_id = 'admin');
-
--- 기기 타입 기본값
-INSERT INTO device_type (code, name, commands, ui_type, is_system_default)
-SELECT v.code, v.name, v.commands::jsonb, v.ui_type, TRUE
-FROM (VALUES
-    ('DOOR_LOCK',       '스마트도어락',   '["LOCK", "UNLOCK"]',                              'toggle'),
-    ('WASHER',          '스마트세탁기',   '["START", "STOP"]',                               'button'),
-    ('DRYER',           '스마트건조기',   '["START", "STOP"]',                               'button'),
-    ('LIGHT',           '스마트조명',     '["TURN_ON", "TURN_OFF", "SET_BRIGHTNESS"]',        'toggle_slider'),
-    ('AIR_CONDITIONER', '스마트에어컨',   '["TURN_ON", "TURN_OFF", "SET_TEMP", "SET_MODE"]', 'toggle_slider_select'),
-    ('HEATER',          '스마트난방',     '["TURN_ON", "TURN_OFF", "SET_TEMP"]',             'toggle_slider'),
-    ('CCTV',            '스마트CCTV',     '["TURN_ON", "TURN_OFF"]',                         'toggle')
-) AS v(code, name, commands, ui_type)
-WHERE NOT EXISTS (SELECT 1 FROM device_type WHERE code = v.code);
-
--- ──────────────────────────────────────────────
--- 2. 테스트용 입주자 계정
--- ──────────────────────────────────────────────
-
--- 입주자1 (비밀번호: user1234!)
-INSERT INTO users (login_id, password_hash, name, birth_date, gender, nationality, phone, email, role, status)
-SELECT 'resident01', '$2a$10$x8KrJqhWEzJSQ5UH2FE0CeZvJmME7qHK3DECP3QnOsW4Yv5YVkqKa',
-       '김입주', '950315', 'MALE', '대한민국', '010-1111-2222', 'resident01@coliving.com', 'RESIDENT', 'ACTIVE'
-WHERE NOT EXISTS (SELECT 1 FROM users WHERE login_id = 'resident01');
-
--- 입주자2
-INSERT INTO users (login_id, password_hash, name, birth_date, gender, nationality, phone, email, role, status)
-SELECT 'resident02', '$2a$10$x8KrJqhWEzJSQ5UH2FE0CeZvJmME7qHK3DECP3QnOsW4Yv5YVkqKa',
-       '이거주', '980720', 'FEMALE', '대한민국', '010-3333-4444', 'resident02@coliving.com', 'RESIDENT', 'ACTIVE'
-WHERE NOT EXISTS (SELECT 1 FROM users WHERE login_id = 'resident02');
-
--- ──────────────────────────────────────────────
--- 3. 개인 공간 (PRIVATE) — 방 5개
+-- 1. 개인 공간 (PRIVATE) — 방 5개
 -- ──────────────────────────────────────────────
 
 INSERT INTO spaces (name, type, status, floor, area, amenities, description, created_at, updated_at)
@@ -92,7 +51,7 @@ SELECT s.space_id, 'SUITE', 2, 2, '남동향', 15000000, 1200000, 100000, true, 
 FROM spaces s WHERE s.name = '501호' AND NOT EXISTS (SELECT 1 FROM private_space_details WHERE space_id = s.space_id);
 
 -- ──────────────────────────────────────────────
--- 4. 공용 공간 (COMMON) — 시설 3개
+-- 2. 공용 공간 (COMMON) — 시설 3개
 -- ──────────────────────────────────────────────
 
 INSERT INTO spaces (name, type, status, floor, area, amenities, description, created_at, updated_at)
