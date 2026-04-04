@@ -24,6 +24,11 @@ const nextConfig: NextConfig = {
 
   // 빌드 출력 standalone 모드 (Docker 최적화)
   output: 'standalone',
+
+  // ESLint: 빌드 시 lint 에러로 차단하지 않음 (lint는 별도 단계에서 수행)
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
 };
 
 export default nextConfig;

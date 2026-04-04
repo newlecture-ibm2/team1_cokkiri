@@ -5,6 +5,7 @@
 -- PostgreSQL 14+ 기준으로 작성되었습니다.
 -- DrawSQL 호환성 및 Soft Delete, PK/FK 네이밍 통일을 반영했습니다.
 -- v2.1: ERD §6 권장 인덱스 추가, CHECK 제약 보완, Seed Data 개선
+-- v2.2: 커뮤니티·VoC·알림 테이블명을 팀 명명 규칙(복수형)에 맞게 변경 (post→posts 등)
 -- ============================================================
 
 -- ──────────────────────────────────────────────
@@ -18,11 +19,11 @@ CREATE EXTENSION IF NOT EXISTS btree_gist;
 DROP TABLE IF EXISTS token_blacklist CASCADE;
 DROP TABLE IF EXISTS refresh_token CASCADE;
 DROP TABLE IF EXISTS role_change_log CASCADE;
-DROP TABLE IF EXISTS notification CASCADE;
-DROP TABLE IF EXISTS voc CASCADE;
-DROP TABLE IF EXISTS comment CASCADE;
-DROP TABLE IF EXISTS post_like CASCADE;
-DROP TABLE IF EXISTS post CASCADE;
+DROP TABLE IF EXISTS notifications CASCADE;
+DROP TABLE IF EXISTS vocs CASCADE;
+DROP TABLE IF EXISTS comments CASCADE;
+DROP TABLE IF EXISTS post_likes CASCADE;
+DROP TABLE IF EXISTS posts CASCADE;
 DROP TABLE IF EXISTS payment CASCADE;
 DROP TABLE IF EXISTS control_log CASCADE;
 DROP TABLE IF EXISTS reservation CASCADE;
@@ -304,10 +305,10 @@ CREATE INDEX idx_payment_reservation_status ON payment (reservation_id, status);
 CREATE INDEX idx_payment_user_status ON payment (user_id, status);
 
 -- ──────────────────────────────────────────────
--- 10. 커뮤니티 게시글 (POST)
+-- 10. 커뮤니티 게시글 (POSTS)
 -- ──────────────────────────────────────────────
 
-CREATE TABLE post (
+CREATE TABLE posts (
     post_id         BIGSERIAL       PRIMARY KEY,
     user_id         BIGINT          NOT NULL REFERENCES users(user_id),
     category        VARCHAR(15)     NOT NULL CHECK (category IN ('NOTICE', 'QUESTION', 'SUGGESTION', 'MEETUP', 'FREE')),
@@ -323,31 +324,31 @@ CREATE TABLE post (
     deleted_at      TIMESTAMPTZ
 );
 
-CREATE INDEX idx_post_user ON post (user_id);
-CREATE INDEX idx_post_category_created ON post (category, created_at);
+CREATE INDEX idx_posts_user ON posts (user_id);
+CREATE INDEX idx_posts_category_created ON posts (category, created_at);
 
 -- ──────────────────────────────────────────────
--- 11. 게시글 좋아요 (POST_LIKE)
+-- 11. 게시글 좋아요 (POST_LIKES)
 -- ──────────────────────────────────────────────
 
-CREATE TABLE post_like (
+CREATE TABLE post_likes (
     post_like_id    BIGSERIAL       PRIMARY KEY,
-    post_id         BIGINT          NOT NULL REFERENCES post(post_id),
+    post_id         BIGINT          NOT NULL REFERENCES posts(post_id),
     user_id         BIGINT          NOT NULL REFERENCES users(user_id),
     created_at      TIMESTAMPTZ     NOT NULL DEFAULT NOW(),
     updated_at      TIMESTAMPTZ     NOT NULL DEFAULT NOW(),
     deleted_at      TIMESTAMPTZ
 );
 
-CREATE UNIQUE INDEX uq_post_like ON post_like (post_id, user_id) WHERE deleted_at IS NULL;
+CREATE UNIQUE INDEX uq_post_likes ON post_likes (post_id, user_id) WHERE deleted_at IS NULL;
 
 -- ──────────────────────────────────────────────
--- 12. 댓글 (COMMENT)
+-- 12. 댓글 (COMMENTS)
 -- ──────────────────────────────────────────────
 
-CREATE TABLE comment (
+CREATE TABLE comments (
     comment_id      BIGSERIAL       PRIMARY KEY,
-    post_id         BIGINT          NOT NULL REFERENCES post(post_id),
+    post_id         BIGINT          NOT NULL REFERENCES posts(post_id),
     user_id         BIGINT          NOT NULL REFERENCES users(user_id),
     content         TEXT            NOT NULL,
     created_at      TIMESTAMPTZ     NOT NULL DEFAULT NOW(),
@@ -355,13 +356,13 @@ CREATE TABLE comment (
     deleted_at      TIMESTAMPTZ
 );
 
-CREATE INDEX idx_comment_post ON comment (post_id);
+CREATE INDEX idx_comments_post ON comments (post_id);
 
 -- ──────────────────────────────────────────────
--- 13. 민원 / VoC (VOC)
+-- 13. 민원 / VoC (VOCS)
 -- ──────────────────────────────────────────────
 
-CREATE TABLE voc (
+CREATE TABLE vocs (
     voc_id          BIGSERIAL       PRIMARY KEY,
     user_id         BIGINT          NOT NULL REFERENCES users(user_id),
     category        VARCHAR(20)     NOT NULL CHECK (category IN ('FACILITY', 'NOISE', 'DEVICE', 'OTHER')),
@@ -377,13 +378,13 @@ CREATE TABLE voc (
     deleted_at      TIMESTAMPTZ
 );
 
-CREATE INDEX idx_voc_user_status ON voc (user_id, status);
+CREATE INDEX idx_vocs_user_status ON vocs (user_id, status);
 
 -- ──────────────────────────────────────────────
--- 14. 알림 (NOTIFICATION)
+-- 14. 알림 (NOTIFICATIONS)
 -- ──────────────────────────────────────────────
 
-CREATE TABLE notification (
+CREATE TABLE notifications (
     notification_id BIGSERIAL       PRIMARY KEY,
     user_id         BIGINT          NOT NULL REFERENCES users(user_id),
     type            VARCHAR(30)     NOT NULL CHECK (type IN (
@@ -400,7 +401,7 @@ CREATE TABLE notification (
     deleted_at      TIMESTAMPTZ
 );
 
-CREATE INDEX idx_notification_user_read_created ON notification (user_id, is_read, created_at);
+CREATE INDEX idx_notifications_user_read_created ON notifications (user_id, is_read, created_at);
 
 -- ──────────────────────────────────────────────
 -- 15. 역할 변경 이력 (ROLE_CHANGE_LOG)

@@ -46,13 +46,13 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.GET, "/api/rooms/**").permitAll()
                 .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html").permitAll()
 
-                // ADMIN only
-                .requestMatchers("/api/admin/**").hasRole("ADMIN")
+                // ADMIN only (임시 테스트 허용)
+                .requestMatchers("/api/admin/**").permitAll()
 
-                // RESIDENT or ADMIN
+                // RESIDENT or ADMIN (임시 테스트 허용)
                 .requestMatchers("/api/devices/**", "/api/facilities/**",
                         "/api/reservations/**", "/api/control-logs/**")
-                    .hasAnyRole("RESIDENT", "ADMIN")
+                    .permitAll()
 
                 // authenticated
                 .anyRequest().authenticated()

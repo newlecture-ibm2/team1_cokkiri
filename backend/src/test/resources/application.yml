@@ -1,0 +1,33 @@
+spring:
+  datasource:
+    # H2 인메모리 DB (PostgreSQL 호환 모드)
+    # 테스트 시 실제 DB 연결 없이 단위/통합 테스트 수행 가능
+    url: jdbc:h2:mem:testdb;MODE=PostgreSQL;DB_CLOSE_DELAY=-1;DATABASE_TO_LOWER=TRUE
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+
+  jpa:
+    # 테스트 시 엔티티 기반 테이블 자동 생성/삭제
+    hibernate.ddl-auto: create-drop
+    open-in-view: false
+    properties:
+      hibernate:
+        format_sql: true
+        # H2의 PostgreSQL 호환 Dialect 사용
+        dialect: org.hibernate.dialect.H2Dialect
+    show-sql: true
+
+  jackson:
+    time-zone: Asia/Seoul
+
+# JWT: 테스트용 최소 설정
+jwt:
+  secret: test-secret-key-for-unit-testing-purposes-only-must-be-at-least-256-bits
+  expiration: 3600000
+
+# Logging: 테스트 시 SQL 디버깅용
+logging:
+  level:
+    org.hibernate.SQL: DEBUG
+    org.hibernate.orm.jdbc.bind: TRACE

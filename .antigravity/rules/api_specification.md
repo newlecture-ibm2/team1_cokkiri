@@ -1036,7 +1036,7 @@ Query: `?page=0&size=20&sort=createdAt,desc`
 
 ### 9.1 민원 등록
 
-| **Endpoint** | `POST /api/voc` | **인증** | 🔑 Auth |
+| **Endpoint** | `POST /api/vocs` | **인증** | 🔑 Auth |
 |---|---|---|---|
 
 **Request:** `multipart/form-data`
@@ -1050,17 +1050,17 @@ Query: `?page=0&size=20&sort=createdAt,desc`
 
 ### 9.2 내 민원 조회
 
-| **Endpoint** | `GET /api/voc/my` | **인증** | 🔑 Auth |
+| **Endpoint** | `GET /api/vocs/my` | **인증** | 🔑 Auth |
 |---|---|---|---|
 
 ### 9.3 민원 수정
 
-| **Endpoint** | `PUT /api/voc/{vocId}` | **인증** | 🔑 Auth (본인, OPEN만) |
+| **Endpoint** | `PUT /api/vocs/{vocId}` | **인증** | 🔑 Auth (본인, OPEN만) |
 |---|---|---|---|
 
 ### 9.4 민원 취소
 
-| **Endpoint** | `POST /api/voc/{vocId}/cancel` | **인증** | 🔑 Auth (본인, OPEN만) |
+| **Endpoint** | `POST /api/vocs/{vocId}/cancel` | **인증** | 🔑 Auth (본인, OPEN만) |
 |---|---|---|---|
 
 ---
@@ -1445,12 +1445,12 @@ Query: `?page=0&size=20&sort=createdAt,desc`
 
 ### 14.9 민원 목록 (관리자)
 
-| **ID** | ADM-VOC-01 | **Endpoint** | `GET /api/admin/voc` | **인증** | 🔒 ADMIN |
+| **ID** | ADM-VOC-01 | **Endpoint** | `GET /api/admin/vocs` | **인증** | 🔒 ADMIN |
 |---|---|---|---|---|---|
 
 ### 14.10 민원 답변
 
-| **ID** | ADM-VOC-01 | **Endpoint** | `POST /api/admin/voc/{vocId}/reply` | **인증** | 🔒 ADMIN |
+| **ID** | ADM-VOC-01 | **Endpoint** | `POST /api/admin/vocs/{vocId}/reply` | **인증** | 🔒 ADMIN |
 |---|---|---|---|---|---|
 
 **Request Body:**
@@ -1459,6 +1459,13 @@ Query: `?page=0&size=20&sort=createdAt,desc`
 ```
 
 > VOC.admin_reply, reply_user_id, replied_at 업데이트. status→IN_PROGRESS 또는 RESOLVED. NOTIFICATION 발송.
+
+### 14.11 민원 처리 완료 (resolve)
+
+| **ID** | ADM-VOC-03 | **Endpoint** | `POST /api/admin/voc/{vocId}/resolve` | **인증** | 🔒 ADMIN |
+|---|---|---|---|---|---|
+
+> 관리자가 민원을 처리 완료로 처리한다. Request Body 없음. `status`·`admin_reply` 등 필드 갱신 규칙은 서버 구현과 동일하게 적용.
 
 ---
 

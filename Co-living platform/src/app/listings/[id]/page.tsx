@@ -26,6 +26,7 @@ import { Separator } from "../../components/ui/separator";
 import { listings } from "../../data/mockData";
 import { ImageWithFallback } from "../../components/figma/ImageWithFallback";
 import { toast } from "sonner";
+import { ContractForm } from "./ContractForm";
 
 const amenityMap: Record<string, string> = {
   "Fiber WiFi": "초고속 와이파이",
@@ -50,6 +51,7 @@ export default function ListingDetailPage() {
   const listing = listings.find((l) => l.id === id);
   const [selectedImage, setSelectedImage] = useState(0);
   const [date, setDate] = useState<Date | undefined>(undefined);
+  const [showContractForm, setShowContractForm] = useState(false);
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -58,7 +60,7 @@ export default function ListingDetailPage() {
   if (!listing) return null;
 
   const handleBooking = () => {
-    toast.success("Booking request sent! Our concierge will contact you shortly.");
+    setShowContractForm(true);
   };
 
   return (
@@ -303,6 +305,16 @@ export default function ListingDetailPage() {
           </motion.div>
         </div>
       </section>
+
+      <AnimatePresence>
+        {showContractForm && (
+          <ContractForm 
+            listingId={listing.id}
+            listingTitle={listing.title} 
+            onClose={() => setShowContractForm(false)} 
+          />
+        )}
+      </AnimatePresence>
 
       <Footer />
     </div>

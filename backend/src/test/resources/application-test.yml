@@ -1,0 +1,21 @@
+# Slice / smoke tests: no external PostgreSQL required (CI / local without Docker DB).
+spring:
+  datasource:
+    url: jdbc:h2:mem:coliving_test;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    username: sa
+    password:
+    driver-class-name: org.h2.Driver
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    properties:
+      hibernate:
+        default_batch_fetch_size: 16
+
+jwt:
+  secret: test-secret-key-minimum-32-characters-long!!
+  access-expiration: 1800000
+  refresh-expiration: 604800000
+
+mock-iot:
+  base-url: http://localhost:9999
