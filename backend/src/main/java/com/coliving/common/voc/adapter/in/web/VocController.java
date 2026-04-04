@@ -9,6 +9,7 @@ import com.coliving.common.voc.adapter.in.web.dto.res.VocListItemResponseDto;
 import com.coliving.common.voc.adapter.in.web.dto.res.VocListResponseDto;
 import com.coliving.common.voc.application.command.CancelVocCommand;
 import com.coliving.common.voc.application.command.CreateVocCommand;
+import com.coliving.common.voc.application.command.GetMyVocCommand;
 import com.coliving.common.voc.application.command.ListMyVocsCommand;
 import com.coliving.common.voc.application.command.UpdateVocCommand;
 import com.coliving.common.voc.application.port.in.VocUseCase;
@@ -88,6 +89,19 @@ public class VocController {
                 .build();
 
         return ApiResponse.ok(response);
+    }
+
+    @GetMapping("/api/voc/{vocId}")
+    public ApiResponse<VocDetailResponseDto> getMyVoc(@PathVariable Long vocId) {
+        Long userId = getAuthenticatedUserId();
+
+        GetMyVocCommand command = GetMyVocCommand.builder()
+                .userId(userId)
+                .vocId(vocId)
+                .build();
+
+        VocResult result = vocUseCase.getMyVoc(command);
+        return ApiResponse.ok(toDetailDto(result));
     }
 
     @PutMapping("/api/voc/{vocId}")

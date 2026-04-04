@@ -2,6 +2,7 @@ package com.coliving.common.voc.application.service;
 
 import com.coliving.common.voc.application.command.CancelVocCommand;
 import com.coliving.common.voc.application.command.CreateVocCommand;
+import com.coliving.common.voc.application.command.GetMyVocCommand;
 import com.coliving.common.voc.application.command.ListMyVocsCommand;
 import com.coliving.common.voc.application.command.UpdateVocCommand;
 import com.coliving.common.voc.application.port.in.VocUseCase;
@@ -73,6 +74,14 @@ public class VocService implements VocUseCase {
                 .totalElements(page.getTotalElements())
                 .totalPages(page.getTotalPages())
                 .build();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public VocResult getMyVoc(GetMyVocCommand command) {
+        Voc voc = vocRepositoryPort.findByVocIdAndUserId(command.getVocId(), command.getUserId())
+                .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND));
+        return toVocResult(voc);
     }
 
     @Override

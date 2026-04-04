@@ -5,6 +5,7 @@ import com.coliving.admin.voc.adapter.in.web.dto.res.AdminVocAttachmentResponseD
 import com.coliving.admin.voc.adapter.in.web.dto.res.AdminVocDetailResponseDto;
 import com.coliving.admin.voc.adapter.in.web.dto.res.AdminVocListItemResponseDto;
 import com.coliving.admin.voc.adapter.in.web.dto.res.AdminVocListResponseDto;
+import com.coliving.admin.voc.application.command.GetAdminVocCommand;
 import com.coliving.admin.voc.application.command.ListAdminVocsCommand;
 import com.coliving.admin.voc.application.command.ReplyVocCommand;
 import com.coliving.admin.voc.application.command.ResolveVocCommand;
@@ -64,6 +65,16 @@ public class AdminVocController {
                 .build();
 
         return ApiResponse.ok(response);
+    }
+
+    @GetMapping("/api/admin/voc/{vocId}")
+    public ApiResponse<AdminVocDetailResponseDto> getVoc(@PathVariable Long vocId) {
+        GetAdminVocCommand command = GetAdminVocCommand.builder()
+                .vocId(vocId)
+                .build();
+
+        VocResult result = adminVocUseCase.getVoc(command);
+        return ApiResponse.ok(toDetailDto(result));
     }
 
     @PostMapping("/api/admin/voc/{vocId}/reply")

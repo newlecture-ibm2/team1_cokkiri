@@ -6,19 +6,18 @@ type Props = {
   page: number;
   totalPages: number;
   baseQuery: string;
-  /** Spec query name `s`; preserved in pagination links */
   pageSize?: number;
-  /** List route prefix, e.g. `/community` or `/voc` */
-  hrefBase?: string;
 };
 
-export function PaginationBar({ page, totalPages, baseQuery, pageSize, hrefBase = "/community" }: Props) {
+/** `/admin/voc` 목록 전용 페이지네이션. */
+export function AdminVocPaginationBar({ page, totalPages, baseQuery, pageSize }: Props) {
   if (totalPages <= 1) return null;
 
   const q = baseQuery ? `${baseQuery}&` : "";
   const sz = pageSize != null && pageSize !== 20 ? `s=${pageSize}&` : "";
-  const prev = page > 0 ? `${hrefBase}?${q}${sz}p=${page - 1}` : null;
-  const next = page < totalPages - 1 ? `${hrefBase}?${q}${sz}p=${page + 1}` : null;
+  const base = "/admin/voc";
+  const prev = page > 0 ? `${base}?${q}${sz}p=${page - 1}` : null;
+  const next = page < totalPages - 1 ? `${base}?${q}${sz}p=${page + 1}` : null;
 
   const btn =
     "inline-flex items-center gap-1.5 rounded-xl border px-5 py-2.5 text-xs font-black uppercase tracking-wider transition-transform duration-200";
@@ -34,12 +33,7 @@ export function PaginationBar({ page, totalPages, baseQuery, pageSize, hrefBase 
           이전
         </Link>
       ) : (
-        <span
-          className={cn(
-            btn,
-            "cursor-not-allowed border-muted text-muted-foreground opacity-50",
-          )}
-        >
+        <span className={cn(btn, "cursor-not-allowed border-muted text-muted-foreground opacity-50")}>
           <ChevronLeft className="size-4" aria-hidden />
           이전
         </span>
@@ -56,12 +50,7 @@ export function PaginationBar({ page, totalPages, baseQuery, pageSize, hrefBase 
           <ChevronRight className="size-4" aria-hidden />
         </Link>
       ) : (
-        <span
-          className={cn(
-            btn,
-            "cursor-not-allowed border-muted text-muted-foreground opacity-50",
-          )}
-        >
+        <span className={cn(btn, "cursor-not-allowed border-muted text-muted-foreground opacity-50")}>
           다음
           <ChevronRight className="size-4" aria-hidden />
         </span>
