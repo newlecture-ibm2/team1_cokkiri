@@ -19,3 +19,6 @@ Thumbs.db
 # Environment
 .env
 *.log
+
+# 로컬 업로드 저장소 (multipart)
+data/uploads/

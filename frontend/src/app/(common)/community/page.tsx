@@ -8,7 +8,7 @@ import { CategoryFilter } from "./_components/CategoryFilter";
 import { PostCard } from "./_components/PostCard";
 import { PaginationBar } from "./_components/PaginationBar";
 
-type SearchParams = Promise<{ category?: string; page?: string; size?: string }>;
+type SearchParams = Promise<{ category?: string; p?: string; s?: string }>;
 
 export const metadata = {
   title: "커뮤니티",
@@ -17,13 +17,13 @@ export const metadata = {
 export default async function CommunityPage({ searchParams }: { searchParams: SearchParams }) {
   const sp = await searchParams;
   const category = sp.category?.trim() || "";
-  const page = Math.max(0, parseInt(sp.page ?? "0", 10) || 0);
-  const size = Math.min(50, Math.max(1, parseInt(sp.size ?? "20", 10) || 20));
+  const page = Math.max(0, parseInt(sp.p ?? "0", 10) || 0);
+  const size = Math.min(50, Math.max(1, parseInt(sp.s ?? "20", 10) || 20));
 
   const qs = new URLSearchParams();
   if (category) qs.set("category", category);
-  qs.set("page", String(page));
-  qs.set("size", String(size));
+  qs.set("p", String(page));
+  qs.set("s", String(size));
   qs.set("sort", "createdAt,desc");
 
   const res = await bffGet(`posts?${qs.toString()}`);
@@ -101,7 +101,12 @@ export default async function CommunityPage({ searchParams }: { searchParams: Se
                   ))
                 )}
               </ul>
-              <PaginationBar page={list.page} totalPages={list.totalPages} baseQuery={baseQuery} />
+              <PaginationBar
+                page={list.page}
+                totalPages={list.totalPages}
+                baseQuery={baseQuery}
+                pageSize={size}
+              />
             </>
           )}
         </div>

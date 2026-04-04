@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useRef } from "react";
+import { useRef } from "react";
 import { ArrowRight, Globe, LifeBuoy, Zap } from "lucide-react";
 import { motion, useScroll, useTransform, useSpring } from "framer-motion";
 import { Header } from "@/components/shared/Header";
@@ -9,13 +9,6 @@ import { Footer } from "@/components/shared/Footer";
 import { listings } from "@/data/landingListings";
 import { ImageWithFallback } from "@/components/shared/ImageWithFallback";
 import { LandingFeaturedListing } from "@/components/shared/LandingFeaturedListing";
-
-function ScrollToTop() {
-  useEffect(() => {
-    window.scrollTo(0, 0);
-  }, []);
-  return null;
-}
 
 export default function Home() {
   const featuredListings = listings.slice(0, 3);
@@ -37,7 +30,6 @@ export default function Home() {
       ref={containerRef}
       className="relative min-h-screen bg-background text-foreground selection:bg-primary selection:text-primary-foreground"
     >
-      <ScrollToTop />
       <Header />
 
       <section className="relative flex h-screen flex-col justify-center overflow-hidden px-6 md:px-12 lg:px-24">

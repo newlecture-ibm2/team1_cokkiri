@@ -6,6 +6,7 @@ import com.coliving.common.community.application.port.out.CommunityRepositoryPor
 import com.coliving.common.community.application.result.*;
 import com.coliving.common.community.model.ActorRole;
 import com.coliving.common.community.model.Post;
+import com.coliving.common.community.model.PostAttachment;
 import com.coliving.common.community.model.PostCategory;
 import com.coliving.common.community.model.Comment;
 import com.coliving.global.error.BusinessException;
@@ -16,6 +17,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -30,8 +32,13 @@ public class CommunityService implements CommunityUseCase {
     @Override
     @Transactional(readOnly = true)
     public PostListResult getPostList(GetPostListCommand command) {
-        Sort sort = parseSort(command.getSort());
-        PageRequest pageRequest = PageRequest.of(command.getPage(), command.getSize(), sort);
+        PageRequest pageRequest;
+        if (command.getCategory() == null) {
+            // 전체 목록: NOTICE 우선 정렬은 저장소 쿼리에서 처리. Pageable Sort는 비워야 ORDER BY가 충돌하지 않음.
+            pageRequest = PageRequest.of(command.getPage(), command.getSize(), Sort.unsorted());
+        } else {
+            pageRequest = PageRequest.of(command.getPage(), command.getSize(), parseSort(command.getSort()));
+        }
 
         Page<Post> page = repositoryPort.findPosts(command.getCategory(), pageRequest);
 
@@ -124,12 +131,24 @@ public class CommunityService implements CommunityUseCase {
             throw new BusinessException(ErrorCode.FORBIDDEN);
         }
 
+        List<PostAttachment> attachmentDelta = command.getAttachments();
+        List<PostAttachment> base = post.getAttachments() == null
+                ? new ArrayList<>()
+                : new ArrayList<>(post.getAttachments());
+        List<PostAttachment> attachmentsToSave;
+        if (attachmentDelta == null || attachmentDelta.isEmpty()) {
+            attachmentsToSave = base;
+        } else {
+            base.addAll(attachmentDelta);
+            attachmentsToSave = base;
+        }
+
         Post updated = repositoryPort.updatePost(
                 command.getPostId(),
                 command.getCategory(),
                 command.getTitle(),
                 command.getContent(),
-                command.getAttachments(),
+                attachmentsToSave,
                 command.getLinks()
         );
 
