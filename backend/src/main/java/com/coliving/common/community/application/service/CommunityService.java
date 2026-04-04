@@ -32,8 +32,13 @@ public class CommunityService implements CommunityUseCase {
     @Override
     @Transactional(readOnly = true)
     public PostListResult getPostList(GetPostListCommand command) {
-        Sort sort = parseSort(command.getSort());
-        PageRequest pageRequest = PageRequest.of(command.getPage(), command.getSize(), sort);
+        PageRequest pageRequest;
+        if (command.getCategory() == null) {
+            // 전체 목록: NOTICE 우선 정렬은 저장소 쿼리에서 처리. Pageable Sort는 비워야 ORDER BY가 충돌하지 않음.
+            pageRequest = PageRequest.of(command.getPage(), command.getSize(), Sort.unsorted());
+        } else {
+            pageRequest = PageRequest.of(command.getPage(), command.getSize(), parseSort(command.getSort()));
+        }
 
         Page<Post> page = repositoryPort.findPosts(command.getCategory(), pageRequest);
 
