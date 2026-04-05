@@ -19,11 +19,11 @@ const NAV_SECTIONS: {
   items: { href: string; label: string; icon: typeof LayoutDashboard }[];
 }[] = [
   {
-    label: "개요",
+    label: "Overview",
     items: [{ href: "/admin/dashboard", label: "대시보드", icon: LayoutDashboard }],
   },
   {
-    label: "운영",
+    label: "Operations",
     items: [
       { href: "/admin/spaces", label: "공간 관리", icon: Building2 },
       { href: "/admin/contracts", label: "계약", icon: FileText },
@@ -54,7 +54,7 @@ export function AdminSidebar({ mobileOpen, onClose }: Props) {
     <nav className="flex h-full flex-col gap-8 px-4 py-6" aria-label="관리자 메뉴">
       {NAV_SECTIONS.map((section) => (
         <div key={section.label}>
-          <p className="mb-3 px-3 font-black text-[10px] uppercase tracking-[0.35em] text-muted-foreground">
+          <p className="mb-3 px-3 font-black text-xs uppercase tracking-[0.3em] text-muted-foreground/70">
             {section.label}
           </p>
           <ul className="space-y-1">
@@ -67,9 +67,9 @@ export function AdminSidebar({ mobileOpen, onClose }: Props) {
                     href={item.href}
                     onClick={onClose}
                     className={cn(
-                      "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-black uppercase tracking-wider transition-colors",
+                      "flex items-center gap-3 rounded-xl px-3 py-2.5 text-base font-black uppercase tracking-wider transition-colors",
                       active
-                        ? "bg-primary text-primary-foreground"
+                        ? "bg-primary/15 text-primary"
                         : "text-foreground/70 hover:bg-muted hover:text-foreground",
                     )}
                   >

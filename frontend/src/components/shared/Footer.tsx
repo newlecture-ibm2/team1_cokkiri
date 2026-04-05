@@ -9,21 +9,21 @@ export function Footer() {
 
   const footerLinks = {
     explore: [
-      { name: "Living Spaces", path: "/rooms" },
-      { name: "Community", path: "/community" },
-      { name: "VOC", path: "/voc" },
-      { name: "IoT Guide", path: "/rooms" },
+      { name: "Living", path: "/rooms" },
+      { name: "Stay", path: "/rooms" },
+      { name: "Facility", path: "/facility" },
     ],
     community: [
-      { name: "Residents", path: "/profile" },
-      { name: "Community", path: "/community" },
-      { name: "Archive", path: "/rooms" },
-      { name: "Philosophy", path: "/" },
+      { name: "Board", path: "/community" },
+      { name: "Event", path: "/" },
+      { name: "Notice", path: "/" },
+      { name: "VOC", path: "/voc" },
     ],
     support: [
-      { name: "Concierge", path: "/voc" },
-      { name: "Safe & Secure", path: "/community" },
-      { name: "Terms & Privacy", path: "/community" },
+      { name: "Profile", path: "/profile" },
+      { name: "Device", path: "/" },
+      { name: "Contract", path: "/" },
+      { name: "Reservation", path: "/" },
     ],
   };
 
@@ -33,7 +33,7 @@ export function Footer() {
         <div className="mb-16 grid grid-cols-1 gap-16 lg:grid-cols-12">
           <div className="lg:col-span-8">
             <Link href="/" className="group mb-8 inline-block">
-              <span className="block text-[15vw] font-black leading-[0.8] tracking-tighter uppercase md:text-[8vw]">
+              <span className="block text-[11vw] font-black leading-[0.8] tracking-tighter uppercase md:text-[5vw]">
                 COKKIRI<span className="text-secondary">.</span>
               </span>
               <span className="mt-4 block whitespace-nowrap text-[min(10vw,15px)] font-black uppercase opacity-50 transition-opacity duration-500 group-hover:opacity-100 md:mt-6 md:text-xs md:tracking-[0.4em]">
@@ -60,10 +60,16 @@ export function Footer() {
 
           <div className="flex flex-col items-start justify-end lg:col-span-4 lg:items-end">
             <div className="flex gap-8">
-              {[Instagram, Twitter, Linkedin].map((Icon, i) => (
+              {[
+                { Icon: Instagram, url: "https://www.instagram.com" },
+                { Icon: Twitter, url: "https://x.com" },
+                { Icon: Linkedin, url: "https://www.linkedin.com" },
+              ].map(({ Icon, url }) => (
                 <motion.a
-                  key={i}
-                  href="#"
+                  key={url}
+                  href={url}
+                  target="_blank"
+                  rel="noopener noreferrer"
                   whileHover={{ y: -8, color: "var(--color-secondary)" }}
                   className="text-primary/60 transition-colors"
                 >
@@ -76,8 +82,8 @@ export function Footer() {
 
         <div className="mb-16 grid grid-cols-2 gap-10 border-t border-primary/20 pt-12 md:grid-cols-3 lg:grid-cols-4">
           <div>
-            <h5 className="mb-6 text-[11px] font-black tracking-[0.3em] text-balance text-primary/50 uppercase">
-              Navigation / 01
+            <h5 className="mb-6 text-[13px] font-black tracking-[0.3em] text-balance text-primary/50 uppercase">
+              EXPLORE / 01
             </h5>
             <ul className="space-y-4">
               {footerLinks.explore.map((link) => (
@@ -93,8 +99,8 @@ export function Footer() {
             </ul>
           </div>
           <div>
-            <h5 className="mb-6 text-[11px] font-black tracking-[0.3em] text-balance text-primary/50 uppercase">
-              Community / 02
+            <h5 className="mb-6 text-[13px] font-black tracking-[0.3em] text-balance text-primary/50 uppercase">
+              COMMUNITY / 02
             </h5>
             <ul className="space-y-4">
               {footerLinks.community.map((link) => (
@@ -110,8 +116,8 @@ export function Footer() {
             </ul>
           </div>
           <div>
-            <h5 className="mb-6 text-[11px] font-black tracking-[0.3em] text-balance text-primary/50 uppercase">
-              Legal / 03
+            <h5 className="mb-6 text-[13px] font-black tracking-[0.3em] text-balance text-primary/50 uppercase">
+              SUPPORT / 03
             </h5>
             <ul className="space-y-4">
               {footerLinks.support.map((link) => (
@@ -142,6 +148,27 @@ export function Footer() {
           <div className="flex gap-8 text-[10px] font-black tracking-widest uppercase opacity-40">
             <span>DESIGN BY OLHA</span>
             <span>POWERED BY AI</span>
+          </div>
+        </div>
+
+        <div className="mt-8 border-t border-primary/10 pt-8">
+          <div className="flex flex-col gap-2 text-[11px] font-medium leading-relaxed tracking-tight text-primary/40">
+            <p>
+              <span className="font-bold text-primary/50">주식회사 코끼리</span>
+              <span className="mx-2">|</span>대표이사: 김코끼리
+              <span className="mx-2">|</span>사업자등록번호: 124-86-01234
+            </p>
+            <p>
+              통신판매업신고: 제2026-서울강남-00124호
+              <span className="mx-2">|</span>호스팅제공자: Amazon Web Services
+            </p>
+            <p>
+              주소: 서울특별시 강남구 테헤란로 124, 코끼리빌딩 8층
+            </p>
+            <p>
+              고객센터: 1588-0124 (평일 09:00 ~ 18:00)
+              <span className="mx-2">|</span>이메일: support@cokkiri.co.kr
+            </p>
           </div>
         </div>
       </div>
