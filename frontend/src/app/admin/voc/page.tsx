@@ -44,65 +44,65 @@ export default async function AdminVocListPage({ searchParams }: { searchParams:
   return (
     <MotionEnter>
       <div className="max-w-5xl">
-          <header className="flex flex-col gap-10 md:flex-row md:items-end md:justify-between">
-            <div className="space-y-6">
-              <p className="font-black text-[10px] uppercase tracking-[0.35em] text-muted-foreground">Admin · VoC</p>
-              <h1 className="whitespace-nowrap text-balance text-[11vw] font-black uppercase leading-[0.85] tracking-tighter text-foreground sm:text-[9vw] md:text-[6vw] lg:text-[4rem]">
-                민원{" "}
-                <span className="underline decoration-secondary decoration-2 underline-offset-[0.18em]">관리</span>
-              </h1>
-              <p className="max-w-xl font-medium tracking-tight text-balance text-foreground/85 md:text-lg">
-                접수·처리 중·완료 건을 조회하고 답변 및 처리 완료를 등록합니다.
-              </p>
-            </div>
-            <Link
-              href="/voc"
-              className="shrink-0 rounded-xl border border-border px-5 py-3 text-center text-xs font-black uppercase tracking-wider text-foreground transition-transform hover:-translate-y-0.5 md:self-start"
-            >
-              입주민 민원 화면
-            </Link>
-          </header>
+        <header className="flex flex-col gap-10 md:flex-row md:items-end md:justify-between">
+          <div className="space-y-6">
+            <p className="font-black text-[10px] uppercase tracking-[0.35em] text-muted-foreground">Admin · VoC</p>
+            <h1 className="whitespace-nowrap text-balance text-[11vw] font-black uppercase leading-[0.85] tracking-tighter text-foreground sm:text-[9vw] md:text-[6vw] lg:text-[4rem]">
+              민원{" "}
+              <span className="underline decoration-secondary decoration-2 underline-offset-[0.18em]">관리</span>
+            </h1>
+            <p className="max-w-xl font-medium tracking-tight text-balance text-foreground/85 md:text-lg">
+              접수·처리 중·완료 건을 조회하고 답변 및 처리 완료를 등록합니다.
+            </p>
+          </div>
+          <Link
+            href="/voc"
+            className="shrink-0 rounded-xl bg-primary px-7 py-4 text-center text-sm font-black uppercase tracking-wider text-white transition-all hover:-translate-y-0.5 hover:bg-primary/90 hover:shadow-md md:self-start"
+          >
+            입주민 민원 화면
+          </Link>
+        </header>
 
-          <section className="mt-12 space-y-4">
-            <p className="font-black text-[10px] uppercase tracking-[0.3em] text-muted-foreground">상태</p>
-            <AdminVocStatusFilter activeStatus={status} />
-          </section>
+        <section className="mt-12 space-y-4">
+          <p className="font-black text-[10px] uppercase tracking-[0.3em] text-muted-foreground"></p>
+          <AdminVocStatusFilter activeStatus={status} />
+        </section>
 
-          {error && (
-            <div
-              className="mt-12 rounded-xl border border-destructive/40 bg-destructive/10 px-4 py-3 text-sm font-medium text-destructive"
-              role="alert"
-            >
-              {error}
-            </div>
-          )}
+        {error && (
+          <div
+            className="mt-12 rounded-xl border border-destructive/40 bg-destructive/10 px-4 py-3 text-sm font-medium text-destructive"
+            role="alert"
+          >
+            {error}
+          </div>
+        )}
 
-          {list && (
-            <>
-              <ul className="mt-12 space-y-6">
-                {list.content.length === 0 ? (
-                  <li className="flex flex-col items-center justify-center gap-4 rounded-[2rem] border border-dashed border-border bg-muted/25 px-6 py-16 text-center">
-                    <LayoutList className="size-10 text-muted-foreground" strokeWidth={1.25} aria-hidden />
-                    <p className="max-w-sm font-medium tracking-tight text-balance text-muted-foreground">
-                      조건에 맞는 민원이 없습니다.
-                    </p>
+        {list && (
+          <>
+            <ul className="mt-12 space-y-6">
+              {list.content.length === 0 ? (
+                <li className="flex flex-col items-center justify-center gap-4 rounded-[2rem] border border-dashed border-border bg-muted/25 px-6 py-16 text-center">
+                  <LayoutList className="size-10 text-muted-foreground" strokeWidth={1.25} aria-hidden />
+                  <p className="max-w-sm font-medium tracking-tight text-balance text-muted-foreground">
+                    조건에 맞는 민원이 없습니다.
+                  </p>
+                </li>
+              ) : (
+                list.content.map((item) => (
+                  <li key={item.vocId}>
+                    <AdminVocListCard item={item} />
                   </li>
-                ) : (
-                  list.content.map((item) => (
-                    <li key={item.vocId}>
-                      <AdminVocListCard item={item} />
-                    </li>
-                  ))
-                )}
-              </ul>
-              <AdminVocPaginationBar
-                page={list.page}
-                totalPages={list.totalPages}
-                baseQuery={baseQuery}
-                pageSize={size}
-              />
-            </>
-          )}
+                ))
+              )}
+            </ul>
+            <AdminVocPaginationBar
+              page={list.page}
+              totalPages={list.totalPages}
+              baseQuery={baseQuery}
+              pageSize={size}
+            />
+          </>
+        )}
       </div>
     </MotionEnter>
   );

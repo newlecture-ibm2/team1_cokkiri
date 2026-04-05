@@ -22,6 +22,7 @@ import {
   type VocAttachment,
   type VocDetail,
 } from "../../../_types/voc";
+import { CancelModal } from "@/components/shared/CancelModal";
 
 const VocRichTextEditor = dynamic(
   () => import("../../../_components/VocRichTextEditor").then((m) => ({ default: m.VocRichTextEditor })),
@@ -54,6 +55,7 @@ export function VocEditForm({ initial }: Props) {
   const [newFiles, setNewFiles] = useState<FileList | null>(null);
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
+  const [showCancelModal, setShowCancelModal] = useState(false);
 
   function removeAttachment(index: number) {
     setAttachments((prev) => prev.filter((_, i) => i !== index));
@@ -243,12 +245,13 @@ export function VocEditForm({ initial }: Props) {
       </div>
 
       <div className="flex justify-end gap-4">
-        <Link
-          href={`/voc/${initial.vocId}`}
+        <button
+          type="button"
+          onClick={() => setShowCancelModal(true)}
           className="rounded-xl border border-border px-6 py-3 text-sm font-black uppercase tracking-wider text-foreground transition-transform duration-200 hover:-translate-y-0.5"
         >
           취소
-        </Link>
+        </button>
         <motion.button
           type="submit"
           disabled={pending}
@@ -263,6 +266,11 @@ export function VocEditForm({ initial }: Props) {
           저장
         </motion.button>
       </div>
+      <CancelModal
+        isOpen={showCancelModal}
+        onClose={() => setShowCancelModal(false)}
+        onConfirm={() => router.push(`/voc/${initial.vocId}`)}
+      />
     </form>
   );
 }

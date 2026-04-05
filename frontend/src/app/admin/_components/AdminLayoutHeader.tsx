@@ -17,7 +17,7 @@ export function AdminLayoutHeader({ onOpenMenu }: Props) {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
     >
-      <div className="flex h-14 items-center justify-between gap-4 px-4 md:px-6 lg:px-8">
+      <div className="flex items-center justify-between gap-4 px-4 py-2 md:px-6 md:py-3 lg:px-8">
         <div className="flex min-w-0 items-center gap-3">
           <Button
             type="button"
@@ -32,10 +32,10 @@ export function AdminLayoutHeader({ onOpenMenu }: Props) {
           <Link href="/admin" className="group flex min-w-0 items-center gap-2">
             <ShieldCheck className="size-6 shrink-0 text-secondary" aria-hidden />
             <div className="min-w-0">
-              <span className="block truncate font-black text-sm uppercase tracking-tight text-primary md:text-base">
+              <span className="block truncate font-black text-lg uppercase tracking-tight text-primary md:text-xl">
                 CoKkiri Admin
               </span>
-              <span className="hidden font-black text-[10px] uppercase tracking-[0.25em] text-muted-foreground sm:block">
+              <span className="hidden font-black text-sm uppercase tracking-[0.25em] text-muted-foreground sm:block">
                 Operations
               </span>
             </div>
@@ -48,7 +48,7 @@ export function AdminLayoutHeader({ onOpenMenu }: Props) {
           </Button>
           <Link
             href="/"
-            className="hidden h-9 items-center gap-1.5 rounded-md border border-border bg-background px-3 font-black text-[10px] uppercase tracking-wider transition-colors hover:bg-muted/50 md:inline-flex"
+            className="hidden h-9 items-center gap-1.5 rounded-md border border-border bg-background px-3 font-black text-sm uppercase tracking-wider transition-colors hover:bg-muted/50 md:inline-flex"
           >
             <ExternalLink className="size-3.5" aria-hidden />
             입주민 사이트
@@ -56,11 +56,10 @@ export function AdminLayoutHeader({ onOpenMenu }: Props) {
 
           <div className="flex items-center gap-2 rounded-xl border border-border bg-muted/30 px-2 py-1.5 pl-3 md:px-3">
             <div className="hidden text-right sm:block">
-              <p className="font-black text-[10px] uppercase tracking-wider text-muted-foreground">Administrator</p>
-              <p className="truncate text-xs font-bold text-foreground">관리자</p>
+              <p className="font-black text-sm uppercase tracking-wider text-muted-foreground">Administrator</p>
             </div>
             <div
-              className="flex size-9 shrink-0 items-center justify-center rounded-full bg-primary text-[10px] font-black uppercase text-primary-foreground"
+              className="flex size-9 shrink-0 items-center justify-center rounded-full bg-primary text-sm font-black uppercase text-primary-foreground"
               aria-hidden
             >
               AD

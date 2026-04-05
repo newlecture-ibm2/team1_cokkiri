@@ -45,7 +45,7 @@ export default function AdminHomePage() {
       </header>
 
       <section>
-        <h2 className="mb-6 font-black text-[10px] uppercase tracking-[0.3em] text-muted-foreground">바로가기</h2>
+        <h2 className="mb-6 font-black text-[14px] uppercase tracking-[0.3em] text-muted-foreground"></h2>
         <ul className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
           {shortcuts.map((item) => {
             const Icon = item.icon;
@@ -53,7 +53,7 @@ export default function AdminHomePage() {
               <li key={item.href}>
                 <Link
                   href={item.href}
-                  className="group flex h-full flex-col rounded-[1.5rem] border border-border bg-background/80 p-6 transition-transform duration-200 hover:-translate-y-0.5 hover:border-secondary/50 hover:shadow-sm md:p-8"
+                  className="group flex h-full flex-col rounded-[1.5rem] border border-border bg-white p-6 transition-transform duration-200 hover:-translate-y-0.5 hover:border-secondary/50 hover:shadow-sm md:p-8"
                 >
                   <div className="flex items-start justify-between gap-3">
                     <Icon className="size-6 shrink-0 text-secondary" strokeWidth={1.5} aria-hidden />

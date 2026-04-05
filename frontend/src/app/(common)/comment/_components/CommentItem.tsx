@@ -6,6 +6,7 @@ import { motion } from "framer-motion";
 import { Edit3, Trash2 } from "lucide-react";
 import { bffErrorMessageFromResponse } from "@/lib/bff-error-message";
 import { formatDateTimeKo } from "@/lib/format-date";
+import { CancelModal } from "@/components/shared/CancelModal";
 
 type CurrentUser = {
   userId: number;
@@ -37,6 +38,7 @@ export function CommentItem({
   const [draft, setDraft] = useState(content);
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
+  const [showCancelModal, setShowCancelModal] = useState(false);
 
   useEffect(() => {
     if (!editing) setDraft(content);
@@ -183,7 +185,7 @@ export function CommentItem({
           <div className="flex flex-wrap items-center justify-end gap-3">
             <button
               type="button"
-              onClick={cancelEdit}
+              onClick={() => setShowCancelModal(true)}
               className="rounded-xl border border-border px-5 py-2.5 text-[11px] font-black uppercase tracking-wider text-foreground transition-transform duration-200 hover:-translate-y-0.5"
             >
               취소
@@ -200,6 +202,14 @@ export function CommentItem({
           </div>
         </form>
       )}
+      <CancelModal
+        isOpen={showCancelModal}
+        onClose={() => setShowCancelModal(false)}
+        onConfirm={() => {
+          setShowCancelModal(false);
+          cancelEdit();
+        }}
+      />
     </li>
   );
 }
