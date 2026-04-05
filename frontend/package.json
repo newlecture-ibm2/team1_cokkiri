@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start --port 3111",
     "lint": "next lint",
-    "format": "prettier --write \"src/**/*.{ts,tsx,css,json}\""
+    "format": "prettier --write \"src/**/*.{ts,tsx,css,json}\"",
+    "postinstall": "cd .. && bash .githooks/setup.sh"
   },
   "dependencies": {
     "clsx": "^2.1.1",
