@@ -76,7 +76,7 @@ export function Footer() {
 
         <div className="mb-16 grid grid-cols-2 gap-10 border-t border-primary/20 pt-12 md:grid-cols-3 lg:grid-cols-4">
           <div>
-            <h5 className="mb-6 text-[11px] font-black tracking-[0.3em] text-balance text-primary/50 uppercase">
+            <h5 className="mb-6 text-[16px] font-black tracking-[0.3em] text-balance text-primary/50 uppercase">
               Navigation / 01
             </h5>
             <ul className="space-y-4">
@@ -93,7 +93,7 @@ export function Footer() {
             </ul>
           </div>
           <div>
-            <h5 className="mb-6 text-[11px] font-black tracking-[0.3em] text-balance text-primary/50 uppercase">
+            <h5 className="mb-6 text-[16px] font-black tracking-[0.3em] text-balance text-primary/50 uppercase">
               Community / 02
             </h5>
             <ul className="space-y-4">
@@ -110,7 +110,7 @@ export function Footer() {
             </ul>
           </div>
           <div>
-            <h5 className="mb-6 text-[11px] font-black tracking-[0.3em] text-balance text-primary/50 uppercase">
+            <h5 className="mb-6 text-[16px] font-black tracking-[0.3em] text-balance text-primary/50 uppercase">
               Legal / 03
             </h5>
             <ul className="space-y-4">
