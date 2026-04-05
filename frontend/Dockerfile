@@ -2,7 +2,8 @@
 FROM node:20-alpine AS deps
 WORKDIR /app
 COPY package.json package-lock.json ./
-RUN npm ci
+# postinstall은 로컬 Git 훅용; 이미지에는 상위 .githooks·git 없음
+RUN npm ci --ignore-scripts
 
 # ── Stage 2: 빌드 ──
 FROM node:20-alpine AS builder
