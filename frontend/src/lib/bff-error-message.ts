@@ -1,13 +1,29 @@
-/** 본문이 이 길이 미만일 때만 그대로 노출 (기존 댓글 UI와 동일) */
-const MAX_BODY_PREVIEW = 200;
+import type { ApiResponse } from "@/types/api";
 
-/** BFF/fetch 응답 본문이 짧으면 그대로, 아니면 상태 코드 기반 메시지 */
-export async function bffErrorMessageFromResponse(res: Response): Promise<string> {
+const DEFAULT_SAVE_FAIL = "저장하지 못했습니다. 잠시 후 다시 시도해 주세요.";
+
+/** 이미 파싱한 BFF JSON에서 사용자에게 보여 줄 메시지를 고릅니다. */
+export function messageFromBffResponse<T>(
+  json: ApiResponse<T>,
+  fallback: string = DEFAULT_SAVE_FAIL,
+): string {
+  const m = json.message?.trim();
+  if (m) return m;
+  return fallback;
+}
+
+/**
+ * `fetch` 응답 본문을 JSON으로 읽어 메시지를 뽑습니다.
+ * (댓글·VoC 등 기존 컴포넌트에서 사용)
+ */
+export async function bffErrorMessageFromResponse(
+  res: Response,
+  fallback: string = DEFAULT_SAVE_FAIL,
+): Promise<string> {
   try {
-    const t = await res.text();
-    if (t && t.length < MAX_BODY_PREVIEW) return t;
+    const json = (await res.json()) as ApiResponse<unknown>;
+    return messageFromBffResponse(json, fallback);
   } catch {
-    /* ignore */
+    return "서버 응답을 처리하지 못했습니다. 잠시 후 다시 시도해 주세요.";
   }
-  return `처리하지 못했습니다. (${res.status})`;
 }

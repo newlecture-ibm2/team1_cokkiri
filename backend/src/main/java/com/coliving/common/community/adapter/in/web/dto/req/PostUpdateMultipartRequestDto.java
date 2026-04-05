@@ -10,23 +10,25 @@ import java.util.List;
 
 @Getter
 @Setter
-public class PostMultipartRequestDto {
+public class PostUpdateMultipartRequestDto {
 
     @NotBlank
     private String category;
 
-    /** UTF-16 코드 유닛 기준(Bean Validation Size는 Java 문자열 길이와 동일). */
     @NotBlank
     @Size(max = 100)
     private String title;
 
-    /** UTF-16 코드 유닛 기준. */
     @NotBlank
     @Size(max = 65535)
     private String content;
 
-    /** multipart 동일 필드명 links 반복 시 URL 문자열 목록으로 바인딩 */
     private List<String> links;
 
     private List<MultipartFile> files;
+
+    /**
+     * 유지할 기존 첨부(JSON 배열, {@code PostAttachment}). null/공백이면 DB 첨부 유지 후 새 {@code files}만 추가.
+     */
+    private String attachmentsJson;
 }

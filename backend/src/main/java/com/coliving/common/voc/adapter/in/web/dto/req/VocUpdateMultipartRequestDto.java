@@ -10,7 +10,7 @@ import java.util.List;
 
 @Getter
 @Setter
-public class VocMultipartRequestDto {
+public class VocUpdateMultipartRequestDto {
 
     @NotBlank
     private String category;
@@ -26,4 +26,10 @@ public class VocMultipartRequestDto {
     private String content;
 
     private List<MultipartFile> files;
+
+    /**
+     * 유지할 기존 첨부(JSON 배열, {@code VocAttachment}). 비우면(null/공백) 서버는 DB에 있던 첨부를
+     * 기준으로 두고 새 {@code files}만 뒤에 붙입니다. 편집 화면에서는 항상 현재 목록을 JSON으로 보냅니다.
+     */
+    private String attachmentsJson;
 }
