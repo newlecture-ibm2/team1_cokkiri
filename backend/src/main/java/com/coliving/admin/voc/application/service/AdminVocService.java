@@ -16,6 +16,9 @@ import com.coliving.common.voc.application.result.VocResult;
 import com.coliving.common.voc.model.Voc;
 import com.coliving.global.error.BusinessException;
 import com.coliving.global.error.ErrorCode;
+import com.coliving.global.html.PlainTextHtmlSanitizer;
+import com.coliving.global.html.VocBodyHtmlSanitizer;
+import com.coliving.global.validation.PlainTextFieldValidation;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -49,7 +52,7 @@ public class AdminVocService implements AdminVocUseCase {
                         .vocId(v.getVocId())
                         .userId(v.getUserId())
                         .category(v.getCategory())
-                        .title(v.getTitle())
+                        .title(PlainTextHtmlSanitizer.sanitizeTitle(v.getTitle()))
                         .status(v.getStatus())
                         .createdAt(v.getCreatedAt())
                         .build())
@@ -75,17 +78,19 @@ public class AdminVocService implements AdminVocUseCase {
     @Override
     @Transactional
     public VocResult replyToVoc(ReplyVocCommand command) {
+        String sanitizedReply = VocBodyHtmlSanitizer.sanitize(command.getReply());
+        PlainTextFieldValidation.requireNonBlankPlainAfterSanitizedHtml(sanitizedReply);
         Voc updated = vocRepositoryPort.applyAdminReply(
                 command.getVocId(),
                 command.getAdminUserId(),
-                command.getReply()
+                sanitizedReply
         );
 
         createNotificationUseCase.create(CreateNotificationCommand.builder()
                 .userId(updated.getUserId())
                 .type(NotificationType.VOC_REPLIED)
                 .title("민원 답변이 등록되었습니다")
-                .message(buildNotificationMessage(updated.getTitle(), command.getReply()))
+                .message(buildNotificationMessage(updated.getTitle(), sanitizedReply))
                 .referenceType(ReferenceType.VOC)
                 .referenceId(updated.getVocId())
                 .build());
@@ -100,12 +105,10 @@ public class AdminVocService implements AdminVocUseCase {
         return toVocResult(resolved);
     }
 
-    private String buildNotificationMessage(String vocTitle, String reply) {
-        String titlePart = vocTitle != null && !vocTitle.isBlank() ? "「" + vocTitle + "」" : "등록하신 민원";
-        String preview = reply == null ? "" : reply.strip();
-        if (preview.length() > 200) {
-            preview = preview.substring(0, 200) + "…";
-        }
+    private String buildNotificationMessage(String vocTitle, String replyHtmlOrText) {
+        String safeTitle = PlainTextHtmlSanitizer.sanitizeTitle(vocTitle);
+        String titlePart = !safeTitle.isBlank() ? "「" + safeTitle + "」" : "등록하신 민원";
+        String preview = PlainTextHtmlSanitizer.toSingleLinePreview(replyHtmlOrText, 200);
         return titlePart + "에 관리자 답변이 등록되었습니다. " + preview;
     }
 
@@ -114,11 +117,11 @@ public class AdminVocService implements AdminVocUseCase {
                 .vocId(v.getVocId())
                 .userId(v.getUserId())
                 .category(v.getCategory())
-                .title(v.getTitle())
-                .content(v.getContent())
+                .title(PlainTextHtmlSanitizer.sanitizeTitle(v.getTitle()))
+                .content(VocBodyHtmlSanitizer.sanitize(v.getContent()))
                 .attachments(v.getAttachments())
                 .status(v.getStatus())
-                .adminReply(v.getAdminReply())
+                .adminReply(v.getAdminReply() == null ? null : VocBodyHtmlSanitizer.sanitize(v.getAdminReply()))
                 .replyUserId(v.getReplyUserId())
                 .repliedAt(v.getRepliedAt())
                 .createdAt(v.getCreatedAt())

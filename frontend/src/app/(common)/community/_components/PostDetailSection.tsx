@@ -7,6 +7,8 @@ import { PostEditDeleteActions } from "./PostEditDeleteActions";
 import { CommentComposer } from "../../comment/_components/CommentComposer";
 import { CommentItem } from "../../comment/_components/CommentItem";
 import { formatDateTimeKo } from "@/lib/format-date";
+import { apiFileUrlToBffPath } from "@/lib/bff-file-url";
+import { isRichTextBodyHtml, prepareCommunityPostBodyForDisplay } from "@/lib/post-html";
 
 function categoryLabel(code: string) {
   return POST_CATEGORIES.find((c) => c.value === code)?.label ?? code;
@@ -83,10 +85,18 @@ export function PostDetailSection({
         initialTitle={detail.title}
         initialContent={detail.content}
         initialLinks={detail.links}
+        initialAttachments={detail.attachments ?? []}
       />
 
       <div className="mt-10 font-medium leading-relaxed tracking-tight text-balance text-foreground md:text-lg">
-        <div className="whitespace-pre-wrap">{detail.content}</div>
+        {isRichTextBodyHtml(detail.content) ? (
+          <div
+            className="post-html [&_img]:my-4 [&_img]:max-h-[min(70vh,520px)] [&_img]:w-auto [&_img]:max-w-full [&_img]:rounded-xl [&_img]:object-contain [&_p]:mb-3 [&_a]:break-all [&_a]:font-medium [&_a]:text-secondary [&_a]:underline [&_a]:decoration-secondary/50 [&_a]:underline-offset-4 [&_ul]:my-3 [&_ul]:list-disc [&_ul]:pl-6 [&_ol]:my-3 [&_ol]:list-decimal [&_ol]:pl-6 [&_blockquote]:my-4 [&_blockquote]:border-l-2 [&_blockquote]:border-secondary/40 [&_blockquote]:pl-4 [&_blockquote]:italic [&_pre]:my-4 [&_pre]:overflow-x-auto [&_pre]:rounded-xl [&_pre]:border [&_pre]:border-border [&_pre]:bg-muted/30 [&_pre]:p-4 [&_code]:text-sm"
+            dangerouslySetInnerHTML={{ __html: prepareCommunityPostBodyForDisplay(detail.content) }}
+          />
+        ) : (
+          <div className="whitespace-pre-wrap">{detail.content}</div>
+        )}
       </div>
 
       {detail.links && detail.links.length > 0 && (
@@ -123,7 +133,7 @@ export function PostDetailSection({
               a.fileUrl ? (
                 <li key={i}>
                   <a
-                    href={a.fileUrl}
+                    href={apiFileUrlToBffPath(a.fileUrl)}
                     className="break-all underline decoration-secondary/50 underline-offset-4 hover:decoration-secondary"
                     target="_blank"
                     rel="noopener noreferrer"
