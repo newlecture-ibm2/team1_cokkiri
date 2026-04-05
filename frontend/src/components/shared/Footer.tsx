@@ -9,21 +9,21 @@ export function Footer() {
 
   const footerLinks = {
     explore: [
-      { name: "Living Spaces", path: "/rooms" },
-      { name: "Community", path: "/community" },
-      { name: "VOC", path: "/voc" },
-      { name: "IoT Guide", path: "/rooms" },
+      { name: "Living", path: "/rooms" },
+      { name: "Stay", path: "/rooms" },
+      { name: "Facility", path: "/facility" },
     ],
     community: [
-      { name: "Residents", path: "/profile" },
-      { name: "Community", path: "/community" },
-      { name: "Archive", path: "/rooms" },
-      { name: "Philosophy", path: "/" },
+      { name: "Board", path: "/community" },
+      { name: "Event", path: "/events" },
+      { name: "Notice", path: "/notices" },
+      { name: "VOC", path: "/voc" },
     ],
     support: [
-      { name: "Concierge", path: "/voc" },
-      { name: "Safe & Secure", path: "/community" },
-      { name: "Terms & Privacy", path: "/community" },
+      { name: "Profile", path: "/profile" },
+      { name: "Device", path: "/devices" },
+      { name: "Contract", path: "/contract" },
+      { name: "Reservation", path: "/reservation" },
     ],
   };
 
@@ -33,7 +33,7 @@ export function Footer() {
         <div className="mb-16 grid grid-cols-1 gap-16 lg:grid-cols-12">
           <div className="lg:col-span-8">
             <Link href="/" className="group mb-8 inline-block">
-              <span className="block text-[15vw] font-black leading-[0.8] tracking-tighter uppercase md:text-[8vw]">
+              <span className="block text-[11vw] font-black leading-[0.8] tracking-tighter uppercase md:text-[5vw]">
                 COKKIRI<span className="text-secondary">.</span>
               </span>
               <span className="mt-4 block whitespace-nowrap text-[min(10vw,15px)] font-black uppercase opacity-50 transition-opacity duration-500 group-hover:opacity-100 md:mt-6 md:text-xs md:tracking-[0.4em]">
@@ -76,8 +76,8 @@ export function Footer() {
 
         <div className="mb-16 grid grid-cols-2 gap-10 border-t border-primary/20 pt-12 md:grid-cols-3 lg:grid-cols-4">
           <div>
-            <h5 className="mb-6 text-[16px] font-black tracking-[0.3em] text-balance text-primary/50 uppercase">
-              Navigation / 01
+            <h5 className="mb-6 text-[13px] font-black tracking-[0.3em] text-balance text-primary/50 uppercase">
+              EXPLORE / 01
             </h5>
             <ul className="space-y-4">
               {footerLinks.explore.map((link) => (
@@ -93,8 +93,8 @@ export function Footer() {
             </ul>
           </div>
           <div>
-            <h5 className="mb-6 text-[16px] font-black tracking-[0.3em] text-balance text-primary/50 uppercase">
-              Community / 02
+            <h5 className="mb-6 text-[13px] font-black tracking-[0.3em] text-balance text-primary/50 uppercase">
+              COMMUNITY / 02
             </h5>
             <ul className="space-y-4">
               {footerLinks.community.map((link) => (
@@ -110,8 +110,8 @@ export function Footer() {
             </ul>
           </div>
           <div>
-            <h5 className="mb-6 text-[16px] font-black tracking-[0.3em] text-balance text-primary/50 uppercase">
-              Legal / 03
+            <h5 className="mb-6 text-[13px] font-black tracking-[0.3em] text-balance text-primary/50 uppercase">
+              SUPPORT / 03
             </h5>
             <ul className="space-y-4">
               {footerLinks.support.map((link) => (
