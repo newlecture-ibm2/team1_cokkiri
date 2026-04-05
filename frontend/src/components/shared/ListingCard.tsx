@@ -12,7 +12,10 @@ interface ListingCardProps {
 
 export function ListingCard({ listing }: ListingCardProps) {
   return (
-    <Link href={`/rooms/${listing.id}`} className="group block">
+    <Link
+      href={`/rooms/${listing.id}`}
+      className="group block [font-family:var(--font-manrope),_var(--font-pretendard),_sans-serif]"
+    >
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}
@@ -50,7 +53,7 @@ export function ListingCard({ listing }: ListingCardProps) {
 
         <div className="mt-8 space-y-3 px-2">
           <div className="flex items-baseline justify-between">
-            <h3 className="text-2xl font-black tracking-tighter text-primary transition-colors duration-500 group-hover:text-secondary">
+            <h3 className="[font-family:inherit] text-2xl font-black tracking-tighter text-primary transition-colors duration-500 group-hover:text-secondary">
               {listing.title}
             </h3>
             <span className="text-base font-black whitespace-nowrap text-primary opacity-10">
