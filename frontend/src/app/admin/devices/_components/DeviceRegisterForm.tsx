@@ -1,26 +1,18 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { motion } from "framer-motion";
-import { createDevice } from "../_api";
-import type { CreateDeviceRequest } from "../_types";
+import { createDevice, fetchDeviceTypes } from "../_api";
+import type { CreateDeviceRequest, DeviceType } from "../_types";
 import { ApiError } from "@/lib/api";
 
 interface FieldError {
   [key: string]: string;
 }
 
-const DEVICE_TYPES = [
-  { deviceTypeId: 1, code: "DOOR_LOCK", name: "도어락" },
-  { deviceTypeId: 2, code: "LIGHT", name: "조명" },
-  { deviceTypeId: 3, code: "AIR_CONDITIONER", name: "에어컨" },
-  { deviceTypeId: 4, code: "WASHER", name: "세탁기" },
-  { deviceTypeId: 5, code: "DRYER", name: "건조기" },
-  { deviceTypeId: 6, code: "CCTV", name: "CCTV" },
-  { deviceTypeId: 7, code: "HEATER", name: "난방기" },
-];
 
 export function DeviceRegisterForm() {
+  const [deviceTypes, setDeviceTypes] = useState<DeviceType[]>([]);
   const [form, setForm] = useState<CreateDeviceRequest>({
     spaceId: 0,
     deviceTypeId: 0,
@@ -29,6 +21,19 @@ export function DeviceRegisterForm() {
     macAddress: "",
     mockEndpoint: "",
   });
+
+  const loadDeviceTypes = useCallback(async () => {
+    try {
+      const res = await fetchDeviceTypes();
+      setDeviceTypes(res.data ?? []);
+    } catch {
+      // 종류 로드 실패 시 빈 목록
+    }
+  }, []);
+
+  useEffect(() => {
+    loadDeviceTypes();
+  }, [loadDeviceTypes]);
   const [errors, setErrors] = useState<FieldError>({});
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
@@ -183,7 +188,7 @@ export function DeviceRegisterForm() {
               ${errors.deviceTypeId ? "border-destructive ring-1 ring-destructive/30" : "border-border hover:border-secondary"}`}
           >
             <option value={0} disabled>종류를 선택하세요</option>
-            {DEVICE_TYPES.map((dt) => (
+            {deviceTypes.map((dt) => (
               <option key={dt.deviceTypeId} value={dt.deviceTypeId}>
                 {dt.name} ({dt.code})
               </option>

@@ -20,6 +20,7 @@ public record AdminDevice(
         Boolean isActive,
         OffsetDateTime installedAt,
         OffsetDateTime lastOnlineAt,
-        OffsetDateTime createdAt
+        OffsetDateTime createdAt,
+        OffsetDateTime updatedAt
 ) {
 }

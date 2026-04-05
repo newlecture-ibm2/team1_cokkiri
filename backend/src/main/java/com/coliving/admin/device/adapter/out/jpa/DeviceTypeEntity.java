@@ -46,4 +46,11 @@ public class DeviceTypeEntity extends BaseEntity {
         this.uiType = uiType;
         this.isSystemDefault = isSystemDefault != null ? isSystemDefault : false;
     }
+
+    public void update(String code, String name, String commands, String uiType) {
+        this.code = code;
+        this.name = name;
+        this.commands = commands;
+        this.uiType = uiType;
+    }
 }

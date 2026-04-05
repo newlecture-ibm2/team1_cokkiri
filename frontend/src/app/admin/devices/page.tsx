@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { DeviceListTable } from "./_components/DeviceListTable";
 
 export const metadata = {
   title: "기기 관리",
@@ -17,25 +18,30 @@ export default function DevicesPage() {
             기기 관리
           </h1>
           <p className="text-sm font-medium tracking-tight text-muted-foreground text-balance">
-            기기 등록 및 제어 관리 페이지입니다.
+            등록된 기기의 상태 변경, 활성화/비활성화, 삭제를 관리합니다.
           </p>
         </div>
-        <Link
-          href="/admin/devices/register"
-          className="inline-flex items-center gap-2 whitespace-nowrap rounded-xl bg-primary px-5 py-3
-            text-xs font-bold uppercase tracking-[0.2em] text-primary-foreground
-            transition-colors duration-200 hover:bg-secondary"
-        >
-          + 기기 등록
-        </Link>
+        <div className="flex gap-3">
+          <Link
+            href="/admin/devices/types"
+            className="inline-flex items-center gap-2 whitespace-nowrap rounded-xl border border-border px-5 py-3
+              text-xs font-bold uppercase tracking-[0.2em] text-primary
+              transition-colors duration-200 hover:bg-muted"
+          >
+            종류 관리
+          </Link>
+          <Link
+            href="/admin/devices/register"
+            className="inline-flex items-center gap-2 whitespace-nowrap rounded-xl bg-primary px-5 py-3
+              text-xs font-bold uppercase tracking-[0.2em] text-primary-foreground
+              transition-colors duration-200 hover:bg-secondary"
+          >
+            + 기기 등록
+          </Link>
+        </div>
       </header>
 
-      {/* TODO: 기기 목록 테이블 */}
-      <div className="rounded-[2rem] border border-border bg-surface p-8 text-center">
-        <p className="text-sm font-medium text-muted-foreground">
-          등록된 기기가 없습니다. 새 기기를 등록해 보세요.
-        </p>
-      </div>
+      <DeviceListTable />
     </div>
   );
 }

@@ -1,5 +1,6 @@
 package com.coliving.admin.device.adapter.out.jpa;
 
+import com.coliving.admin.device.model.DeviceStatus;
 import com.coliving.global.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -10,6 +11,14 @@ import org.hibernate.annotations.SQLRestriction;
 
 import java.time.OffsetDateTime;
 
+/**
+ * IoT 기기 엔티티
+ *
+ * TODO [user/room 도메인 담당자]
+ *  - status=ERROR 또는 is_active=false 인 기기는
+ *    일반 사용자의 방 상세 페이지에서 회색(Disabled) 타일로 렌더링해야 합니다.
+ *  - 비활성(is_active=false) 기기는 입주자 기기 목록에서 미표시 + 제어 불가 처리가 필요합니다.
+ */
 @Entity
 @Table(name = "devices")
 @SQLRestriction("deleted_at IS NULL")

@@ -2,6 +2,7 @@ package com.coliving.admin.device.application.port.out;
 
 import com.coliving.admin.device.model.AdminDevice;
 
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -13,7 +14,17 @@ public interface AdminDeviceRepositoryPort {
 
     Optional<AdminDevice> findById(Long deviceId);
 
+    List<AdminDevice> findAll();
+
     boolean existsByMacAddress(String macAddress);
 
     boolean existsByMacAddressAndDeviceIdNot(String macAddress, Long deviceId);
+
+    void updateActive(Long deviceId, boolean isActive);
+
+    void updateStatus(Long deviceId, String status);
+
+    void softDelete(Long deviceId);
+
+    boolean hasControlLogs(Long deviceId);
 }

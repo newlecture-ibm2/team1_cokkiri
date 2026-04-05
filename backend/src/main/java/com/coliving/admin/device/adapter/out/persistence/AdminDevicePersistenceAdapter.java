@@ -3,12 +3,14 @@ package com.coliving.admin.device.adapter.out.persistence;
 import com.coliving.admin.device.adapter.out.jpa.*;
 import com.coliving.admin.device.application.port.out.AdminDeviceRepositoryPort;
 import com.coliving.admin.device.model.AdminDevice;
+import com.coliving.admin.device.model.DeviceStatus;
 import com.coliving.global.error.BusinessException;
 import com.coliving.global.error.ErrorCode;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.time.OffsetDateTime;
+import java.util.List;
 import java.util.Optional;
 
 @Component
@@ -72,6 +74,42 @@ public class AdminDevicePersistenceAdapter implements AdminDeviceRepositoryPort 
         return deviceJpaRepository.existsByMacAddressAndDeviceIdNot(macAddress, deviceId);
     }
 
+    @Override
+    public List<AdminDevice> findAll() {
+        return deviceJpaRepository.findAll().stream()
+                .map(this::toModel)
+                .toList();
+    }
+
+    @Override
+    public void updateActive(Long deviceId, boolean isActive) {
+        DeviceEntity entity = deviceJpaRepository.findById(deviceId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND, "기기를 찾을 수 없습니다"));
+        entity.updateActive(isActive);
+        deviceJpaRepository.save(entity);
+    }
+
+    @Override
+    public void updateStatus(Long deviceId, String status) {
+        DeviceEntity entity = deviceJpaRepository.findById(deviceId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND, "기기를 찾을 수 없습니다"));
+        entity.updateStatus(DeviceStatus.valueOf(status));
+        deviceJpaRepository.save(entity);
+    }
+
+    @Override
+    public void softDelete(Long deviceId) {
+        DeviceEntity entity = deviceJpaRepository.findById(deviceId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND, "기기를 찾을 수 없습니다"));
+        entity.softDelete();
+        deviceJpaRepository.save(entity);
+    }
+
+    @Override
+    public boolean hasControlLogs(Long deviceId) {
+        return deviceJpaRepository.existsControlLogsByDeviceId(deviceId);
+    }
+
     private AdminDevice toModel(DeviceEntity entity) {
         return new AdminDevice(
                 entity.getDeviceId(),
@@ -88,7 +126,8 @@ public class AdminDevicePersistenceAdapter implements AdminDeviceRepositoryPort 
                 entity.getIsActive(),
                 entity.getInstalledAt(),
                 entity.getLastOnlineAt(),
-                entity.getCreatedAt()
+                entity.getCreatedAt(),
+                entity.getUpdatedAt()
         );
     }
 }

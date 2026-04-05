@@ -1,6 +1,8 @@
 package com.coliving.admin.device.adapter.out.jpa;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 
@@ -17,4 +19,8 @@ public interface DeviceJpaRepository extends JpaRepository<DeviceEntity, Long> {
     boolean existsByMacAddress(String macAddress);
 
     boolean existsByMacAddressAndDeviceIdNot(String macAddress, Long deviceId);
+
+    @Query(value = "SELECT EXISTS(SELECT 1 FROM control_logs WHERE device_id = :deviceId)", nativeQuery = true)
+    boolean existsControlLogsByDeviceId(@Param("deviceId") Long deviceId);
 }
+

@@ -1,13 +1,13 @@
-package com.coliving.admin.device.application.result;
+package com.coliving.admin.device.adapter.in.web.dto.res;
 
 import com.coliving.admin.device.model.AdminDevice;
 
 import java.time.OffsetDateTime;
 
 /**
- * 기기 등록/수정 결과 VO
+ * 기기 목록/상세 응답 DTO
  */
-public record CreateAdminDeviceResult(
+public record AdminDeviceResponseDto(
         Long deviceId,
         Long spaceId,
         Long deviceTypeId,
@@ -20,11 +20,12 @@ public record CreateAdminDeviceResult(
         String status,
         Boolean isActive,
         OffsetDateTime installedAt,
+        OffsetDateTime lastOnlineAt,
         OffsetDateTime createdAt,
         OffsetDateTime updatedAt
 ) {
-    public static CreateAdminDeviceResult from(AdminDevice device) {
-        return new CreateAdminDeviceResult(
+    public static AdminDeviceResponseDto from(AdminDevice device) {
+        return new AdminDeviceResponseDto(
                 device.deviceId(),
                 device.spaceId(),
                 device.deviceTypeId(),
@@ -37,6 +38,7 @@ public record CreateAdminDeviceResult(
                 device.status(),
                 device.isActive(),
                 device.installedAt(),
+                device.lastOnlineAt(),
                 device.createdAt(),
                 device.updatedAt()
         );

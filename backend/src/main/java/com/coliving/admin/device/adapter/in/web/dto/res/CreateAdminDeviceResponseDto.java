@@ -20,7 +20,8 @@ public record CreateAdminDeviceResponseDto(
         String status,
         Boolean isActive,
         OffsetDateTime installedAt,
-        OffsetDateTime createdAt
+        OffsetDateTime createdAt,
+        OffsetDateTime updatedAt
 ) {
     public static CreateAdminDeviceResponseDto from(CreateAdminDeviceResult result) {
         return new CreateAdminDeviceResponseDto(
@@ -36,7 +37,8 @@ public record CreateAdminDeviceResponseDto(
                 result.status(),
                 result.isActive(),
                 result.installedAt(),
-                result.createdAt()
+                result.createdAt(),
+                result.updatedAt()
         );
     }
 }

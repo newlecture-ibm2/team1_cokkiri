@@ -2,6 +2,17 @@ export interface DeviceType {
   deviceTypeId: number;
   code: string;
   name: string;
+  commands: string;
+  uiType: string;
+  isSystemDefault: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface SaveDeviceTypeRequest {
+  code: string;
+  name: string;
+  commands: string;
   uiType: string;
 }
 
@@ -36,4 +47,22 @@ export interface Space {
   type: "PRIVATE" | "COMMON";
   status: string;
   floor: number;
+}
+
+export interface AdminDevice {
+  deviceId: number;
+  spaceId: number;
+  deviceTypeId: number;
+  deviceTypeCode: string;
+  deviceTypeName: string;
+  name: string;
+  modelName: string;
+  macAddress: string;
+  mockEndpoint: string;
+  status: "ONLINE" | "OFFLINE" | "ERROR";
+  isActive: boolean;
+  installedAt: string;
+  lastOnlineAt: string;
+  createdAt: string;
+  updatedAt: string;
 }
