@@ -18,7 +18,9 @@ public class UpdatePostCommand {
     private final PostCategory category;
     private final String title;
     private final String content;
-    private final List<PostAttachment> attachments;
+    /** null이면 기존 DB 첨부를 유지한 뒤 {@link #newFileAttachments}만 병합합니다. */
+    private final List<PostAttachment> retainedAttachments;
+    private final List<PostAttachment> newFileAttachments;
     private final List<PostLink> links;
 }
 

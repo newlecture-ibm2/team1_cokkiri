@@ -7,6 +7,8 @@ import { MotionEnter } from "../_components/MotionEnter";
 import { AdminVocActions } from "./_components/AdminVocActions";
 import { formatDateTimeKo } from "@/lib/format-date";
 import { apiFileUrlToBffPath } from "@/lib/bff-file-url";
+import { isRichTextBodyHtml } from "@/lib/post-html";
+import { prepareVocBodyForDisplay, VOC_RICH_BODY_CLASSNAME } from "@/lib/voc-html";
 import { cn } from "@/lib/utils";
 
 type Params = Promise<{ vocId: string }>;
@@ -92,9 +94,19 @@ export default async function AdminVocDetailPage({ params }: { params: Params })
 
           <div className="mt-10">
             <p className="font-black text-[10px] uppercase tracking-[0.3em] text-muted-foreground">민원 내용</p>
-            <p className="mt-4 whitespace-pre-wrap font-medium tracking-tight text-balance text-foreground md:text-lg">
-              {d.content}
-            </p>
+            {isRichTextBodyHtml(d.content) ? (
+              <div
+                className={cn(
+                  "mt-4 font-medium leading-relaxed tracking-tight text-balance text-foreground md:text-lg",
+                  VOC_RICH_BODY_CLASSNAME,
+                )}
+                dangerouslySetInnerHTML={{ __html: prepareVocBodyForDisplay(d.content) }}
+              />
+            ) : (
+              <p className="mt-4 whitespace-pre-wrap font-medium tracking-tight text-balance text-foreground md:text-lg">
+                {d.content}
+              </p>
+            )}
           </div>
 
           {d.attachments?.length ? (
@@ -127,9 +139,16 @@ export default async function AdminVocDetailPage({ params }: { params: Params })
                 {formatDateTimeKo(d.repliedAt)}
               </time>
             ) : null}
-            <p className="mt-4 whitespace-pre-wrap font-medium tracking-tight text-foreground">
-              {d.adminReply ?? "아직 등록된 답변이 없습니다."}
-            </p>
+            {d.adminReply && isRichTextBodyHtml(d.adminReply) ? (
+              <div
+                className={cn("mt-4 font-medium tracking-tight text-foreground", VOC_RICH_BODY_CLASSNAME)}
+                dangerouslySetInnerHTML={{ __html: prepareVocBodyForDisplay(d.adminReply) }}
+              />
+            ) : (
+              <p className="mt-4 whitespace-pre-wrap font-medium tracking-tight text-foreground">
+                {d.adminReply ?? "아직 등록된 답변이 없습니다."}
+              </p>
+            )}
           </section>
 
           <AdminVocActions vocId={d.vocId} status={d.status} />

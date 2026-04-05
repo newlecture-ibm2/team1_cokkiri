@@ -26,8 +26,32 @@ public class LocalMultipartFileStorage {
         return storeFiles(files, "community", this::toPostAttachment);
     }
 
+    /** 에디터 본문 삽입용 이미지 1장 (image/* 만 허용). */
+    public PostAttachment storeSinglePostImage(MultipartFile file) {
+        if (file == null || file.isEmpty()) {
+            throw new BusinessException(ErrorCode.VALIDATION_ERROR);
+        }
+        String contentType = file.getContentType();
+        if (contentType == null || !contentType.toLowerCase().startsWith("image/")) {
+            throw new BusinessException(ErrorCode.VALIDATION_ERROR);
+        }
+        return toPostAttachment(file, "community");
+    }
+
     public List<VocAttachment> storeVocFiles(List<MultipartFile> files) {
         return storeFiles(files, "voc", this::toVocAttachment);
+    }
+
+    /** 민원 본문 에디터 삽입용 이미지 1장 (image/* 만 허용). */
+    public VocAttachment storeSingleVocImage(MultipartFile file) {
+        if (file == null || file.isEmpty()) {
+            throw new BusinessException(ErrorCode.VALIDATION_ERROR);
+        }
+        String contentType = file.getContentType();
+        if (contentType == null || !contentType.toLowerCase().startsWith("image/")) {
+            throw new BusinessException(ErrorCode.VALIDATION_ERROR);
+        }
+        return toVocAttachment(file, "voc");
     }
 
     private <T> List<T> storeFiles(List<MultipartFile> files, String subdir, FileMapper<T> mapper) {

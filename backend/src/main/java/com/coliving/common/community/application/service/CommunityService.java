@@ -11,6 +11,11 @@ import com.coliving.common.community.model.PostCategory;
 import com.coliving.common.community.model.Comment;
 import com.coliving.global.error.BusinessException;
 import com.coliving.global.error.ErrorCode;
+import com.coliving.global.attachment.RetainedAttachmentResolver;
+import com.coliving.global.html.PlainTextHtmlSanitizer;
+import com.coliving.global.html.PostBodyHtmlPathNormalizer;
+import com.coliving.global.html.PostBodyHtmlSanitizer;
+import com.coliving.global.validation.PlainTextFieldValidation;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -46,7 +51,7 @@ public class CommunityService implements CommunityUseCase {
                 .map(post -> PostListItemResult.builder()
                         .postId(post.getPostId())
                         .category(post.getCategory())
-                        .title(post.getTitle())
+                        .title(PlainTextHtmlSanitizer.sanitizeTitle(post.getTitle()))
                         .authorUserId(post.getUserId())
                         .viewCount(post.getViewCount())
                         .likeCount(post.getLikeCount())
@@ -77,8 +82,8 @@ public class CommunityService implements CommunityUseCase {
         return PostDetailResult.builder()
                 .postId(post.getPostId())
                 .category(post.getCategory())
-                .title(post.getTitle())
-                .content(post.getContent())
+                .title(PlainTextHtmlSanitizer.sanitizeTitle(post.getTitle()))
+                .content(PostBodyHtmlSanitizer.sanitize(post.getContent()))
                 .attachments(post.getAttachments())
                 .links(post.getLinks())
                 .viewCount(post.getViewCount())
@@ -101,8 +106,8 @@ public class CommunityService implements CommunityUseCase {
         Post post = repositoryPort.createPost(
                 command.getActorId(),
                 command.getCategory(),
-                command.getTitle(),
-                command.getContent(),
+                PlainTextFieldValidation.requireNonBlankTitleForSave(command.getTitle()),
+                PostBodyHtmlSanitizer.sanitize(command.getContent()),
                 command.getAttachments(),
                 command.getLinks()
         );
@@ -131,24 +136,28 @@ public class CommunityService implements CommunityUseCase {
             throw new BusinessException(ErrorCode.FORBIDDEN);
         }
 
-        List<PostAttachment> attachmentDelta = command.getAttachments();
-        List<PostAttachment> base = post.getAttachments() == null
-                ? new ArrayList<>()
-                : new ArrayList<>(post.getAttachments());
-        List<PostAttachment> attachmentsToSave;
-        if (attachmentDelta == null || attachmentDelta.isEmpty()) {
-            attachmentsToSave = base;
+        List<PostAttachment> base;
+        if (command.getRetainedAttachments() != null) {
+            base = RetainedAttachmentResolver.resolve(
+                    post.getAttachments(),
+                    command.getRetainedAttachments(),
+                    PostAttachment::getFileUrl,
+                    PostBodyHtmlPathNormalizer::normalizeAttachmentUrlForMatch);
         } else {
-            base.addAll(attachmentDelta);
-            attachmentsToSave = base;
+            base = post.getAttachments() == null
+                    ? new ArrayList<>()
+                    : new ArrayList<>(post.getAttachments());
+        }
+        if (command.getNewFileAttachments() != null && !command.getNewFileAttachments().isEmpty()) {
+            base.addAll(command.getNewFileAttachments());
         }
 
         Post updated = repositoryPort.updatePost(
                 command.getPostId(),
                 command.getCategory(),
-                command.getTitle(),
-                command.getContent(),
-                attachmentsToSave,
+                PlainTextFieldValidation.requireNonBlankTitleForSave(command.getTitle()),
+                PostBodyHtmlSanitizer.sanitize(command.getContent()),
+                base,
                 command.getLinks()
         );
 
