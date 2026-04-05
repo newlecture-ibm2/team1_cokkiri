@@ -16,8 +16,6 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Objects;
-
 @RestController
 public class CommentController {
 
@@ -30,8 +28,7 @@ public class CommentController {
     @PostMapping("/api/posts/{postId}/comments")
     public ApiResponse<CommentMutationResponseDto> createComment(
             @PathVariable Long postId,
-            @Valid @RequestBody CreateCommentRequestDto request
-    ) {
+            @Valid @RequestBody CreateCommentRequestDto request) {
         ActorInfo actor = getActorInfo();
 
         CreateCommentCommand command = CreateCommentCommand.builder()
@@ -55,8 +52,7 @@ public class CommentController {
     @PutMapping("/api/comments/{commentId}")
     public ApiResponse<CommentMutationResponseDto> updateComment(
             @PathVariable Long commentId,
-            @Valid @RequestBody UpdateCommentRequestDto request
-    ) {
+            @Valid @RequestBody UpdateCommentRequestDto request) {
         ActorInfo actor = getActorInfo();
 
         UpdateCommentCommand command = UpdateCommentCommand.builder()
@@ -139,4 +135,3 @@ public class CommentController {
         }
     }
 }
-

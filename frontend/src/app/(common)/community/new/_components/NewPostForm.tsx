@@ -16,6 +16,7 @@ import {
 } from "@/lib/post-html";
 import type { ApiResponse } from "@/types/api";
 import { POST_CATEGORIES } from "../../_types/community";
+import { CancelModal } from "@/components/shared/CancelModal";
 const CommunityRichTextEditor = dynamic(
   () =>
     import("../../_components/CommunityRichTextEditor").then((m) => ({
@@ -44,6 +45,7 @@ export function NewPostForm() {
   const [files, setFiles] = useState<FileList | null>(null);
   const [pending, startTransition] = useTransition();
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [showCancelModal, setShowCancelModal] = useState(false);
 
   function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -223,12 +225,13 @@ export function NewPostForm() {
       </div>
 
       <div className="flex justify-end gap-4">
-        <Link
-          href="/community"
+        <button
+          type="button"
+          onClick={() => setShowCancelModal(true)}
           className="rounded-xl border border-border px-6 py-3 text-sm font-black uppercase tracking-wider text-foreground transition-transform duration-200 hover:-translate-y-0.5"
         >
           취소
-        </Link>
+        </button>
         <motion.button
           type="submit"
           disabled={pending}
@@ -243,6 +246,11 @@ export function NewPostForm() {
           등록
         </motion.button>
       </div>
+      <CancelModal
+        isOpen={showCancelModal}
+        onClose={() => setShowCancelModal(false)}
+        onConfirm={() => router.push("/community")}
+      />
     </form>
   );
 }
