@@ -93,6 +93,19 @@ public class DeviceEntity extends BaseEntity {
         this.deviceType = deviceType;
     }
 
+    /**
+     * 기기 수정 — 기기종류(deviceType) 변경 불가 (기능명세 ADM-DEV-05)
+     * 수정 가능: name, modelName, macAddress, mockEndpoint, spaceId
+     */
+    public void updateWithoutType(String name, String modelName, String macAddress,
+                                  String mockEndpoint, Long spaceId) {
+        this.name = name;
+        this.modelName = modelName;
+        this.macAddress = macAddress;
+        this.mockEndpoint = mockEndpoint;
+        this.spaceId = spaceId;
+    }
+
     public void updateStatus(DeviceStatus status) {
         this.status = status;
         if (status == DeviceStatus.ONLINE) {

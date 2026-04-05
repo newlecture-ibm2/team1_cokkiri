@@ -2,6 +2,7 @@ package com.coliving.admin.device.adapter.in.web;
 
 import com.coliving.admin.device.adapter.in.web.dto.req.CreateAdminDeviceRequestDto;
 import com.coliving.admin.device.adapter.in.web.dto.req.UpdateAdminDeviceActiveRequestDto;
+import com.coliving.admin.device.adapter.in.web.dto.req.UpdateAdminDeviceRequestDto;
 import com.coliving.admin.device.adapter.in.web.dto.req.UpdateAdminDeviceStatusRequestDto;
 import com.coliving.admin.device.adapter.in.web.dto.res.AdminDeviceResponseDto;
 import com.coliving.admin.device.adapter.in.web.dto.res.CreateAdminDeviceResponseDto;
@@ -54,6 +55,22 @@ public class AdminDeviceController {
         return ResponseEntity
                 .status(HttpStatus.CREATED)
                 .body(ApiResponse.ok(responseDto, "기기가 등록되었습니다"));
+    }
+
+    /**
+     * 기기 수정 (ADM-DEV-05)
+     * PUT /api/admin/devices/{id}
+     * 수정 가능: name, spaceId, modelName, macAddress, mockEndpoint
+     * deviceType 변경 불가 — 삭제 후 재등록 필요
+     */
+    @PutMapping("/{id}")
+    public ResponseEntity<ApiResponse<AdminDeviceResponseDto>> updateDevice(
+            @PathVariable Long id,
+            @Valid @RequestBody UpdateAdminDeviceRequestDto requestDto) {
+
+        AdminDevice updated = adminDeviceUseCase.updateDevice(requestDto.toCommand(id));
+        return ResponseEntity.ok(ApiResponse.ok(
+                AdminDeviceResponseDto.from(updated), "기기 정보가 수정되었습니다"));
     }
 
     /**

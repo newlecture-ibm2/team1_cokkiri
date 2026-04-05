@@ -19,6 +19,7 @@ public class AdminDevicePersistenceAdapter implements AdminDeviceRepositoryPort 
 
     private final DeviceJpaRepository deviceJpaRepository;
     private final DeviceTypeJpaRepository deviceTypeJpaRepository;
+    private final jakarta.persistence.EntityManager entityManager;
 
     @Override
     public AdminDevice save(AdminDevice device) {
@@ -98,6 +99,16 @@ public class AdminDevicePersistenceAdapter implements AdminDeviceRepositoryPort 
     }
 
     @Override
+    public AdminDevice updateDevice(Long deviceId, String name, Long spaceId,
+                                    String modelName, String macAddress, String mockEndpoint) {
+        DeviceEntity entity = deviceJpaRepository.findById(deviceId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND, "기기를 찾을 수 없습니다"));
+        entity.updateWithoutType(name, modelName, macAddress, mockEndpoint, spaceId);
+        DeviceEntity saved = deviceJpaRepository.save(entity);
+        return toModel(saved);
+    }
+
+    @Override
     public void softDelete(Long deviceId) {
         DeviceEntity entity = deviceJpaRepository.findById(deviceId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND, "기기를 찾을 수 없습니다"));
@@ -108,6 +119,25 @@ public class AdminDevicePersistenceAdapter implements AdminDeviceRepositoryPort 
     @Override
     public boolean hasControlLogs(Long deviceId) {
         return deviceJpaRepository.existsControlLogsByDeviceId(deviceId);
+    }
+
+    @Override
+    public String findSpaceTypeById(Long spaceId) {
+        var resultList = entityManager
+                .createNativeQuery("SELECT s.type FROM spaces s WHERE s.space_id = :spaceId AND s.deleted_at IS NULL")
+                .setParameter("spaceId", spaceId)
+                .getResultList();
+        if (resultList.isEmpty()) {
+            return null;
+        }
+        return (String) resultList.get(0);
+    }
+
+    @Override
+    public String findDeviceTypeCodeById(Long deviceTypeId) {
+        return deviceTypeJpaRepository.findById(deviceTypeId)
+                .map(DeviceTypeEntity::getCode)
+                .orElse(null);
     }
 
     private AdminDevice toModel(DeviceEntity entity) {

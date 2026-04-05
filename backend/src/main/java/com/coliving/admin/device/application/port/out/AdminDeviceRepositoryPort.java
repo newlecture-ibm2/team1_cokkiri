@@ -24,7 +24,17 @@ public interface AdminDeviceRepositoryPort {
 
     void updateStatus(Long deviceId, String status);
 
+    /** 기기 수정 — deviceType 변경 없이 (ADM-DEV-05) */
+    AdminDevice updateDevice(Long deviceId, String name, Long spaceId,
+                             String modelName, String macAddress, String mockEndpoint);
+
     void softDelete(Long deviceId);
 
     boolean hasControlLogs(Long deviceId);
+
+    /** spaceId로 공간 타입(PRIVATE/COMMON) 조회. 공간이 없으면 null 반환 */
+    String findSpaceTypeById(Long spaceId);
+
+    /** deviceTypeId로 기기 종류 코드(DOOR_LOCK 등) 조회. 없으면 null 반환 */
+    String findDeviceTypeCodeById(Long deviceTypeId);
 }

@@ -3,6 +3,7 @@ package com.coliving.admin.device.application.service;
 import com.coliving.admin.device.application.command.CreateAdminDeviceCommand;
 import com.coliving.admin.device.application.command.DeleteAdminDeviceCommand;
 import com.coliving.admin.device.application.command.UpdateAdminDeviceActiveCommand;
+import com.coliving.admin.device.application.command.UpdateAdminDeviceCommand;
 import com.coliving.admin.device.application.command.UpdateAdminDeviceStatusCommand;
 import com.coliving.admin.device.application.port.in.AdminDeviceUseCase;
 import com.coliving.admin.device.application.port.in.CreateAdminDeviceUseCase;
@@ -36,6 +37,11 @@ public class AdminDeviceService implements CreateAdminDeviceUseCase, AdminDevice
             }
         }
 
+        // DOOR_LOCK은 PRIVATE 공간에만 설치 가능 (ERD 비즈니스 규칙 #14)
+        if (command.deviceTypeId() != null) {
+            validateDoorLockSpaceType(command.spaceId(), command.deviceTypeId());
+        }
+
         AdminDevice device = new AdminDevice(
                 null,
                 command.spaceId(),
@@ -60,6 +66,32 @@ public class AdminDeviceService implements CreateAdminDeviceUseCase, AdminDevice
     @Transactional(readOnly = true)
     public List<AdminDevice> getDeviceList() {
         return adminDeviceRepositoryPort.findAll();
+    }
+
+    // ── 기기 수정 (ADM-DEV-05) ──
+
+    @Override
+    @Transactional
+    public AdminDevice updateDevice(UpdateAdminDeviceCommand command) {
+        AdminDevice existing = adminDeviceRepositoryPort.findById(command.deviceId())
+                .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND, "기기를 찾을 수 없습니다"));
+
+        // MAC 주소 중복 검증 (자기 자신 제외)
+        if (command.macAddress() != null && !command.macAddress().isBlank()) {
+            if (adminDeviceRepositoryPort.existsByMacAddressAndDeviceIdNot(
+                    command.macAddress(), command.deviceId())) {
+                throw new BusinessException(ErrorCode.DUPLICATE_MAC_ADDRESS);
+            }
+        }
+
+        // DOOR_LOCK 공간 검증 — 공간이 변경되는 경우에도 PRIVATE만 허용
+        if (!existing.spaceId().equals(command.spaceId())) {
+            validateDoorLockSpaceType(command.spaceId(), existing.deviceTypeId());
+        }
+
+        return adminDeviceRepositoryPort.updateDevice(
+                command.deviceId(), command.name(), command.spaceId(),
+                command.modelName(), command.macAddress(), command.mockEndpoint());
     }
 
     // ── 활성/비활성 토글 (ADM-DEV-03) ──
@@ -116,5 +148,20 @@ public class AdminDeviceService implements CreateAdminDeviceUseCase, AdminDevice
         }
 
         adminDeviceRepositoryPort.softDelete(command.deviceId());
+    }
+
+    // ── DOOR_LOCK은 PRIVATE 공간에만 설치 가능 (ERD 비즈니스 규칙 #14) ──
+
+    private void validateDoorLockSpaceType(Long spaceId, Long deviceTypeId) {
+        String deviceTypeCode = adminDeviceRepositoryPort.findDeviceTypeCodeById(deviceTypeId);
+        if (!"DOOR_LOCK".equals(deviceTypeCode)) {
+            return; // DOOR_LOCK이 아니면 검증 불필요
+        }
+
+        String spaceType = adminDeviceRepositoryPort.findSpaceTypeById(spaceId);
+        if (!"PRIVATE".equals(spaceType)) {
+            throw new BusinessException(ErrorCode.VALIDATION_ERROR,
+                    "도어락(DOOR_LOCK)은 개인 공간(PRIVATE)에만 설치할 수 있습니다");
+        }
     }
 }

@@ -7,8 +7,9 @@ import {
   updateDeviceStatus,
   updateDeviceActive,
   deleteDevice,
+  updateDevice,
 } from "../_api";
-import type { AdminDevice } from "../_types";
+import type { AdminDevice, UpdateDeviceRequest } from "../_types";
 import { ApiError } from "@/lib/api";
 
 const STATUS_OPTIONS = [
@@ -27,6 +28,7 @@ export function DeviceListTable() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const [editing, setEditing] = useState<AdminDevice | null>(null);
 
   const loadDevices = useCallback(async () => {
     try {
@@ -97,6 +99,20 @@ export function DeviceListTable() {
     }
   };
 
+  const handleUpdate = async (data: UpdateDeviceRequest) => {
+    if (!editing) return;
+    try {
+      setError(null);
+      await updateDevice(editing.deviceId, data);
+      setSuccess(`"${data.name}" 기기 정보가 수정되었습니다`);
+      setEditing(null);
+      loadDevices();
+    } catch (err) {
+      if (err instanceof ApiError) setError(err.message);
+      else setError("수정에 실패했습니다");
+    }
+  };
+
   // ── 로딩 상태 ──
   if (loading) {
     return (
@@ -133,6 +149,15 @@ export function DeviceListTable() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* 수정 모달 */}
+      {editing && (
+        <EditDeviceModal
+          device={editing}
+          onSave={handleUpdate}
+          onClose={() => setEditing(null)}
+        />
+      )}
 
       {/* 빈 상태 */}
       {devices.length === 0 ? (
@@ -217,7 +242,7 @@ export function DeviceListTable() {
                           )}
                         </td>
 
-                        {/* 종류 */}
+                        {/* 종류 (수정 불가 표시) */}
                         <td className="px-5 py-3">
                           <span className="rounded-lg bg-primary/10 px-2 py-1 font-mono text-xs font-bold text-primary">
                             {device.deviceTypeName}
@@ -268,15 +293,24 @@ export function DeviceListTable() {
                           {device.macAddress || "—"}
                         </td>
 
-                        {/* 삭제 */}
+                        {/* 수정 + 삭제 */}
                         <td className="px-5 py-3">
-                          <button
-                            onClick={() => handleDelete(device)}
-                            className="rounded-lg border border-destructive/30 px-3 py-1 text-xs
-                              font-semibold text-destructive transition-colors hover:bg-destructive/10"
-                          >
-                            삭제
-                          </button>
+                          <div className="flex gap-2">
+                            <button
+                              onClick={() => setEditing(device)}
+                              className="rounded-lg border border-border px-3 py-1 text-xs
+                                font-semibold text-primary transition-colors hover:bg-muted/20"
+                            >
+                              수정
+                            </button>
+                            <button
+                              onClick={() => handleDelete(device)}
+                              className="rounded-lg border border-destructive/30 px-3 py-1 text-xs
+                                font-semibold text-destructive transition-colors hover:bg-destructive/10"
+                            >
+                              삭제
+                            </button>
+                          </div>
                         </td>
                       </motion.tr>
                     );
@@ -287,6 +321,121 @@ export function DeviceListTable() {
           </div>
         </>
       )}
+    </div>
+  );
+}
+
+// ── 기기 수정 모달 (ADM-DEV-05) ──
+
+function EditDeviceModal({
+  device,
+  onSave,
+  onClose,
+}: {
+  device: AdminDevice;
+  onSave: (data: UpdateDeviceRequest) => void;
+  onClose: () => void;
+}) {
+  const [name, setName] = useState(device.name);
+  const [spaceId, setSpaceId] = useState(device.spaceId);
+  const [modelName, setModelName] = useState(device.modelName || "");
+  const [macAddress, setMacAddress] = useState(device.macAddress || "");
+  const [mockEndpoint, setMockEndpoint] = useState(device.mockEndpoint || "");
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    onSave({ name, spaceId, modelName, macAddress, mockEndpoint });
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        className="w-full max-w-md rounded-[2rem] border border-border bg-background p-8 shadow-xl"
+      >
+        <h3 className="mb-1 text-lg font-black tracking-tight text-primary">기기 수정</h3>
+        <p className="mb-6 text-xs text-muted-foreground">
+          기기 종류({device.deviceTypeName})는 변경할 수 없습니다.
+          종류 변경이 필요하면 삭제 후 재등록하세요.
+        </p>
+
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <label className="block">
+            <span className="text-xs font-bold text-primary">기기명 *</span>
+            <input
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              required
+              maxLength={100}
+              className="mt-1 w-full rounded-xl border border-border bg-surface px-3 py-2
+                text-sm text-primary focus:outline-none focus:ring-2 focus:ring-ring/40"
+            />
+          </label>
+
+          <label className="block">
+            <span className="text-xs font-bold text-primary">공간 ID *</span>
+            <input
+              type="number"
+              value={spaceId}
+              onChange={(e) => setSpaceId(Number(e.target.value))}
+              required
+              className="mt-1 w-full rounded-xl border border-border bg-surface px-3 py-2
+                text-sm text-primary focus:outline-none focus:ring-2 focus:ring-ring/40"
+            />
+          </label>
+
+          <label className="block">
+            <span className="text-xs font-bold text-primary">모델명</span>
+            <input
+              value={modelName}
+              onChange={(e) => setModelName(e.target.value)}
+              maxLength={100}
+              className="mt-1 w-full rounded-xl border border-border bg-surface px-3 py-2
+                text-sm text-primary focus:outline-none focus:ring-2 focus:ring-ring/40"
+            />
+          </label>
+
+          <label className="block">
+            <span className="text-xs font-bold text-primary">MAC 주소</span>
+            <input
+              value={macAddress}
+              onChange={(e) => setMacAddress(e.target.value)}
+              maxLength={50}
+              className="mt-1 w-full rounded-xl border border-border bg-surface px-3 py-2
+                text-sm text-primary focus:outline-none focus:ring-2 focus:ring-ring/40"
+            />
+          </label>
+
+          <label className="block">
+            <span className="text-xs font-bold text-primary">Mock Endpoint</span>
+            <input
+              value={mockEndpoint}
+              onChange={(e) => setMockEndpoint(e.target.value)}
+              className="mt-1 w-full rounded-xl border border-border bg-surface px-3 py-2
+                text-sm text-primary focus:outline-none focus:ring-2 focus:ring-ring/40"
+            />
+          </label>
+
+          <div className="flex justify-end gap-3 pt-2">
+            <button
+              type="button"
+              onClick={onClose}
+              className="rounded-xl border border-border px-4 py-2 text-xs font-bold text-muted-foreground
+                transition-colors hover:bg-muted/20"
+            >
+              취소
+            </button>
+            <button
+              type="submit"
+              className="rounded-xl bg-primary px-4 py-2 text-xs font-bold text-primary-foreground
+                transition-colors hover:bg-primary/90"
+            >
+              저장
+            </button>
+          </div>
+        </form>
+      </motion.div>
     </div>
   );
 }

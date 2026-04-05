@@ -3,6 +3,7 @@ import type {
   AdminDevice,
   CreateDeviceRequest,
   CreateDeviceResponse,
+  UpdateDeviceRequest,
   DeviceType,
   SaveDeviceTypeRequest,
   Space,
@@ -38,6 +39,13 @@ export async function updateDeviceActive(deviceId: number, isActive: boolean) {
 export async function deleteDevice(deviceId: number) {
   return apiFetch<void>(`/admin/devices/${deviceId}`, {
     method: "DELETE",
+  });
+}
+
+export async function updateDevice(deviceId: number, data: UpdateDeviceRequest) {
+  return apiFetch<AdminDevice>(`/admin/devices/${deviceId}`, {
+    method: "PUT",
+    body: JSON.stringify(data),
   });
 }
 

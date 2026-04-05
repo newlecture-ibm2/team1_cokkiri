@@ -41,6 +41,14 @@ export interface CreateDeviceResponse {
   createdAt: string;
 }
 
+export interface UpdateDeviceRequest {
+  name: string;
+  spaceId: number;
+  modelName: string;
+  macAddress: string;
+  mockEndpoint: string;
+}
+
 export interface Space {
   spaceId: number;
   name: string;
