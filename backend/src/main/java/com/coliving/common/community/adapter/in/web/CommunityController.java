@@ -1,6 +1,7 @@
 package com.coliving.common.community.adapter.in.web;
 
 import com.coliving.common.community.adapter.in.web.dto.req.PostMultipartRequestDto;
+import com.coliving.common.community.adapter.in.web.dto.req.PostUpdateMultipartRequestDto;
 import com.coliving.common.community.application.command.*;
 import com.coliving.common.community.application.port.in.CommunityUseCase;
 import com.coliving.common.community.application.result.*;
@@ -13,7 +14,10 @@ import com.coliving.common.community.model.PostLink;
 import com.coliving.global.dto.ApiResponse;
 import com.coliving.global.error.BusinessException;
 import com.coliving.global.error.ErrorCode;
+import com.coliving.global.json.MultipartRetainedJsonParser;
 import com.coliving.global.storage.LocalMultipartFileStorage;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.validation.Valid;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.Authentication;
@@ -21,6 +25,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -29,10 +34,14 @@ public class CommunityController {
 
     private final CommunityUseCase useCase;
     private final LocalMultipartFileStorage multipartFileStorage;
+    private final ObjectMapper objectMapper;
 
-    public CommunityController(CommunityUseCase useCase, LocalMultipartFileStorage multipartFileStorage) {
+    public CommunityController(CommunityUseCase useCase,
+                             LocalMultipartFileStorage multipartFileStorage,
+                             ObjectMapper objectMapper) {
         this.useCase = useCase;
         this.multipartFileStorage = multipartFileStorage;
+        this.objectMapper = objectMapper;
     }
 
     @GetMapping("/api/posts")
@@ -119,6 +128,16 @@ public class CommunityController {
         return ApiResponse.ok(response);
     }
 
+    @PostMapping(value = "/api/posts/upload-editor-image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ApiResponse<PostEditorImageResponseDto> uploadEditorImage(@RequestPart("file") MultipartFile file) {
+        getActorInfo();
+        PostAttachment stored = multipartFileStorage.storeSinglePostImage(file);
+        PostEditorImageResponseDto dto = PostEditorImageResponseDto.builder()
+                .url(stored.getFileUrl())
+                .build();
+        return ApiResponse.ok(dto);
+    }
+
     @PostMapping(value = "/api/posts", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ApiResponse<PostIdResponseDto> createPost(@Valid @ModelAttribute PostMultipartRequestDto form) {
         ActorInfo actor = getActorInfo();
@@ -149,12 +168,13 @@ public class CommunityController {
     @PutMapping(value = "/api/posts/{postId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ApiResponse<PostIdResponseDto> updatePost(
             @PathVariable Long postId,
-            @Valid @ModelAttribute PostMultipartRequestDto form
+            @Valid @ModelAttribute PostUpdateMultipartRequestDto form
     ) {
         ActorInfo actor = getActorInfo();
         PostCategory category = parseCategoryOrThrow(form.getCategory());
-        List<PostAttachment> uploaded = multipartFileStorage.storePostFiles(form.getFiles());
-        List<PostAttachment> attachmentDelta = uploaded.isEmpty() ? null : uploaded;
+        List<PostAttachment> retained = MultipartRetainedJsonParser.parseListOrNull(
+                form.getAttachmentsJson(), objectMapper, new TypeReference<List<PostAttachment>>() {});
+        List<PostAttachment> newFiles = multipartFileStorage.storePostFiles(form.getFiles());
 
         UpdatePostCommand command = UpdatePostCommand.builder()
                 .actorId(actor.actorId)
@@ -163,7 +183,8 @@ public class CommunityController {
                 .category(category)
                 .title(form.getTitle())
                 .content(form.getContent())
-                .attachments(attachmentDelta)
+                .retainedAttachments(retained)
+                .newFileAttachments(newFiles.isEmpty() ? null : newFiles)
                 .links(toPostLinks(form.getLinks()))
                 .build();
 

@@ -29,6 +29,9 @@ dependencies {
     // Swagger / OpenAPI
     implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.6.0'
 
+    // HTML sanitization (community post body)
+    implementation 'com.googlecode.owasp-java-html-sanitizer:owasp-java-html-sanitizer:20240325.1'
+
     // Database
     runtimeOnly 'org.postgresql:postgresql'
 
