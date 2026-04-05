@@ -11,7 +11,7 @@ import org.hibernate.annotations.SQLRestriction;
 import java.time.OffsetDateTime;
 
 @Entity
-@Table(name = "DEVICE")
+@Table(name = "devices")
 @SQLRestriction("deleted_at IS NULL")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -35,6 +35,9 @@ public class DeviceEntity extends BaseEntity {
     @Column(name = "model_name", length = 100)
     private String modelName;
 
+    @Column(name = "mac_address", length = 50)
+    private String macAddress;
+
     @Column(name = "mock_endpoint", length = 255)
     private String mockEndpoint;
 
@@ -56,18 +59,29 @@ public class DeviceEntity extends BaseEntity {
 
     @Builder
     public DeviceEntity(Long spaceId, DeviceTypeEntity deviceType, String name,
-                        String modelName, String mockEndpoint,
+                        String modelName, String macAddress, String mockEndpoint,
                         DeviceStatus status, String currentState,
                         Boolean isActive, OffsetDateTime installedAt) {
         this.spaceId = spaceId;
         this.deviceType = deviceType;
         this.name = name;
         this.modelName = modelName;
+        this.macAddress = macAddress;
         this.mockEndpoint = mockEndpoint;
         this.status = status != null ? status : DeviceStatus.OFFLINE;
         this.currentState = currentState != null ? currentState : "{}";
         this.isActive = isActive != null ? isActive : true;
         this.installedAt = installedAt;
+    }
+
+    public void update(String name, String modelName, String macAddress,
+                       String mockEndpoint, Long spaceId, DeviceTypeEntity deviceType) {
+        this.name = name;
+        this.modelName = modelName;
+        this.macAddress = macAddress;
+        this.mockEndpoint = mockEndpoint;
+        this.spaceId = spaceId;
+        this.deviceType = deviceType;
     }
 
     public void updateStatus(DeviceStatus status) {

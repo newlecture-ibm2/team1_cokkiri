@@ -10,7 +10,7 @@ import org.hibernate.annotations.SQLRestriction;
 
 @Entity
 @Table(
-        name = "DEVICE_TYPE",
+        name = "device_types",
         uniqueConstraints = {@UniqueConstraint(columnNames = "code")}
 )
 @SQLRestriction("deleted_at IS NULL")

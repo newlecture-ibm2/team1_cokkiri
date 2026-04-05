@@ -13,4 +13,8 @@ public interface DeviceJpaRepository extends JpaRepository<DeviceEntity, Long> {
     List<DeviceEntity> findByDeviceType_Code(String deviceTypeCode);
 
     boolean existsByDeviceId(Long deviceId);
+
+    boolean existsByMacAddress(String macAddress);
+
+    boolean existsByMacAddressAndDeviceIdNot(String macAddress, Long deviceId);
 }

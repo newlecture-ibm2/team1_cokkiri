@@ -27,7 +27,7 @@ v2.0: BOOKING+CONTRACT합병, SPACE상속패턴분리, JSONB통합(첨부/링크
 `device_type_id(PK), code(UK: DOOR_LOCK,LIGHT,AIR_CONDITIONER,WASHER,DRYER,CCTV,HEATER), name, commands(JSONB), ui_type(toggle/slider/button), is_system_default, created_at, updated_at, deleted_at`
 
 ### DEVICE
-`device_id(PK), space_id(FK), device_type_id(FK), name(1~100), model_name, mock_endpoint(URL), status(ONLINE/OFFLINE/ERROR), current_state(JSONB: power,temperature,brightness등), is_active, installed_at, last_online_at, created_at, updated_at, deleted_at`
+`device_id(PK), space_id(FK), device_type_id(FK), name(1~100), model_name, mac_address(UK,50자), mock_endpoint(URL), status(ONLINE/OFFLINE/ERROR), current_state(JSONB: power,temperature,brightness등), is_active, installed_at, last_online_at, created_at, updated_at, deleted_at`
 
 ### CONTRACT (BOOKING합병)
 `contract_id(PK), user_id(FK→USERS), space_id(FK→SPACE), origin(USER_INITIATED/ADMIN_INITIATED), status(DRAFT/PENDING/APPROVED/REJECTED/CANCELLED/ACTIVE/EXPIRED/TERMINATED)`
@@ -125,7 +125,7 @@ ADMIN_INITIATED: →ACTIVE→EXPIRED/TERMINATED (신청필드 NULL가능)
 | USERS | login_id(UK), role, email | 로그인,필터,중복확인 |
 | SPACE | type+status, floor | 유형/상태/층별조회 |
 | CONTRACT | user_id+status, space_id+status, space_id(UK WHERE ACTIVE) | 현황조회,활성계약1개제한 |
-| DEVICE | space_id+is_active, device_type_id | 공간별기기,종류별 |
+| DEVICE | space_id+is_active, device_type_id, mac_address(UK) | 공간별기기,종류별,MAC중복방지 |
 | RESERVATION | space_id+date+status, user_id+status | 시설별현황,사용자별 |
 | CONTROL_LOG | user_id+created_at, device_id+created_at | 이력조회 |
 | POST | user_id, category+created_at | 작성자별,유형별최신순 |
