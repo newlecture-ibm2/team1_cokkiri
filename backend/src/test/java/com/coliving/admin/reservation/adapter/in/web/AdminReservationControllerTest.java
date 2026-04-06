@@ -3,7 +3,6 @@ package com.coliving.admin.reservation.adapter.in.web;
 import com.coliving.reservation.adapter.in.web.dto.AdminReservationResponse;
 import com.coliving.reservation.application.port.in.ReservationCommandUseCase;
 import com.coliving.reservation.application.port.in.ReservationQueryUseCase;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -55,6 +54,7 @@ class AdminReservationControllerTest {
     @Test
     @WithMockUser
     @DisplayName("새로운 예약을 승인 상태로 변경할 수 있다")
+    @SuppressWarnings("null")
     void approveReservation_Success() throws Exception {
         mockMvc.perform(patch("/api/admin/reservations/1/approve")
                         .with(csrf())
@@ -66,6 +66,7 @@ class AdminReservationControllerTest {
     @Test
     @WithMockUser
     @DisplayName("예약을 반려 처리할 수 있다")
+    @SuppressWarnings("null")
     void rejectReservation_Success() throws Exception {
         mockMvc.perform(patch("/api/admin/reservations/1/reject")
                         .with(csrf())

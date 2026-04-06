@@ -13,20 +13,22 @@ import {
   Save, 
   Send,
   Loader2,
-  Clock
+  Clock,
+  Home,
+  CreditCard,
+  User,
+  ShieldCheck,
+  Building
 } from "lucide-react";
-import { clsx, type ClassValue } from "clsx";
-import { twMerge } from "tailwind-merge";
-
-function cn(...inputs: ClassValue[]) {
-  return twMerge(clsx(inputs));
-}
+import Link from "next/link";
 
 interface ContractFormData {
   desiredStartDate: string;
   desiredDurationMonths: number;
   usagePurpose: string;
   requestNote: string;
+  address: string;
+  bankAccount: string;
   privacyAgreed: boolean;
   termsAgreed: boolean;
 }
@@ -36,6 +38,8 @@ const INITIAL_DATA: ContractFormData = {
   desiredDurationMonths: 6,
   usagePurpose: "",
   requestNote: "",
+  address: "",
+  bankAccount: "",
   privacyAgreed: false,
   termsAgreed: false,
 };
@@ -43,7 +47,7 @@ const INITIAL_DATA: ContractFormData = {
 export default function ContractApplyForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const spaceId = searchParams.get("spaceId") || "1"; // Default to 1 for demo
+  const spaceId = searchParams.get("spaceId") || "1"; 
 
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState<ContractFormData>(INITIAL_DATA);
@@ -51,50 +55,81 @@ export default function ContractApplyForm() {
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showToast, setShowToast] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
-  // Load draft from LocalStorage on mount (as fallback or initial recovery)
+  // Load draft from API & LocalStorage
   useEffect(() => {
-    const savedDraft = localStorage.getItem(`contract_draft_${spaceId}`);
-    if (savedDraft) {
+    const loadDraft = async () => {
+      setIsLoading(true);
       try {
-        setFormData(JSON.parse(savedDraft));
+        // 1. Try LocalStorage first for instant hit
+        const savedDraft = localStorage.getItem(`contract_draft_${spaceId}`);
+        if (savedDraft) {
+          setFormData(prev => ({ ...prev, ...JSON.parse(savedDraft) }));
+        }
+
+        // 2. Fetch from Server for latest truth
+        const response = await fetch(`/api/bff/contracts/draft?spaceId=${spaceId}`);
+        if (response.ok) {
+          const result = await response.json();
+          if (result.success && result.data) {
+            setFormData(prev => ({
+              ...prev,
+              desiredStartDate: result.data.desiredStartDate || prev.desiredStartDate,
+              desiredDurationMonths: result.data.desiredDurationMonths || prev.desiredDurationMonths,
+              address: result.data.address || prev.address,
+              bankAccount: result.data.bankAccount || prev.bankAccount,
+              usagePurpose: result.data.usagePurpose || prev.usagePurpose,
+              requestNote: result.data.requestNote || prev.requestNote,
+              privacyAgreed: result.data.privacyAgreed || prev.privacyAgreed,
+            }));
+          }
+        }
       } catch (e) {
-        console.error("Failed to parse draft", e);
+        console.error("Failed to load draft from server", e);
+      } finally {
+        setIsLoading(false);
       }
-    }
+    };
+
+    loadDraft();
   }, [spaceId]);
 
   // Throttled Draft Save API Call
-  const saveDraft = useCallback(async (data: ContractFormData) => {
-    setIsSaving(true);
+  const saveDraft = useCallback(async (data: ContractFormData, isManual: boolean = false) => {
+    if (isManual) setIsSaving(true);
     try {
-      await fetch('/api/v1/contracts/draft', {
+      await fetch('/api/bff/contracts/draft', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ ...data, spaceId: Number(spaceId) })
-      });
+      }).catch(err => console.warn("API Draft save error, check backend."));
       
       localStorage.setItem(`contract_draft_${spaceId}`, JSON.stringify(data));
       setLastSaved(new Date());
+      
+      if (isManual) {
+        setShowToast(true);
+        setTimeout(() => setShowToast(false), 3000);
+      }
     } catch (err) {
       console.error("Draft save failed", err);
     } finally {
-      setIsSaving(false);
+      if (isManual) setIsSaving(false);
     }
   }, [spaceId]);
 
-  // Throttling logic using useEffect
+  // Throttled Auto-save
   useEffect(() => {
-    if (step > 3) return;
-    
+    if (step > 4 || isLoading) return;
     const handler = setTimeout(() => {
-      saveDraft(formData);
+      saveDraft(formData, false);
     }, 2000);
-
     return () => clearTimeout(handler);
-  }, [formData, saveDraft, step]);
+  }, [formData, saveDraft, step, isLoading]);
 
-  const nextStep = () => setStep(s => Math.min(s + 1, 3));
+  const nextStep = () => setStep(s => Math.min(s + 1, 4));
   const prevStep = () => setStep(s => Math.max(s - 1, 1));
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
@@ -118,266 +153,391 @@ export default function ContractApplyForm() {
     setError(null);
 
     try {
-      const response = await fetch('/api/v1/contracts/submit', {
+      const response = await fetch('/api/bff/contracts/submit', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...formData, spaceId: Number(spaceId) })
+        body: JSON.stringify({ 
+          spaceId: Number(spaceId),
+          desiredStartDate: formData.desiredStartDate,
+          desiredDurationMonths: Number(formData.desiredDurationMonths),
+          usagePurpose: formData.usagePurpose,
+          requestNote: formData.requestNote,
+          address: formData.address,
+          bankAccount: formData.bankAccount,
+          privacyAgreed: formData.privacyAgreed
+        })
       });
 
       if (!response.ok) throw new Error("Submission failed");
       
       localStorage.removeItem(`contract_draft_${spaceId}`);
-      setStep(4);
+      setStep(5);
     } catch (err) {
-      setError("신청 도중 오류가 발생했습니다. 모든 필드를 올바르게 입력했는지 확인해주세요.");
+      setError("신청 도중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.");
     } finally {
       setIsSubmitting(false);
     }
   };
 
+  const steps = [
+    { title: "SCHEDULE", icon: Calendar },
+    { title: "DETAILS", icon: Home },
+    { title: "PAYMENT", icon: CreditCard },
+    { title: "AGREEMENT", icon: ShieldCheck }
+  ];
+
   return (
-    <div className="max-w-2xl mx-auto p-6 bg-white rounded-2xl shadow-xl border border-slate-100">
-      {/* Header & Progress */}
-      <div className="mb-8">
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-2xl font-bold text-slate-800 flex items-center gap-2">
-            {step < 4 ? <FileText className="w-6 h-6 text-indigo-600" /> : <CheckCircle2 className="w-6 h-6 text-green-500" />}
-            {step === 4 ? "신청 완료" : "계약 신청하기"}
-          </h2>
-          {step < 4 && (
-            <div className="flex items-center text-xs font-medium text-slate-400 gap-2">
-              {isSaving ? (
-                <span className="flex items-center gap-1"><Loader2 className="w-3 h-3 animate-spin"/> 저장 중...</span>
-              ) : lastSaved ? (
-                <span className="flex items-center gap-1 text-indigo-500"><Save className="w-3 h-3"/> {lastSaved.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})} 저장됨</span>
-              ) : (
-                <span className="flex items-center gap-1"><Clock className="w-3 h-3"/> 실시간 저장 중</span>
-              )}
-            </div>
-          )}
-        </div>
-        
-        {step < 4 && (
-          <div className="relative h-2 bg-slate-100 rounded-full overflow-hidden">
-            <motion.div 
-              className="absolute left-0 top-0 h-full bg-indigo-600"
-              initial={{ width: "33%" }}
-              animate={{ width: `${(step / 3) * 100}%` }}
-              transition={{ duration: 0.3 }}
-            />
+    <div className="max-w-[900px] mx-auto">
+      {/* Editorial Step Tracker */}
+      {step < 5 && (
+        <div className="flex flex-col md:flex-row md:items-center justify-between mb-12 gap-8">
+          <div className="flex items-center gap-10 overflow-x-auto pb-4 md:pb-0 scrollbar-hide">
+            {steps.map((s, i) => (
+              <div key={i} className="flex items-center gap-4 group">
+                <span className={`text-[10px] font-black tracking-[0.3em] transition-colors ${
+                  step >= i + 1 ? "text-primary" : "text-primary/20"
+                }`}>
+                  {String(i + 1).padStart(2, '0')}
+                </span>
+                <span className={`text-[10px] font-black tracking-[0.2em] transition-all whitespace-nowrap ${
+                  step === i + 1 ? "text-accent" : "text-primary/10"
+                }`}>
+                  {s.title}
+                </span>
+                {i < steps.length - 1 && (
+                  <div className={`w-8 h-[1px] ${step > i + 1 ? "bg-accent" : "bg-primary/5"}`} />
+                )}
+              </div>
+            ))}
           </div>
-        )}
-      </div>
+        </div>
+      )}
 
-      <form onSubmit={handleSubmit}>
-        <AnimatePresence mode="wait">
-          {step === 1 && (
-            <motion.div
-              key="step1"
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -20 }}
-              className="space-y-6"
+      {/* Main Content Area */}
+      <div className="relative">
+        <div className="bg-white rounded-[3rem] border border-primary/5 shadow-2xl shadow-primary/5 p-10 md:p-20 relative overflow-hidden">
+          {/* Top Right Save Button */}
+          {step < 5 && (
+            <button 
+              type="button"
+              onClick={() => saveDraft(formData, true)}
+              disabled={isSaving || isLoading}
+              className="absolute top-8 right-8 z-10 flex items-center gap-2 px-6 py-3 bg-primary/5 hover:bg-accent hover:text-white rounded-full text-[10px] font-black tracking-[0.2em] uppercase transition-all group disabled:opacity-50"
             >
-              <div className="space-y-2">
-                <label className="text-sm font-semibold text-slate-700 flex items-center gap-1">
-                  <Calendar className="w-4 h-4 text-indigo-500" /> 희망 입주 예정일
-                </label>
-                <input
-                  type="date"
-                  name="desiredStartDate"
-                  value={formData.desiredStartDate}
-                  onChange={handleInputChange}
-                  required
-                  className="w-full p-3 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all"
-                />
-                <p className="text-xs text-slate-400">* 입주 가능일은 관리자 승인 시 확정됩니다.</p>
-              </div>
-
-              <div className="space-y-2">
-                <label className="text-sm font-semibold text-slate-700">희망 거주 기간 (개월)</label>
-                <select
-                  name="desiredDurationMonths"
-                  value={formData.desiredDurationMonths}
-                  onChange={handleInputChange}
-                  className="w-full p-3 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 bg-white"
-                >
-                  {[3, 6, 12, 24].map(m => (
-                    <option key={m} value={m}>{m}개월</option>
-                  ))}
-                </select>
-              </div>
-
-              <button 
-                type="button" 
-                onClick={nextStep}
-                disabled={!formData.desiredStartDate}
-                className="w-full py-4 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold transition-all shadow-lg shadow-indigo-200 flex justify-center items-center gap-2 group disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                다음 단계로 <ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-              </button>
-            </motion.div>
+              {(isSaving || isLoading) ? (
+                <Loader2 className="w-3 h-3 animate-spin"/>
+              ) : (
+                <Save className="w-3 h-3 transition-transform group-hover:scale-110" />
+              )}
+              {isLoading ? "LOADING..." : "SAVE DRAFT"}
+            </button>
           )}
 
-          {step === 2 && (
-            <motion.div
-              key="step2"
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -20 }}
-              className="space-y-6"
-            >
-              <div className="space-y-2">
-                <label className="text-sm font-semibold text-slate-700">사용 목적</label>
-                <input
-                  type="text"
-                  name="usagePurpose"
-                  value={formData.usagePurpose}
-                  onChange={handleInputChange}
-                  placeholder="예: 학업, 직장 출퇴근용, 한달 살기 등"
-                  className="w-full p-3 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all"
-                />
-              </div>
+          {/* Editorial Background Element */}
+        {/* Editorial Background Element */}
+        {step < 5 && (
+          <span className="absolute -top-10 -right-10 text-[20vw] font-black text-primary/[0.02] select-none pointer-events-none">
+            {String(step).padStart(2, '0')}
+          </span>
+        )}
 
-              <div className="space-y-2">
-                <label className="text-sm font-semibold text-slate-700">추가 요청 사항</label>
-                <textarea
-                  name="requestNote"
-                  value={formData.requestNote}
-                  onChange={handleInputChange}
-                  rows={4}
-                  placeholder="관리자에게 전달하고 싶은 내용을 입력해주세요."
-                  className="w-full p-3 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all resize-none"
-                />
-              </div>
+        <form onSubmit={handleSubmit}>
+          <AnimatePresence mode="wait">
+            {step === 1 && (
+              <motion.div
+                key="step1"
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+                transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+                className="space-y-12"
+              >
+                <div className="space-y-4">
+                  <span className="text-[10px] font-black uppercase tracking-[0.4em] text-accent">STEP 01</span>
+                  <h2 className="text-5xl font-black text-primary tracking-tighter uppercase leading-[0.85]">
+                    SELECT YOUR<br />SCHEDULE
+                  </h2>
+                  <p className="text-lg font-medium tracking-tight opacity-50 max-w-md">
+                    코끼리 하우스에서의 생활이 시작되는 시점과 기간을 선택해주세요.
+                  </p>
+                </div>
 
-              <div className="grid grid-cols-2 gap-4 pt-2">
-                <button 
-                  type="button" 
-                  onClick={prevStep}
-                  className="py-4 border border-slate-200 hover:bg-slate-50 text-slate-600 rounded-xl font-bold transition-all flex justify-center items-center gap-2 group"
-                >
-                  <ChevronLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" /> 이전
-                </button>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-12 pt-8">
+                  <div className="space-y-4">
+                    <label className="text-[10px] font-black tracking-[0.3em] uppercase text-primary/40 block">
+                      START DATE
+                    </label>
+                    <input
+                      type="date"
+                      name="desiredStartDate"
+                      value={formData.desiredStartDate}
+                      onChange={handleInputChange}
+                      required
+                      className="w-full bg-primary/5 border-none p-6 rounded-2xl text-lg font-bold focus:ring-2 focus:ring-accent transition-all"
+                    />
+                  </div>
+
+                  <div className="space-y-4">
+                    <label className="text-[10px] font-black tracking-[0.3em] uppercase text-primary/40 block">
+                      DURATION (MONTHS)
+                    </label>
+                    <select
+                      name="desiredDurationMonths"
+                      value={formData.desiredDurationMonths}
+                      onChange={handleInputChange}
+                      className="w-full bg-primary/5 border-none p-6 rounded-2xl text-lg font-bold focus:ring-2 focus:ring-accent transition-all appearance-none"
+                    >
+                      {[3, 6, 12, 24].map(m => (
+                        <option key={m} value={m}>{m} MONTHS</option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+
                 <button 
                   type="button" 
                   onClick={nextStep}
-                  className="py-4 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold transition-all shadow-lg shadow-indigo-200 flex justify-center items-center gap-2 group"
+                  disabled={!formData.desiredStartDate}
+                  className="w-full py-8 bg-primary hover:bg-accent text-background rounded-full font-black tracking-[0.2em] transition-all flex justify-center items-center gap-4 disabled:opacity-20"
                 >
-                  다음 단계로 <ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                  PROCEED TO DETAILS <ChevronRight className="w-5 h-5" />
                 </button>
-              </div>
-            </motion.div>
-          )}
+              </motion.div>
+            )}
 
-          {step === 3 && (
-            <motion.div
-              key="step3"
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -20 }}
-              className="space-y-8"
-            >
-              <div className="space-y-4">
-                <h3 className="text-lg font-bold text-slate-800">주의문구 동의</h3>
-                
-                <div className="p-4 bg-amber-50 border border-amber-100 rounded-xl space-y-3">
-                  <div className="flex gap-2 text-amber-700">
-                    <AlertCircle className="w-5 h-5 shrink-0" />
-                    <p className="text-sm font-medium">신청 전 다음 내용을 반드시 확인해주세요.</p>
-                  </div>
-                  <ul className="text-xs text-amber-800 space-y-1 list-disc pl-4 opacity-80">
-                    <li>입주 확정은 심사 후 최종 계약서 작성 시 완료됩니다.</li>
-                    <li>승인 후 24시간 내에 답변이 없을 경우 신청이 취소될 수 있습니다.</li>
-                    <li>신청 정보가 허위일 경우 입주가 불가할 수 있습니다.</li>
-                  </ul>
+            {step === 2 && (
+              <motion.div
+                key="step2"
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+                className="space-y-12"
+              >
+                <div className="space-y-4">
+                  <span className="text-[10px] font-black uppercase tracking-[0.4em] text-accent">STEP 02</span>
+                  <h2 className="text-5xl font-black text-primary tracking-tighter uppercase leading-[0.85]">
+                    RESIDENT<br />PROFILE
+                  </h2>
+                  <p className="text-lg font-medium tracking-tight opacity-50">
+                    우리는 거주자 한 분 한 분의 이야기를 소중히 생각합니다.
+                  </p>
                 </div>
 
-                <div className="space-y-3 pt-2">
-                  <label className="flex items-start gap-3 p-3 rounded-xl hover:bg-slate-50 cursor-pointer transition-colors group">
+                <div className="space-y-10 pt-4">
+                  <div className="space-y-4">
+                    <label className="text-[10px] font-black tracking-[0.3em] uppercase text-primary/40 block">
+                      CURRENT ADDRESS
+                    </label>
+                    <input
+                      type="text"
+                      name="address"
+                      value={formData.address}
+                      onChange={handleInputChange}
+                      placeholder="심사용 서류에 기재될 현재 주소를 입력하세요."
+                      className="w-full bg-primary/5 border-none p-6 rounded-2xl text-lg font-bold focus:ring-2 focus:ring-accent transition-all"
+                    />
+                  </div>
+
+                  <div className="space-y-4">
+                    <label className="text-[10px] font-black tracking-[0.3em] uppercase text-primary/40 block">
+                      USAGE PURPOSE
+                    </label>
+                    <input
+                      type="text"
+                      name="usagePurpose"
+                      value={formData.usagePurpose}
+                      onChange={handleInputChange}
+                      placeholder="입주 목적을 간단히 적어주세요."
+                      className="w-full bg-primary/5 border-none p-6 rounded-2xl text-lg font-bold focus:ring-2 focus:ring-accent transition-all"
+                    />
+                  </div>
+
+                  <div className="space-y-4">
+                    <label className="text-[10px] font-black tracking-[0.3em] uppercase text-primary/40 block">
+                      ADDITIONAL NOTES
+                    </label>
+                    <textarea
+                      name="requestNote"
+                      value={formData.requestNote}
+                      onChange={handleInputChange}
+                      rows={4}
+                      className="w-full bg-primary/5 border-none p-6 rounded-2xl text-lg font-bold focus:ring-2 focus:ring-accent transition-all resize-none"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <button type="button" onClick={prevStep} className="py-8 border-2 border-primary/10 text-primary rounded-full font-black tracking-[0.2em] transition-all hover:bg-primary/5">
+                    GO BACK
+                  </button>
+                  <button type="button" onClick={nextStep} className="py-8 bg-primary hover:bg-accent text-background rounded-full font-black tracking-[0.2em] transition-all">
+                    NEXT STEP
+                  </button>
+                </div>
+              </motion.div>
+            )}
+
+            {step === 3 && (
+              <motion.div
+                key="step3"
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+                className="space-y-12"
+              >
+                <div className="space-y-4">
+                  <span className="text-[10px] font-black uppercase tracking-[0.4em] text-accent">STEP 03</span>
+                  <h2 className="text-5xl font-black text-primary tracking-tighter uppercase leading-[0.85]">
+                    BILLING &<br />REFUND
+                  </h2>
+                </div>
+
+                <div className="p-8 bg-primary/5 rounded-[2rem] border-l-4 border-accent space-y-4">
+                  <p className="text-sm font-bold tracking-tight opacity-70">
+                    입력하신 계좌 정보는 입주 심사 승인 및 계약 진행 시 대조용으로 활용되며, 
+                    퇴거 시 보증금 반환 계좌로 우선 사용됩니다.
+                  </p>
+                </div>
+
+                <div className="space-y-4">
+                  <label className="text-[10px] font-black tracking-[0.3em] uppercase text-primary/40 block">
+                    BANK ACCOUNT INFO
+                  </label>
+                  <input
+                    type="text"
+                    name="bankAccount"
+                    value={formData.bankAccount}
+                    onChange={handleInputChange}
+                    placeholder="은행명 및 계좌번호를 입력하세요."
+                    className="w-full bg-primary/5 border-none p-6 rounded-2xl text-lg font-bold focus:ring-2 focus:ring-accent transition-all"
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <button type="button" onClick={prevStep} className="py-8 border-2 border-primary/10 text-primary rounded-full font-black tracking-[0.2em] transition-all hover:bg-primary/5">
+                    GO BACK
+                  </button>
+                  <button type="button" onClick={nextStep} disabled={!formData.bankAccount} className="py-8 bg-primary hover:bg-accent text-background rounded-full font-black tracking-[0.2em] transition-all disabled:opacity-20">
+                    NEXT STEP
+                  </button>
+                </div>
+              </motion.div>
+            )}
+
+            {step === 4 && (
+              <motion.div
+                key="step4"
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+                className="space-y-12"
+              >
+                <div className="space-y-4">
+                  <span className="text-[10px] font-black uppercase tracking-[0.4em] text-accent">FINAL STEP</span>
+                  <h2 className="text-5xl font-black text-primary tracking-tighter uppercase leading-[0.85]">
+                    REVIEW &<br />SUBMIT
+                  </h2>
+                </div>
+
+                <div className="space-y-4 pt-4">
+                  <label className="flex items-center gap-6 p-8 bg-primary/5 rounded-[2rem] cursor-pointer group transition-all hover:bg-primary/10">
                     <input 
                       type="checkbox" 
                       name="privacyAgreed" 
                       checked={formData.privacyAgreed}
                       onChange={handleInputChange}
-                      className="mt-1 w-4 h-4 rounded text-indigo-600 focus:ring-indigo-500 border-slate-300" 
+                      className="w-8 h-8 rounded-full border-primary/20 text-accent focus:ring-0" 
                     />
-                    <span className="text-sm text-slate-600 group-hover:text-slate-900 transition-colors">
-                      개인정보 수집 및 이용에 동의합니다. <span className="text-rose-500 font-bold">(필수)</span>
-                    </span>
+                    <span className="text-[10px] font-black tracking-[0.3em] uppercase">개인정보 수집 및 이용 동의 (필수)</span>
                   </label>
-                  <label className="flex items-start gap-3 p-3 rounded-xl hover:bg-slate-50 cursor-pointer transition-colors group">
+                  <label className="flex items-center gap-6 p-8 bg-primary/5 rounded-[2rem] cursor-pointer group transition-all hover:bg-primary/10">
                     <input 
                       type="checkbox" 
                       name="termsAgreed" 
                       checked={formData.termsAgreed}
                       onChange={handleInputChange}
-                      className="mt-1 w-4 h-4 rounded text-indigo-600 focus:ring-indigo-500 border-slate-300" 
+                      className="w-8 h-8 rounded-full border-primary/20 text-accent focus:ring-0" 
                     />
-                    <span className="text-sm text-slate-600 group-hover:text-slate-900 transition-colors">
-                      코리빙 입주 주의사항을 모두 확인하였습니다. <span className="text-rose-500 font-bold">(필수)</span>
-                    </span>
+                    <span className="text-[10px] font-black tracking-[0.3em] uppercase">주의사항 확인 및 입주 서약 (필수)</span>
                   </label>
                 </div>
-              </div>
 
-              {error && (
-                <div className="p-3 bg-rose-50 text-rose-600 text-sm rounded-lg flex items-center gap-2">
-                  <AlertCircle className="w-4 h-4" /> {error}
+                {error && (
+                  <div className="p-6 bg-rose-50 text-rose-600 text-[10px] font-black tracking-[0.2em] rounded-2xl flex items-center gap-4">
+                    <AlertCircle className="w-5 h-5" /> {error.toUpperCase()}
+                  </div>
+                )}
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <button type="button" onClick={prevStep} className="py-8 border-2 border-primary/10 text-primary rounded-full font-black tracking-[0.2em] transition-all hover:bg-primary/5">
+                    GO BACK
+                  </button>
+                  <button 
+                    type="submit"
+                    disabled={isSubmitting || !formData.privacyAgreed || !formData.termsAgreed}
+                    className="py-8 bg-primary text-background rounded-full font-black tracking-[0.2em] flex justify-center items-center gap-4 hover:bg-accent transition-all disabled:opacity-20"
+                  >
+                    {isSubmitting ? <Loader2 className="w-6 h-6 animate-spin" /> : <>SUBMIT APPLICATION <Send className="w-5 h-5" /></>}
+                  </button>
                 </div>
-              )}
+              </motion.div>
+            )}
 
-              <div className="grid grid-cols-2 gap-4">
-                <button 
-                  type="button" 
-                  onClick={prevStep}
-                  className="py-4 border border-slate-200 hover:bg-slate-50 text-slate-600 rounded-xl font-bold transition-all flex justify-center items-center gap-2 group"
-                >
-                  <ChevronLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" /> 이전
-                </button>
-                <button 
-                  type="submit"
-                  disabled={isSubmitting}
-                  className="py-4 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold transition-all shadow-lg shadow-indigo-200 flex justify-center items-center gap-2 group disabled:bg-slate-400"
-                >
-                  {isSubmitting ? (
-                    <Loader2 className="w-5 h-5 animate-spin" />
-                  ) : (
-                    <>최종 신청 제출 <Send className="w-5 h-5 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" /></>
-                  )}
-                </button>
-              </div>
-            </motion.div>
-          )}
-
-          {step === 4 && (
-            <motion.div
-              key="success"
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              className="py-12 flex flex-col items-center text-center space-y-6"
-            >
-              <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center">
-                <CheckCircle2 className="w-10 h-10 text-green-500" />
-              </div>
-              <div className="space-y-2">
-                <h3 className="text-2xl font-bold text-slate-800">계약 신청이 접수되었습니다!</h3>
-                <p className="text-slate-500">
-                  담당 매니저가 심사 후 1~2일 내로 연락드릴 예정입니다.<br/>
-                  진행 현황은 마이페이지에서 확인하실 수 있습니다.
-                </p>
-              </div>
-              <button 
-                type="button" 
-                onClick={() => router.push("/my-contracts")}
-                className="px-8 py-3 bg-indigo-600 text-white rounded-xl font-bold shadow-lg shadow-indigo-100 hover:bg-indigo-700 transition-colors"
+            {step === 5 && (
+              <motion.div
+                key="success"
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="py-20 flex flex-col items-center text-center space-y-12"
               >
-                신청 내역 확인하러 가기
-              </button>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </form>
+                <div className="w-40 h-40 bg-accent/10 rounded-full flex items-center justify-center">
+                  <CheckCircle2 className="w-20 h-20 text-accent" />
+                </div>
+                
+                <div className="space-y-6">
+                  <h2 className="text-5xl font-black text-primary tracking-tighter uppercase leading-[0.85]">
+                    SUCCESSFULLY<br />SUBMITTED
+                  </h2>
+                  <p className="text-xl font-medium tracking-tight opacity-50 max-w-sm mx-auto whitespace-pre-wrap">
+                    심사 결과는 1-2일 내로 전달됩니다.{"\n"}대시보드에서 상태를 확인하세요.
+                  </p>
+                </div>
+
+                <Link 
+                  href="/my-contracts"
+                  className="px-16 py-8 bg-primary text-background rounded-full font-black tracking-[0.2em] uppercase transition-all hover:scale-105 shadow-2xl shadow-primary/20"
+                >
+                  GO TO DASHBOARD
+                </Link>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </form>
+        </div>
+      </div>
+
+      {/* Premium Toast Component */}
+      <AnimatePresence>
+        {showToast && (
+          <motion.div 
+            initial={{ opacity: 0, y: 100 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.9 }}
+            className="fixed bottom-10 left-1/2 -translate-x-1/2 z-[100]"
+          >
+            <div className="bg-primary text-background px-10 py-5 rounded-full shadow-2xl flex items-center gap-6 border-2 border-white/10">
+              <div className="w-10 h-10 rounded-full bg-accent flex items-center justify-center">
+                <Save className="w-5 h-5 text-white" />
+              </div>
+              <div className="flex flex-col pr-6">
+                <span className="text-[10px] font-black tracking-[0.3em] uppercase opacity-40 leading-none mb-1">DRAFT SYNCED</span>
+                <span className="text-sm font-bold tracking-tight">계약서 신청 내용이 임시 저장되었습니다.</span>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
+
