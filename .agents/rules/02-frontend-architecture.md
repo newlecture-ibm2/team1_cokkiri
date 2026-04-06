@@ -9,7 +9,7 @@ trigger: always_on
 ### 1. App Router Co-location (콜로케이션 방식 필수 준수)
 - **도메인 캡슐화:** 특정 페이지(예: 관리자의 기기 목록)에서만 사용되는 컴포넌트, 훅, API 로직은 절대 글로벌 `components/` 폴더에 생성하지 않습니다. 
 - **내부 폴더 분리:** 반드시 해당 페이지 도메인 폴더 내부(예: `app/(admin)/devices/`)에 `_components`, `_hooks`, `_api`, `_types` 라는 껌딱지(언더스코어) 폴더를 만들어 라우팅을 우회하고 로직을 숨깁니다.
-- **예외 (글로벌 UI):** 여러 도메인에서 재사용 가능한 '껍데기 컴포넌트(Button, Modal, Input, Layout 등)'는 오직 `src/components/ui` 폴더에서만 관리합니다. 
+- **예외 (글로벌 UI):** 원자 UI(Button, Modal, Input 등)는 `src/components/ui`. **헤더·푸터·사이드바·PageLayout·ScrollToTop** 등 앱 뼈대는 **`src/components/layout`** 에만 둔다. (`ui-guideline.md` 와 동일) 
 
 ### 2. Tailwind CSS v4 Strict Guidelines (스타일링 룰)
 - **Hex 코드 및 하드코딩 절대 금지:** 컴포넌트를 만들 때 임의의 색상 값(예: `text-[#2c3424]`, `bg-[#4c583e]`)을 강제로 주입하지 않습니다.
@@ -18,8 +18,10 @@ trigger: always_on
 - 복잡한 클래스 조합 시 `clsx`와 `tailwind-merge`를 섞어쓰는 shadcn/ui의 기본 원칙을 따릅니다.
 
 ### 3. Data Fetching (BFF Pattern)
-- 브라우저 클라이언트(`"use client"`)에서 Spring Boot 백엔드 서버 주소(`http://backend:8080`)로 직접 `fetch`를 날리는 것을 엄격히 금지합니다.
-- 반드시 Next.js 내부 API Routes (`/api/bff/[...path]`)를 거치거나 Server Component(RSC) 환경에서 우회 통신(Proxy)하여 브라우저에서 서버 IP가 노출되지 않도록 설계합니다.
+- 브라우저 클라이언트(`"use client"`)에서 Spring Boot 백엔드 호스트로 직접 `fetch`하는 것을 금지한다.
+- **`/api/bff/...`** 만 호출한다. BFF는 Spring **`/api/...`** 와 **동일 경로**로 프록시한다(역할 프리픽스 `/bff/user/` 등은 필수 아님 — `01-general-convention.md` §1-1).
+- `lib/api.ts` 의 `apiFetch` 등: `BASE_URL` + `/bff` + 백엔드와 동일한 세그먼트(예: `/rooms`, `/posts`, `/vocs`), `credentials: 'include'` 로 httpOnly 쿠키 전달.
+- Server Component에서는 `INTERNAL_BACKEND_URL` 로 서버 전용 호출 가능하되, 브라우저에 백엔드 URL이 노출되면 안 된다.
 
 ### 4. Responsive & Typography Rules (UI 가이드라인 강제 룰)
 - **적응형 여백 (Adaptive Spacing):** 모바일 환경(768px 미만)에서는 데스크톱(pt-32, mb-24 등) 대비 상하 여백을 **50% 수준**(`pt-16`, `mb-12` 등)으로 지능적으로 축소하여 좁은 화면의 해상도를 높여야 합니다. 모바일 마진은 최소 `px-6`를 보장합니다.

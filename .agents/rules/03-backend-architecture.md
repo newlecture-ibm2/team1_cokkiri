@@ -232,7 +232,14 @@ src/main/java/com/coliving/
 
 ---
 
-## 5. 트랜잭션 및 JPA 영속화 룰
+## 5. 트랜잭션 및 JPA 영속화 룰 (마스터)
+
+이 절은 **영속화(`save`) 정책의 단일 기준**이다. `01-general-convention.md` §2는 여기를 참조한다.
 
 - **Service 계층:** 생성/변경/Soft Delete Service 메서드에 반드시 **`@Transactional`** 명시. (영속성 컨텍스트 보장)
-- **Persistence Adapter:** 더티 체킹에만 의존 금지. 변경 후 반드시 **`jpaRepository.save(entity)`를 명시적으로 호출**. 어댑터가 포트의 요청을 받아 DB에 영속시켰다는 맥락을 명확히 전달하며, 예기치 않은 트랜잭션 롤백 누락을 방지합니다.
+- **Persistence Adapter:** 더티 체킹에만 의존 금지. **신규 INSERT·필드 변경 UPDATE·`softDelete()` 후** 모두 **`jpaRepository.save(entity)`를 명시적으로 호출**한다. 어댑터가 포트 요청을 DB에 반영했음을 코드로 명확히 한다.
+- **팀 DTO 표준:** Web 계층 요청/응답은 **`XxxRequestDto` / `XxxResponseDto`** 접미사를 기본으로 한다(§1-7 표와 함께 적용).
+
+### 5-1. 내 활동 이력 API
+- `user/history/` 등 **GET `/api/users/me/history`** 구현 시, 타 도메인은 **식별자·조회 전용 포트**로만 연동하고, 타 도메인 **Service를 직접 호출해 쓰기**하지 않는다(도메인 협업 룰과 일치).
+

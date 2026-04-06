@@ -8,8 +8,10 @@ v2.0: BOOKING+CONTRACT합병, SPACE상속패턴분리, JSONB통합(첨부/링크
 
 ## 1. 테이블 정의
 
+> **물리 테이블명:** PostgreSQL/JPA에서는 **`users`, `spaces`, `posts`** 등 **복수형 `snake_case`** 를 쓴다. 아래 `### SPACE` 등은 **논리 블록 제목**이며, `@Table(name="spaces")` 와 대응한다.
+
 ### USERS
-`user_id(PK), login_id(UK,4~50), password_hash(BCrypt), name, birth_date(YYMMDD), gender(MALE/FEMALE), nationality, phone, email, role(USER/RESIDENT/ADMIN), status(ACTIVE/DEACTIVATED), profile_image, created_at, updated_at, deleted_at`
+`user_id(PK), login_id(UK,4~50), password_hash(BCrypt), name, birth_date(YYMMDD), gender(MALE/FEMALE), nationality, phone, email, phone_verified_at(TIMESTAMPTZ,nullable), email_verified_at(TIMESTAMPTZ,nullable), role(USER/RESIDENT/ADMIN), status(ACTIVE/DEACTIVATED), profile_image, created_at, updated_at, deleted_at`
 
 ### SPACE (부모)
 `space_id(PK), name(UK,1~100), type(PRIVATE/COMMON), status(AVAILABLE/OCCUPIED/MAINTENANCE), floor, area(㎡), amenities(JSON), description, position_x, position_y, created_at, updated_at, deleted_at`
@@ -30,7 +32,7 @@ v2.0: BOOKING+CONTRACT합병, SPACE상속패턴분리, JSONB통합(첨부/링크
 `device_id(PK), space_id(FK), device_type_id(FK), name(1~100), model_name, mock_endpoint(URL), status(ONLINE/OFFLINE/ERROR), current_state(JSONB: power,temperature,brightness등), is_active, installed_at, last_online_at, created_at, updated_at, deleted_at`
 
 ### CONTRACT (BOOKING합병)
-`contract_id(PK), user_id(FK→USERS), space_id(FK→SPACE), origin(USER_INITIATED/ADMIN_INITIATED), status(DRAFT/PENDING/APPROVED/REJECTED/CANCELLED/ACTIVE/EXPIRED/TERMINATED)`
+`contract_id(PK), user_id(FK→USERS), space_id(FK→SPACE), origin(USER_INITIATED/ADMIN_INITIATED), status(DRAFT/PENDING/APPROVED/REJECTED/CANCELLED/ACTIVE/EXPIRED/TERMINATED)` — **초안/제출 구분은 `status`만 사용**(별도 `is_draft` 컬럼 없음)
 신청필드: `address, bank_account, desired_start_date, desired_duration_months, contract_language(KO/EN), privacy_agreed, request_note(500자)`
 확정필드: `start_date, end_date, monthly_rent, deposit, special_terms, approved_by(FK→USERS), rejected_reason, contracted_at`
 `created_at, updated_at, deleted_at`
@@ -55,10 +57,10 @@ JSONB형식: attachments=[{file_url,file_name,file_size}], links=[{url}]
 ### COMMENT
 `comment_id(PK), post_id(FK), user_id(FK), content, created_at, updated_at, deleted_at`
 
-### VOC (민원)
+### VOC (민원) — REST: 사용자 `POST/GET /api/vocs`, `GET /api/vocs/my`, 관리자 `GET /api/admin/vocs` … (`api-specification.md` §9·§14.4)
 `voc_id(PK), user_id(FK), category(FACILITY/NOISE/DEVICE/OTHER), title, content, attachments(JSONB), status(OPEN/IN_PROGRESS/RESOLVED/CANCELLED), admin_reply, reply_user_id(FK→USERS), replied_at, created_at, updated_at, deleted_at`
 
-### NOTIFICATION
+### NOTIFICATION — REST: `GET/PATCH /api/notifications` (`api-specification.md` §10, `functional-specification.md` §1.11)
 `notification_id(PK), user_id(FK), type(CONTRACT_APPROVED/REJECTED/ACTIVATED/EXPIRED, RESERVATION_APPROVED, VOC_REPLIED), title, message, reference_type(CONTRACT/RESERVATION/VOC), reference_id, is_read, created_at, updated_at, deleted_at`
 
 ### ROLE_CHANGE_LOG

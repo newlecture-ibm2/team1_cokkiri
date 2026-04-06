@@ -89,7 +89,7 @@ scripts: dev→port3000, start→port3111
 ## 4. 환경변수
 
 ### application.yml (공통)
-`spring.jpa.hibernate.ddl-auto:validate`, `open-in-view:false`, `jackson.time-zone:Asia/Seoul`, `property-naming-strategy:SNAKE_CASE`
+`spring.jpa.hibernate.ddl-auto:validate`, `open-in-view:false`, `jackson.time-zone:Asia/Seoul` — REST JSON은 **camelCase 기본**(snake_case 네이밍 전략 설정 금지, `03-backend-architecture.md` §4와 동일)
 `multipart: max-file-size:15MB, max-request-size:50MB` | `server.port:8080` | swagger-ui:`/swagger-ui.html`
 
 ### application-dev.yml

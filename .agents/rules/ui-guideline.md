@@ -16,13 +16,13 @@ trigger: always_on
 ### 📂 폴더 구조 및 소유권
 - **`app/(domain)/`**: 각 팀원별 도메인 그룹 폴더 (예: `(auth)`, `(listings)`, `(community)`).
 - **`components/ui/`**: `shadcn/ui` 기반의 순수 UI 원자 컴포넌트. (모든 팀원 공유)
-- **`components/shared/`**: Header, Footer 등 전역 공유 컴포넌트.
+- **`components/layout/`**: Header, Footer, Sidebar, NavBar, PageLayout, ScrollToTop 등 전역 레이아웃·껍데기.
 - **`lib/`**: 공통 유틸리티 및 API 클라이언트 설정.
 
 ### 🤝 작업 규칙
 1. **Colocation**: 특정 페이지에서만 쓰이는 컴포넌트는 해당 페이지 폴더(`_components/`)에 두어 전역 폴더 오염을 방지합니다.
 2. **Server First**: 모든 페이지와 컴포넌트는 기본적으로 **Server Component**로 작성합니다. 인터랙션(State, Event)이 필요한 경우에만 최소 단위로 분리하여 `'use client'`를 적용합니다.
-3. **Domain Barrier**: 타 도메인의 내부 컴포넌트를 직접 참조하지 않습니다. 필요 시 `components/shared`로 격상 후 공유합니다.
+3. **Domain Barrier**: 타 도메인의 내부 컴포넌트를 직접 참조하지 않습니다. 필요 시 `components/layout`(또는 진짜 공용일 때만 `components/ui`)로 격상 후 공유합니다.
 
 ---
 
