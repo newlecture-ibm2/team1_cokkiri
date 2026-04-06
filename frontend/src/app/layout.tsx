@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import { ScrollToTop } from "@/components/shared/ScrollToTop";
+import { manrope, pretendardVariable } from "@/lib/fonts";
 import "@/styles/index.css";
 
 export const metadata: Metadata = {
@@ -13,7 +15,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ko">
-      <body className="antialiased selection:bg-primary selection:text-primary-foreground min-h-screen">
+      <body
+        className={`antialiased selection:bg-primary selection:text-primary-foreground min-h-screen ${manrope.variable} ${pretendardVariable.variable}`}
+      >
+        <ScrollToTop />
         {children}
       </body>
     </html>

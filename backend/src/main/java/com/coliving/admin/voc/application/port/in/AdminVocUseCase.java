@@ -1,5 +1,6 @@
 package com.coliving.admin.voc.application.port.in;
 
+import com.coliving.admin.voc.application.command.GetAdminVocCommand;
 import com.coliving.admin.voc.application.command.ListAdminVocsCommand;
 import com.coliving.admin.voc.application.command.ReplyVocCommand;
 import com.coliving.admin.voc.application.command.ResolveVocCommand;
@@ -9,6 +10,8 @@ import com.coliving.common.voc.application.result.VocResult;
 public interface AdminVocUseCase {
 
     AdminVocListResult listVocs(ListAdminVocsCommand command);
+
+    VocResult getVoc(GetAdminVocCommand command);
 
     VocResult replyToVoc(ReplyVocCommand command);
 

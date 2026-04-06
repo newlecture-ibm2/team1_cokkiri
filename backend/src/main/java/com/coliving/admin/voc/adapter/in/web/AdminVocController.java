@@ -5,6 +5,7 @@ import com.coliving.admin.voc.adapter.in.web.dto.res.AdminVocAttachmentResponseD
 import com.coliving.admin.voc.adapter.in.web.dto.res.AdminVocDetailResponseDto;
 import com.coliving.admin.voc.adapter.in.web.dto.res.AdminVocListItemResponseDto;
 import com.coliving.admin.voc.adapter.in.web.dto.res.AdminVocListResponseDto;
+import com.coliving.admin.voc.application.command.GetAdminVocCommand;
 import com.coliving.admin.voc.application.command.ListAdminVocsCommand;
 import com.coliving.admin.voc.application.command.ReplyVocCommand;
 import com.coliving.admin.voc.application.command.ResolveVocCommand;
@@ -37,11 +38,11 @@ public class AdminVocController {
         this.adminVocUseCase = adminVocUseCase;
     }
 
-    @GetMapping("/api/admin/vocs")
+    @GetMapping("/api/admin/voc")
     public ApiResponse<AdminVocListResponseDto> listVocs(
             @RequestParam(required = false) String status,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int size,
+            @RequestParam(value = "p", defaultValue = "0") int page,
+            @RequestParam(value = "s", defaultValue = "20") int size,
             @RequestParam(required = false, defaultValue = "createdAt,desc") String sort
     ) {
         VocStatus statusFilter = parseStatusOrNull(status);
@@ -66,7 +67,17 @@ public class AdminVocController {
         return ApiResponse.ok(response);
     }
 
-    @PostMapping("/api/admin/vocs/{vocId}/reply")
+    @GetMapping("/api/admin/voc/{vocId}")
+    public ApiResponse<AdminVocDetailResponseDto> getVoc(@PathVariable Long vocId) {
+        GetAdminVocCommand command = GetAdminVocCommand.builder()
+                .vocId(vocId)
+                .build();
+
+        VocResult result = adminVocUseCase.getVoc(command);
+        return ApiResponse.ok(toDetailDto(result));
+    }
+
+    @PostMapping("/api/admin/voc/{vocId}/reply")
     public ApiResponse<AdminVocDetailResponseDto> reply(
             @PathVariable Long vocId,
             @Valid @RequestBody AdminReplyVocRequestDto request
@@ -83,7 +94,7 @@ public class AdminVocController {
         return ApiResponse.ok(toDetailDto(result));
     }
 
-    @PostMapping("/api/admin/vocs/{vocId}/resolve")
+    @PostMapping("/api/admin/voc/{vocId}/resolve")
     public ApiResponse<AdminVocDetailResponseDto> resolveVoc(@PathVariable Long vocId) {
         ResolveVocCommand command = ResolveVocCommand.builder()
                 .vocId(vocId)

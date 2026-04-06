@@ -32,8 +32,9 @@ export function LandingFeaturedListing({ listing, size }: { listing: Listing; si
 
   return (
     <motion.div ref={ref} style={{ y }} className="group">
-      <Link href={`/rooms/${listing.id}`}>
-        <div className="relative mb-8 overflow-hidden">
+      <Link href={`/rooms/${listing.id}`} className="block focus:outline-none">
+        {/* Image Display */}
+        <div className="relative mb-6 overflow-hidden">
           <motion.div
             whileHover={{ scale: 1.05 }}
             transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
@@ -48,13 +49,19 @@ export function LandingFeaturedListing({ listing, size }: { listing: Listing; si
           </motion.div>
         </div>
 
-        <div className="space-y-4">
-          <div className="flex items-baseline justify-between">
-            <h3 className="text-2xl font-black tracking-tighter">{listing.title}</h3>
-            <span className="text-sm font-black whitespace-nowrap opacity-10">/ {listing.id.padStart(2, "0")}</span>
+        {/* Text Container Below Image */}
+        <div className="flex flex-col gap-3 font-sans pb-4">
+          <div className="flex items-baseline justify-between mb-1">
+            <h3 className="text-2xl md:text-3xl font-black tracking-tighter text-primary uppercase transition-colors group-hover:text-accent">
+              {listing.title}
+            </h3>
+            <span className="text-sm md:text-base font-bold tracking-widest text-secondary">
+              / {listing.id.padStart(2, "0")}
+            </span>
           </div>
-          <div className="flex flex-col gap-1">
-            <div className="flex items-center justify-between text-xs font-black tracking-widest text-secondary uppercase">
+          
+          <div className="flex flex-col gap-1.5">
+            <div className="flex items-center justify-between text-[11px] md:text-xs font-bold tracking-[0.15em] text-primary uppercase">
               <span>
                 {listing.roomType === "Private Suite"
                   ? "개인 전용 공간"
@@ -62,11 +69,17 @@ export function LandingFeaturedListing({ listing, size }: { listing: Listing; si
                     ? "전체 독립형"
                     : "공유 아틀리에"}
               </span>
-              <span className="opacity-40">보증금 상담 가능</span>
+              <span>보증금 상담 가능</span>
             </div>
-            <div className="flex items-center justify-between text-xs font-black tracking-widest text-foreground/40 uppercase">
-              <span>IoT 스마트 보안 포함</span>
-              <span className="text-foreground opacity-100">월 {listing.price.toLocaleString()}원</span>
+            <div className="flex items-end justify-between text-primary uppercase mt-2">
+              <span className="text-[11px] md:text-xs font-bold tracking-[0.15em] mb-1">IoT 스마트 보안 포함</span>
+              <div className="flex items-baseline gap-1">
+                <span className="text-[13px] font-semibold opacity-50 tracking-normal">월</span>
+                <span className="text-2xl md:text-3xl font-extrabold tracking-tighter [font-family:var(--font-manrope),_var(--font-pretendard),_sans-serif]">
+                  {listing.price.toLocaleString()}
+                </span>
+                <span className="text-[13px] font-semibold opacity-50 tracking-normal">원</span>
+              </div>
             </div>
           </div>
         </div>

@@ -15,5 +15,7 @@ public class UpdateVocCommand {
     private final VocCategory category;
     private final String title;
     private final String content;
-    private final List<VocAttachment> attachments;
+    /** null이면 기존 DB 첨부를 유지한 뒤 {@link #newFileAttachments}만 병합합니다. */
+    private final List<VocAttachment> retainedAttachments;
+    private final List<VocAttachment> newFileAttachments;
 }

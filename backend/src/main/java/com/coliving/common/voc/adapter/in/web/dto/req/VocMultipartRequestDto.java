@@ -1,26 +1,29 @@
 package com.coliving.common.voc.adapter.in.web.dto.req;
 
-import com.coliving.common.voc.model.VocAttachment;
-import com.coliving.common.voc.model.VocCategory;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
+import lombok.Setter;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
 @Getter
-public class UpdateVocRequestDto {
+@Setter
+public class VocMultipartRequestDto {
 
-    @NotNull
-    private VocCategory category;
+    @NotBlank
+    private String category;
 
+    /** UTF-16 코드 유닛 기준. */
     @NotBlank
     @Size(max = 200)
     private String title;
 
+    /** UTF-16 코드 유닛 기준. */
     @NotBlank
+    @Size(max = 65535)
     private String content;
 
-    private List<VocAttachment> attachments;
+    private List<MultipartFile> files;
 }

@@ -3,22 +3,15 @@ import { ArrowLeft, Eye, MessageCircle } from "lucide-react";
 import type { PostDetail } from "../_types/community";
 import { POST_CATEGORIES } from "../_types/community";
 import { LikeToggle } from "./LikeToggle";
-import { CommentComposer } from "./CommentComposer";
 import { PostEditDeleteActions } from "./PostEditDeleteActions";
+import { CommentComposer } from "../../comment/_components/CommentComposer";
+import { CommentItem } from "../../comment/_components/CommentItem";
+import { formatDateTimeKo } from "@/lib/format-date";
+import { apiFileUrlToBffPath } from "@/lib/bff-file-url";
+import { isRichTextBodyHtml, prepareCommunityPostBodyForDisplay } from "@/lib/post-html";
 
 function categoryLabel(code: string) {
   return POST_CATEGORIES.find((c) => c.value === code)?.label ?? code;
-}
-
-function formatDate(iso: string) {
-  try {
-    return new Date(iso).toLocaleString("ko-KR", {
-      dateStyle: "medium",
-      timeStyle: "short",
-    });
-  } catch {
-    return iso;
-  }
 }
 
 function normalizeLiked(d: PostDetail & { isLikedByMe?: boolean }) {
@@ -40,6 +33,7 @@ export function PostDetailSection({
   currentUser?: CurrentUser;
 }) {
   const liked = normalizeLiked(detail as PostDetail & { isLikedByMe?: boolean });
+  const comments = detail.comments ?? [];
 
   return (
     <article className="mx-auto max-w-3xl">
@@ -57,7 +51,7 @@ export function PostDetailSection({
             {categoryLabel(detail.category)}
           </span>
           <span className="font-black text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
-            {formatDate(detail.createdAt)}
+            {formatDateTimeKo(detail.createdAt)}
           </span>
         </div>
         <h1 className="mt-6 text-balance font-black uppercase leading-[0.92] tracking-tighter text-foreground text-[min(8vw,2.75rem)] md:text-4xl lg:text-[2.85rem]">
@@ -91,10 +85,18 @@ export function PostDetailSection({
         initialTitle={detail.title}
         initialContent={detail.content}
         initialLinks={detail.links}
+        initialAttachments={detail.attachments ?? []}
       />
 
       <div className="mt-10 font-medium leading-relaxed tracking-tight text-balance text-foreground md:text-lg">
-        <div className="whitespace-pre-wrap">{detail.content}</div>
+        {isRichTextBodyHtml(detail.content) ? (
+          <div
+            className="post-html [&_img]:my-4 [&_img]:max-h-[min(70vh,520px)] [&_img]:w-auto [&_img]:max-w-full [&_img]:rounded-xl [&_img]:object-contain [&_p]:mb-3 [&_a]:break-all [&_a]:font-medium [&_a]:text-secondary [&_a]:underline [&_a]:decoration-secondary/50 [&_a]:underline-offset-4 [&_ul]:my-3 [&_ul]:list-disc [&_ul]:pl-6 [&_ol]:my-3 [&_ol]:list-decimal [&_ol]:pl-6 [&_blockquote]:my-4 [&_blockquote]:border-l-2 [&_blockquote]:border-secondary/40 [&_blockquote]:pl-4 [&_blockquote]:italic [&_pre]:my-4 [&_pre]:overflow-x-auto [&_pre]:rounded-xl [&_pre]:border [&_pre]:border-border [&_pre]:bg-muted/30 [&_pre]:p-4 [&_code]:text-sm"
+            dangerouslySetInnerHTML={{ __html: prepareCommunityPostBodyForDisplay(detail.content) }}
+          />
+        ) : (
+          <div className="whitespace-pre-wrap">{detail.content}</div>
+        )}
       </div>
 
       {detail.links && detail.links.length > 0 && (
@@ -131,7 +133,7 @@ export function PostDetailSection({
               a.fileUrl ? (
                 <li key={i}>
                   <a
-                    href={a.fileUrl}
+                    href={apiFileUrlToBffPath(a.fileUrl)}
                     className="break-all underline decoration-secondary/50 underline-offset-4 hover:decoration-secondary"
                     target="_blank"
                     rel="noopener noreferrer"
@@ -149,29 +151,35 @@ export function PostDetailSection({
         <h2 className="font-black text-[10px] uppercase tracking-[0.3em] text-muted-foreground">
           댓글
         </h2>
-        <ul className="mt-8 space-y-6">
-          {(detail.comments ?? []).map((c) => (
-            <li
-              key={c.commentId}
-              className="rounded-[2rem] border border-border bg-background/80 p-6 backdrop-blur-sm md:p-8"
-            >
-              <div className="flex flex-wrap items-center justify-between gap-2">
-                <span className="font-black text-[10px] uppercase tracking-[0.2em] text-foreground">
-                  {c.author?.name ?? "익명"}
-                </span>
-                <time
-                  dateTime={c.createdAt}
-                  className="font-black text-[10px] uppercase tracking-[0.2em] text-muted-foreground"
-                >
-                  {formatDate(c.createdAt)}
-                </time>
-              </div>
-              <p className="mt-3 whitespace-pre-wrap font-medium tracking-tight text-balance text-foreground">
-                {c.content}
-              </p>
-            </li>
-          ))}
-        </ul>
+        {comments.length === 0 ? (
+          <div
+            className="mt-8 flex flex-col items-center justify-center gap-4 rounded-[2rem] border border-dashed border-border bg-background/60 px-8 py-14 text-center backdrop-blur-sm md:px-12"
+            aria-live="polite"
+          >
+            <MessageCircle
+              className="size-10 text-muted-foreground opacity-80"
+              strokeWidth={1.25}
+              aria-hidden
+            />
+            <p className="max-w-sm font-medium tracking-tight text-balance text-muted-foreground md:text-base">
+              아직 댓글이 없습니다. 첫 댓글을 남겨 대화를 시작해 보세요.
+            </p>
+          </div>
+        ) : (
+          <ul className="mt-8 space-y-6">
+            {comments.map((c) => (
+              <CommentItem
+                key={c.commentId}
+                commentId={c.commentId}
+                content={c.content}
+                authorUserId={c.author.userId}
+                authorName={c.author.name}
+                createdAt={c.createdAt}
+                currentUser={currentUser}
+              />
+            ))}
+          </ul>
+        )}
         <CommentComposer postId={detail.postId} />
       </section>
     </article>

@@ -2,6 +2,7 @@ package com.coliving.common.voc.application.service;
 
 import com.coliving.common.voc.application.command.CancelVocCommand;
 import com.coliving.common.voc.application.command.CreateVocCommand;
+import com.coliving.common.voc.application.command.GetMyVocCommand;
 import com.coliving.common.voc.application.command.ListMyVocsCommand;
 import com.coliving.common.voc.application.command.UpdateVocCommand;
 import com.coliving.common.voc.application.port.in.VocUseCase;
@@ -12,15 +13,22 @@ import com.coliving.common.voc.application.result.VocListItemResult;
 import com.coliving.common.voc.application.result.VocListResult;
 import com.coliving.common.voc.application.result.VocResult;
 import com.coliving.common.voc.model.Voc;
+import com.coliving.common.voc.model.VocAttachment;
 import com.coliving.common.voc.model.VocStatus;
 import com.coliving.global.error.BusinessException;
 import com.coliving.global.error.ErrorCode;
+import com.coliving.global.attachment.RetainedAttachmentResolver;
+import com.coliving.global.html.PlainTextHtmlSanitizer;
+import com.coliving.global.html.VocBodyHtmlPathNormalizer;
+import com.coliving.global.html.VocBodyHtmlSanitizer;
+import com.coliving.global.validation.PlainTextFieldValidation;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -41,8 +49,8 @@ public class VocService implements VocUseCase {
         Voc created = vocRepositoryPort.create(
                 command.getUserId(),
                 command.getCategory(),
-                command.getTitle(),
-                command.getContent(),
+                PlainTextFieldValidation.requireNonBlankTitleForSave(command.getTitle()),
+                VocBodyHtmlSanitizer.sanitize(command.getContent()),
                 command.getAttachments()
         );
         return toVocResult(created);
@@ -60,7 +68,7 @@ public class VocService implements VocUseCase {
                 .map(v -> VocListItemResult.builder()
                         .vocId(v.getVocId())
                         .category(v.getCategory())
-                        .title(v.getTitle())
+                        .title(PlainTextHtmlSanitizer.sanitizeTitle(v.getTitle()))
                         .status(v.getStatus())
                         .createdAt(v.getCreatedAt())
                         .build())
@@ -76,6 +84,14 @@ public class VocService implements VocUseCase {
     }
 
     @Override
+    @Transactional(readOnly = true)
+    public VocResult getMyVoc(GetMyVocCommand command) {
+        Voc voc = vocRepositoryPort.findByVocIdAndUserId(command.getVocId(), command.getUserId())
+                .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND));
+        return toVocResult(voc);
+    }
+
+    @Override
     @Transactional
     public VocResult updateVoc(UpdateVocCommand command) {
         Voc existing = vocRepositoryPort.findByVocIdAndUserId(command.getVocId(), command.getUserId())
@@ -85,13 +101,29 @@ public class VocService implements VocUseCase {
             throw new BusinessException(ErrorCode.INVALID_STATUS);
         }
 
+        List<VocAttachment> base;
+        if (command.getRetainedAttachments() != null) {
+            base = RetainedAttachmentResolver.resolve(
+                    existing.getAttachments(),
+                    command.getRetainedAttachments(),
+                    VocAttachment::getFileUrl,
+                    VocBodyHtmlPathNormalizer::normalizeAttachmentUrlForMatch);
+        } else {
+            base = existing.getAttachments() == null
+                    ? new ArrayList<>()
+                    : new ArrayList<>(existing.getAttachments());
+        }
+        if (command.getNewFileAttachments() != null && !command.getNewFileAttachments().isEmpty()) {
+            base.addAll(command.getNewFileAttachments());
+        }
+
         Voc updated = vocRepositoryPort.updateOwned(
                 command.getVocId(),
                 command.getUserId(),
                 command.getCategory(),
-                command.getTitle(),
-                command.getContent(),
-                command.getAttachments()
+                PlainTextFieldValidation.requireNonBlankTitleForSave(command.getTitle()),
+                VocBodyHtmlSanitizer.sanitize(command.getContent()),
+                base
         );
         return toVocResult(updated);
     }
@@ -119,16 +151,23 @@ public class VocService implements VocUseCase {
                 .vocId(v.getVocId())
                 .userId(v.getUserId())
                 .category(v.getCategory())
-                .title(v.getTitle())
-                .content(v.getContent())
+                .title(PlainTextHtmlSanitizer.sanitizeTitle(v.getTitle()))
+                .content(VocBodyHtmlSanitizer.sanitize(v.getContent()))
                 .attachments(v.getAttachments())
                 .status(v.getStatus())
-                .adminReply(v.getAdminReply())
+                .adminReply(safeAdminReply(v.getAdminReply()))
                 .replyUserId(v.getReplyUserId())
                 .repliedAt(v.getRepliedAt())
                 .createdAt(v.getCreatedAt())
                 .updatedAt(v.getUpdatedAt())
                 .build();
+    }
+
+    private String safeAdminReply(String reply) {
+        if (reply == null) {
+            return null;
+        }
+        return VocBodyHtmlSanitizer.sanitize(reply);
     }
 
     private Sort parseSort(String sort) {

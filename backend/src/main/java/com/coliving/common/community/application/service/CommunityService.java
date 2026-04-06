@@ -6,16 +6,23 @@ import com.coliving.common.community.application.port.out.CommunityRepositoryPor
 import com.coliving.common.community.application.result.*;
 import com.coliving.common.community.model.ActorRole;
 import com.coliving.common.community.model.Post;
+import com.coliving.common.community.model.PostAttachment;
 import com.coliving.common.community.model.PostCategory;
 import com.coliving.common.community.model.Comment;
 import com.coliving.global.error.BusinessException;
 import com.coliving.global.error.ErrorCode;
+import com.coliving.global.attachment.RetainedAttachmentResolver;
+import com.coliving.global.html.PlainTextHtmlSanitizer;
+import com.coliving.global.html.PostBodyHtmlPathNormalizer;
+import com.coliving.global.html.PostBodyHtmlSanitizer;
+import com.coliving.global.validation.PlainTextFieldValidation;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -30,8 +37,13 @@ public class CommunityService implements CommunityUseCase {
     @Override
     @Transactional(readOnly = true)
     public PostListResult getPostList(GetPostListCommand command) {
-        Sort sort = parseSort(command.getSort());
-        PageRequest pageRequest = PageRequest.of(command.getPage(), command.getSize(), sort);
+        PageRequest pageRequest;
+        if (command.getCategory() == null) {
+            // 전체 목록: NOTICE 우선 정렬은 저장소 쿼리에서 처리. Pageable Sort는 비워야 ORDER BY가 충돌하지 않음.
+            pageRequest = PageRequest.of(command.getPage(), command.getSize(), Sort.unsorted());
+        } else {
+            pageRequest = PageRequest.of(command.getPage(), command.getSize(), parseSort(command.getSort()));
+        }
 
         Page<Post> page = repositoryPort.findPosts(command.getCategory(), pageRequest);
 
@@ -39,7 +51,7 @@ public class CommunityService implements CommunityUseCase {
                 .map(post -> PostListItemResult.builder()
                         .postId(post.getPostId())
                         .category(post.getCategory())
-                        .title(post.getTitle())
+                        .title(PlainTextHtmlSanitizer.sanitizeTitle(post.getTitle()))
                         .authorUserId(post.getUserId())
                         .viewCount(post.getViewCount())
                         .likeCount(post.getLikeCount())
@@ -70,8 +82,8 @@ public class CommunityService implements CommunityUseCase {
         return PostDetailResult.builder()
                 .postId(post.getPostId())
                 .category(post.getCategory())
-                .title(post.getTitle())
-                .content(post.getContent())
+                .title(PlainTextHtmlSanitizer.sanitizeTitle(post.getTitle()))
+                .content(PostBodyHtmlSanitizer.sanitize(post.getContent()))
                 .attachments(post.getAttachments())
                 .links(post.getLinks())
                 .viewCount(post.getViewCount())
@@ -94,8 +106,8 @@ public class CommunityService implements CommunityUseCase {
         Post post = repositoryPort.createPost(
                 command.getActorId(),
                 command.getCategory(),
-                command.getTitle(),
-                command.getContent(),
+                PlainTextFieldValidation.requireNonBlankTitleForSave(command.getTitle()),
+                PostBodyHtmlSanitizer.sanitize(command.getContent()),
                 command.getAttachments(),
                 command.getLinks()
         );
@@ -124,12 +136,28 @@ public class CommunityService implements CommunityUseCase {
             throw new BusinessException(ErrorCode.FORBIDDEN);
         }
 
+        List<PostAttachment> base;
+        if (command.getRetainedAttachments() != null) {
+            base = RetainedAttachmentResolver.resolve(
+                    post.getAttachments(),
+                    command.getRetainedAttachments(),
+                    PostAttachment::getFileUrl,
+                    PostBodyHtmlPathNormalizer::normalizeAttachmentUrlForMatch);
+        } else {
+            base = post.getAttachments() == null
+                    ? new ArrayList<>()
+                    : new ArrayList<>(post.getAttachments());
+        }
+        if (command.getNewFileAttachments() != null && !command.getNewFileAttachments().isEmpty()) {
+            base.addAll(command.getNewFileAttachments());
+        }
+
         Post updated = repositoryPort.updatePost(
                 command.getPostId(),
                 command.getCategory(),
-                command.getTitle(),
-                command.getContent(),
-                command.getAttachments(),
+                PlainTextFieldValidation.requireNonBlankTitleForSave(command.getTitle()),
+                PostBodyHtmlSanitizer.sanitize(command.getContent()),
+                base,
                 command.getLinks()
         );
 

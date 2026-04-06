@@ -70,5 +70,16 @@ public class PrivateSpaceDetailEntity extends BaseEntity {
         this.parkingAvailable = parkingAvailable;
     }
 
-
+    public void update(RoomType roomType, Integer roomCount, Integer bathroomCount,
+                       String direction, BigDecimal deposit, BigDecimal monthlyRent,
+                       BigDecimal maintenanceFee, Boolean parkingAvailable) {
+        this.roomType = roomType;
+        this.roomCount = roomCount;
+        this.bathroomCount = bathroomCount;
+        this.direction = direction;
+        this.deposit = deposit;
+        this.monthlyRent = monthlyRent;
+        this.maintenanceFee = maintenanceFee;
+        this.parkingAvailable = parkingAvailable;
+    }
 }

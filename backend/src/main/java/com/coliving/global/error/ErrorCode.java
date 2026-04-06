@@ -41,7 +41,15 @@ public enum ErrorCode {
 
     // ── 공통 ──
     VALIDATION_ERROR(HttpStatus.BAD_REQUEST, "필수 항목 누락 또는 형식이 올바르지 않습니다"),
-    NOT_FOUND(HttpStatus.NOT_FOUND, "요청하신 리소스를 찾을 수 없습니다");
+    NOT_FOUND(HttpStatus.NOT_FOUND, "요청하신 리소스를 찾을 수 없습니다"),
+    FILE_UPLOAD_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "파일 저장에 실패했습니다"),
+
+    // ── 공간 (Space) ──
+    SPACE_NOT_FOUND(HttpStatus.NOT_FOUND, "요청하신 공간을 찾을 수 없습니다"),
+    DUPLICATE_SPACE_NAME(HttpStatus.CONFLICT, "이미 사용 중인 공간 이름입니다"),
+    OCCUPIED_SPACE_MODIFICATION(HttpStatus.CONFLICT, "입주 중이거나 사용 중인 공간은 구조를 변경할 수 없습니다"),
+    FILE_SIZE_EXCEEDED(HttpStatus.PAYLOAD_TOO_LARGE, "파일 업로드 용량을 초과했습니다"),
+    SPACE_IMAGE_NOT_FOUND(HttpStatus.NOT_FOUND, "공간 이미지를 찾을 수 없습니다");
 
     private final HttpStatus status;
     private final String message;

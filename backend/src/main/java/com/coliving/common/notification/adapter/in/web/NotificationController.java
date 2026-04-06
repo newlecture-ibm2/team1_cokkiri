@@ -31,9 +31,9 @@ public class NotificationController {
 
     @GetMapping("/api/notifications")
     public ApiResponse<NotificationListResponseDto> listNotifications(
-            @RequestParam(required = false) Boolean isRead,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int size,
+            @RequestParam(value = "is_read", required = false) Boolean isRead,
+            @RequestParam(value = "p", defaultValue = "0") int page,
+            @RequestParam(value = "s", defaultValue = "20") int size,
             @RequestParam(required = false, defaultValue = "createdAt,desc") String sort
     ) {
         Long userId = getAuthenticatedUserId();

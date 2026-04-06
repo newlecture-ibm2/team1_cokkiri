@@ -81,5 +81,26 @@ public class SpaceEntity extends BaseEntity {
         this.positionY = positionY;
     }
 
+    public void updateBasicInfo(String name, SpaceStatus status, Integer floor,
+                                BigDecimal area, String amenities, String description) {
+        this.name = name;
+        this.status = status;
+        this.floor = floor;
+        this.area = area;
+        this.amenities = amenities;
+        this.description = description;
+    }
 
+    public void updatePosition(Integer positionX, Integer positionY) {
+        this.positionX = positionX;
+        this.positionY = positionY;
+    }
+
+    public void assignPrivateDetail(PrivateSpaceDetailEntity detail) {
+        this.privateDetail = detail;
+    }
+
+    public void assignCommonDetail(CommonSpaceDetailEntity detail) {
+        this.commonDetail = detail;
+    }
 }

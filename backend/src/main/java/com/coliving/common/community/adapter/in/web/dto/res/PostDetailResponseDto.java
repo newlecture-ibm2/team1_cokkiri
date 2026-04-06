@@ -1,6 +1,5 @@
 package com.coliving.common.community.adapter.in.web.dto.res;
 
-import com.coliving.common.community.model.Comment;
 import com.coliving.common.community.model.PostAttachment;
 import com.coliving.common.community.model.PostLink;
 import lombok.Builder;
@@ -26,4 +25,3 @@ public class PostDetailResponseDto {
     private final List<PostCommentResponseDto> comments;
     private final OffsetDateTime createdAt;
 }
-
