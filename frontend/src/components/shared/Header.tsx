@@ -27,7 +27,7 @@ const navItems: NavItem[] = [
   {
     name: "Community",
     children: [
-      { name: "Post", path: "/community" },
+      { name: "Board", path: "/community" },
       { name: "Voc", path: "/voc" },
     ],
   },
@@ -146,11 +146,10 @@ export function Header() {
   return (
     <>
       <motion.header
-        className={`sticky top-0 z-[100] border-b px-6 py-2 transition-all duration-500 md:px-12 md:py-3 ${
-          isScrolled || isMobileMenuOpen
-            ? "border-primary/10 bg-background/80 shadow-sm backdrop-blur-md"
-            : "border-transparent bg-transparent"
-        }`}
+        className={`sticky top-0 z-[100] border-b px-6 py-2 transition-all duration-500 md:px-12 md:py-3 ${isScrolled || isMobileMenuOpen
+          ? "border-primary/10 bg-background/80 shadow-sm backdrop-blur-md"
+          : "border-transparent bg-transparent"
+          }`}
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 1, ease: [0.22, 1, 0.36, 1] }}
