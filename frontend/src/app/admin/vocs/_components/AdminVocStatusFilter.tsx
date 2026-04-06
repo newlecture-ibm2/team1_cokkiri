@@ -13,7 +13,7 @@ export function AdminVocStatusFilter({ activeStatus }: Props) {
     <div className="flex gap-3 overflow-x-auto pb-2 md:flex-wrap md:overflow-visible md:gap-3">
       {ADMIN_VOC_STATUS_FILTERS.map((f) => {
         const isAll = f.value === "";
-        const href = isAll ? "/admin/voc" : `/admin/voc?status=${encodeURIComponent(f.value)}`;
+        const href = isAll ? "/admin/vocs" : `/admin/vocs?status=${encodeURIComponent(f.value)}`;
         const active = isAll ? activeStatus === "" : activeStatus === f.value;
         return (
           <Link

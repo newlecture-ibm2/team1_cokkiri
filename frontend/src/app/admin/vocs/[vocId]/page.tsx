@@ -1,22 +1,21 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { bffGet } from "../_api/bff-server";
-import type { ApiResponse, VocDetail } from "../_types/voc";
-import { VocShell } from "../_components/VocShell";
-import { MotionEnter } from "../../community/_components/MotionEnter";
-import { VocDetailActions } from "../_components/VocDetailActions";
-import { vocCategoryLabel, vocStatusLabel } from "../_types/voc";
+import { adminBffGet } from "../_api/admin-bff-server";
+import type { AdminVocDetail, ApiResponse } from "../_types/admin-voc";
+import { adminVocCategoryLabel, adminVocStatusLabel } from "../_types/admin-voc";
+import { MotionEnter } from "../_components/MotionEnter";
+import { AdminVocActions } from "./_components/AdminVocActions";
 import { formatDateTimeKo } from "@/lib/format-date";
 import { apiFileUrlToBffPath } from "@/lib/bff-file-url";
 import { isRichTextBodyHtml } from "@/lib/post-html";
-import { prepareVocBodyForDisplay, VOC_RICH_BODY_CLASSNAME } from "@/lib/voc-html";
+import { prepareVocBodyForDisplay, VOC_RICH_BODY_CLASSNAME } from "@/lib/vocs-html";
 import { cn } from "@/lib/utils";
 
 type Params = Promise<{ vocId: string }>;
 
 export async function generateMetadata({ params }: { params: Params }) {
   const { vocId } = await params;
-  return { title: `민원 #${vocId} | CoKkiri` };
+  return { title: `민원 #${vocId} | Admin` };
 }
 
 function statusPillClass(status: string) {
@@ -34,45 +33,43 @@ function statusPillClass(status: string) {
   }
 }
 
-export default async function VocDetailPage({ params }: { params: Params }) {
+export default async function AdminVocDetailPage({ params }: { params: Params }) {
   const { vocId } = await params;
   const id = parseInt(vocId, 10);
   if (Number.isNaN(id)) notFound();
 
-  const res = await bffGet(`voc/${id}`);
+  const res = await adminBffGet(`admin/vocs/${id}`);
 
   if (res.status === 404) notFound();
   if (res.status === 401) {
     return (
-      <VocShell>
-        <MotionEnter>
-          <p className="mx-auto max-w-3xl text-center font-medium text-destructive">로그인이 필요합니다.</p>
-        </MotionEnter>
-      </VocShell>
+      <MotionEnter>
+        <p className="mx-auto max-w-3xl text-center font-medium text-destructive">관리자 로그인이 필요합니다.</p>
+      </MotionEnter>
     );
   }
   if (!res.ok) notFound();
 
-  const body = (await res.json()) as ApiResponse<VocDetail>;
+  const body = (await res.json()) as ApiResponse<AdminVocDetail>;
   if (!body.success || !body.data) notFound();
 
   const d = body.data;
 
   return (
-    <VocShell>
-      <MotionEnter>
-        <article className="mx-auto max-w-3xl">
+    <MotionEnter>
+      <article className="max-w-3xl">
           <Link
-            href="/voc"
+            href="/admin/vocs"
             className="group inline-flex items-center gap-2 font-black text-xs uppercase tracking-[0.3em] text-secondary transition-colors hover:text-foreground"
           >
             ← 목록
           </Link>
 
           <header className="mt-8 space-y-4 border-b border-border pb-10">
+            <p className="font-black text-[10px] uppercase tracking-[0.35em] text-muted-foreground">Admin · VoC · #{d.vocId}</p>
             <div className="flex flex-wrap items-center gap-3">
               <span className="font-black text-[10px] uppercase tracking-[0.25em] text-muted-foreground">
-                {vocCategoryLabel(d.category)}
+                {adminVocCategoryLabel(d.category)}
               </span>
               <span
                 className={cn(
@@ -80,17 +77,23 @@ export default async function VocDetailPage({ params }: { params: Params }) {
                   statusPillClass(d.status),
                 )}
               >
-                {vocStatusLabel(d.status)}
+                {adminVocStatusLabel(d.status)}
+              </span>
+              <span className="font-black text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
+                사용자 #{d.userId}
               </span>
             </div>
             <h1 className="text-3xl font-black tracking-tight text-balance text-foreground md:text-4xl">{d.title}</h1>
-            <time dateTime={d.createdAt} className="block font-black text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
+            <time
+              dateTime={d.createdAt}
+              className="block font-black text-[10px] uppercase tracking-[0.2em] text-muted-foreground"
+            >
               접수 {formatDateTimeKo(d.createdAt)}
             </time>
           </header>
 
           <div className="mt-10">
-            <p className="font-black text-[10px] uppercase tracking-[0.3em] text-muted-foreground">내용</p>
+            <p className="font-black text-[10px] uppercase tracking-[0.3em] text-muted-foreground">민원 내용</p>
             {isRichTextBodyHtml(d.content) ? (
               <div
                 className={cn(
@@ -126,33 +129,30 @@ export default async function VocDetailPage({ params }: { params: Params }) {
             </div>
           ) : null}
 
-          {(d.adminReply || d.status === "RESOLVED" || d.status === "IN_PROGRESS") && (
-            <section className="mt-12 rounded-[2rem] border border-border bg-muted/20 p-6 md:p-8">
-              <p className="font-black text-[10px] uppercase tracking-[0.3em] text-secondary">운영 답변</p>
-              {d.repliedAt ? (
-                <time
-                  dateTime={d.repliedAt}
-                  className="mt-2 block font-black text-[10px] uppercase tracking-[0.2em] text-muted-foreground"
-                >
-                  {formatDateTimeKo(d.repliedAt)}
-                </time>
-              ) : null}
-              {d.adminReply && isRichTextBodyHtml(d.adminReply) ? (
-                <div
-                  className={cn("mt-4 font-medium tracking-tight text-foreground", VOC_RICH_BODY_CLASSNAME)}
-                  dangerouslySetInnerHTML={{ __html: prepareVocBodyForDisplay(d.adminReply) }}
-                />
-              ) : (
-                <p className="mt-4 whitespace-pre-wrap font-medium tracking-tight text-foreground">
-                  {d.adminReply ?? "답변 준비 중입니다."}
-                </p>
-              )}
-            </section>
-          )}
+          <section className="mt-12 rounded-[2rem] border border-border bg-muted/20 p-6 md:p-8">
+            <p className="font-black text-[10px] uppercase tracking-[0.3em] text-secondary">등록된 답변</p>
+            {d.repliedAt ? (
+              <time
+                dateTime={d.repliedAt}
+                className="mt-2 block font-black text-[10px] uppercase tracking-[0.2em] text-muted-foreground"
+              >
+                {formatDateTimeKo(d.repliedAt)}
+              </time>
+            ) : null}
+            {d.adminReply && isRichTextBodyHtml(d.adminReply) ? (
+              <div
+                className={cn("mt-4 font-medium tracking-tight text-foreground", VOC_RICH_BODY_CLASSNAME)}
+                dangerouslySetInnerHTML={{ __html: prepareVocBodyForDisplay(d.adminReply) }}
+              />
+            ) : (
+              <p className="mt-4 whitespace-pre-wrap font-medium tracking-tight text-foreground">
+                {d.adminReply ?? "아직 등록된 답변이 없습니다."}
+              </p>
+            )}
+          </section>
 
-          <VocDetailActions vocId={d.vocId} status={d.status} />
-        </article>
-      </MotionEnter>
-    </VocShell>
+          <AdminVocActions vocId={d.vocId} status={d.status} />
+      </article>
+    </MotionEnter>
   );
 }

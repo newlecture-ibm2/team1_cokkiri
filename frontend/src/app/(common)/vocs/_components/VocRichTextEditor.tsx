@@ -6,7 +6,7 @@ import type Toolbar from "quill/modules/toolbar";
 import "quill/dist/quill.snow.css";
 import { apiFileUrlToBffPath } from "@/lib/bff-file-url";
 import { messageFromBffResponse } from "@/lib/bff-error-message";
-import { VOC_BODY_HTML_MAX_LENGTH } from "@/lib/voc-html";
+import { VOC_BODY_HTML_MAX_LENGTH } from "@/lib/vocs-html";
 import type { ApiResponse } from "@/types/api";
 
 type Props = {
@@ -64,7 +64,7 @@ export function VocRichTextEditor({ value, onChange, placeholder, id }: Props) {
         const fd = new FormData();
         fd.append("file", file);
         try {
-          const res = await fetch("/api/bff/voc/upload-editor-image", {
+          const res = await fetch("/api/bff/vocs/upload-editor-image", {
             method: "POST",
             body: fd,
             credentials: "include",
