@@ -37,28 +37,28 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-            .csrf(AbstractHttpConfigurer::disable)
-            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-            .authorizeHttpRequests(auth -> auth
-                // permitAll
-                .requestMatchers(HttpMethod.POST, "/api/auth/register", "/api/auth/login",
-                        "/api/auth/refresh", "/api/auth/find-id", "/api/auth/reset-password").permitAll()
-                .requestMatchers(HttpMethod.GET, "/api/rooms/**").permitAll()
-                .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html").permitAll()
+                .csrf(AbstractHttpConfigurer::disable)
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .authorizeHttpRequests(auth -> auth
+                        // permitAll
+                        .requestMatchers(HttpMethod.POST, "/api/auth/register", "/api/auth/login",
+                                "/api/auth/refresh", "/api/auth/find-id", "/api/auth/reset-password")
+                        .permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/rooms/**").permitAll()
+                        .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html").permitAll()
 
-                // ADMIN only
-                .requestMatchers("/api/admin/**").hasRole("ADMIN")
+                        // ADMIN only
+                        .requestMatchers("/api/admin/**").hasRole("ADMIN")
 
-                // RESIDENT or ADMIN
-                .requestMatchers("/api/devices/**", "/api/facilities/**",
-                        "/api/reservations/**", "/api/control-logs/**")
-                    .hasAnyRole("RESIDENT", "ADMIN")
+                        // RESIDENT or ADMIN
+                        .requestMatchers("/api/devices/**", "/api/facilities/**",
+                                "/api/reservations/**", "/api/control-logs/**")
+                        .hasAnyRole("RESIDENT", "ADMIN")
 
-                // authenticated
-                .anyRequest().authenticated()
-            )
-            .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider),
-                    UsernamePasswordAuthenticationFilter.class);
+                        // authenticated
+                        .anyRequest().authenticated())
+                .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider),
+                        UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }

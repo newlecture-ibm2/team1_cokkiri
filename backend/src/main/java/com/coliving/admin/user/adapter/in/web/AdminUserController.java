@@ -28,8 +28,8 @@ public class AdminUserController {
             @RequestParam(required = false) String name,
             @RequestParam(required = false) String loginId,
             Pageable pageable) {
-        return ApiResponse.ok(adminUserUseCase.findUsers(role, status, name, loginId, pageable).map(result -> 
-                AdminUserResponseDto.builder()
+        return ApiResponse.ok(adminUserUseCase.findUsers(role, status, name, loginId, pageable)
+                .map(result -> AdminUserResponseDto.builder()
                         .id(result.getId())
                         .loginId(result.getLoginId())
                         .name(result.getName())
@@ -38,8 +38,7 @@ public class AdminUserController {
                         .role(result.getRole())
                         .status(result.getStatus())
                         .createdAt(result.getCreatedAt())
-                        .build()
-        ));
+                        .build()));
     }
 
     @GetMapping("/{id}")
