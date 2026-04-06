@@ -9,9 +9,10 @@ export function Footer() {
 
   const footerLinks = {
     explore: [
-      { name: "Living", path: "/rooms" },
-      { name: "Stay", path: "/rooms" },
-      { name: "Facility", path: "/facility" },
+      { name: "Living Spaces", path: "/rooms" },
+      { name: "Community", path: "/community" },
+      { name: "VOC", path: "/voc" },
+      { name: "IoT Guide", path: "/rooms" },
     ],
     community: [
       { name: "Board", path: "/community" },
@@ -24,8 +25,11 @@ export function Footer() {
       { name: "Device", path: "/" },
       { name: "Contract", path: "/" },
       { name: "Reservation", path: "/" },
+      { name: "Concierge", path: "/voc" },
+      { name: "Terms & Privacy", path: "/community" },
     ],
   };
+
 
   return (
     <footer className="border-t border-primary/10 bg-background px-6 pt-16 pb-12 text-foreground md:px-12 lg:px-24">
