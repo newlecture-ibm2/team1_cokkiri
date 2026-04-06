@@ -8,15 +8,25 @@ trigger: always_on
 
 이 가이드라인은 'Co-끼리(COKKIRI)'의 프리미엄 에디토리얼 무드를 유지하고, 6인의 팀원이 각 도메별로 독립적으로 개발하되 하나의 서비스처럼 일관된 사용자 경험을 제공하기 위해 작성되었습니다.
 
+### 📌 `02-frontend-architecture.md` 와의 역할 분담
+- **본 문서(ui-guideline):** **디자인 스펙** — 팔레트 Hex, CSS 변수명(`--primary` 등), 타이포 크기·데코, 섹션 간격, Framer 모션, 에디토리얼 톤. 여기 적힌 색·수치를 **`src/styles/theme.css`** 에 반영하는 것이 단일 진실 공급원이다.
+- **`02-frontend-architecture.md`:** **기술 아키텍처** — App Router 콜로케이션, `ui`/`layout` 폴더, BFF·`apiFetch`, “시맨틱 유틸만·Hex 금지” 같은 **구현 원칙(한 줄~짧은 단락)** 만 다룬다. 디자인 수치의 반복 서술은 하지 않는다.
+- **연동:** 컴포넌트 코드에서는 **항상** theme에 매핑된 클래스(`text-primary`, `bg-background` …)만 쓰고, Hex·raw vw는 **theme/ui-guideline** 쪽에만 둔다.
+
 ---
 
 ## 🏗️ 1. ARCHITECTURE & COLLABORATION
 6인의 개발자가 서로의 코드를 간섭하지 않으면서 일관성을 유지하는 폴더 구조 규칙입니다.
 
-### 📂 폴더 구조 및 소유권
+### 📂 폴더 구조 및 소유권 (m-2: `ui` vs `layout`)
+
+| 폴더 | 대상 | 설명 | 예시 |
+|------|------|------|------|
+| **`components/ui/`** | **원자(Atomic) 컴포넌트** | props만으로 렌더링 가능한 **재사용 UI 조각**. 라우팅·인증에 묶이지 않음. | `Button`, `Input`, `Modal`, `Skeleton` |
+| **`components/layout/`** | **전역·껍데기** | **라우팅·인증·내비게이션**과 함께 쓰이는 앱 뼈대. 여러 페이지에서 공통으로 감싼다. | `Header`, `Footer`, `Sidebar`, `NavBar`, `PageLayout`, `ScrollToTop` |
+
+- 과거 `components/shared/` 명칭은 **`layout/`으로 통일**했다. 새 폴더로 `shared/`를 만들지 않는다.
 - **`app/(domain)/`**: 각 팀원별 도메인 그룹 폴더 (예: `(auth)`, `(listings)`, `(community)`).
-- **`components/ui/`**: `shadcn/ui` 기반의 순수 UI 원자 컴포넌트. (모든 팀원 공유)
-- **`components/layout/`**: Header, Footer, Sidebar, NavBar, PageLayout, ScrollToTop 등 전역 레이아웃·껍데기.
 - **`lib/`**: 공통 유틸리티 및 API 클라이언트 설정.
 
 ### 🤝 작업 규칙

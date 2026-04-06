@@ -7,9 +7,17 @@ trigger: always_on
 팀원 여러 명과 AI 에이전트들이 각자 WBS를 맡아 파편화된 작업을 진행할 때, 코드가 충돌하거나 기능이 병합되지 않는 참사를 막는 룰입니다.
 
 ### 1. Domain Separation (도메인 의존성 강제 단절)
+
+| 구분 | 허용 여부 | 내용 |
+|------|-----------|------|
+| **다른 도메인 `JpaRepository` DI** | **허용(READ 전용)** | 예: `ReservationCommandService`에서 **`SpaceJpaRepository.findById(spaceId)`** 로 공간 존재·타입만 확인. **조회만** 할 것. |
+| **다른 도메인 `Service` / `UseCase` DI** | **금지(쓰기 위임)** | 예: `ReservationCommandService`가 **`SpaceService.updateStatus(...)`** 를 호출해 공간 상태를 바꾸는 행위. **상태 변경·저장은 해당 도메인 경로로만.** |
+| **타 도메인 엔티티 변경** | **해당 도메인 `PersistenceAdapter`(또는 Port 경유)** | 다른 도메인 소유 행을 바꿔야 하면, 그 도메인의 어댑터/유스케이스를 호출하거나 **식별자만 넘기고** 대상 도메인 서비스가 처리하게 한다. |
+
 - 팀원의 WBS 구역침범 금지: "계약(Contract)" 애플리케이션을 만들 때 "기기 제어(Device)" 애플리케이션의 **Service / UseCase** 를 직접 DI하여 **쓰기·트랜잭션 경계**를 넘기지 마세요.
 - 도메인 횡단 데이터 참조 시: 상대방의 완전한 JPA 엔티티나 프론트엔드 모듈 덩어리를 끌어오지 말고, 응집도를 낮추기 위해 식별자 ID(`roomId`, `userId` 등)만 주고받아 사이드 이펙트를 최소화합니다.
-- **읽기 예외:** 다른 도메인의 **`JpaRepository`를 직접 주입해 조회만** 하는 것은 **금지하지 않으나**, 가능하면 **대상 도메인의 `RepositoryPort` + PersistenceAdapter** 경로로 통일하는 것을 권장합니다. **쓰기(저장·삭제·상태 변경)** 는 반드시 **해당 도메인의 PersistenceAdapter / UseCase** 를 통해서만 수행합니다.
+- **읽기:** 다른 도메인 **`JpaRepository`로 조회만** 하는 것은 허용. 가능하면 **`RepositoryPort` + PersistenceAdapter** 로 통일하는 것을 권장.
+- **쓰기:** 반드시 **해당 도메인의 PersistenceAdapter / UseCase** 만 통과. 타 도메인에서 상대 엔티티를 직접 `save`하지 않는다.
 
 ### 2. Shared Assets (공용 도구 중복 생성 금지)
 - "날짜 변환기", "JWT 파싱", "페이지네이션 처리" 같이 누구에게나 필요한 유틸리티성 파일을 무턱대고 본인 도메인 폴더에 복붙하여 만들지 마세요.
