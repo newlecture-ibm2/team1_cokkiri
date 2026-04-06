@@ -8,6 +8,22 @@
 -- ============================================================
 
 -- ──────────────────────────────────────────────
+-- 0. 방 유형 마스터 데이터 (ROOM_TYPES)
+-- ──────────────────────────────────────────────
+
+INSERT INTO room_types (code, name, is_system_default, created_at, updated_at)
+SELECT 'SINGLE', '싱글룸', true, now(), now() WHERE NOT EXISTS (SELECT 1 FROM room_types WHERE code = 'SINGLE');
+
+INSERT INTO room_types (code, name, is_system_default, created_at, updated_at)
+SELECT 'DOUBLE', '더블룸', true, now(), now() WHERE NOT EXISTS (SELECT 1 FROM room_types WHERE code = 'DOUBLE');
+
+INSERT INTO room_types (code, name, is_system_default, created_at, updated_at)
+SELECT 'STUDIO', '스튜디오', true, now(), now() WHERE NOT EXISTS (SELECT 1 FROM room_types WHERE code = 'STUDIO');
+
+INSERT INTO room_types (code, name, is_system_default, created_at, updated_at)
+SELECT 'SUITE', '스위트룸', true, now(), now() WHERE NOT EXISTS (SELECT 1 FROM room_types WHERE code = 'SUITE');
+
+-- ──────────────────────────────────────────────
 -- 1. 개인 공간 (PRIVATE) — 방 5개
 -- ──────────────────────────────────────────────
 
@@ -32,25 +48,35 @@ SELECT '501호', 'PRIVATE', 'AVAILABLE', 5, 35.0, '["에어컨","세탁기","냉
 WHERE NOT EXISTS (SELECT 1 FROM spaces WHERE name = '501호');
 
 -- 개인 공간 상세
-INSERT INTO private_space_details (space_id, room_type, room_count, bathroom_count, direction, deposit, monthly_rent, maintenance_fee, parking_available, created_at, updated_at)
-SELECT s.space_id, 'SINGLE', 1, 1, '남향', 5000000, 500000, 50000, true, now(), now()
-FROM spaces s WHERE s.name = '301호' AND NOT EXISTS (SELECT 1 FROM private_space_details WHERE space_id = s.space_id);
+INSERT INTO private_space_details (space_id, room_type_id, room_count, bathroom_count, direction, deposit, monthly_rent, maintenance_fee, parking_available, created_at, updated_at)
+SELECT s.space_id, rt.room_type_id, 1, 1, '남향', 5000000, 500000, 50000, true, now(), now()
+FROM spaces s 
+JOIN room_types rt ON rt.code = 'SINGLE'
+WHERE s.name = '301호' AND NOT EXISTS (SELECT 1 FROM private_space_details WHERE space_id = s.space_id);
 
-INSERT INTO private_space_details (space_id, room_type, room_count, bathroom_count, direction, deposit, monthly_rent, maintenance_fee, parking_available, created_at, updated_at)
-SELECT s.space_id, 'DOUBLE', 2, 1, '동향', 8000000, 700000, 60000, true, now(), now()
-FROM spaces s WHERE s.name = '302호' AND NOT EXISTS (SELECT 1 FROM private_space_details WHERE space_id = s.space_id);
+INSERT INTO private_space_details (space_id, room_type_id, room_count, bathroom_count, direction, deposit, monthly_rent, maintenance_fee, parking_available, created_at, updated_at)
+SELECT s.space_id, rt.room_type_id, 2, 1, '동향', 8000000, 700000, 60000, true, now(), now()
+FROM spaces s 
+JOIN room_types rt ON rt.code = 'DOUBLE'
+WHERE s.name = '302호' AND NOT EXISTS (SELECT 1 FROM private_space_details WHERE space_id = s.space_id);
 
-INSERT INTO private_space_details (space_id, room_type, room_count, bathroom_count, direction, deposit, monthly_rent, maintenance_fee, parking_available, created_at, updated_at)
-SELECT s.space_id, 'STUDIO', 1, 1, '서향', 3000000, 400000, 40000, false, now(), now()
-FROM spaces s WHERE s.name = '401호' AND NOT EXISTS (SELECT 1 FROM private_space_details WHERE space_id = s.space_id);
+INSERT INTO private_space_details (space_id, room_type_id, room_count, bathroom_count, direction, deposit, monthly_rent, maintenance_fee, parking_available, created_at, updated_at)
+SELECT s.space_id, rt.room_type_id, 1, 1, '서향', 3000000, 400000, 40000, false, now(), now()
+FROM spaces s 
+JOIN room_types rt ON rt.code = 'STUDIO'
+WHERE s.name = '401호' AND NOT EXISTS (SELECT 1 FROM private_space_details WHERE space_id = s.space_id);
 
-INSERT INTO private_space_details (space_id, room_type, room_count, bathroom_count, direction, deposit, monthly_rent, maintenance_fee, parking_available, created_at, updated_at)
-SELECT s.space_id, 'SINGLE', 1, 1, '남향', 6000000, 550000, 55000, true, now(), now()
-FROM spaces s WHERE s.name = '402호' AND NOT EXISTS (SELECT 1 FROM private_space_details WHERE space_id = s.space_id);
+INSERT INTO private_space_details (space_id, room_type_id, room_count, bathroom_count, direction, deposit, monthly_rent, maintenance_fee, parking_available, created_at, updated_at)
+SELECT s.space_id, rt.room_type_id, 1, 1, '남향', 6000000, 550000, 55000, true, now(), now()
+FROM spaces s 
+JOIN room_types rt ON rt.code = 'SINGLE'
+WHERE s.name = '402호' AND NOT EXISTS (SELECT 1 FROM private_space_details WHERE space_id = s.space_id);
 
-INSERT INTO private_space_details (space_id, room_type, room_count, bathroom_count, direction, deposit, monthly_rent, maintenance_fee, parking_available, created_at, updated_at)
-SELECT s.space_id, 'SUITE', 2, 2, '남동향', 15000000, 1200000, 100000, true, now(), now()
-FROM spaces s WHERE s.name = '501호' AND NOT EXISTS (SELECT 1 FROM private_space_details WHERE space_id = s.space_id);
+INSERT INTO private_space_details (space_id, room_type_id, room_count, bathroom_count, direction, deposit, monthly_rent, maintenance_fee, parking_available, created_at, updated_at)
+SELECT s.space_id, rt.room_type_id, 2, 2, '남동향', 15000000, 1200000, 100000, true, now(), now()
+FROM spaces s 
+JOIN room_types rt ON rt.code = 'SUITE'
+WHERE s.name = '501호' AND NOT EXISTS (SELECT 1 FROM private_space_details WHERE space_id = s.space_id);
 
 -- ──────────────────────────────────────────────
 -- 2. 공용 공간 (COMMON) — 시설 3개

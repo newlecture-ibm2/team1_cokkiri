@@ -1,22 +1,30 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
-import { fetchRooms } from '../_api/roomApi';
-import type { RoomDTO, RoomFilterParams } from '../_types';
+import { fetchRooms, fetchPublicRoomTypes } from '../_api/roomApi';
+import type { RoomDTO, RoomFilterParams, RoomTypeOption } from '../_types';
 
 export function useRooms() {
   const [rooms, setRooms] = useState<RoomDTO[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedType, setSelectedType] = useState('ALL');
+  const [selectedTypeId, setSelectedTypeId] = useState<number | null>(null);
   const [currentPage, setCurrentPage] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
   const [totalElements, setTotalElements] = useState(0);
+  const [roomTypes, setRoomTypes] = useState<RoomTypeOption[]>([]);
+
+  // 방 유형 목록 로드
+  useEffect(() => {
+    fetchPublicRoomTypes()
+      .then(setRoomTypes)
+      .catch(console.error);
+  }, []);
 
   const loadRooms = useCallback(async () => {
     setLoading(true);
     try {
       const params: RoomFilterParams = {
-        roomType: selectedType === 'ALL' ? undefined : selectedType,
+        roomTypeId: selectedTypeId ?? undefined,
         page: currentPage,
         size: 12,
       };
@@ -31,7 +39,7 @@ export function useRooms() {
     } finally {
       setLoading(false);
     }
-  }, [selectedType, currentPage]);
+  }, [selectedTypeId, currentPage]);
 
   useEffect(() => {
     loadRooms();
@@ -40,13 +48,14 @@ export function useRooms() {
   // 필터 변경 시 페이지 리셋
   useEffect(() => {
     setCurrentPage(0);
-  }, [selectedType]);
+  }, [selectedTypeId]);
 
   return {
     rooms,
     loading,
-    selectedType,
-    setSelectedType,
+    roomTypes,
+    selectedTypeId,
+    setSelectedTypeId,
     currentPage,
     setCurrentPage,
     totalPages,

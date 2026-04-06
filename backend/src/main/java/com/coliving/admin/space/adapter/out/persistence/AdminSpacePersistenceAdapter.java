@@ -26,6 +26,7 @@ public class AdminSpacePersistenceAdapter implements AdminSpaceRepositoryPort {
     private final SpaceImageJpaRepository spaceImageJpaRepository;
     private final PrivateSpaceDetailJpaRepository privateSpaceDetailJpaRepository;
     private final CommonSpaceDetailJpaRepository commonSpaceDetailJpaRepository;
+    private final RoomTypeJpaRepository roomTypeJpaRepository;
 
     @Override
     public AdminSpace save(AdminSpace adminSpace) {
@@ -107,9 +108,12 @@ public class AdminSpacePersistenceAdapter implements AdminSpaceRepositoryPort {
 
     private void createDetail(SpaceEntity savedSpace, AdminSpace adminSpace) {
         if (adminSpace.getType() == com.coliving.user.room.model.SpaceType.PRIVATE && adminSpace.getPrivateDetail() != null) {
+            RoomTypeEntity roomTypeEntity = roomTypeJpaRepository.findById(adminSpace.getPrivateDetail().getRoomTypeId())
+                    .orElseThrow(() -> new BusinessException(ErrorCode.ROOM_TYPE_NOT_FOUND));
+
             privateSpaceDetailJpaRepository.save(PrivateSpaceDetailEntity.builder()
                     .space(savedSpace)
-                    .roomType(adminSpace.getPrivateDetail().getRoomType())
+                    .roomType(roomTypeEntity)
                     .roomCount(adminSpace.getPrivateDetail().getRoomCount())
                     .bathroomCount(adminSpace.getPrivateDetail().getBathroomCount())
                     .direction(adminSpace.getPrivateDetail().getDirection())
@@ -132,8 +136,11 @@ public class AdminSpacePersistenceAdapter implements AdminSpaceRepositoryPort {
     private void updateDetail(SpaceEntity savedSpace, AdminSpace adminSpace) {
         if (adminSpace.getType() == com.coliving.user.room.model.SpaceType.PRIVATE && adminSpace.getPrivateDetail() != null) {
             if (savedSpace.getPrivateDetail() != null) {
+                RoomTypeEntity roomTypeEntity = roomTypeJpaRepository.findById(adminSpace.getPrivateDetail().getRoomTypeId())
+                        .orElseThrow(() -> new BusinessException(ErrorCode.ROOM_TYPE_NOT_FOUND));
+
                 savedSpace.getPrivateDetail().update(
-                        adminSpace.getPrivateDetail().getRoomType(),
+                        roomTypeEntity,
                         adminSpace.getPrivateDetail().getRoomCount(),
                         adminSpace.getPrivateDetail().getBathroomCount(),
                         adminSpace.getPrivateDetail().getDirection(),
@@ -180,7 +187,8 @@ public class AdminSpacePersistenceAdapter implements AdminSpaceRepositoryPort {
 
         if (entity.getPrivateDetail() != null) {
             builder.privateDetail(AdminSpace.PrivateSpaceDetail.builder()
-                    .roomType(entity.getPrivateDetail().getRoomType())
+                    .roomTypeId(entity.getPrivateDetail().getRoomType().getId())
+                    .roomTypeName(entity.getPrivateDetail().getRoomType().getName())
                     .roomCount(entity.getPrivateDetail().getRoomCount())
                     .bathroomCount(entity.getPrivateDetail().getBathroomCount())
                     .direction(entity.getPrivateDetail().getDirection())

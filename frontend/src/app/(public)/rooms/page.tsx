@@ -12,8 +12,9 @@ export default function RoomsPage() {
   const {
     rooms,
     loading,
-    selectedType,
-    setSelectedType,
+    roomTypes,
+    selectedTypeId,
+    setSelectedTypeId,
     currentPage,
     setCurrentPage,
     totalPages,
@@ -38,8 +39,12 @@ export default function RoomsPage() {
         )}
       </motion.div>
 
-      {/* Filter Chips */}
-      <FilterChips selectedType={selectedType} onSelectType={setSelectedType} />
+      {/* Filter Chips (동적) */}
+      <FilterChips
+        roomTypes={roomTypes}
+        selectedTypeId={selectedTypeId}
+        onSelectType={setSelectedTypeId}
+      />
 
       {/* Loading Skeleton */}
       {loading && <RoomGridSkeleton count={8} />}

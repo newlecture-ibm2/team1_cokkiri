@@ -42,7 +42,7 @@ public class AdminSpaceService implements AdminSpaceUseCase {
 
         if (command.getType() == SpaceType.PRIVATE) {
             builder.privateDetail(AdminSpace.PrivateSpaceDetail.builder()
-                    .roomType(command.getRoomType())
+                    .roomTypeId(command.getRoomTypeId())
                     .roomCount(command.getRoomCount())
                     .bathroomCount(command.getBathroomCount())
                     .direction(command.getDirection())
@@ -107,7 +107,7 @@ public class AdminSpaceService implements AdminSpaceUseCase {
 
         if (existing.getType() == SpaceType.PRIVATE) {
             builder.privateDetail(AdminSpace.PrivateSpaceDetail.builder()
-                    .roomType(command.getRoomType())
+                    .roomTypeId(command.getRoomTypeId())
                     .roomCount(command.getRoomCount())
                     .bathroomCount(command.getBathroomCount())
                     .direction(command.getDirection())

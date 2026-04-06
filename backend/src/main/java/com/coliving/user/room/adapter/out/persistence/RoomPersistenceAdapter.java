@@ -31,10 +31,10 @@ public class RoomPersistenceAdapter implements RoomRepositoryPort {
     }
 
     @Override
-    public Page<Room> findAvailableRoomsWithFilter(RoomType roomType, BigDecimal minRent,
+    public Page<Room> findAvailableRoomsWithFilter(Long roomTypeId, BigDecimal minRent,
                                                     BigDecimal maxRent, Integer floor, Pageable pageable) {
         return spaceJpaRepository
-                .findAvailableRoomsWithFilter(roomType, minRent, maxRent, floor, pageable)
+                .findAvailableRoomsWithFilter(roomTypeId, minRent, maxRent, floor, pageable)
                 .map(this::toRoom);
     }
 
@@ -63,7 +63,8 @@ public class RoomPersistenceAdapter implements RoomRepositoryPort {
                 .thumbnailUrl(thumbnailUrl);
 
         if (entity.getPrivateDetail() != null) {
-            builder.roomType(entity.getPrivateDetail().getRoomType())
+            builder.roomTypeId(entity.getPrivateDetail().getRoomType().getId())
+                    .roomTypeName(entity.getPrivateDetail().getRoomType().getName())
                     .roomCount(entity.getPrivateDetail().getRoomCount())
                     .bathroomCount(entity.getPrivateDetail().getBathroomCount())
                     .direction(entity.getPrivateDetail().getDirection())
@@ -97,7 +98,8 @@ public class RoomPersistenceAdapter implements RoomRepositoryPort {
                 .area(room.getArea())
                 .description(room.getDescription())
                 .amenities(room.getAmenities())
-                .roomType(room.getRoomType())
+                .roomTypeId(room.getRoomTypeId())
+                .roomTypeName(room.getRoomTypeName())
                 .roomCount(room.getRoomCount())
                 .bathroomCount(room.getBathroomCount())
                 .direction(room.getDirection())
