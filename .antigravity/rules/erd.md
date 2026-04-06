@@ -35,7 +35,7 @@ v2.0: BOOKING+CONTRACT합병, SPACE상속패턴분리, JSONB통합(첨부/링크
 `reservation_id(PK), user_id(FK), space_id(FK→COMMON), status(PENDING/APPROVED/CANCELLED/COMPLETED), reservation_date, start_time, end_time, approved_by(FK→USERS), created_at, updated_at, deleted_at`
 
 ### CONTROL_LOG (감사)
-`control_log_id(PK), device_id(FK), user_id(FK), actor_type(RESIDENT/ADMIN), command(TURN_ON/SET_TEMP등), command_params(JSONB), result(SUCCESS/FAILURE), error_message, correlation_id, created_at, updated_at, deleted_at`
+`control_log_id(PK), device_id(FK), user_id(FK), actor_type(RESIDENT/ADMIN), command(ON/OFF/SET_TEMP등), command_params(JSONB), result(SUCCESS/FAILURE), error_message, correlation_id, created_at, updated_at, deleted_at`
 
 ### PAYMENT
 `payment_id(PK), contract_id(FK,nullable), reservation_id(FK,nullable), user_id(FK), type(RENT/MAINTENANCE/FACILITY), amount, status(UNPAID/PENDING/PAID), payment_method(CARD/TRANSFER/CASH), billing_date, paid_date, created_at, updated_at, deleted_at`

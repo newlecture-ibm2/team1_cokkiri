@@ -73,7 +73,7 @@ export function DeviceGrid() {
       } catch { /* ignore */ }
 
       const isPowerOn = currentState.power === true || currentState.power === "ON";
-      const command = isPowerOn ? "TURN_OFF" : "TURN_ON";
+      const command = isPowerOn ? "OFF" : "ON";
 
       await controlDevice(device.deviceId, { command });
       setFeedback(`"${device.name}" ${isPowerOn ? "OFF" : "ON"}`);

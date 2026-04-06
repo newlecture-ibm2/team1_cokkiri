@@ -219,7 +219,7 @@ export function DeviceTypeManager() {
                 <input
                   id="dt-commands"
                   type="text"
-                  placeholder='예: ["TURN_ON","TURN_OFF"]'
+                  placeholder='예: ["ON","OFF"]'
                   value={form.commands}
                   onChange={(e) => setForm({ ...form, commands: e.target.value })}
                   className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm font-mono
