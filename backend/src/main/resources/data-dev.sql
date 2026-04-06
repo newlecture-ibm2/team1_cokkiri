@@ -1,7 +1,9 @@
-git-- ============================================================
+-- ============================================================
 -- Space 도메인 시드 데이터 (data-dev.sql)
 -- ============================================================
--- Docker PostgreSQL 환경(SPRING_PROFILES_ACTIVE=dev)에서 Spring이 자동 실행합니다.
+-- 동일 내용은 com.coliving.global.config.DataInitializer.seedSpacesFromDevDataset() 에서 적재합니다.
+-- application-dev.yml 의 spring.sql.init 은 비활성화되어 있으며, 이 스크립트는 수동·참고용입니다.
+-- Docker PostgreSQL 환경에서 수동 실행 시 테이블은 Hibernate ddl-auto 등으로 먼저 존재해야 합니다.
 -- 테이블은 Hibernate ddl-auto: update 가 JPA Entity 기반으로 생성합니다.
 -- ============================================================
 
