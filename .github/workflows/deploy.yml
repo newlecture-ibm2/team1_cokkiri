@@ -19,7 +19,7 @@ jobs:
           DB_USERNAME=coliving
           DB_PASSWORD=${{ secrets.DB_PASSWORD }}
           JWT_SECRET=${{ secrets.JWT_SECRET }}
-          MOCK_IOT_URL=http://mock-iot:8080
+          MOCK_IOT_URL=http://mock-iot:8000
           EOF
 
       - name: Deploy with Docker Compose
