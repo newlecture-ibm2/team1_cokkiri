@@ -55,22 +55,50 @@ export default function ContractApplyForm() {
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showToast, setShowToast] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
-  // Load draft from LocalStorage
+  // Load draft from API & LocalStorage
   useEffect(() => {
-    const savedDraft = localStorage.getItem(`contract_draft_${spaceId}`);
-    if (savedDraft) {
+    const loadDraft = async () => {
+      setIsLoading(true);
       try {
-        setFormData(prev => ({ ...prev, ...JSON.parse(savedDraft) }));
+        // 1. Try LocalStorage first for instant hit
+        const savedDraft = localStorage.getItem(`contract_draft_${spaceId}`);
+        if (savedDraft) {
+          setFormData(prev => ({ ...prev, ...JSON.parse(savedDraft) }));
+        }
+
+        // 2. Fetch from Server for latest truth
+        const response = await fetch(`/api/bff/contracts/draft?spaceId=${spaceId}`);
+        if (response.ok) {
+          const result = await response.json();
+          if (result.success && result.data) {
+            setFormData(prev => ({
+              ...prev,
+              desiredStartDate: result.data.desiredStartDate || prev.desiredStartDate,
+              desiredDurationMonths: result.data.desiredDurationMonths || prev.desiredDurationMonths,
+              address: result.data.address || prev.address,
+              bankAccount: result.data.bankAccount || prev.bankAccount,
+              usagePurpose: result.data.usagePurpose || prev.usagePurpose,
+              requestNote: result.data.requestNote || prev.requestNote,
+              privacyAgreed: result.data.privacyAgreed || prev.privacyAgreed,
+            }));
+          }
+        }
       } catch (e) {
-        console.error("Failed to parse draft", e);
+        console.error("Failed to load draft from server", e);
+      } finally {
+        setIsLoading(false);
       }
-    }
+    };
+
+    loadDraft();
   }, [spaceId]);
 
   // Throttled Draft Save API Call
-  const saveDraft = useCallback(async (data: ContractFormData) => {
-    setIsSaving(true);
+  const saveDraft = useCallback(async (data: ContractFormData, isManual: boolean = false) => {
+    if (isManual) setIsSaving(true);
     try {
       await fetch('/api/bff/contracts/draft', {
         method: 'POST',
@@ -80,20 +108,26 @@ export default function ContractApplyForm() {
       
       localStorage.setItem(`contract_draft_${spaceId}`, JSON.stringify(data));
       setLastSaved(new Date());
+      
+      if (isManual) {
+        setShowToast(true);
+        setTimeout(() => setShowToast(false), 3000);
+      }
     } catch (err) {
       console.error("Draft save failed", err);
     } finally {
-      setIsSaving(false);
+      if (isManual) setIsSaving(false);
     }
   }, [spaceId]);
 
+  // Throttled Auto-save
   useEffect(() => {
-    if (step > 4) return;
+    if (step > 4 || isLoading) return;
     const handler = setTimeout(() => {
-      saveDraft(formData);
+      saveDraft(formData, false);
     }, 2000);
     return () => clearTimeout(handler);
-  }, [formData, saveDraft, step]);
+  }, [formData, saveDraft, step, isLoading]);
 
   const nextStep = () => setStep(s => Math.min(s + 1, 4));
   const prevStep = () => setStep(s => Math.max(s - 1, 1));
@@ -176,23 +210,30 @@ export default function ContractApplyForm() {
               </div>
             ))}
           </div>
-
-          <div className="flex items-center gap-4 text-[10px] font-black tracking-[0.3em] uppercase opacity-40">
-            {isSaving ? (
-              <span className="flex items-center gap-2 text-accent animate-pulse">
-                <Loader2 className="w-3 h-3 animate-spin"/> SAVING...
-              </span>
-            ) : lastSaved && (
-              <span className="flex items-center gap-2">
-                <Save className="w-3 h-3"/> SYNCED
-              </span>
-            )}
-          </div>
         </div>
       )}
 
       {/* Main Content Area */}
-      <div className="bg-white rounded-[3rem] border border-primary/5 shadow-2xl shadow-primary/5 p-10 md:p-20 relative overflow-hidden">
+      <div className="relative">
+        <div className="bg-white rounded-[3rem] border border-primary/5 shadow-2xl shadow-primary/5 p-10 md:p-20 relative overflow-hidden">
+          {/* Top Right Save Button */}
+          {step < 5 && (
+            <button 
+              type="button"
+              onClick={() => saveDraft(formData, true)}
+              disabled={isSaving || isLoading}
+              className="absolute top-8 right-8 z-10 flex items-center gap-2 px-6 py-3 bg-primary/5 hover:bg-accent hover:text-white rounded-full text-[10px] font-black tracking-[0.2em] uppercase transition-all group disabled:opacity-50"
+            >
+              {(isSaving || isLoading) ? (
+                <Loader2 className="w-3 h-3 animate-spin"/>
+              ) : (
+                <Save className="w-3 h-3 transition-transform group-hover:scale-110" />
+              )}
+              {isLoading ? "LOADING..." : "SAVE DRAFT"}
+            </button>
+          )}
+
+          {/* Editorial Background Element */}
         {/* Editorial Background Element */}
         {step < 5 && (
           <span className="absolute -top-10 -right-10 text-[20vw] font-black text-primary/[0.02] select-none pointer-events-none">
@@ -472,7 +513,30 @@ export default function ContractApplyForm() {
             )}
           </AnimatePresence>
         </form>
+        </div>
       </div>
+
+      {/* Premium Toast Component */}
+      <AnimatePresence>
+        {showToast && (
+          <motion.div 
+            initial={{ opacity: 0, y: 100 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.9 }}
+            className="fixed bottom-10 left-1/2 -translate-x-1/2 z-[100]"
+          >
+            <div className="bg-primary text-background px-10 py-5 rounded-full shadow-2xl flex items-center gap-6 border-2 border-white/10">
+              <div className="w-10 h-10 rounded-full bg-accent flex items-center justify-center">
+                <Save className="w-5 h-5 text-white" />
+              </div>
+              <div className="flex flex-col pr-6">
+                <span className="text-[10px] font-black tracking-[0.3em] uppercase opacity-40 leading-none mb-1">DRAFT SYNCED</span>
+                <span className="text-sm font-bold tracking-tight">계약서 신청 내용이 임시 저장되었습니다.</span>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
