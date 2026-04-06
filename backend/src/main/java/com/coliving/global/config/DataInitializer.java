@@ -23,10 +23,15 @@ import com.coliving.common.voc.adapter.out.jpa.VocEntity;
 import com.coliving.common.voc.adapter.out.jpa.VocJpaRepository;
 import com.coliving.common.voc.model.VocCategory;
 import com.coliving.common.voc.model.VocStatus;
+import com.coliving.user.room.adapter.out.jpa.CommonSpaceDetailEntity;
+import com.coliving.user.room.adapter.out.jpa.CommonSpaceDetailJpaRepository;
 import com.coliving.user.room.adapter.out.jpa.PrivateSpaceDetailEntity;
 import com.coliving.user.room.adapter.out.jpa.PrivateSpaceDetailJpaRepository;
 import com.coliving.user.room.adapter.out.jpa.SpaceEntity;
+import com.coliving.user.room.adapter.out.jpa.SpaceImageEntity;
+import com.coliving.user.room.adapter.out.jpa.SpaceImageJpaRepository;
 import com.coliving.user.room.adapter.out.jpa.SpaceJpaRepository;
+import com.coliving.user.room.model.ImageType;
 import com.coliving.user.room.model.RoomType;
 import com.coliving.user.room.model.SpaceStatus;
 import com.coliving.user.room.model.SpaceType;
@@ -67,6 +72,8 @@ public class DataInitializer implements ApplicationRunner {
     private final PasswordEncoder passwordEncoder;
     private final SpaceJpaRepository spaceJpaRepository;
     private final PrivateSpaceDetailJpaRepository privateSpaceDetailJpaRepository;
+    private final CommonSpaceDetailJpaRepository commonSpaceDetailJpaRepository;
+    private final SpaceImageJpaRepository spaceImageJpaRepository;
     private final DeviceTypeJpaRepository deviceTypeJpaRepository;
     private final DeviceJpaRepository deviceJpaRepository;
     private final PostJpaRepository postJpaRepository;
@@ -111,29 +118,7 @@ public class DataInitializer implements ApplicationRunner {
                 .status(UserStatus.ACTIVE)
                 .build());
 
-        SpaceEntity space = spaceJpaRepository.save(SpaceEntity.builder()
-                .name("코끼리 스튜디오 101")
-                .type(SpaceType.PRIVATE)
-                .status(SpaceStatus.AVAILABLE)
-                .floor(10)
-                .area(new BigDecimal("28.50"))
-                .amenities("[\"wifi\",\"desk\"]")
-                .description("남향, 조용한 업무용 스튜디오")
-                .positionX(0)
-                .positionY(0)
-                .build());
-
-        privateSpaceDetailJpaRepository.save(PrivateSpaceDetailEntity.builder()
-                .space(space)
-                .roomType(RoomType.STUDIO)
-                .roomCount(1)
-                .bathroomCount(1)
-                .direction("남")
-                .deposit(new BigDecimal("5000000"))
-                .monthlyRent(new BigDecimal("850000"))
-                .maintenanceFee(new BigDecimal("80000"))
-                .parkingAvailable(true)
-                .build());
+        SpaceEntity deviceHostSpace = seedSpacesFromDevDataset();
 
         DeviceTypeEntity lightType = deviceTypeJpaRepository.save(DeviceTypeEntity.builder()
                 .code("LIGHT")
@@ -152,7 +137,7 @@ public class DataInitializer implements ApplicationRunner {
                 .build());
 
         deviceJpaRepository.save(DeviceEntity.builder()
-                .spaceId(space.getSpaceId())
+                .spaceId(deviceHostSpace.getSpaceId())
                 .deviceType(lightType)
                 .name("거실 메인 조명")
                 .modelName("Mock-L1")
@@ -212,5 +197,161 @@ public class DataInitializer implements ApplicationRunner {
         notificationJpaRepository.save(n);
 
         log.info("[DataInitializer] 데모 시드 완료 (로그인: admin / demo, 비밀번호: {})", DEMO_PASSWORD);
+    }
+
+    /** {@code data-dev.sql} 과 동일한 공간·상세·이미지 시드. IoT 데모 기기 부착용으로 301호를 반환합니다. */
+    private SpaceEntity seedSpacesFromDevDataset() {
+        SpaceEntity s301 = savePrivateSpace(
+                "301호", 3, new BigDecimal("25.00"), "[\"에어컨\",\"냉장고\"]", "남향 채광 좋은 싱글룸",
+                RoomType.SINGLE, 1, 1, "남향",
+                new BigDecimal("5000000"), new BigDecimal("500000"), new BigDecimal("50000"), true);
+        saveSpaceImage(s301, "https://picsum.photos/seed/room301a/800/600", ImageType.PHOTO, 1, true);
+        saveSpaceImage(s301, "https://picsum.photos/seed/room301b/800/600", ImageType.PHOTO, 2, false);
+
+        SpaceEntity s302 = savePrivateSpace(
+                "302호", 3, new BigDecimal("30.00"), "[\"에어컨\",\"세탁기\",\"냉장고\"]", "복층 구조 더블룸",
+                RoomType.DOUBLE, 2, 1, "동향",
+                new BigDecimal("8000000"), new BigDecimal("700000"), new BigDecimal("60000"), true);
+        saveSpaceImage(s302, "https://picsum.photos/seed/room302a/800/600", ImageType.PHOTO, 1, true);
+
+        SpaceEntity s401 = savePrivateSpace(
+                "401호", 4, new BigDecimal("20.00"), "[\"에어컨\"]", "깔끔한 스튜디오",
+                RoomType.STUDIO, 1, 1, "서향",
+                new BigDecimal("3000000"), new BigDecimal("400000"), new BigDecimal("40000"), false);
+        saveSpaceImage(s401, "https://picsum.photos/seed/room401a/800/600", ImageType.PHOTO, 1, true);
+
+        SpaceEntity s402 = savePrivateSpace(
+                "402호", 4, new BigDecimal("28.00"), "[\"에어컨\",\"냉장고\",\"Wi-Fi\"]", "현재 입주 중인 방",
+                SpaceStatus.OCCUPIED,
+                RoomType.SINGLE, 1, 1, "남향",
+                new BigDecimal("6000000"), new BigDecimal("550000"), new BigDecimal("55000"), true);
+        saveSpaceImage(s402, "https://picsum.photos/seed/room402a/800/600", ImageType.PHOTO, 1, true);
+
+        SpaceEntity s501 = savePrivateSpace(
+                "501호", 5, new BigDecimal("35.00"), "[\"에어컨\",\"세탁기\",\"냉장고\",\"TV\",\"주차\"]", "프리미엄 스위트룸",
+                RoomType.SUITE, 2, 2, "남동향",
+                new BigDecimal("15000000"), new BigDecimal("1200000"), new BigDecimal("100000"), true);
+        saveSpaceImage(s501, "https://picsum.photos/seed/room501a/800/600", ImageType.PHOTO, 1, true);
+        saveSpaceImage(s501, "https://picsum.photos/seed/room501b/800/600", ImageType.PHOTO, 2, false);
+        saveSpaceImage(s501, "https://picsum.photos/seed/room501fp/800/600", ImageType.FLOOR_PLAN, 3, false);
+
+        SpaceEntity lobby = saveCommonSpace(
+                "메인 로비 미팅룸", 1, new BigDecimal("30.50"), "[\"Wi-Fi\",\"TV\"]", "공용 로비에 위치한 6인 회의실",
+                6, "09:00~22:00", true, BigDecimal.ZERO);
+        saveSpaceImage(lobby, "https://picsum.photos/seed/lobby/800/600", ImageType.PHOTO, 1, true);
+
+        SpaceEntity rooftop = saveCommonSpace(
+                "루프탑 파티룸", 10, new BigDecimal("100.00"), "[]", "바비큐 및 파티 가능한 루프탑",
+                20, "12:00~23:00", true, new BigDecimal("50000"));
+        saveSpaceImage(rooftop, "https://picsum.photos/seed/rooftop/800/600", ImageType.PHOTO, 1, true);
+
+        SpaceEntity gym = saveCommonSpace(
+                "B1 헬스장", -1, new BigDecimal("300.00"), "[]", "24시간 무인 헬스장",
+                50, "00:00~24:00", false, BigDecimal.ZERO);
+        saveSpaceImage(gym, "https://picsum.photos/seed/gym/800/600", ImageType.PHOTO, 1, true);
+
+        return s301;
+    }
+
+    private SpaceEntity savePrivateSpace(
+            String name,
+            int floor,
+            BigDecimal area,
+            String amenities,
+            String description,
+            RoomType roomType,
+            int roomCount,
+            int bathroomCount,
+            String direction,
+            BigDecimal deposit,
+            BigDecimal monthlyRent,
+            BigDecimal maintenanceFee,
+            boolean parkingAvailable) {
+        return savePrivateSpace(
+                name, floor, area, amenities, description, SpaceStatus.AVAILABLE,
+                roomType, roomCount, bathroomCount, direction,
+                deposit, monthlyRent, maintenanceFee, parkingAvailable);
+    }
+
+    private SpaceEntity savePrivateSpace(
+            String name,
+            int floor,
+            BigDecimal area,
+            String amenities,
+            String description,
+            SpaceStatus status,
+            RoomType roomType,
+            int roomCount,
+            int bathroomCount,
+            String direction,
+            BigDecimal deposit,
+            BigDecimal monthlyRent,
+            BigDecimal maintenanceFee,
+            boolean parkingAvailable) {
+        SpaceEntity space = spaceJpaRepository.save(SpaceEntity.builder()
+                .name(name)
+                .type(SpaceType.PRIVATE)
+                .status(status)
+                .floor(floor)
+                .area(area)
+                .amenities(amenities)
+                .description(description)
+                .positionX(0)
+                .positionY(0)
+                .build());
+        privateSpaceDetailJpaRepository.save(PrivateSpaceDetailEntity.builder()
+                .space(space)
+                .roomType(roomType)
+                .roomCount(roomCount)
+                .bathroomCount(bathroomCount)
+                .direction(direction)
+                .deposit(deposit)
+                .monthlyRent(monthlyRent)
+                .maintenanceFee(maintenanceFee)
+                .parkingAvailable(parkingAvailable)
+                .build());
+        return space;
+    }
+
+    private SpaceEntity saveCommonSpace(
+            String name,
+            int floor,
+            BigDecimal area,
+            String amenities,
+            String description,
+            int maxCapacity,
+            String operatingHours,
+            boolean reservable,
+            BigDecimal usageFee) {
+        SpaceEntity space = spaceJpaRepository.save(SpaceEntity.builder()
+                .name(name)
+                .type(SpaceType.COMMON)
+                .status(SpaceStatus.AVAILABLE)
+                .floor(floor)
+                .area(area)
+                .amenities(amenities)
+                .description(description)
+                .positionX(0)
+                .positionY(0)
+                .build());
+        commonSpaceDetailJpaRepository.save(CommonSpaceDetailEntity.builder()
+                .space(space)
+                .maxCapacity(maxCapacity)
+                .operatingHours(operatingHours)
+                .isReservable(reservable)
+                .usageFee(usageFee)
+                .build());
+        return space;
+    }
+
+    private void saveSpaceImage(
+            SpaceEntity space, String imageUrl, ImageType imageType, int sortOrder, boolean thumbnail) {
+        spaceImageJpaRepository.save(SpaceImageEntity.builder()
+                .space(space)
+                .imageUrl(imageUrl)
+                .imageType(imageType)
+                .sortOrder(sortOrder)
+                .isThumbnail(thumbnail)
+                .build());
     }
 }
