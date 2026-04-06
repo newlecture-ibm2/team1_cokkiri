@@ -1,4 +1,4 @@
-package com.coliving.reservation.adapter.in.web;
+package com.coliving.admin.reservation.adapter.in.web;
 
 import com.coliving.reservation.adapter.in.web.dto.AdminReservationResponse;
 import com.coliving.reservation.application.port.in.ReservationCommandUseCase;
