@@ -38,6 +38,7 @@ public enum ErrorCode {
     IOT_COMMUNICATION_FAIL(HttpStatus.BAD_GATEWAY, "IoT 기기 동기화 통신에 실패했습니다"),
     CONTROL_LOG_EXISTS(HttpStatus.CONFLICT, "제어 이력이 존재하여 삭제할 수 없습니다"),
     DEVICE_ACTIVE(HttpStatus.CONFLICT, "활성화 상태의 기기는 삭제할 수 없습니다"),
+    DUPLICATE_MAC_ADDRESS(HttpStatus.CONFLICT, "이미 등록된 MAC 주소입니다"),
 
     // ── 공통 ──
     VALIDATION_ERROR(HttpStatus.BAD_REQUEST, "필수 항목 누락 또는 형식이 올바르지 않습니다"),

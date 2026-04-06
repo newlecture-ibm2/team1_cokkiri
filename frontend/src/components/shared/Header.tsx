@@ -28,7 +28,7 @@ const navItems: NavItem[] = [
     name: "Community",
     children: [
       { name: "Board", path: "/community" },
-      { name: "Voc", path: "/voc" },
+      { name: "Voc", path: "/vocs" },
     ],
   },
   {

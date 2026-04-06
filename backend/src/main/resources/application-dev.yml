@@ -1,3 +1,7 @@
+app:
+  demo-data:
+    enabled: true
+
 spring:
   datasource:
     url: ${DB_URL:jdbc:postgresql://db:5432/coliving}
@@ -7,11 +11,7 @@ spring:
     show-sql: true
     hibernate:
       ddl-auto: update
-    defer-datasource-initialization: true
-  sql:
-    init:
-      mode: always
-      data-locations: classpath:data-dev.sql
+  sql.init.mode: never
 
 jwt:
   secret: ${JWT_SECRET:dev-secret-key-minimum-32-characters-long!!}

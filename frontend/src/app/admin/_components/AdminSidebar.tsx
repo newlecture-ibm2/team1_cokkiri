@@ -30,7 +30,7 @@ const NAV_SECTIONS: {
       { href: "/admin/devices", label: "기기", icon: Cpu },
       { href: "/admin/reservations", label: "예약", icon: CalendarDays },
       { href: "/admin/billing", label: "결제·청구", icon: CreditCard },
-      { href: "/admin/voc", label: "민원", icon: MessageSquareText },
+      { href: "/admin/vocs", label: "민원", icon: MessageSquareText },
     ],
   },
 ];
