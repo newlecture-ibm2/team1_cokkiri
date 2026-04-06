@@ -1,4 +1,4 @@
-package com.coliving.admin.space.adapter.in.web;
+package com.coliving.admin.space.adapter.in.web.dto.req;
 
 import com.coliving.user.room.model.SpaceStatus;
 

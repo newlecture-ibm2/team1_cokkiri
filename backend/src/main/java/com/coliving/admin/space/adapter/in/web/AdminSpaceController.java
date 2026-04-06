@@ -1,5 +1,8 @@
 package com.coliving.admin.space.adapter.in.web;
 
+import com.coliving.admin.space.adapter.in.web.dto.req.CreateSpaceRequestDto;
+import com.coliving.admin.space.adapter.in.web.dto.req.UpdateSpaceRequestDto;
+import com.coliving.admin.space.adapter.in.web.dto.res.AdminSpaceResponseDto;
 import com.coliving.admin.space.application.command.CreateSpaceCommand;
 import com.coliving.admin.space.application.command.UpdateSpaceCommand;
 import com.coliving.admin.space.application.port.in.AdminSpaceUseCase;

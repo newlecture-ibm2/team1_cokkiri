@@ -1,4 +1,4 @@
-package com.coliving.admin.space.adapter.in.web;
+package com.coliving.admin.space.adapter.in.web.dto.res;
 
 import com.coliving.admin.space.application.result.AdminSpaceResult;
 import com.coliving.user.room.model.ImageType;
