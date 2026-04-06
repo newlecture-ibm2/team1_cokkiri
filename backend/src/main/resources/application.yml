@@ -1,3 +1,7 @@
+app:
+  demo-data:
+    enabled: false
+
 spring:
   profiles.active: dev
   jpa:

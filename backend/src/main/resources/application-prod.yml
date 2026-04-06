@@ -1,3 +1,7 @@
+app:
+  demo-data:
+    enabled: true
+
 spring:
   datasource:
     url: ${DB_URL}
