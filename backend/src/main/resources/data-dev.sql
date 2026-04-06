@@ -1,4 +1,4 @@
--- ============================================================
+git-- ============================================================
 -- Space 도메인 시드 데이터 (data-dev.sql)
 -- ============================================================
 -- Docker PostgreSQL 환경(SPRING_PROFILES_ACTIVE=dev)에서 Spring이 자동 실행합니다.
@@ -78,3 +78,59 @@ FROM spaces s WHERE s.name = '루프탑 파티룸' AND NOT EXISTS (SELECT 1 FROM
 INSERT INTO common_space_details (space_id, max_capacity, operating_hours, is_reservable, usage_fee, created_at, updated_at)
 SELECT s.space_id, 50, '00:00~24:00', false, 0, now(), now()
 FROM spaces s WHERE s.name = 'B1 헬스장' AND NOT EXISTS (SELECT 1 FROM common_space_details WHERE space_id = s.space_id);
+
+-- ──────────────────────────────────────────────
+-- 3. 공간 이미지 (SPACE_IMAGE)
+-- ──────────────────────────────────────────────
+
+-- 301호 이미지
+INSERT INTO space_images (space_id, image_url, image_type, sort_order, is_thumbnail, created_at, updated_at)
+SELECT s.space_id, 'https://picsum.photos/seed/room301a/800/600', 'PHOTO', 1, true, now(), now()
+FROM spaces s WHERE s.name = '301호' AND NOT EXISTS (SELECT 1 FROM space_images si WHERE si.space_id = s.space_id AND si.sort_order = 1);
+
+INSERT INTO space_images (space_id, image_url, image_type, sort_order, is_thumbnail, created_at, updated_at)
+SELECT s.space_id, 'https://picsum.photos/seed/room301b/800/600', 'PHOTO', 2, false, now(), now()
+FROM spaces s WHERE s.name = '301호' AND NOT EXISTS (SELECT 1 FROM space_images si WHERE si.space_id = s.space_id AND si.sort_order = 2);
+
+-- 302호 이미지
+INSERT INTO space_images (space_id, image_url, image_type, sort_order, is_thumbnail, created_at, updated_at)
+SELECT s.space_id, 'https://picsum.photos/seed/room302a/800/600', 'PHOTO', 1, true, now(), now()
+FROM spaces s WHERE s.name = '302호' AND NOT EXISTS (SELECT 1 FROM space_images si WHERE si.space_id = s.space_id AND si.sort_order = 1);
+
+-- 401호 이미지
+INSERT INTO space_images (space_id, image_url, image_type, sort_order, is_thumbnail, created_at, updated_at)
+SELECT s.space_id, 'https://picsum.photos/seed/room401a/800/600', 'PHOTO', 1, true, now(), now()
+FROM spaces s WHERE s.name = '401호' AND NOT EXISTS (SELECT 1 FROM space_images si WHERE si.space_id = s.space_id AND si.sort_order = 1);
+
+-- 402호 이미지
+INSERT INTO space_images (space_id, image_url, image_type, sort_order, is_thumbnail, created_at, updated_at)
+SELECT s.space_id, 'https://picsum.photos/seed/room402a/800/600', 'PHOTO', 1, true, now(), now()
+FROM spaces s WHERE s.name = '402호' AND NOT EXISTS (SELECT 1 FROM space_images si WHERE si.space_id = s.space_id AND si.sort_order = 1);
+
+-- 501호 이미지
+INSERT INTO space_images (space_id, image_url, image_type, sort_order, is_thumbnail, created_at, updated_at)
+SELECT s.space_id, 'https://picsum.photos/seed/room501a/800/600', 'PHOTO', 1, true, now(), now()
+FROM spaces s WHERE s.name = '501호' AND NOT EXISTS (SELECT 1 FROM space_images si WHERE si.space_id = s.space_id AND si.sort_order = 1);
+
+INSERT INTO space_images (space_id, image_url, image_type, sort_order, is_thumbnail, created_at, updated_at)
+SELECT s.space_id, 'https://picsum.photos/seed/room501b/800/600', 'PHOTO', 2, false, now(), now()
+FROM spaces s WHERE s.name = '501호' AND NOT EXISTS (SELECT 1 FROM space_images si WHERE si.space_id = s.space_id AND si.sort_order = 2);
+
+INSERT INTO space_images (space_id, image_url, image_type, sort_order, is_thumbnail, created_at, updated_at)
+SELECT s.space_id, 'https://picsum.photos/seed/room501fp/800/600', 'FLOOR_PLAN', 3, false, now(), now()
+FROM spaces s WHERE s.name = '501호' AND NOT EXISTS (SELECT 1 FROM space_images si WHERE si.space_id = s.space_id AND si.sort_order = 3);
+
+-- 메인 로비 미팅룸 이미지
+INSERT INTO space_images (space_id, image_url, image_type, sort_order, is_thumbnail, created_at, updated_at)
+SELECT s.space_id, 'https://picsum.photos/seed/lobby/800/600', 'PHOTO', 1, true, now(), now()
+FROM spaces s WHERE s.name = '메인 로비 미팅룸' AND NOT EXISTS (SELECT 1 FROM space_images si WHERE si.space_id = s.space_id AND si.sort_order = 1);
+
+-- 루프탑 파티룸 이미지
+INSERT INTO space_images (space_id, image_url, image_type, sort_order, is_thumbnail, created_at, updated_at)
+SELECT s.space_id, 'https://picsum.photos/seed/rooftop/800/600', 'PHOTO', 1, true, now(), now()
+FROM spaces s WHERE s.name = '루프탑 파티룸' AND NOT EXISTS (SELECT 1 FROM space_images si WHERE si.space_id = s.space_id AND si.sort_order = 1);
+
+-- B1 헬스장 이미지
+INSERT INTO space_images (space_id, image_url, image_type, sort_order, is_thumbnail, created_at, updated_at)
+SELECT s.space_id, 'https://picsum.photos/seed/gym/800/600', 'PHOTO', 1, true, now(), now()
+FROM spaces s WHERE s.name = 'B1 헬스장' AND NOT EXISTS (SELECT 1 FROM space_images si WHERE si.space_id = s.space_id AND si.sort_order = 1);
