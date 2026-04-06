@@ -38,7 +38,7 @@ backend/src/main/java/com/coliving/
 ├── resident/     # 입주자 유스케이스
 │   ├── device/ booking/ log/
 ├── common/       # 공통 (전역할)
-│   ├── auth/ profile/ community/ voc/ notification/
+│   ├── auth/ profile/ community/ vocs/ notification/
 └── infra/        # 외부연동
     ├── iot/MockIotClient.java
     └── persistence/
@@ -54,8 +54,8 @@ frontend/src/
 │   ├── (public)/rooms/        # 🌐 방목록,[id]상세
 │   ├── (resident-app)/        # 📱 모바일지향: my-devices,facilities,my-contract,device-history,reservation-history
 │   ├── (user)/                # 👤 contract-apply,my-contracts,my-contract-info,my-history
-│   ├── (admin)/               # 🏢 dashboard,spaces,devices,contracts,reservations,billing,voc
-│   ├── (common)/              # 💬 community,profile,voc
+│   ├── (admin)/               # 🏢 dashboard,spaces,devices,contracts,reservations,billing,vocs
+│   ├── (common)/              # 💬 community,profile,vocs
 │   └── api/bff/[...path]/route.ts  # BFF프록시
 ├── components/                 # 전역UI
 │   ├── ui/ (Button,Input,Modal,shadcn)

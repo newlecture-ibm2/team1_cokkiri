@@ -9,6 +9,8 @@ import lombok.*;
 import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.SQLRestriction;
 
+import java.time.OffsetDateTime;
+
 /**
  * USERS 테이블 매핑 JPA Entity
  * - 관리자(ADMIN), 일반 회원(USER), 입주자(RESIDENT) 역할 분리
@@ -60,6 +62,12 @@ public class UserEntity extends BaseEntity {
     @Column(name = "email", length = 100)
     private String email;
 
+    @Column(name = "phone_verified_at")
+    private OffsetDateTime phoneVerifiedAt;
+
+    @Column(name = "email_verified_at")
+    private OffsetDateTime emailVerifiedAt;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "role", nullable = false, length = 10)
     private UserRole role;
@@ -94,5 +102,13 @@ public class UserEntity extends BaseEntity {
 
     public void updatePassword(String passwordHash) {
         this.passwordHash = passwordHash;
+    }
+
+    public void verifyPhone() {
+        this.phoneVerifiedAt = OffsetDateTime.now();
+    }
+
+    public void verifyEmail() {
+        this.emailVerifiedAt = OffsetDateTime.now();
     }
 }

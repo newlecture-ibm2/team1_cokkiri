@@ -4,7 +4,7 @@ import com.coliving.common.auth.adapter.out.jpa.UserEntity;
 import com.coliving.common.auth.model.Gender;
 import com.coliving.common.auth.model.UserRole;
 import com.coliving.common.auth.model.UserStatus;
-import com.coliving.reservation.adapter.in.web.dto.UserReservationResponse;
+import com.coliving.reservation.adapter.in.web.dto.res.UserReservationResponseDto;
 import com.coliving.reservation.adapter.out.jpa.ReservationEntity;
 import com.coliving.reservation.adapter.out.jpa.ReservationJpaRepository;
 import com.coliving.reservation.model.ReservationStatus;
@@ -89,7 +89,7 @@ class ReservationQueryServiceTest {
                 .willReturn(List.of(entity));
 
         // when
-        List<UserReservationResponse> responses = reservationQueryService.getUserReservations(userId);
+        List<UserReservationResponseDto> responses = reservationQueryService.getUserReservations(userId);
 
         // then
         assertThat(responses).hasSize(1);

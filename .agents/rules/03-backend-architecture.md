@@ -250,6 +250,11 @@ src/main/java/com/coliving/
 - **Persistence Adapter:** 더티 체킹에만 의존 금지. **신규 INSERT·필드 변경 UPDATE·`softDelete()` 후** 모두 **`jpaRepository.save(entity)`를 명시적으로 호출**한다. 어댑터가 포트 요청을 DB에 반영했음을 코드로 명확히 한다.
 - **팀 DTO 표준:** Web 계층 요청/응답은 **`XxxRequestDto` / `XxxResponseDto`** 접미사를 기본으로 한다(§1-7 표와 함께 적용).
 
-### 5-1. 내 활동 이력 API
+### 5.1 탈퇴 유저(Soft Delete) 조회 지침
+- `@SQLRestriction("deleted_at IS NULL")`에 의해 JPA 자동 조인 시 탈퇴 유저는 필터링됩니다.
+- 관리자의 **통계나 감사 이력 조회** 등 탈퇴 유저 정보가 반드시 필요한 쿼리에서는, **`LEFT JOIN` + Native Query (`nativeQuery = true`)** 를 사용하여 `@SQLRestriction`을 우회하여 조회합니다.
+- 조회를 뚫고 나온 탈퇴 유저 정보는 프론트엔드에서 "탈퇴한 사용자" 등으로 안전하게 마스킹 처리합니다.
+
+### 5.2 내 활동 이력 API
 - `user/history/` 등 **GET `/api/users/me/history`** 구현 시, 타 도메인은 **식별자·조회 전용 포트**로만 연동하고, 타 도메인 **Service를 직접 호출해 쓰기**하지 않는다(도메인 협업 룰과 일치).
 
