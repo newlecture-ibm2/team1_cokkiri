@@ -11,6 +11,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
 
+import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -26,6 +27,14 @@ public class RoomPersistenceAdapter implements RoomRepositoryPort {
     public Page<Room> findAvailablePrivateSpaces(Pageable pageable) {
         return spaceJpaRepository
                 .findByTypeAndStatus(SpaceType.PRIVATE, SpaceStatus.AVAILABLE, pageable)
+                .map(this::toRoom);
+    }
+
+    @Override
+    public Page<Room> findAvailableRoomsWithFilter(RoomType roomType, BigDecimal minRent,
+                                                    BigDecimal maxRent, Integer floor, Pageable pageable) {
+        return spaceJpaRepository
+                .findAvailableRoomsWithFilter(roomType, minRent, maxRent, floor, pageable)
                 .map(this::toRoom);
     }
 

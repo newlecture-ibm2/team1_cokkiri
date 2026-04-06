@@ -1,9 +1,6 @@
-import path from "path";
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  // 상위 디렉터리의 package-lock.json과 충돌하지 않도록 트레이싱 루트를 앱 디렉터리로 고정
-  outputFileTracingRoot: path.join(__dirname),
   // BFF: /api/bff/* 요청을 백엔드로 프록시 (개발 환경용)
   async rewrites() {
     return [
@@ -27,6 +24,11 @@ const nextConfig: NextConfig = {
 
   // 빌드 출력 standalone 모드 (Docker 최적화)
   output: 'standalone',
+
+  // ESLint: 빌드 시 lint 에러로 차단하지 않음 (lint는 별도 단계에서 수행)
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
 };
 
 export default nextConfig;
