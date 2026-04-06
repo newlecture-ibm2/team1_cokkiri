@@ -6,7 +6,9 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.annotations.SQLRestriction;
+import org.hibernate.type.SqlTypes;
 
 @Entity
 @Table(
@@ -29,6 +31,7 @@ public class DeviceTypeEntity extends BaseEntity {
     @Column(name = "name", nullable = false, length = 100)
     private String name;
 
+    @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "commands", columnDefinition = "jsonb")
     private String commands;
 

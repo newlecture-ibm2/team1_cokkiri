@@ -6,7 +6,9 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.annotations.SQLRestriction;
+import org.hibernate.type.SqlTypes;
 
 @Entity
 @Table(name = "control_logs")
@@ -33,6 +35,7 @@ public class ControlLogEntity extends BaseEntity {
     @Column(name = "command", nullable = false, length = 50)
     private String command;
 
+    @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "command_params", columnDefinition = "jsonb")
     private String commandParams;
 

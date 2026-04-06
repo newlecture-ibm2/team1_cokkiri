@@ -7,7 +7,9 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.annotations.SQLRestriction;
+import org.hibernate.type.SqlTypes;
 
 import java.time.OffsetDateTime;
 
@@ -54,6 +56,7 @@ public class DeviceEntity extends BaseEntity {
     @Column(name = "status", nullable = false, length = 20)
     private DeviceStatus status = DeviceStatus.OFFLINE;
 
+    @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "current_state", columnDefinition = "jsonb")
     private String currentState;
 

@@ -26,4 +26,4 @@ trigger: always_on
 
 ### 3. WBS Isolation (책임 분리)
 - 자신의 WBS(예: `IOT-5.x` 기기 관제, `CTR-1.x` 계약 관리) 주제에 맞는 폴더 경로에만 커밋 내역을 집중시킵니다.
-- AI 에이전트는 사용자가 코딩을 요구할 때 즉흥적으로 다른 팀원의 영역(예: `backend/src/main/java/com/coliving/admin/voc`)을 생성 및 간섭하지 않도록 주의합니다.
+- AI 에이전트는 사용자가 코딩을 요구할 때 즉흥적으로 다른 팀원의 영역(예: `backend/src/main/java/com/coliving/admin/vocs`)을 생성 및 간섭하지 않도록 주의합니다.

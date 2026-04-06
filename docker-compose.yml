@@ -17,6 +17,8 @@ services:
     image: team1-cokkiri-backend:latest
     build: ./backend
     restart: unless-stopped
+    ports:
+      - "8080:8080"
     environment:
       - SPRING_PROFILES_ACTIVE=dev
       - DB_URL=${DB_URL:-jdbc:postgresql://db:5432/coliving}
