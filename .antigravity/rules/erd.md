@@ -1,5 +1,5 @@
 # ERD (압축본)
-PostgreSQL 기준 | 19개 테이블 | PK:`{테이블}_id` | FK:참조PK명동일 | 모든테이블 soft delete(`deleted_at`)
+PostgreSQL 기준 | 20개 테이블 | PK:`{테이블}_id` | FK:참조PK명동일 | 모든테이블 soft delete(`deleted_at`)
 v2.0: BOOKING+CONTRACT합병, SPACE상속패턴분리, JSONB통합(첨부/링크), PK/FK네이밍통일
 
 ## 1. 테이블 정의
@@ -10,8 +10,11 @@ v2.0: BOOKING+CONTRACT합병, SPACE상속패턴분리, JSONB통합(첨부/링크
 ### SPACE (부모)
 `space_id(PK), name(UK,1~100), type(PRIVATE/COMMON), status(AVAILABLE/OCCUPIED/MAINTENANCE), floor, area(㎡), amenities(JSON), description, position_x, position_y, created_at, updated_at, deleted_at`
 
+### ROOM_TYPE (동적관리)
+`room_type_id(PK), code(UK: SINGLE,DOUBLE,STUDIO,SUITE 등), name, is_system_default, created_at, updated_at, deleted_at`
+
 ### PRIVATE_SPACE_DETAIL (1:1→SPACE)
-`space_id(PK,FK), room_type(SINGLE/DOUBLE/STUDIO/SUITE), room_count, bathroom_count, direction(남/북/동/서), deposit, monthly_rent, maintenance_fee, parking_available`
+`space_id(PK,FK), room_type_id(FK→ROOM_TYPE), room_count, bathroom_count, direction(남/북/동/서), deposit, monthly_rent, maintenance_fee, parking_available`
 
 ### COMMON_SPACE_DETAIL (1:1→SPACE)
 `space_id(PK,FK), max_capacity, operating_hours(예:06:00-23:00), is_reservable, usage_fee(시간당)`
@@ -23,7 +26,7 @@ v2.0: BOOKING+CONTRACT합병, SPACE상속패턴분리, JSONB통합(첨부/링크
 `device_type_id(PK), code(UK: DOOR_LOCK,LIGHT,AIR_CONDITIONER,WASHER,DRYER,CCTV,HEATER), name, commands(JSONB), ui_type(toggle/slider/button), is_system_default, created_at, updated_at, deleted_at`
 
 ### DEVICE
-`device_id(PK), space_id(FK), device_type_id(FK), name(1~100), model_name, mock_endpoint(URL), status(ONLINE/OFFLINE/ERROR), current_state(JSONB: power,temperature,brightness등), is_active, installed_at, last_online_at, created_at, updated_at, deleted_at`
+`device_id(PK), space_id(FK), device_type_id(FK), name(1~100), model_name, mac_address(UK,50자), mock_endpoint(URL), status(ONLINE/OFFLINE/ERROR), current_state(JSONB: power,temperature,brightness등), is_active, installed_at, last_online_at, created_at, updated_at, deleted_at`
 
 ### CONTRACT (BOOKING합병)
 `contract_id(PK), user_id(FK→USERS), space_id(FK→SPACE), origin(USER_INITIATED/ADMIN_INITIATED), status(DRAFT/PENDING/APPROVED/REJECTED/CANCELLED/ACTIVE/EXPIRED/TERMINATED)`
@@ -35,7 +38,7 @@ v2.0: BOOKING+CONTRACT합병, SPACE상속패턴분리, JSONB통합(첨부/링크
 `reservation_id(PK), user_id(FK), space_id(FK→COMMON), status(PENDING/APPROVED/CANCELLED/COMPLETED), reservation_date, start_time, end_time, approved_by(FK→USERS), created_at, updated_at, deleted_at`
 
 ### CONTROL_LOG (감사)
-`control_log_id(PK), device_id(FK), user_id(FK), actor_type(RESIDENT/ADMIN), command(TURN_ON/SET_TEMP등), command_params(JSONB), result(SUCCESS/FAILURE), error_message, correlation_id, created_at, updated_at, deleted_at`
+`control_log_id(PK), device_id(FK), user_id(FK), actor_type(RESIDENT/ADMIN), command(ON/OFF/SET_TEMP등), command_params(JSONB), result(SUCCESS/FAILURE), error_message, correlation_id, created_at, updated_at, deleted_at`
 
 ### PAYMENT
 `payment_id(PK), contract_id(FK,nullable), reservation_id(FK,nullable), user_id(FK), type(RENT/MAINTENANCE/FACILITY), amount, status(UNPAID/PENDING/PAID), payment_method(CARD/TRANSFER/CASH), billing_date, paid_date, created_at, updated_at, deleted_at`
@@ -72,6 +75,7 @@ JSONB형식: attachments=[{file_url,file_name,file_size}], links=[{url}]
 
 USERS→1:N: CONTRACT, RESERVATION, POST, COMMENT, POST_LIKE, VOC, CONTROL_LOG, PAYMENT, ROLE_CHANGE_LOG, REFRESH_TOKEN, NOTIFICATION
 SPACE→1:1: PRIVATE_SPACE_DETAIL, COMMON_SPACE_DETAIL | SPACE→1:N: SPACE_IMAGE, DEVICE, CONTRACT, RESERVATION
+ROOM_TYPE→1:N: PRIVATE_SPACE_DETAIL
 DEVICE_TYPE→1:N: DEVICE | DEVICE→1:N: CONTROL_LOG
 CONTRACT→1:N: PAYMENT, ROLE_CHANGE_LOG | RESERVATION→1:N: PAYMENT
 POST→1:N: COMMENT, POST_LIKE | USERS→1:N: VOC(문의자+답변자)
@@ -119,9 +123,10 @@ ADMIN_INITIATED: →ACTIVE→EXPIRED/TERMINATED (신청필드 NULL가능)
 | 테이블 | 인덱스 | 용도 |
 |---|---|---|
 | USERS | login_id(UK), role, email | 로그인,필터,중복확인 |
+| ROOM_TYPE | code(UK) | 유형코드조회 |
 | SPACE | type+status, floor | 유형/상태/층별조회 |
 | CONTRACT | user_id+status, space_id+status, space_id(UK WHERE ACTIVE) | 현황조회,활성계약1개제한 |
-| DEVICE | space_id+is_active, device_type_id | 공간별기기,종류별 |
+| DEVICE | space_id+is_active, device_type_id, mac_address(UK) | 공간별기기,종류별,MAC중복방지 |
 | RESERVATION | space_id+date+status, user_id+status | 시설별현황,사용자별 |
 | CONTROL_LOG | user_id+created_at, device_id+created_at | 이력조회 |
 | POST | user_id, category+created_at | 작성자별,유형별최신순 |

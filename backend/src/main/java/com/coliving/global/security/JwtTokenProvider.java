@@ -91,6 +91,18 @@ public class JwtTokenProvider {
         return false;
     }
 
+    public Long getUserId(String token) {
+        return Long.parseLong(getClaims(token).getSubject());
+    }
+
+    public Long getSpaceId(String token) {
+        return getClaims(token).get("space_id", Long.class);
+    }
+
+    public Long getContractId(String token) {
+        return getClaims(token).get("contract_id", Long.class);
+    }
+
     private Claims getClaims(String token) {
         return Jwts.parser()
                 .verifyWith(key)

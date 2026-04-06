@@ -27,7 +27,7 @@ const shortcuts: { href: string; label: string; description: string; icon: typeo
   { href: "/admin/devices", label: "기기", description: "IoT 등록·제어", icon: Cpu },
   { href: "/admin/reservations", label: "예약", description: "공용 시설 예약", icon: CalendarDays },
   { href: "/admin/billing", label: "결제·청구", description: "청구·승인", icon: CreditCard },
-  { href: "/admin/voc", label: "민원", description: "접수·답변", icon: MessageSquareText },
+  { href: "/admin/vocs", label: "민원", description: "접수·답변", icon: MessageSquareText },
 ];
 
 export default function AdminHomePage() {

@@ -10,7 +10,7 @@ import org.hibernate.annotations.SQLRestriction;
 
 @Entity
 @Table(
-        name = "DEVICE_TYPE",
+        name = "device_types",
         uniqueConstraints = {@UniqueConstraint(columnNames = "code")}
 )
 @SQLRestriction("deleted_at IS NULL")
@@ -45,5 +45,12 @@ public class DeviceTypeEntity extends BaseEntity {
         this.commands = commands;
         this.uiType = uiType;
         this.isSystemDefault = isSystemDefault != null ? isSystemDefault : false;
+    }
+
+    public void update(String code, String name, String commands, String uiType) {
+        this.code = code;
+        this.name = name;
+        this.commands = commands;
+        this.uiType = uiType;
     }
 }

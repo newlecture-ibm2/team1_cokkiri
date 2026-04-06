@@ -18,10 +18,7 @@ export function Footer() {
       { name: "Board", path: "/community" },
       { name: "Event", path: "/" },
       { name: "Notice", path: "/" },
-      { name: "VOC", path: "/voc" },
-      { name: "Residents", path: "/profile" },
-      { name: "Community", path: "/community" },
-      { name: "Philosophy", path: "/" },
+      { name: "VOC", path: "/vocs" },
     ],
     support: [
       { name: "Profile", path: "/profile" },
