@@ -1,6 +1,5 @@
 package com.coliving.user.room.adapter.out.jpa;
 
-import com.coliving.user.room.model.RoomType;
 import com.coliving.user.room.model.SpaceStatus;
 import com.coliving.user.room.model.SpaceType;
 
@@ -30,12 +29,12 @@ public interface SpaceJpaRepository extends JpaRepository<SpaceEntity, Long> {
     @Query("SELECT s FROM SpaceEntity s " +
             "LEFT JOIN FETCH s.privateDetail pd " +
             "WHERE s.type = 'PRIVATE' AND s.status = 'AVAILABLE' " +
-            "AND (:roomType IS NULL OR pd.roomType = :roomType) " +
+            "AND (:roomTypeId IS NULL OR pd.roomType.id = :roomTypeId) " +
             "AND (:minRent IS NULL OR pd.monthlyRent >= :minRent) " +
             "AND (:maxRent IS NULL OR pd.monthlyRent <= :maxRent) " +
             "AND (:floor IS NULL OR s.floor = :floor)")
     Page<SpaceEntity> findAvailableRoomsWithFilter(
-            @Param("roomType") RoomType roomType,
+            @Param("roomTypeId") Long roomTypeId,
             @Param("minRent") BigDecimal minRent,
             @Param("maxRent") BigDecimal maxRent,
             @Param("floor") Integer floor,

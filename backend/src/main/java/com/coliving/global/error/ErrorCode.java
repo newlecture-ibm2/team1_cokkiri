@@ -45,6 +45,7 @@ public enum ErrorCode {
     FILE_UPLOAD_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "파일 저장에 실패했습니다"),
 
     // ── 공간 (Space) ──
+    ROOM_TYPE_NOT_FOUND(HttpStatus.NOT_FOUND, "요청하신 방 유형을 찾을 수 없습니다"),
     SPACE_NOT_FOUND(HttpStatus.NOT_FOUND, "요청하신 공간을 찾을 수 없습니다"),
     DUPLICATE_SPACE_NAME(HttpStatus.CONFLICT, "이미 사용 중인 공간 이름입니다"),
     OCCUPIED_SPACE_MODIFICATION(HttpStatus.CONFLICT, "입주 중이거나 사용 중인 공간은 구조를 변경할 수 없습니다"),

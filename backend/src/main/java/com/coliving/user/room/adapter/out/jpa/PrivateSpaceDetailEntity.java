@@ -1,7 +1,7 @@
 package com.coliving.user.room.adapter.out.jpa;
 
 import com.coliving.global.entity.BaseEntity;
-import com.coliving.user.room.model.RoomType;
+
 
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -28,9 +28,9 @@ public class PrivateSpaceDetailEntity extends BaseEntity {
     @JoinColumn(name = "space_id")
     private SpaceEntity space;
 
-    @Column(name = "room_type", length = 20)
-    @Enumerated(EnumType.STRING)
-    private RoomType roomType;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "room_type_id", nullable = false)
+    private RoomTypeEntity roomType;
 
     @Column(name = "room_count")
     private Integer roomCount;
@@ -54,7 +54,7 @@ public class PrivateSpaceDetailEntity extends BaseEntity {
     private Boolean parkingAvailable;
 
     @Builder
-    public PrivateSpaceDetailEntity(SpaceEntity space, RoomType roomType,
+    public PrivateSpaceDetailEntity(SpaceEntity space, RoomTypeEntity roomType,
                                      Integer roomCount, Integer bathroomCount,
                                      String direction, BigDecimal deposit,
                                      BigDecimal monthlyRent, BigDecimal maintenanceFee,
@@ -70,7 +70,7 @@ public class PrivateSpaceDetailEntity extends BaseEntity {
         this.parkingAvailable = parkingAvailable;
     }
 
-    public void update(RoomType roomType, Integer roomCount, Integer bathroomCount,
+    public void update(RoomTypeEntity roomType, Integer roomCount, Integer bathroomCount,
                        String direction, BigDecimal deposit, BigDecimal monthlyRent,
                        BigDecimal maintenanceFee, Boolean parkingAvailable) {
         this.roomType = roomType;

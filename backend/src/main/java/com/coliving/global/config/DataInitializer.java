@@ -32,7 +32,8 @@ import com.coliving.user.room.adapter.out.jpa.SpaceImageEntity;
 import com.coliving.user.room.adapter.out.jpa.SpaceImageJpaRepository;
 import com.coliving.user.room.adapter.out.jpa.SpaceJpaRepository;
 import com.coliving.user.room.model.ImageType;
-import com.coliving.user.room.model.RoomType;
+import com.coliving.user.room.adapter.out.jpa.RoomTypeEntity;
+import com.coliving.user.room.adapter.out.jpa.RoomTypeJpaRepository;
 import com.coliving.user.room.model.SpaceStatus;
 import com.coliving.user.room.model.SpaceType;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -73,6 +74,7 @@ public class DataInitializer implements ApplicationRunner {
     private final SpaceJpaRepository spaceJpaRepository;
     private final PrivateSpaceDetailJpaRepository privateSpaceDetailJpaRepository;
     private final CommonSpaceDetailJpaRepository commonSpaceDetailJpaRepository;
+    private final RoomTypeJpaRepository roomTypeJpaRepository;
     private final SpaceImageJpaRepository spaceImageJpaRepository;
     private final DeviceTypeJpaRepository deviceTypeJpaRepository;
     private final DeviceJpaRepository deviceJpaRepository;
@@ -201,35 +203,40 @@ public class DataInitializer implements ApplicationRunner {
 
     /** {@code data-dev.sql} 과 동일한 공간·상세·이미지 시드. IoT 데모 기기 부착용으로 301호를 반환합니다. */
     private SpaceEntity seedSpacesFromDevDataset() {
+        RoomTypeEntity singleType = roomTypeJpaRepository.save(RoomTypeEntity.builder().code("SINGLE").name("싱글룸").isSystemDefault(true).build());
+        RoomTypeEntity doubleType = roomTypeJpaRepository.save(RoomTypeEntity.builder().code("DOUBLE").name("더블룸").isSystemDefault(true).build());
+        RoomTypeEntity studioType = roomTypeJpaRepository.save(RoomTypeEntity.builder().code("STUDIO").name("스튜디오").isSystemDefault(true).build());
+        RoomTypeEntity suiteType = roomTypeJpaRepository.save(RoomTypeEntity.builder().code("SUITE").name("스위트").isSystemDefault(true).build());
+
         SpaceEntity s301 = savePrivateSpace(
                 "301호", 3, new BigDecimal("25.00"), "[\"에어컨\",\"냉장고\"]", "남향 채광 좋은 싱글룸",
-                RoomType.SINGLE, 1, 1, "남향",
+                singleType, 1, 1, "남향",
                 new BigDecimal("5000000"), new BigDecimal("500000"), new BigDecimal("50000"), true);
         saveSpaceImage(s301, "https://picsum.photos/seed/room301a/800/600", ImageType.PHOTO, 1, true);
         saveSpaceImage(s301, "https://picsum.photos/seed/room301b/800/600", ImageType.PHOTO, 2, false);
 
         SpaceEntity s302 = savePrivateSpace(
                 "302호", 3, new BigDecimal("30.00"), "[\"에어컨\",\"세탁기\",\"냉장고\"]", "복층 구조 더블룸",
-                RoomType.DOUBLE, 2, 1, "동향",
+                doubleType, 2, 1, "동향",
                 new BigDecimal("8000000"), new BigDecimal("700000"), new BigDecimal("60000"), true);
         saveSpaceImage(s302, "https://picsum.photos/seed/room302a/800/600", ImageType.PHOTO, 1, true);
 
         SpaceEntity s401 = savePrivateSpace(
                 "401호", 4, new BigDecimal("20.00"), "[\"에어컨\"]", "깔끔한 스튜디오",
-                RoomType.STUDIO, 1, 1, "서향",
+                studioType, 1, 1, "서향",
                 new BigDecimal("3000000"), new BigDecimal("400000"), new BigDecimal("40000"), false);
         saveSpaceImage(s401, "https://picsum.photos/seed/room401a/800/600", ImageType.PHOTO, 1, true);
 
         SpaceEntity s402 = savePrivateSpace(
                 "402호", 4, new BigDecimal("28.00"), "[\"에어컨\",\"냉장고\",\"Wi-Fi\"]", "현재 입주 중인 방",
                 SpaceStatus.OCCUPIED,
-                RoomType.SINGLE, 1, 1, "남향",
+                singleType, 1, 1, "남향",
                 new BigDecimal("6000000"), new BigDecimal("550000"), new BigDecimal("55000"), true);
         saveSpaceImage(s402, "https://picsum.photos/seed/room402a/800/600", ImageType.PHOTO, 1, true);
 
         SpaceEntity s501 = savePrivateSpace(
                 "501호", 5, new BigDecimal("35.00"), "[\"에어컨\",\"세탁기\",\"냉장고\",\"TV\",\"주차\"]", "프리미엄 스위트룸",
-                RoomType.SUITE, 2, 2, "남동향",
+                suiteType, 2, 2, "남동향",
                 new BigDecimal("15000000"), new BigDecimal("1200000"), new BigDecimal("100000"), true);
         saveSpaceImage(s501, "https://picsum.photos/seed/room501a/800/600", ImageType.PHOTO, 1, true);
         saveSpaceImage(s501, "https://picsum.photos/seed/room501b/800/600", ImageType.PHOTO, 2, false);
@@ -259,7 +266,7 @@ public class DataInitializer implements ApplicationRunner {
             BigDecimal area,
             String amenities,
             String description,
-            RoomType roomType,
+            RoomTypeEntity roomType,
             int roomCount,
             int bathroomCount,
             String direction,
@@ -280,7 +287,7 @@ public class DataInitializer implements ApplicationRunner {
             String amenities,
             String description,
             SpaceStatus status,
-            RoomType roomType,
+            RoomTypeEntity roomType,
             int roomCount,
             int bathroomCount,
             String direction,

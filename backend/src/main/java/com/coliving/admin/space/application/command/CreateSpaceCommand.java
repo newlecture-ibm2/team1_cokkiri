@@ -1,6 +1,5 @@
 package com.coliving.admin.space.application.command;
 
-import com.coliving.user.room.model.RoomType;
 import com.coliving.user.room.model.SpaceStatus;
 import com.coliving.user.room.model.SpaceType;
 
@@ -23,7 +22,7 @@ public class CreateSpaceCommand {
     private String description;
 
     // Private 상세
-    private RoomType roomType;
+    private Long roomTypeId;
     private Integer roomCount;
     private Integer bathroomCount;
     private String direction;

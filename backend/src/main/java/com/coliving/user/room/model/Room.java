@@ -22,7 +22,8 @@ public class Room {
     private List<String> amenities;
 
     // Private 상세
-    private RoomType roomType;
+    private Long roomTypeId;
+    private String roomTypeName;
     private Integer roomCount;
     private Integer bathroomCount;
     private String direction;
