@@ -19,4 +19,6 @@ export interface ContractDraftResult {
   usagePurpose: string;
   requestNote: string;
   privacyAgreed: boolean;
+  rejectedReason?: string;
+  createdAt: string;
 }

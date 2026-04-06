@@ -10,9 +10,11 @@ import {
   Search,
   ArrowUpRight,
   Loader2,
-  AlertCircle
+  AlertCircle,
+  XCircle,
+  ChevronRight
 } from "lucide-react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { ContractStatusStepper } from "./_components/ContractStatusStepper";
 import { ContractDraftResult } from "@/types/contract";
 import { ApiResponse } from "@/types/api";
@@ -47,7 +49,7 @@ export default function MyContractsPage() {
 
   const filteredContracts = contracts.filter(c => {
     if (filter === "all") return true;
-    if (filter === "pending") return c.status === "PENDING" || c.status === "DRAFT";
+    if (filter === "pending") return c.status === "PENDING" || c.status === "DRAFT" || c.status === "REJECTED";
     if (filter === "completed") return c.status === "ACTIVE" || c.status === "APPROVED";
     return true;
   });
@@ -67,7 +69,7 @@ export default function MyContractsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-background text-primary selection:bg-primary selection:text-background">
+    <div className="min-h-screen bg-background text-primary selection:bg-primary selection:text-background pb-32">
       {/* Editorial Header Section */}
       <section className="px-6 pt-24 pb-12 md:px-12 md:pt-32 lg:px-24">
         <div className="max-w-[1400px] mx-auto border-b-2 border-primary pb-12">
@@ -104,7 +106,7 @@ export default function MyContractsPage() {
         </div>
       </section>
 
-      <main className="max-w-[1400px] mx-auto px-6 md:px-12 lg:px-24 py-12 md:py-20">
+      <main className="max-w-[1400px] mx-auto px-6 md:px-12 lg:px-24 pt-12 md:pt-20">
         {/* Editorial Stats Grid */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-20">
           {[
@@ -136,25 +138,33 @@ export default function MyContractsPage() {
           ))}
         </div>
 
-        {/* Filter Bar - RE-ENABLED WITHOUT LOOP FOR DIAGNOSIS */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-10 mb-12 py-8 border-y border-red-500">
+        {/* Filter Bar */}
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-10 mb-12 py-8 border-y border-primary/10">
           <div className="flex items-center gap-12 overflow-x-auto pb-4 md:pb-0 scrollbar-hide">
-            <div role="button" onClick={() => setFilter("all")} className="text-[10px] font-black tracking-[0.3em] uppercase transition-all">ALL</div>
-            <div role="button" onClick={() => setFilter("pending")} className="text-[10px] font-black tracking-[0.3em] uppercase transition-all">PENDING</div>
-            <div role="button" onClick={() => setFilter("completed")} className="text-[10px] font-black tracking-[0.3em] uppercase transition-all">COMPLETED</div>
+            {["all", "pending", "completed"].map((f) => (
+              <button
+                key={f}
+                onClick={() => setFilter(f)}
+                className={`text-[10px] font-black tracking-[0.3em] uppercase transition-all whitespace-nowrap ${filter === f ? "text-accent underline underline-offset-8" : "opacity-40 hover:opacity-100"
+                  }`}
+              >
+                {f}
+              </button>
+            ))}
           </div>
 
-          <div className="flex items-center gap-6 group">
+          <div className="flex items-center gap-6 group px-6 py-3 bg-primary/5 rounded-full border border-primary/5 focus-within:border-accent/40 transition-colors">
+            <Search className="w-4 h-4 opacity-40" />
             <input
               type="text"
-              placeholder="SEARCH..."
-              className="bg-transparent text-[10px] font-black tracking-[0.2em] uppercase placeholder:text-primary/20 focus:outline-none"
+              placeholder="SEARCH CONTRACTS..."
+              className="bg-transparent text-[10px] font-black tracking-[0.2em] uppercase placeholder:text-primary/20 focus:outline-none w-40"
             />
           </div>
         </div>
 
         {/* Contract List */}
-        <div className="space-y-8">
+        <div className="space-y-12">
           {isLoading ? (
             <div className="py-20 flex flex-col items-center justify-center gap-4">
               <Loader2 className="w-12 h-12 text-accent animate-spin" />
@@ -177,12 +187,12 @@ export default function MyContractsPage() {
               initial={{ opacity: 0, x: -20 }}
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
-              whileHover={{ scale: 1.005 }}
+              whileHover={{ scale: 1.002 }}
               transition={{ delay: index * 0.1, duration: 0.5 }}
-              className="group bg-white rounded-[2rem] p-10 border border-primary/5 shadow-xl shadow-primary/5 transition-all relative overflow-hidden"
+              className="group bg-white rounded-[2.5rem] p-10 md:p-14 border border-primary/5 shadow-2xl shadow-primary/5 transition-all relative overflow-hidden"
             >
               <div className="flex flex-col lg:flex-row lg:items-start justify-between gap-12 relative z-10">
-                <div className="flex flex-col gap-6 max-w-2xl">
+                <div className="flex flex-col gap-8 max-w-2xl w-full">
                   <div className="flex items-center gap-4">
                     <span className="text-[10px] font-black tracking-[0.3em] uppercase opacity-30">
                       ID: CTR-00{contract.contractId}
@@ -190,40 +200,76 @@ export default function MyContractsPage() {
                     <span className={`text-[10px] font-black tracking-[0.2em] uppercase px-4 py-1.5 rounded-full ${contract.status === 'ACTIVE' ? 'bg-accent/20 text-accent' :
                       contract.status === 'APPROVED' ? 'bg-orange-100 text-orange-600' :
                         contract.status === 'PENDING' ? 'bg-blue-100 text-blue-600' :
-                          'bg-muted/20 text-muted'
+                          contract.status === 'REJECTED' ? 'bg-red-100 text-red-600' :
+                            'bg-muted/20 text-muted'
                       }`}>
                       {getStatusLabel(contract.status)}
                     </span>
                   </div>
-                  <h4 className="text-4xl font-black tracking-tighter leading-tight group-hover:text-accent transition-colors">
-                    PRIVATE SPACE - ROOM 00{contract.spaceId}
-                  </h4>
+
+                  <div>
+                    <h4 className="text-5xl font-black tracking-tighter leading-tight group-hover:text-accent transition-colors uppercase">
+                      PRIVATE SPACE<br />ROOM 00{contract.spaceId}
+                    </h4>
+                    <p className="mt-4 text-[10px] font-black tracking-widest text-muted uppercase">
+                      Applied at {new Date(contract.createdAt).toLocaleDateString()} — {contract.desiredDurationMonths} Months duration
+                    </p>
+                  </div>
 
                   {/* Stepper Integration */}
-                  <div className="pt-4 border-t border-primary/5">
+                  <div className="pt-8 border-t border-primary/5">
                     <ContractStatusStepper currentStatus={contract.status} />
                   </div>
+
+                  {/* Rejection Reason Block */}
+                  {contract.status === 'REJECTED' && contract.rejectedReason && (
+                    <motion.div
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: "auto" }}
+                      className="mt-6 p-6 md:p-8 bg-red-50 border border-red-100 rounded-3xl"
+                    >
+                      <div className="flex items-start gap-4 text-red-600">
+                        <XCircle className="w-5 h-5 flex-shrink-0 mt-0.5" />
+                        <div className="space-y-3">
+                          <p className="text-[10px] font-black uppercase tracking-widest">Reason for Rejection</p>
+                          <p className="text-sm font-bold leading-relaxed">{contract.rejectedReason}</p>
+                          <p className="text-[10px] font-bold opacity-70 italic">신청 내용을 보완하여 다시 제출해주시기 바랍니다.</p>
+                        </div>
+                      </div>
+                    </motion.div>
+                  )}
                 </div>
 
-                <div className="flex flex-col gap-4 self-end">
-                  {contract.status === 'APPROVED' ? (
-                    <p className="text-[10px] font-black tracking-[0.2em] text-orange-600 uppercase mb-2 animate-pulse">
-                      Action Required: Please Review & Sign
-                    </p>
-                  ) : contract.status === 'PENDING' ? (
-                    <p className="text-[10px] font-black tracking-[0.2em] text-blue-600 uppercase mb-2">
-                      서류 검토 중입니다. 잠시만 기다려 주세요.
-                    </p>
-                  ) : null}
+                <div className="flex flex-col gap-6 lg:items-end lg:justify-between h-full pt-4">
+                  <div className="space-y-4">
+                    {contract.status === 'APPROVED' ? (
+                      <p className="text-[10px] font-black tracking-[0.2em] text-orange-600 uppercase animate-pulse">
+                        Action Required: Please Review & Sign
+                      </p>
+                    ) : contract.status === 'PENDING' ? (
+                      <p className="text-[10px] font-black tracking-[0.2em] text-blue-600 uppercase">
+                        Document review in progress
+                      </p>
+                    ) : contract.status === 'REJECTED' ? (
+                      <p className="text-[10px] font-black tracking-[0.2em] text-red-600 uppercase">
+                        Application Declined
+                      </p>
+                    ) : null}
+                  </div>
+
                   <div className="flex items-center gap-4">
                     <Link href={`/contract-apply?spaceId=${contract.spaceId}`}>
-                      <button className="px-10 py-5 bg-secondary/10 hover:bg-secondary/20 text-primary rounded-2xl text-[10px] font-black tracking-[0.2em] uppercase transition-all">
-                        VIEW DETAILS
+                      <button className="h-16 px-8 bg-muted/10 hover:bg-muted/20 text-primary rounded-2xl text-[10px] font-black tracking-[0.2em] uppercase transition-all whitespace-nowrap">
+                        VIEW SUBMISSION
                       </button>
                     </Link>
-                    <button className={`px-10 py-5 rounded-2xl text-[10px] font-black tracking-[0.2em] uppercase transition-all flex items-center gap-3 ${contract.status === 'APPROVED' ? 'bg-accent text-white hover:bg-primary shadow-xl shadow-accent/20' : 'bg-primary text-background'
+                    <button className={`h-16 px-10 rounded-2xl text-[10px] font-black tracking-[0.2em] uppercase transition-all flex items-center gap-4 whitespace-nowrap shadow-xl ${contract.status === 'APPROVED' ? 'bg-accent text-white hover:bg-primary shadow-accent/20' :
+                      contract.status === 'REJECTED' ? 'bg-red-500 text-white hover:bg-red-600' :
+                        'bg-primary text-background'
                       }`}>
-                      {contract.status === 'APPROVED' ? 'REVIEW & SIGN' : 'MANAGE'} <ArrowUpRight className="w-4 h-4" />
+                      {contract.status === 'APPROVED' ? 'REVIEW & SIGN' :
+                        contract.status === 'REJECTED' ? 'RE-APPLY' : 'MANAGE'}
+                      <ChevronRight className="w-4 h-4" />
                     </button>
                   </div>
                 </div>
@@ -239,7 +285,7 @@ export default function MyContractsPage() {
 
         {/* Empty State */}
         {!isLoading && filteredContracts.length === 0 && (
-          <div className="py-32 text-center rounded-[3rem] border-2 border-dashed border-primary/10">
+          <div className="py-32 text-center rounded-[4rem] border-2 border-dashed border-primary/10">
             <div className="mb-12">
               <span className="text-[15vw] font-black text-primary/5 uppercase leading-none">EMPTY</span>
             </div>
