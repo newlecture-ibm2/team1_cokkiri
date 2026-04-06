@@ -2,6 +2,7 @@ package com.coliving.reservation.application.service;
 
 import com.coliving.reservation.adapter.out.dto.FacilityDetailResponse;
 import com.coliving.reservation.adapter.out.dto.ReservableFacilityResponse;
+import com.coliving.reservation.application.port.in.FacilityQueryUseCase;
 import com.coliving.reservation.application.port.out.FacilityQueryPort;
 import com.coliving.global.error.BusinessException;
 import com.coliving.global.error.ErrorCode;
@@ -24,7 +25,7 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true) // 조회 전용 서비스이므로 readOnly 최적화
-public class FacilityQueryService {
+public class FacilityQueryService implements FacilityQueryUseCase {
 
     private final FacilityQueryPort facilityQueryPort;
 
@@ -37,6 +38,7 @@ public class FacilityQueryService {
      *
      * @return 예약 가능한 공용시설 목록
      */
+    @Override
     public List<ReservableFacilityResponse> getReservableFacilities() {
         log.info("[RES-RSV-01] 예약 가능한 공용시설 목록 조회 요청");
 
@@ -56,6 +58,7 @@ public class FacilityQueryService {
      * @return 시설 상세 정보
      * @throws BusinessException 시설을 찾을 수 없는 경우 (NOT_FOUND)
      */
+    @Override
     public FacilityDetailResponse getFacilityDetail(Long spaceId) {
         log.info("[RES-RSV-01] 공용시설 상세 조회 요청 - spaceId: {}", spaceId);
 

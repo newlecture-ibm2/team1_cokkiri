@@ -1,24 +1,31 @@
 package com.coliving.reservation.application.service;
 
+import com.coliving.common.auth.adapter.out.jpa.UserEntity;
+import com.coliving.common.auth.adapter.out.jpa.UserJpaRepository;
+import com.coliving.common.auth.model.Gender;
+import com.coliving.common.auth.model.UserRole;
+import com.coliving.common.auth.model.UserStatus;
+
 import com.coliving.reservation.adapter.in.web.dto.ReservationCreateRequest;
 import com.coliving.reservation.adapter.out.jpa.ReservationEntity;
 import com.coliving.reservation.adapter.out.jpa.ReservationJpaRepository;
 import com.coliving.reservation.exception.ReservationOverlapException;
+import com.coliving.reservation.model.ReservationStatus;
+import com.coliving.user.room.adapter.out.jpa.SpaceEntity;
+import com.coliving.user.room.adapter.out.jpa.SpaceJpaRepository;
+import com.coliving.user.room.model.SpaceStatus;
+import com.coliving.user.room.model.SpaceType;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.time.LocalDate;
-import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.Optional;
-
-import com.coliving.reservation.model.ReservationStatus;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -26,6 +33,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.verify;
 
+@SuppressWarnings("null")
 @ExtendWith(MockitoExtension.class)
 class ReservationCommandServiceTest {
 
@@ -34,6 +42,60 @@ class ReservationCommandServiceTest {
 
     @Mock
     private ReservationJpaRepository reservationJpaRepository;
+
+    @Mock
+    private UserJpaRepository userRepository;
+
+    @Mock
+    private SpaceJpaRepository spaceRepository;
+
+    /** 테스트용 UserEntity 생성 */
+    private UserEntity mockUser(Long id) {
+        UserEntity user = UserEntity.builder()
+                .loginId("user" + id)
+                .passwordHash("hash")
+                .name("유저" + id)
+                .birthDate("000101")
+                .gender(Gender.MALE)
+                .nationality("Korean")
+                .phone("010-0000-000" + id)
+                .email("user" + id + "@coliving.com")
+                .role(UserRole.RESIDENT)
+                .status(UserStatus.ACTIVE)
+                .build();
+        ReflectionTestUtils.setField(user, "userId", id);
+        return user;
+    }
+
+    /** 테스트용 관리자 UserEntity 생성 */
+    private UserEntity mockAdmin(Long id) {
+        UserEntity admin = UserEntity.builder()
+                .loginId("admin" + id)
+                .passwordHash("hash")
+                .name("관리자" + id)
+                .birthDate("000101")
+                .gender(Gender.MALE)
+                .nationality("Korean")
+                .phone("010-9999-" + String.format("%04d", id))
+                .email("admin" + id + "@coliving.com")
+                .role(UserRole.ADMIN)
+                .status(UserStatus.ACTIVE)
+                .build();
+        ReflectionTestUtils.setField(admin, "userId", id);
+        return admin;
+    }
+
+    /** 테스트용 SpaceEntity 생성 */
+    private SpaceEntity mockSpace(Long id) {
+        SpaceEntity space = SpaceEntity.builder()
+                .name("회의실 " + id)
+                .type(SpaceType.COMMON)
+                .status(SpaceStatus.AVAILABLE)
+                .floor(1)
+                .build();
+        ReflectionTestUtils.setField(space, "spaceId", id);
+        return space;
+    }
 
     private ReservationCreateRequest createMockRequest(LocalTime startTime, LocalTime endTime) {
         ReservationCreateRequest request = new ReservationCreateRequest();
@@ -49,29 +111,19 @@ class ReservationCommandServiceTest {
     void reserveFacility_Success() {
         // given
         Long userId = 100L;
+        UserEntity user = mockUser(userId);
+        SpaceEntity space = mockSpace(1L);
         ReservationCreateRequest request = createMockRequest(LocalTime.of(14, 0), LocalTime.of(16, 0));
 
+        given(userRepository.findById(userId)).willReturn(Optional.of(user));
+        given(spaceRepository.findById(request.getSpaceId())).willReturn(Optional.of(space));
         given(reservationJpaRepository.existsOverlappingReservation(
                 request.getSpaceId(), request.getReservationDate(), request.getStartTime(), request.getEndTime()
         )).willReturn(false);
 
-        ReservationEntity savedEntity = ReservationEntity.builder()
-                .userId(userId)
-                .spaceId(request.getSpaceId())
-                .reservationDate(request.getReservationDate())
-                .endTime(request.getEndTime())
-                .build();
-                
-        // ReflectionTestUtils 등으로 Id를 주입할 수도 있으나 여기서는 단순화하여 spy 하거나 stubbing
-        // JPA save 이후 ID가 생긴 것을 가정
-        ReservationEntity returnedEntity = ReservationEntity.builder()
-                .userId(userId)
-                .spaceId(request.getSpaceId())
-                .build();
-        // ID 강제 설정 코드 없이 단순히 mock 반환
         given(reservationJpaRepository.save(any(ReservationEntity.class))).willAnswer(invocation -> {
             ReservationEntity entity = invocation.getArgument(0);
-            org.springframework.test.util.ReflectionTestUtils.setField(entity, "id", 999L);
+            ReflectionTestUtils.setField(entity, "id", 999L);
             return entity;
         });
 
@@ -88,8 +140,12 @@ class ReservationCommandServiceTest {
     void reserveFacility_OverlapException() {
         // given
         Long userId = 100L;
+        UserEntity user = mockUser(userId);
+        SpaceEntity space = mockSpace(1L);
         ReservationCreateRequest request = createMockRequest(LocalTime.of(14, 0), LocalTime.of(16, 0));
 
+        given(userRepository.findById(userId)).willReturn(Optional.of(user));
+        given(spaceRepository.findById(request.getSpaceId())).willReturn(Optional.of(space));
         given(reservationJpaRepository.existsOverlappingReservation(
                 request.getSpaceId(), request.getReservationDate(), request.getStartTime(), request.getEndTime()
         )).willReturn(true);
@@ -120,9 +176,11 @@ class ReservationCommandServiceTest {
         // given
         Long reservationId = 100L;
         Long adminId = 999L;
+        UserEntity admin = mockAdmin(adminId);
+
         ReservationEntity pending = ReservationEntity.builder()
-                .userId(1L)
-                .spaceId(10L)
+                .user(mockUser(1L))
+                .space(mockSpace(10L))
                 .reservationDate(LocalDate.of(2026, 5, 1))
                 .startTime(LocalTime.of(14, 0))
                 .endTime(LocalTime.of(16, 0))
@@ -130,13 +188,15 @@ class ReservationCommandServiceTest {
         ReflectionTestUtils.setField(pending, "status", ReservationStatus.PENDING);
 
         given(reservationJpaRepository.findById(reservationId)).willReturn(Optional.of(pending));
+        given(userRepository.findById(adminId)).willReturn(Optional.of(admin));
+        given(reservationJpaRepository.save(any(ReservationEntity.class))).willReturn(pending);
 
         // when
         reservationCommandService.approveReservation(adminId, reservationId);
 
         // then
         assertThat(pending.getStatus()).isEqualTo(ReservationStatus.APPROVED);
-        assertThat(pending.getApprovedBy()).isEqualTo(adminId);
+        assertThat(pending.getApprovedById()).isEqualTo(adminId);
     }
 
     @Test
@@ -145,9 +205,10 @@ class ReservationCommandServiceTest {
         // given
         Long reservationId = 100L;
         Long adminId = 999L;
+
         ReservationEntity pending = ReservationEntity.builder()
-                .userId(1L)
-                .spaceId(10L)
+                .user(mockUser(1L))
+                .space(mockSpace(10L))
                 .reservationDate(LocalDate.of(2026, 5, 1))
                 .startTime(LocalTime.of(14, 0))
                 .endTime(LocalTime.of(16, 0))

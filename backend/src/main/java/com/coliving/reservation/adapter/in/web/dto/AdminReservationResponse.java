@@ -50,7 +50,7 @@ public class AdminReservationResponse {
                 .reservationDate(entity.getReservationDate())
                 .startTime(entity.getStartTime())
                 .endTime(entity.getEndTime())
-                .approvedBy(entity.getApprovedBy())
+                .approvedBy(entity.getApprovedById())
                 .build();
     }
 }

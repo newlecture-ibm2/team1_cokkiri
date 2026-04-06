@@ -7,7 +7,11 @@ spring:
     show-sql: true
     hibernate:
       ddl-auto: update
-  sql.init.mode: never
+    defer-datasource-initialization: true
+  sql:
+    init:
+      mode: always
+      data-locations: classpath:data-dev.sql
 
 jwt:
   secret: ${JWT_SECRET:dev-secret-key-minimum-32-characters-long!!}

@@ -49,5 +49,7 @@ public class SpaceImageEntity extends BaseEntity {
         this.isThumbnail = isThumbnail;
     }
 
-
+    public void clearThumbnail() {
+        this.isThumbnail = false;
+    }
 }
