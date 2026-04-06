@@ -4,10 +4,13 @@ import java.time.OffsetDateTime;
 
 /**
  * 입주자 기기 도메인 모델
+ * - spaceName, spaceType 추가 (RES-DEV-01: "표시: 공간구분, 공간명")
  */
 public record ResidentDevice(
         Long deviceId,
         Long spaceId,
+        String spaceName,
+        String spaceType,
         String deviceTypeCode,
         String deviceTypeName,
         String deviceTypeUiType,

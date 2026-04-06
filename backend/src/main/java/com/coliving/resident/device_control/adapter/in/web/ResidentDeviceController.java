@@ -42,6 +42,11 @@ public class ResidentDeviceController {
 
         Long spaceId = extractSpaceId(request);
 
+        // null 처리 통일: controlDevice와 동일하게 Controller 레벨에서 검증
+        if (spaceId == null) {
+            throw new BusinessException(ErrorCode.NO_ACTIVE_CONTRACT);
+        }
+
         List<ResidentDevice> devices = residentDeviceUseCase.getMyDevices(spaceId);
         List<ResidentDeviceResponseDto> dtoList = devices.stream()
                 .map(ResidentDeviceResponseDto::from)
@@ -67,9 +72,13 @@ public class ResidentDeviceController {
             throw new BusinessException(ErrorCode.NO_ACTIVE_CONTRACT);
         }
 
+        // 요청 추적 ID 추출 (CorrelationIdFilter가 설정한 헤더)
+        String correlationId = request.getHeader("X-Correlation-Id");
+
         ControlDeviceCommand command = new ControlDeviceCommand(
                 id, userId, spaceId,
-                requestDto.command(), requestDto.params()
+                requestDto.command(), requestDto.params(),
+                correlationId
         );
 
         ControlDeviceResult result = residentDeviceUseCase.controlDevice(command);
