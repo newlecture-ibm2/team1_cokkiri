@@ -1,9 +1,9 @@
 'use client';
 
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, UploadCloud } from 'lucide-react';
-import { createSpace, uploadSpaceImage, SpaceDTO } from '../_api/spaceAdminApi';
+import { createSpace, uploadSpaceImage, fetchRoomTypes, SpaceDTO, RoomTypeDTO } from '../_api/spaceAdminApi';
 
 export default function SpaceCreateModal({
   isOpen,
@@ -23,6 +23,15 @@ export default function SpaceCreateModal({
   const [files, setFiles] = useState<File[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [roomTypes, setRoomTypes] = useState<RoomTypeDTO[]>([]);
+
+  useEffect(() => {
+    if (isOpen) {
+      fetchRoomTypes()
+        .then((res) => setRoomTypes(res.data || []))
+        .catch(console.error);
+    }
+  }, [isOpen]);
 
   if (!isOpen) return null;
 
@@ -129,6 +138,22 @@ export default function SpaceCreateModal({
               </select>
             </div>
 
+            {/* 방 유형 (PRIVATE만) */}
+            {formData.type === 'PRIVATE' && roomTypes.length > 0 && (
+              <div className="col-span-2 sm:col-span-1">
+                <label className="block text-sm font-bold mb-2">방 유형</label>
+                <select
+                  className="w-full px-4 py-3 rounded-2xl bg-[var(--color-muted)] text-[var(--foreground)] outline-none border border-transparent focus:border-[var(--color-accent)] transition"
+                  value={formData.roomTypeId || ''}
+                  onChange={(e) => setFormData({ ...formData, roomTypeId: e.target.value ? Number(e.target.value) : undefined })}
+                >
+                  <option value="">유형 선택</option>
+                  {roomTypes.map((rt) => (
+                    <option key={rt.roomTypeId} value={rt.roomTypeId}>{rt.name} ({rt.code})</option>
+                  ))}
+                </select>
+              </div>
+            )}
             <div className="col-span-1">
               <label className="block text-sm font-bold mb-2">해당 층</label>
               <input

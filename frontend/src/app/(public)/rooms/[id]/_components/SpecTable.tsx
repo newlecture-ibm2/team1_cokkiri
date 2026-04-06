@@ -16,16 +16,9 @@ const formatKRW = (value?: number) => {
   return `${value.toLocaleString()}원`;
 };
 
-const ROOM_TYPE_LABELS: Record<string, string> = {
-  SINGLE: '싱글룸',
-  DOUBLE: '더블룸',
-  STUDIO: '스튜디오',
-  SUITE: '스위트',
-};
-
 export function SpecTable({ room }: SpecTableProps) {
   const specs = [
-    { label: '방 타입', value: room.roomType ? ROOM_TYPE_LABELS[room.roomType] || room.roomType : '-' },
+    { label: '방 타입', value: room.roomTypeName || '-' },
     { label: '면적', value: room.area ? `${room.area}㎡` : '-' },
     { label: '층', value: room.floor ? `${room.floor}층` : '-' },
     { label: '방향', value: room.direction || '-' },

@@ -1,7 +1,6 @@
 package com.coliving.admin.space.model;
 
 import com.coliving.user.room.model.ImageType;
-import com.coliving.user.room.model.RoomType;
 import com.coliving.user.room.model.SpaceStatus;
 import com.coliving.user.room.model.SpaceType;
 
@@ -36,7 +35,8 @@ public class AdminSpace {
     @Getter
     @Builder
     public static class PrivateSpaceDetail {
-        private RoomType roomType;
+        private Long roomTypeId;
+        private String roomTypeName;
         private Integer roomCount;
         private Integer bathroomCount;
         private String direction;

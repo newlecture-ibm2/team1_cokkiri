@@ -1,6 +1,5 @@
-package com.coliving.admin.space.adapter.in.web;
+package com.coliving.admin.space.adapter.in.web.dto.req;
 
-import com.coliving.user.room.model.RoomType;
 import com.coliving.user.room.model.SpaceStatus;
 
 import jakarta.validation.constraints.NotBlank;
@@ -27,7 +26,7 @@ public class UpdateSpaceRequestDto {
     private String description;
 
     // Private 상세
-    private RoomType roomType;
+    private Long roomTypeId;
     private Integer roomCount;
     private Integer bathroomCount;
     private String direction;

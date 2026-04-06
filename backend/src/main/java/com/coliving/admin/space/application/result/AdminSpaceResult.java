@@ -2,7 +2,6 @@ package com.coliving.admin.space.application.result;
 
 import com.coliving.admin.space.model.AdminSpace;
 import com.coliving.user.room.model.ImageType;
-import com.coliving.user.room.model.RoomType;
 import com.coliving.user.room.model.SpaceStatus;
 import com.coliving.user.room.model.SpaceType;
 
@@ -34,7 +33,8 @@ public class AdminSpaceResult {
     @Getter
     @Builder
     public static class PrivateDetail {
-        private RoomType roomType;
+        private Long roomTypeId;
+        private String roomTypeName;
         private Integer roomCount;
         private Integer bathroomCount;
         private String direction;
@@ -78,7 +78,8 @@ public class AdminSpaceResult {
 
         if (model.getPrivateDetail() != null) {
             builder.privateDetail(PrivateDetail.builder()
-                    .roomType(model.getPrivateDetail().getRoomType())
+                    .roomTypeId(model.getPrivateDetail().getRoomTypeId())
+                    .roomTypeName(model.getPrivateDetail().getRoomTypeName())
                     .roomCount(model.getPrivateDetail().getRoomCount())
                     .bathroomCount(model.getPrivateDetail().getBathroomCount())
                     .direction(model.getPrivateDetail().getDirection())

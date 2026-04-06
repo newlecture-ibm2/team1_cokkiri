@@ -14,7 +14,8 @@ export interface RoomDTO {
   area?: number;
   description?: string;
   amenities: string[];
-  roomType?: string;
+  roomTypeId?: number;
+  roomTypeName?: string;
   roomCount?: number;
   bathroomCount?: number;
   direction?: string;
@@ -35,10 +36,16 @@ export interface PageResponse<T> {
 }
 
 export interface RoomFilterParams {
-  roomType?: string;
+  roomTypeId?: number;
   minRent?: number;
   maxRent?: number;
   floor?: number;
   page?: number;
   size?: number;
+}
+
+export interface RoomTypeOption {
+  roomTypeId: number;
+  code: string;
+  name: string;
 }

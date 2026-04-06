@@ -21,7 +21,8 @@ public class RoomResponseDto {
     private List<String> amenities;
 
     // Private 상세
-    private String roomType;
+    private Long roomTypeId;
+    private String roomTypeName;
     private Integer roomCount;
     private Integer bathroomCount;
     private String direction;
@@ -53,7 +54,8 @@ public class RoomResponseDto {
                 .area(room.getArea())
                 .description(room.getDescription())
                 .amenities(room.getAmenities())
-                .roomType(room.getRoomType() != null ? room.getRoomType().name() : null)
+                .roomTypeId(room.getRoomTypeId())
+                .roomTypeName(room.getRoomTypeName())
                 .roomCount(room.getRoomCount())
                 .bathroomCount(room.getBathroomCount())
                 .direction(room.getDirection())

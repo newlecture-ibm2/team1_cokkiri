@@ -4,7 +4,7 @@ import com.coliving.user.room.adapter.in.web.dto.RoomResponseDto;
 import com.coliving.user.room.application.command.RoomListCommand;
 import com.coliving.user.room.application.port.in.RoomUseCase;
 import com.coliving.user.room.model.Room;
-import com.coliving.user.room.model.RoomType;
+
 import com.coliving.global.dto.ApiResponse;
 import com.coliving.global.error.BusinessException;
 import com.coliving.global.error.ErrorCode;
@@ -30,23 +30,14 @@ public class RoomController {
     @Operation(summary = "방 목록 조회 (필터 + 페이지네이션)")
     @GetMapping
     public ApiResponse<Page<RoomResponseDto>> getRooms(
-            @RequestParam(required = false) String roomType,
+            @RequestParam(required = false) Long roomTypeId,
             @RequestParam(required = false) BigDecimal minRent,
             @RequestParam(required = false) BigDecimal maxRent,
             @RequestParam(required = false) Integer floor,
             @PageableDefault(size = 12) Pageable pageable) {
 
-        RoomType parsedRoomType = null;
-        if (roomType != null && !roomType.isBlank()) {
-            try {
-                parsedRoomType = RoomType.valueOf(roomType.toUpperCase());
-            } catch (IllegalArgumentException e) {
-                // 잘못된 roomType은 무시하고 필터 없이 조회
-            }
-        }
-
         RoomListCommand command = RoomListCommand.builder()
-                .roomType(parsedRoomType)
+                .roomTypeId(roomTypeId)
                 .minRent(minRent)
                 .maxRent(maxRent)
                 .floor(floor)

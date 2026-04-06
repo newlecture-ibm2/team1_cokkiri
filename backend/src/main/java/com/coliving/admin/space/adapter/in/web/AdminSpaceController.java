@@ -1,5 +1,8 @@
 package com.coliving.admin.space.adapter.in.web;
 
+import com.coliving.admin.space.adapter.in.web.dto.req.CreateSpaceRequestDto;
+import com.coliving.admin.space.adapter.in.web.dto.req.UpdateSpaceRequestDto;
+import com.coliving.admin.space.adapter.in.web.dto.res.AdminSpaceResponseDto;
 import com.coliving.admin.space.application.command.CreateSpaceCommand;
 import com.coliving.admin.space.application.command.UpdateSpaceCommand;
 import com.coliving.admin.space.application.port.in.AdminSpaceUseCase;
@@ -43,7 +46,7 @@ public class AdminSpaceController {
                 .area(request.getArea())
                 .amenities(request.getAmenities())
                 .description(request.getDescription())
-                .roomType(request.getRoomType())
+                .roomTypeId(request.getRoomTypeId())
                 .roomCount(request.getRoomCount())
                 .bathroomCount(request.getBathroomCount())
                 .direction(request.getDirection())
@@ -91,7 +94,7 @@ public class AdminSpaceController {
                 .area(request.getArea())
                 .amenities(request.getAmenities())
                 .description(request.getDescription())
-                .roomType(request.getRoomType())
+                .roomTypeId(request.getRoomTypeId())
                 .roomCount(request.getRoomCount())
                 .bathroomCount(request.getBathroomCount())
                 .direction(request.getDirection())
