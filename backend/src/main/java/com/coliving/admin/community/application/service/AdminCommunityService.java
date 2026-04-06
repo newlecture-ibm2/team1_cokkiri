@@ -20,6 +20,8 @@ import com.coliving.global.error.ErrorCode;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -36,16 +38,20 @@ public class AdminCommunityService implements AdminCommunityUseCase {
 
     private final AdminCommunityRepositoryPort adminCommunityRepositoryPort;
     private final CommunityRepositoryPort communityRepositoryPort;
+    private final AdminCommunityAuditLogger adminCommunityAuditLogger;
 
     public AdminCommunityService(AdminCommunityRepositoryPort adminCommunityRepositoryPort,
-                                 CommunityRepositoryPort communityRepositoryPort) {
+                                 CommunityRepositoryPort communityRepositoryPort,
+                                 AdminCommunityAuditLogger adminCommunityAuditLogger) {
         this.adminCommunityRepositoryPort = adminCommunityRepositoryPort;
         this.communityRepositoryPort = communityRepositoryPort;
+        this.adminCommunityAuditLogger = adminCommunityAuditLogger;
     }
 
     @Override
     @Transactional(readOnly = true)
     public AdminPostListResult listPosts(ListAdminPostsCommand command) {
+        validateDateRange(command.getCreatedFrom(), command.getCreatedTo());
         int safePage = Math.max(0, command.getPage());
         int safeSize = normalizeSize(command.getSize());
         Sort sort = parseSort(command.getSort(), ALLOWED_POST_SORT_PROPERTIES);
@@ -54,6 +60,8 @@ public class AdminCommunityService implements AdminCommunityUseCase {
                 command.getCategory(),
                 command.getAuthorUserId(),
                 command.getKeyword(),
+                command.getCreatedFrom(),
+                command.getCreatedTo(),
                 PageRequest.of(safePage, safeSize, sort)
         );
 
@@ -76,12 +84,15 @@ public class AdminCommunityService implements AdminCommunityUseCase {
     @Override
     @Transactional
     public void deletePost(DeleteAdminPostCommand command) {
+        Long actorUserId = getAuthenticatedUserId();
         communityRepositoryPort.softDeletePost(command.getPostId());
+        adminCommunityAuditLogger.logDeletePost(actorUserId, command.getPostId());
     }
 
     @Override
     @Transactional(readOnly = true)
     public AdminCommentListResult listComments(ListAdminCommentsCommand command) {
+        validateDateRange(command.getCreatedFrom(), command.getCreatedTo());
         int safePage = Math.max(0, command.getPage());
         int safeSize = normalizeSize(command.getSize());
         Sort sort = parseSort(command.getSort(), ALLOWED_COMMENT_SORT_PROPERTIES);
@@ -89,6 +100,8 @@ public class AdminCommunityService implements AdminCommunityUseCase {
         Page<AdminCommentListItemResult> page = adminCommunityRepositoryPort.findComments(
                 command.getPostId(),
                 command.getAuthorUserId(),
+                command.getCreatedFrom(),
+                command.getCreatedTo(),
                 PageRequest.of(safePage, safeSize, sort)
         );
 
@@ -111,7 +124,9 @@ public class AdminCommunityService implements AdminCommunityUseCase {
     @Override
     @Transactional
     public void deleteComment(DeleteAdminCommentCommand command) {
+        Long actorUserId = getAuthenticatedUserId();
         communityRepositoryPort.softDeleteComment(command.getCommentId());
+        adminCommunityAuditLogger.logDeleteComment(actorUserId, command.getCommentId());
     }
 
     private int normalizeSize(int size) {
@@ -141,5 +156,23 @@ public class AdminCommunityService implements AdminCommunityUseCase {
             safeProperty = "createdAt";
         }
         return Sort.by(direction, safeProperty);
+    }
+
+    private Long getAuthenticatedUserId() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || authentication.getName() == null) {
+            throw new BusinessException(ErrorCode.FORBIDDEN);
+        }
+        try {
+            return Long.parseLong(authentication.getName());
+        } catch (NumberFormatException e) {
+            throw new BusinessException(ErrorCode.FORBIDDEN);
+        }
+    }
+
+    private void validateDateRange(java.time.OffsetDateTime from, java.time.OffsetDateTime to) {
+        if (from != null && to != null && from.isAfter(to)) {
+            throw new BusinessException(ErrorCode.VALIDATION_ERROR);
+        }
     }
 }

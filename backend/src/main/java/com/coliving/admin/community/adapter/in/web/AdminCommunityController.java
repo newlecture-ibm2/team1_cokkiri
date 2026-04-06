@@ -27,9 +27,15 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.time.LocalDate;
+import java.time.OffsetDateTime;
+import java.time.ZoneId;
+
 @RestController
 @RequestMapping("/api/admin")
 public class AdminCommunityController {
+    private static final ZoneId DEFAULT_ZONE = ZoneId.of("Asia/Seoul");
+
     private final AdminCommunityUseCase adminCommunityUseCase;
 
     public AdminCommunityController(AdminCommunityUseCase adminCommunityUseCase) {
@@ -41,14 +47,20 @@ public class AdminCommunityController {
             @RequestParam(required = false) String category,
             @RequestParam(value = "author_user_id", required = false) Long authorUserId,
             @RequestParam(required = false) String keyword,
+            @RequestParam(value = "created_from", required = false) LocalDate createdFrom,
+            @RequestParam(value = "created_to", required = false) LocalDate createdTo,
             @RequestParam(value = "p", defaultValue = "0") int page,
             @RequestParam(value = "s", defaultValue = "20") int size,
             @RequestParam(required = false, defaultValue = "createdAt,desc") String sort
     ) {
+        OffsetDateTime fromAt = toStartOfDay(createdFrom);
+        OffsetDateTime toAt = toEndOfDay(createdTo);
         AdminPostListResult result = adminCommunityUseCase.listPosts(ListAdminPostsCommand.builder()
                 .category(category)
                 .authorUserId(authorUserId)
                 .keyword(keyword)
+                .createdFrom(fromAt)
+                .createdTo(toAt)
                 .page(page)
                 .size(size)
                 .sort(sort)
@@ -81,13 +93,19 @@ public class AdminCommunityController {
     public ApiResponse<AdminCommentListResponseDto> listComments(
             @RequestParam(value = "post_id", required = false) Long postId,
             @RequestParam(value = "author_user_id", required = false) Long authorUserId,
+            @RequestParam(value = "created_from", required = false) LocalDate createdFrom,
+            @RequestParam(value = "created_to", required = false) LocalDate createdTo,
             @RequestParam(value = "p", defaultValue = "0") int page,
             @RequestParam(value = "s", defaultValue = "20") int size,
             @RequestParam(required = false, defaultValue = "createdAt,desc") String sort
     ) {
+        OffsetDateTime fromAt = toStartOfDay(createdFrom);
+        OffsetDateTime toAt = toEndOfDay(createdTo);
         AdminCommentListResult result = adminCommunityUseCase.listComments(ListAdminCommentsCommand.builder()
                 .postId(postId)
                 .authorUserId(authorUserId)
+                .createdFrom(fromAt)
+                .createdTo(toAt)
                 .page(page)
                 .size(size)
                 .sort(sort)
@@ -169,5 +187,19 @@ public class AdminCommunityController {
                 .createdAt(r.getCreatedAt())
                 .updatedAt(r.getUpdatedAt())
                 .build();
+    }
+
+    private OffsetDateTime toStartOfDay(LocalDate date) {
+        if (date == null) {
+            return null;
+        }
+        return date.atStartOfDay(DEFAULT_ZONE).toOffsetDateTime();
+    }
+
+    private OffsetDateTime toEndOfDay(LocalDate date) {
+        if (date == null) {
+            return null;
+        }
+        return date.plusDays(1).atStartOfDay(DEFAULT_ZONE).minusNanos(1).toOffsetDateTime();
     }
 }

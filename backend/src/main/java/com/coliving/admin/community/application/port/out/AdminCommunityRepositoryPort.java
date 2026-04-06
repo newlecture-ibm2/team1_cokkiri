@@ -7,14 +7,28 @@ import com.coliving.admin.community.application.result.AdminPostListItemResult;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
+import java.time.OffsetDateTime;
 import java.util.Optional;
 
 public interface AdminCommunityRepositoryPort {
-    Page<AdminPostListItemResult> findPosts(String category, Long authorUserId, String keyword, Pageable pageable);
+    Page<AdminPostListItemResult> findPosts(
+            String category,
+            Long authorUserId,
+            String keyword,
+            OffsetDateTime createdFrom,
+            OffsetDateTime createdTo,
+            Pageable pageable
+    );
 
     Optional<AdminPostDetailResult> findPostDetail(Long postId);
 
-    Page<AdminCommentListItemResult> findComments(Long postId, Long authorUserId, Pageable pageable);
+    Page<AdminCommentListItemResult> findComments(
+            Long postId,
+            Long authorUserId,
+            OffsetDateTime createdFrom,
+            OffsetDateTime createdTo,
+            Pageable pageable
+    );
 
     Optional<AdminCommentDetailResult> findCommentDetail(Long commentId);
 }

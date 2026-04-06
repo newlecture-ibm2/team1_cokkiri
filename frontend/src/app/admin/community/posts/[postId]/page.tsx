@@ -18,7 +18,15 @@ export default async function AdminCommunityPostDetailPage({ params }: { params:
   if (Number.isNaN(id)) notFound();
 
   const res = await adminCommunityBffGet(`admin/posts/${id}`);
-  if (!res.ok) notFound();
+  if (res.status === 401 || res.status === 403) {
+    return <p className="text-sm font-medium text-destructive">관리자 권한이 필요합니다.</p>;
+  }
+  if (res.status === 404) {
+    notFound();
+  }
+  if (!res.ok) {
+    return <p className="text-sm font-medium text-destructive">상세 정보를 불러오지 못했습니다.</p>;
+  }
   const body = (await res.json()) as ApiResponse<AdminPostDetail>;
   if (!body.success || !body.data) notFound();
   const detail = body.data;

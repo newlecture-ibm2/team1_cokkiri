@@ -19,8 +19,13 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Component;
 
+import java.time.OffsetDateTime;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Component
 public class AdminCommunityPersistenceAdapter implements AdminCommunityRepositoryPort {
@@ -37,7 +42,12 @@ public class AdminCommunityPersistenceAdapter implements AdminCommunityRepositor
     }
 
     @Override
-    public Page<AdminPostListItemResult> findPosts(String category, Long authorUserId, String keyword, Pageable pageable) {
+    public Page<AdminPostListItemResult> findPosts(String category,
+                                                   Long authorUserId,
+                                                   String keyword,
+                                                   OffsetDateTime createdFrom,
+                                                   OffsetDateTime createdTo,
+                                                   Pageable pageable) {
         Specification<PostEntity> spec = Specification.where(null);
         if (category != null && !category.isBlank()) {
             spec = spec.and((root, query, cb) -> cb.equal(root.get("category"), category.trim().toUpperCase()));
@@ -52,6 +62,12 @@ public class AdminCommunityPersistenceAdapter implements AdminCommunityRepositor
                     cb.like(cb.lower(root.get("content")), pattern)
             ));
         }
+        if (createdFrom != null) {
+            spec = spec.and((root, query, cb) -> cb.greaterThanOrEqualTo(root.get("createdAt"), createdFrom));
+        }
+        if (createdTo != null) {
+            spec = spec.and((root, query, cb) -> cb.lessThanOrEqualTo(root.get("createdAt"), createdTo));
+        }
 
         return postJpaRepository.findAll(spec, pageable).map(this::toPostListItem);
     }
@@ -62,7 +78,11 @@ public class AdminCommunityPersistenceAdapter implements AdminCommunityRepositor
     }
 
     @Override
-    public Page<AdminCommentListItemResult> findComments(Long postId, Long authorUserId, Pageable pageable) {
+    public Page<AdminCommentListItemResult> findComments(Long postId,
+                                                         Long authorUserId,
+                                                         OffsetDateTime createdFrom,
+                                                         OffsetDateTime createdTo,
+                                                         Pageable pageable) {
         Specification<CommentEntity> spec = Specification.where(null);
         if (postId != null) {
             spec = spec.and((root, query, cb) -> cb.equal(root.get("post").get("postId"), postId));
@@ -70,7 +90,16 @@ public class AdminCommunityPersistenceAdapter implements AdminCommunityRepositor
         if (authorUserId != null) {
             spec = spec.and((root, query, cb) -> cb.equal(root.get("userId"), authorUserId));
         }
-        return commentJpaRepository.findAll(spec, pageable).map(this::toCommentListItem);
+        if (createdFrom != null) {
+            spec = spec.and((root, query, cb) -> cb.greaterThanOrEqualTo(root.get("createdAt"), createdFrom));
+        }
+        if (createdTo != null) {
+            spec = spec.and((root, query, cb) -> cb.lessThanOrEqualTo(root.get("createdAt"), createdTo));
+        }
+
+        Page<CommentEntity> page = commentJpaRepository.findAll(spec, pageable);
+        Map<Long, String> postTitleMap = buildPostTitleMap(page.getContent());
+        return page.map(entity -> toCommentListItem(entity, postTitleMap));
     }
 
     @Override
@@ -109,11 +138,13 @@ public class AdminCommunityPersistenceAdapter implements AdminCommunityRepositor
                 .build();
     }
 
-    private AdminCommentListItemResult toCommentListItem(CommentEntity entity) {
+    private AdminCommentListItemResult toCommentListItem(CommentEntity entity, Map<Long, String> postTitleMap) {
+        Long postId = entity.getPostId();
+        String postTitle = postId == null ? "" : postTitleMap.getOrDefault(postId, "");
         return AdminCommentListItemResult.builder()
                 .commentId(entity.getCommentId())
-                .postId(entity.getPostId())
-                .postTitle(entity.getPost() == null ? "" : PlainTextHtmlSanitizer.sanitizeTitle(entity.getPost().getTitle()))
+                .postId(postId)
+                .postTitle(postTitle)
                 .authorUserId(entity.getUserId())
                 .content(PlainTextHtmlSanitizer.stripToPlain(entity.getContent()))
                 .createdAt(entity.getCreatedAt())
@@ -122,10 +153,14 @@ public class AdminCommunityPersistenceAdapter implements AdminCommunityRepositor
     }
 
     private AdminCommentDetailResult toCommentDetail(CommentEntity entity) {
+        String postTitle = "";
+        if (entity.getPost() != null && entity.getPost().getTitle() != null) {
+            postTitle = PlainTextHtmlSanitizer.sanitizeTitle(entity.getPost().getTitle());
+        }
         return AdminCommentDetailResult.builder()
                 .commentId(entity.getCommentId())
                 .postId(entity.getPostId())
-                .postTitle(entity.getPost() == null ? "" : PlainTextHtmlSanitizer.sanitizeTitle(entity.getPost().getTitle()))
+                .postTitle(postTitle)
                 .authorUserId(entity.getUserId())
                 .content(entity.getContent())
                 .createdAt(entity.getCreatedAt())
@@ -149,5 +184,22 @@ public class AdminCommunityPersistenceAdapter implements AdminCommunityRepositor
         } catch (IllegalArgumentException e) {
             return List.of();
         }
+    }
+
+    private Map<Long, String> buildPostTitleMap(List<CommentEntity> comments) {
+        Set<Long> postIds = comments.stream()
+                .map(CommentEntity::getPostId)
+                .filter(java.util.Objects::nonNull)
+                .collect(Collectors.toSet());
+        if (postIds.isEmpty()) {
+            return Map.of();
+        }
+
+        List<PostEntity> posts = postJpaRepository.findAllById(postIds);
+        Map<Long, String> map = new HashMap<>();
+        for (PostEntity post : posts) {
+            map.put(post.getPostId(), PlainTextHtmlSanitizer.sanitizeTitle(post.getTitle()));
+        }
+        return map;
     }
 }

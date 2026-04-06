@@ -15,6 +15,8 @@ type TabKey = "posts" | "comments";
 
 export function CommunityModerationPanel() {
   const [tab, setTab] = useState<TabKey>("posts");
+  const [createdFrom, setCreatedFrom] = useState("");
+  const [createdTo, setCreatedTo] = useState("");
   const [posts, setPosts] = useState<AdminPostItem[]>([]);
   const [comments, setComments] = useState<AdminCommentItem[]>([]);
   const [loading, setLoading] = useState(false);
@@ -27,11 +29,18 @@ export function CommunityModerationPanel() {
       setLoading(true);
       setError(null);
       try {
+        if (createdFrom && createdTo && createdFrom > createdTo) {
+          setError("기간 설정이 올바르지 않습니다. 시작일은 종료일보다 이후일 수 없습니다.");
+          setLoading(false);
+          return;
+        }
+        const from = createdFrom || undefined;
+        const to = createdTo || undefined;
         if (tab === "posts") {
-          const res = await fetchAdminPosts({});
+          const res = await fetchAdminPosts({ createdFrom: from, createdTo: to });
           if (mounted) setPosts(res.data?.content ?? []);
         } else {
-          const res = await fetchAdminComments({});
+          const res = await fetchAdminComments({ createdFrom: from, createdTo: to });
           if (mounted) setComments(res.data?.content ?? []);
         }
       } catch (e) {
@@ -44,7 +53,7 @@ export function CommunityModerationPanel() {
     return () => {
       mounted = false;
     };
-  }, [tab]);
+  }, [tab, createdFrom, createdTo]);
 
   function handleDeletePost(postId: number) {
     startTransition(async () => {
@@ -89,6 +98,38 @@ export function CommunityModerationPanel() {
         >
           댓글
         </button>
+      </div>
+      <div className="flex flex-wrap items-end gap-3">
+        <label className="space-y-1 text-xs font-bold uppercase tracking-wider text-muted-foreground">
+          시작일
+          <input
+            type="date"
+            value={createdFrom}
+            onChange={(e) => setCreatedFrom(e.target.value)}
+            className="block rounded-lg border border-border bg-background px-3 py-2 text-sm font-medium text-foreground"
+          />
+        </label>
+        <label className="space-y-1 text-xs font-bold uppercase tracking-wider text-muted-foreground">
+          종료일
+          <input
+            type="date"
+            value={createdTo}
+            onChange={(e) => setCreatedTo(e.target.value)}
+            className="block rounded-lg border border-border bg-background px-3 py-2 text-sm font-medium text-foreground"
+          />
+        </label>
+        {(createdFrom || createdTo) && (
+          <button
+            type="button"
+            onClick={() => {
+              setCreatedFrom("");
+              setCreatedTo("");
+            }}
+            className="rounded-lg border border-border px-3 py-2 text-xs font-bold uppercase tracking-wider text-muted-foreground hover:bg-muted"
+          >
+            초기화
+          </button>
+        )}
       </div>
 
       {error ? <p className="rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive">{error}</p> : null}
