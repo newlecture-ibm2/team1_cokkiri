@@ -34,6 +34,7 @@ trigger: always_on
 
 - **변환 규칙:** `/api/bff` **+** `{resource}` → 백엔드 **`/api` + 동일 `{resource}`**. `bff` 세그먼트는 **Next 쪽에만** 존재한다.
 - **예시:** `GET /api/bff/admin/reservations` → 프록시 → **`GET /api/admin/reservations`** (관리자 API도 동일 규칙).
+- **관리자 커뮤니티 관리 예시:** `GET /api/bff/admin/posts`, `DELETE /api/bff/admin/posts/{postId}`, `GET /api/bff/admin/comments`, `DELETE /api/bff/admin/comments/{commentId}` → 프록시 → 백엔드 동일 경로(`/api/admin/...`).
 - **금지:** 브라우저에서 백엔드 호스트로 직접 요청. **`/api/bff` 없이** `/api/rooms` 만 호출하는 클라이언트 코드(프록시 우회)도 규칙 위반.
 
 #### 3-2. 명세·구현과의 대응
@@ -44,3 +45,4 @@ trigger: always_on
 
 ### 4. 기타 공통
 - 라우트 전환 시 상단 스크롤 등 **공통 UX**는 `layout`의 ScrollToTop 등으로 처리한다(세부는 ui-guideline·기존 컴포넌트에 맞춤).
+- 관리자 커뮤니티 화면은 `src/app/admin/community/` 하위에 콜로케이션(`_components`, `_api`, `_types`)을 적용하고, API 호출은 `admin` 영역 규칙대로 `/api/bff/admin/...`만 사용한다.
