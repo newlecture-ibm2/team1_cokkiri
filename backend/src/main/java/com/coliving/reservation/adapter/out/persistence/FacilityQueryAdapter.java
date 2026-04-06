@@ -68,9 +68,9 @@ public class FacilityQueryAdapter implements FacilityQueryPort {
                        csd.max_capacity, csd.operating_hours, csd.usage_fee,
                        si.space_image_id, si.image_url, si.image_type,
                        si.sort_order, si.is_thumbnail
-                FROM space s
-                INNER JOIN common_space_detail csd ON s.space_id = csd.space_id
-                LEFT JOIN space_image si ON s.space_id = si.space_id
+                FROM spaces s
+                INNER JOIN common_space_details csd ON s.space_id = csd.space_id
+                LEFT JOIN space_images si ON s.space_id = si.space_id
                                          AND si.deleted_at IS NULL
                 WHERE s.type = 'COMMON'
                 AND csd.is_reservable = true
@@ -103,9 +103,9 @@ public class FacilityQueryAdapter implements FacilityQueryPort {
                        csd.is_reservable,
                        si.space_image_id, si.image_url, si.image_type,
                        si.sort_order, si.is_thumbnail
-                FROM space s
-                INNER JOIN common_space_detail csd ON s.space_id = csd.space_id
-                LEFT JOIN space_image si ON s.space_id = si.space_id
+                FROM spaces s
+                INNER JOIN common_space_details csd ON s.space_id = csd.space_id
+                LEFT JOIN space_images si ON s.space_id = si.space_id
                                          AND si.deleted_at IS NULL
                 WHERE s.space_id = :spaceId
                 AND s.type = 'COMMON'
@@ -126,7 +126,7 @@ public class FacilityQueryAdapter implements FacilityQueryPort {
         // 2. 오늘 예약 건수 조회
         String countSql = """
                 SELECT COUNT(*)
-                FROM reservation r
+                FROM reservations r
                 WHERE r.space_id = :spaceId
                 AND r.reservation_date = :today
                 AND r.status IN ('PENDING', 'APPROVED')

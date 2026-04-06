@@ -15,14 +15,10 @@ import java.util.List;
  * reservation 테이블에 대한 데이터 접근을 담당한다.
  * 주요 쿼리 메서드는 비즈니스 규칙(ERD)에 기반한다.
  *
- * ┌──────────────────────────────────────────────────────────────────┐
- * │ [TODO - SPC-2.1/USR-1.1 머지 시 수정 필요]                       │
+ * [관계 전환 현황 (SPC-2.1 + USR-1.1 머지 완료)]
  * │                                                                  │
- * │ User/Space 엔티티 완성 후 @ManyToOne 전환 시,                     │
- * │ 쿼리 메서드의 파라미터 타입과 반환 타입을 검토하세요.                  │
- * │ 예: findByUserId → findByUser(User user) 등                      │
- * │                                                                  │
- * │ 관련 담당: User(이우석 USR-1.1), Space(정찬우 SPC-2.1)             │
+ * │ ✅ user  → @ManyToOne UserEntity — JPQL: r.user.userId           │
+ * │ ✅ space → @ManyToOne SpaceEntity — JPQL: r.space.spaceId        │
  * └──────────────────────────────────────────────────────────────────┘
  */
 public interface ReservationJpaRepository extends JpaRepository<ReservationEntity, Long> {
@@ -33,19 +29,19 @@ public interface ReservationJpaRepository extends JpaRepository<ReservationEntit
     // ── 사용자별 조회 ──
 
     /** 특정 사용자의 예약 목록 조회 (상태 필터링) */
-    List<ReservationEntity> findByUserIdAndStatusIn(Long userId, List<ReservationStatus> statuses);
+    List<ReservationEntity> findByUser_UserIdAndStatusIn(Long userId, List<ReservationStatus> statuses);
 
     /** 특정 사용자의 전체 예약 목록 조회 (최신순 정렬) */
-    List<ReservationEntity> findByUserIdOrderByReservationDateDescStartTimeDesc(Long userId);
+    List<ReservationEntity> findByUser_UserIdOrderByReservationDateDescStartTimeDesc(Long userId);
 
     // ── 시설별 조회 ──
 
     /** 특정 시설의 특정 날짜 예약 목록 조회 (승인된 예약만) */
-    List<ReservationEntity> findBySpaceIdAndReservationDateAndStatus(
+    List<ReservationEntity> findBySpace_SpaceIdAndReservationDateAndStatus(
             Long spaceId, LocalDate reservationDate, ReservationStatus status);
 
     /** 특정 시설의 특정 날짜 전체 예약 목록 조회 */
-    List<ReservationEntity> findBySpaceIdAndReservationDate(Long spaceId, LocalDate reservationDate);
+    List<ReservationEntity> findBySpace_SpaceIdAndReservationDate(Long spaceId, LocalDate reservationDate);
 
     // ── 비즈니스 규칙 검증 쿼리 ──
 
@@ -62,9 +58,9 @@ public interface ReservationJpaRepository extends JpaRepository<ReservationEntit
      * @return 중복 예약 존재 여부
      */
     @Query("SELECT COUNT(r) > 0 FROM ReservationEntity r " +
-           "WHERE r.spaceId = :spaceId " +
+           "WHERE r.space.spaceId = :spaceId " +
            "AND r.reservationDate = :date " +
-           "AND r.status = 'APPROVED' " +
+           "AND r.status = com.coliving.reservation.model.ReservationStatus.APPROVED " +
            "AND r.startTime < :endTime " +
            "AND r.endTime > :startTime")
     boolean existsOverlappingReservation(
@@ -86,10 +82,10 @@ public interface ReservationJpaRepository extends JpaRepository<ReservationEntit
      * @return 활성 예약 존재 여부
      */
     @Query("SELECT COUNT(r) > 0 FROM ReservationEntity r " +
-           "WHERE r.userId = :userId " +
-           "AND r.spaceId = :spaceId " +
+           "WHERE r.user.userId = :userId " +
+           "AND r.space.spaceId = :spaceId " +
            "AND r.reservationDate = :date " +
-           "AND r.status = 'APPROVED' " +
+           "AND r.status = com.coliving.reservation.model.ReservationStatus.APPROVED " +
            "AND r.startTime <= :currentTime " +
            "AND r.endTime > :currentTime")
     boolean hasActiveReservation(
@@ -110,7 +106,7 @@ public interface ReservationJpaRepository extends JpaRepository<ReservationEntit
      * @return 날짜/시간순 정렬된 예약 목록
      */
     @Query("SELECT r FROM ReservationEntity r " +
-           "WHERE r.spaceId = :spaceId " +
+           "WHERE r.space.spaceId = :spaceId " +
            "AND r.reservationDate BETWEEN :startDate AND :endDate " +
            "ORDER BY r.reservationDate, r.startTime")
     List<ReservationEntity> findBySpaceIdAndDateRange(

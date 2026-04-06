@@ -1,4 +1,4 @@
-package com.coliving.reservation.adapter.in.web;
+package com.coliving.admin.reservation.adapter.in.web;
 
 import com.coliving.global.dto.ApiResponse;
 import com.coliving.reservation.adapter.in.web.dto.AdminReservationResponse;
@@ -17,6 +17,11 @@ import java.util.List;
  * 관리자용 예약 관리 REST Controller
  *
  * RSV-4.5: 예약 모든 내역 조회(82), 예약 수동 승인/반려(83)
+ *
+ * [아키텍처 규칙 준수]
+ * - 위치: admin/reservation/adapter/in/web/ (03-backend-architecture.md §1-2)
+ * - ADMIN 전용 유스케이스 진입점
+ * - SecurityConfig에서 /api/admin/** 경로 = hasRole("ADMIN") 보호
  */
 @Tag(name = "Admin-Reservation", description = "관리자 전용 예약 관리 API (#82, #83)")
 @RestController
@@ -41,7 +46,7 @@ public class AdminReservationController {
             @RequestHeader("X-Admin-Id") Long adminId,
             @Parameter(description = "예약 ID", example = "100")
             @PathVariable("id") Long reservationId) {
-        
+
         reservationCommandUseCase.approveReservation(adminId, reservationId);
         return ResponseEntity.ok(ApiResponse.ok(null));
     }
@@ -53,7 +58,7 @@ public class AdminReservationController {
             @RequestHeader("X-Admin-Id") Long adminId,
             @Parameter(description = "예약 ID", example = "100")
             @PathVariable("id") Long reservationId) {
-        
+
         reservationCommandUseCase.rejectReservation(adminId, reservationId);
         return ResponseEntity.ok(ApiResponse.ok(null));
     }
