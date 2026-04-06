@@ -14,12 +14,12 @@ import org.hibernate.annotations.SQLRestriction;
  * - Soft Delete 적용
  */
 @Entity
-@Table(name = "role_change_log",
+@Table(name = "role_change_logs",
         indexes = {
                 @Index(name = "idx_role_change_log_user_id", columnList = "user_id")
         }
 )
-@SQLDelete(sql = "UPDATE role_change_log SET deleted_at = CURRENT_TIMESTAMP WHERE role_change_log_id = ?")
+@SQLDelete(sql = "UPDATE role_change_logs SET deleted_at = CURRENT_TIMESTAMP WHERE role_change_log_id = ?")
 @SQLRestriction("deleted_at IS NULL")
 @Getter
 @Builder
