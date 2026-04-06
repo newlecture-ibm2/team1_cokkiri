@@ -78,6 +78,10 @@ public class ResidentDeviceController {
     }
 
     // ── JWT에서 space_id 추출 ──
+    // TODO: [보류] 현재 JWT를 직접 파싱하여 spaceId/userId를 추출하고 있음.
+    //  SecurityContext 기반으로 전환하려면 global/security의 JwtTokenProvider.getAuthentication()에서
+    //  principal을 CustomUserDetails(userId, spaceId, contractId 포함)로 확장해야 함.
+    //  → 공통 인프라(global/security) 영역 수정이 필요하므로 인프라 담당자와 협의 후 전환 예정.
 
     private Long extractSpaceId(HttpServletRequest request) {
         String token = resolveToken(request);
