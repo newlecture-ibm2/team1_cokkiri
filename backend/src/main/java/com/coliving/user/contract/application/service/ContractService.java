@@ -12,6 +12,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 @Service
 @RequiredArgsConstructor
 @Transactional
@@ -25,6 +28,8 @@ public class ContractService implements ContractUseCase {
                 .filter(c -> c.getStatus() == ContractStatus.DRAFT)
                 .map(c -> ContractDraftResult.builder()
                         .contractId(c.getContractId())
+                        .spaceId(c.getSpaceId())
+                        .status(c.getStatus())
                         .desiredStartDate(c.getDesiredStartDate())
                         .desiredDurationMonths(c.getDesiredDurationMonths())
                         .address(c.getAddress())
@@ -34,6 +39,24 @@ public class ContractService implements ContractUseCase {
                         .privacyAgreed(c.getPrivacyAgreed())
                         .build())
                 .orElse(null);
+    }
+
+    @Override
+    public List<ContractDraftResult> getMyContracts(Long userId) {
+        return contractRepositoryPort.findAllByUserId(userId).stream()
+                .map(c -> ContractDraftResult.builder()
+                        .contractId(c.getContractId())
+                        .spaceId(c.getSpaceId())
+                        .status(c.getStatus())
+                        .desiredStartDate(c.getDesiredStartDate())
+                        .desiredDurationMonths(c.getDesiredDurationMonths())
+                        .address(c.getAddress())
+                        .bankAccount(c.getBankAccount())
+                        .usagePurpose(c.getUsagePurpose())
+                        .requestNote(c.getRequestNote())
+                        .privacyAgreed(c.getPrivacyAgreed())
+                        .build())
+                .collect(Collectors.toList());
     }
 
     @Override
