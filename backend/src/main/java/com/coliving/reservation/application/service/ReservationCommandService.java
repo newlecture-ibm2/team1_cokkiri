@@ -1,16 +1,22 @@
 package com.coliving.reservation.application.service;
 
+import com.coliving.common.auth.adapter.out.jpa.UserEntity;
+import com.coliving.common.auth.adapter.out.jpa.UserJpaRepository;
+import com.coliving.global.error.BusinessException;
+import com.coliving.global.error.ErrorCode;
 import com.coliving.reservation.adapter.in.web.dto.ReservationCreateRequest;
 import com.coliving.reservation.adapter.out.jpa.ReservationEntity;
 import com.coliving.reservation.adapter.out.jpa.ReservationJpaRepository;
 import com.coliving.reservation.application.port.in.ReservationCommandUseCase;
 import com.coliving.reservation.exception.ReservationOverlapException;
-import com.coliving.global.error.BusinessException;
-import com.coliving.global.error.ErrorCode;
+import com.coliving.user.room.adapter.out.jpa.SpaceEntity;
+import com.coliving.user.room.adapter.out.jpa.SpaceJpaRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Objects;
 
 /**
  * 예약 생성 서비스
@@ -18,9 +24,12 @@ import org.springframework.transaction.annotation.Transactional;
 @Slf4j
 @Service
 @RequiredArgsConstructor
+@SuppressWarnings("null")
 public class ReservationCommandService implements ReservationCommandUseCase {
 
     private final ReservationJpaRepository reservationRepository;
+    private final UserJpaRepository userRepository;
+    private final SpaceJpaRepository spaceRepository;
 
     @Override
     @Transactional
@@ -30,7 +39,17 @@ public class ReservationCommandService implements ReservationCommandUseCase {
             throw new IllegalArgumentException("종료 시간은 시작 시간보다 이후여야 합니다.");
         }
 
-        // 2. 동시성 체크: 해당 시간에 승인(APPROVED)된 중복 예약이 있는지 확인
+        // 2. 요청 사용자 조회 (USR-1.1 ManyToOne 전환 완료)
+        Objects.requireNonNull(userId, "userId는 null일 수 없습니다.");
+        @SuppressWarnings("null")
+        UserEntity userEntity = userRepository.findById(userId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND, "사용자를 찾을 수 없습니다."));
+
+        // 3. 시설 조회 (SPC-2.1 @ManyToOne 전환 완료)
+        SpaceEntity spaceEntity = spaceRepository.findById(request.getSpaceId())
+                .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND, "시설을 찾을 수 없습니다."));
+
+        // 4. 동시성 체크: 해당 시간에 승인(APPROVED)된 중복 예약이 있는지 확인
         // TODO: (고도화) 다중 인스턴스 환경에서 완벽한 동시성 제어를 위해 Redisson 기반 분산 락, 또는 DB 유니크 제약/비관적 락 도입 고려
         boolean hasOverlap = reservationRepository.existsOverlappingReservation(
                 request.getSpaceId(),
@@ -40,26 +59,27 @@ public class ReservationCommandService implements ReservationCommandUseCase {
         );
 
         if (hasOverlap) {
-            log.warn("예약 충돌 발생 - spaceId: {}, date: {}, time: {}~{}", 
+            log.warn("예약 충돌 발생 - spaceId: {}, date: {}, time: {}~{}",
                     request.getSpaceId(), request.getReservationDate(), request.getStartTime(), request.getEndTime());
             throw new ReservationOverlapException("선택한 시간에 이미 다른 확정된 예약이 존재합니다.");
         }
 
-        // 3. 예약 엔티티 생성 (초기 상태: PENDING)
+        // 5. 예약 엔티티 생성 (초기 상태: PENDING)
         ReservationEntity newReservation = ReservationEntity.builder()
-                .userId(userId)
-                .spaceId(request.getSpaceId())
+                .user(userEntity)
+                .space(spaceEntity)
                 .reservationDate(request.getReservationDate())
                 .startTime(request.getStartTime())
                 .endTime(request.getEndTime())
                 .build();
 
-        // 4. 저장 및 ID 반환
+        // 5. 저장 및 ID 반환
+        @SuppressWarnings("null")
         ReservationEntity savedReservation = reservationRepository.save(newReservation);
-        
-        log.info("새로운 예약 성공 - reservationId: {}, spaceId: {}, userId: {}", 
+
+        log.info("새로운 예약 성공 - reservationId: {}, spaceId: {}, userId: {}",
                 savedReservation.getId(), savedReservation.getSpaceId(), savedReservation.getUserId());
-        
+
         return savedReservation.getId();
     }
 
@@ -83,7 +103,12 @@ public class ReservationCommandService implements ReservationCommandUseCase {
         ReservationEntity reservation = reservationRepository.findById(reservationId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND, "예약을 찾을 수 없습니다."));
 
-        reservation.approve(adminId);
+        // adminId로 관리자 UserEntity 조회 후 approve(UserEntity) 호출
+        UserEntity adminEntity = userRepository.findById(adminId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND, "관리자를 찾을 수 없습니다."));
+
+        reservation.approve(adminEntity);
+        reservationRepository.save(reservation);
         log.info("예약 승인 성공 - reservationId: {}, adminId: {}", reservationId, adminId);
     }
 
