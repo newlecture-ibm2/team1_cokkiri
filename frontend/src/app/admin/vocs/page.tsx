@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { LayoutList } from "lucide-react";
 import { adminBffGet } from "./_api/admin-bff-server";
-import type { AdminVocListData, ApiResponse } from "./_types/admin-voc";
+import type { AdminVocListData, ApiResponse } from "./_types/admin-vocs";
 import { MotionEnter } from "./_components/MotionEnter";
 import { AdminVocStatusFilter } from "./_components/AdminVocStatusFilter";
 import { AdminVocListCard } from "./_components/AdminVocListCard";

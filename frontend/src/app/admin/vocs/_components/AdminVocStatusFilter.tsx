@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { cn } from "@/lib/utils";
-import { ADMIN_VOC_STATUS_FILTERS } from "../_types/admin-voc";
+import { ADMIN_VOC_STATUS_FILTERS } from "../_types/admin-vocs";
 
 type Props = {
   activeStatus: string;
