@@ -94,6 +94,7 @@ public class ReservationCommandService implements ReservationCommandUseCase {
         }
 
         reservation.cancel();
+        reservationRepository.save(reservation); // fix: 더티 체킹 의존 제거 (03-backend-architecture §5)
         log.info("예약 취소 성공 - reservationId: {}, userId: {}", reservationId, userId);
     }
 
@@ -120,6 +121,7 @@ public class ReservationCommandService implements ReservationCommandUseCase {
 
         // Entity의 cancel() 메서드가 PENDING, APPROVED 상태에서 CANCELLED로 전환되도록 보장함
         reservation.cancel();
+        reservationRepository.save(reservation); // fix: 더티 체킹 의존 제거 (03-backend-architecture §5)
         log.info("예약 반려(취소) 성공 - reservationId: {}, adminId: {}", reservationId, adminId);
     }
 }
