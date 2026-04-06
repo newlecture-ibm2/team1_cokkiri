@@ -54,7 +54,9 @@ public class AdminRoomTypePersistenceAdapter implements AdminRoomTypeRepositoryP
 
     @Override
     public void delete(Long roomTypeId) {
-        roomTypeJpaRepository.deleteById(roomTypeId);
+        RoomTypeEntity entity = roomTypeJpaRepository.findById(roomTypeId).orElseThrow();
+        entity.softDelete();
+        roomTypeJpaRepository.save(entity);
     }
 
     @Override
