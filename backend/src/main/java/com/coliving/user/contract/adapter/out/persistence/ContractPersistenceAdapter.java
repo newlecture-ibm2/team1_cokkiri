@@ -7,13 +7,22 @@ import com.coliving.user.contract.model.Contract;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Component
 @RequiredArgsConstructor
 public class ContractPersistenceAdapter implements ContractRepositoryPort {
 
     private final ContractJpaRepository jpaRepository;
+
+    @Override
+    public List<Contract> findAllByUserId(Long userId) {
+        return jpaRepository.findByUserIdOrderByCreatedAtDesc(userId).stream()
+                .map(this::toModel)
+                .collect(Collectors.toList());
+    }
 
     @Override
     public Contract save(Contract contract) {

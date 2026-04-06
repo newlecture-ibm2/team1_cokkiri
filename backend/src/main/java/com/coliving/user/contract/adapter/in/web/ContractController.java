@@ -12,6 +12,8 @@ import lombok.RequiredArgsConstructor;
 import com.coliving.user.contract.application.result.ContractDraftResult;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @Tag(name = "Contract", description = "입주 계약 관련 API")
 @RestController
 @RequestMapping("/api/contracts")
@@ -19,6 +21,14 @@ import org.springframework.web.bind.annotation.*;
 public class ContractController {
 
     private final ContractUseCase contractUseCase;
+
+    @Operation(summary = "내 계약 내역 조회", description = "로그인한 사용자의 모든 계약(신청 포함) 내역을 조회합니다.")
+    @GetMapping("/my")
+    public ApiResponse<List<ContractDraftResult>> getMyContracts() {
+        Long userId = 1L; // JWT 도입 전까지 하드코딩
+        List<ContractDraftResult> results = contractUseCase.getMyContracts(userId);
+        return ApiResponse.ok(results);
+    }
 
     @Operation(summary = "계약서 임시저장 본문 조회", description = "공간 ID와 사용자 정보를 기반으로 임시 저장된 계약 정보를 조회합니다.")
     @GetMapping("/draft")
