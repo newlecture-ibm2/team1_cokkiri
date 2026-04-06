@@ -8,8 +8,10 @@ RUN npm ci --ignore-scripts
 # ── Stage 2: 빌드 ──
 FROM node:20-alpine AS builder
 WORKDIR /app
-COPY --from=deps /app/node_modules ./node_modules
+# 먼저 소스 코드를 복사 (.dockerignore에 의해 node_modules 등 제외됨)
 COPY . .
+# Stage 1에서 설치된 리눅스용 node_modules를 가져옴
+COPY --from=deps /app/node_modules ./node_modules
 RUN npm run build
 
 # ── Stage 3: 실행 (standalone) ──

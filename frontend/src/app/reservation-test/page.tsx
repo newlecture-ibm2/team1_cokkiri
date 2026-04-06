@@ -30,8 +30,9 @@ export default function ReservationTestPage() {
   // Form State
   const [spaceId, setSpaceId] = useState("");
   const [reservationDate, setReservationDate] = useState("2026-05-01");
-  const [startTime, setStartTime] = useState("14:00:00");
-  const [endTime, setEndTime] = useState("16:00:00");
+  // fix(#106): Safari는 <input type="time"> 초기값으로 "HH:mm:ss" 포맷을 인식 못함 → "HH:mm" 으로 통일
+  const [startTime, setStartTime] = useState("14:00");
+  const [endTime, setEndTime] = useState("16:00");
 
   const [message, setMessage] = useState("");
 

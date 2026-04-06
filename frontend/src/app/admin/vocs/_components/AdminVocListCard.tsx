@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { ClipboardList } from "lucide-react";
-import { adminVocCategoryLabel, adminVocStatusLabel, type AdminVocListItem } from "../_types/admin-voc";
+import { adminVocCategoryLabel, adminVocStatusLabel, type AdminVocListItem } from "../_types/admin-vocs";
 import { formatDateTimeKo } from "@/lib/format-date";
 import { cn } from "@/lib/utils";
 
