@@ -7,6 +7,7 @@ import com.coliving.user.contract.application.result.ContractResult;
 import com.coliving.user.contract.model.Contract;
 import com.coliving.user.contract.model.ContractOrigin;
 import com.coliving.user.contract.model.ContractStatus;
+import com.coliving.user.contract.application.result.ContractDraftResult;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,6 +18,23 @@ import org.springframework.transaction.annotation.Transactional;
 public class ContractService implements ContractUseCase {
 
     private final ContractRepositoryPort contractRepositoryPort;
+
+    @Override
+    public ContractDraftResult getDraft(Long userId, Long spaceId) {
+        return contractRepositoryPort.findByUserIdAndSpaceId(userId, spaceId)
+                .filter(c -> c.getStatus() == ContractStatus.DRAFT)
+                .map(c -> ContractDraftResult.builder()
+                        .contractId(c.getContractId())
+                        .desiredStartDate(c.getDesiredStartDate())
+                        .desiredDurationMonths(c.getDesiredDurationMonths())
+                        .address(c.getAddress())
+                        .bankAccount(c.getBankAccount())
+                        .usagePurpose(c.getUsagePurpose())
+                        .requestNote(c.getRequestNote())
+                        .privacyAgreed(c.getPrivacyAgreed())
+                        .build())
+                .orElse(null);
+    }
 
     @Override
     public ContractResult saveDraft(Long userId, ContractApplyCommand command) {
@@ -30,6 +48,8 @@ public class ContractService implements ContractUseCase {
             contract.applyDraft(
                     command.getDesiredStartDate(),
                     command.getDesiredDurationMonths(),
+                    command.getAddress(),
+                    command.getBankAccount(),
                     command.getUsagePurpose(),
                     command.getRequestNote(),
                     command.getPrivacyAgreed()
@@ -52,6 +72,8 @@ public class ContractService implements ContractUseCase {
             contract.applyDraft(
                     command.getDesiredStartDate(),
                     command.getDesiredDurationMonths(),
+                    command.getAddress(),
+                    command.getBankAccount(),
                     command.getUsagePurpose(),
                     command.getRequestNote(),
                     command.getPrivacyAgreed()
@@ -69,6 +91,8 @@ public class ContractService implements ContractUseCase {
                 .spaceId(command.getSpaceId())
                 .origin(ContractOrigin.USER_INITIATED)
                 .status(status)
+                .address(command.getAddress())
+                .bankAccount(command.getBankAccount())
                 .desiredStartDate(command.getDesiredStartDate())
                 .desiredDurationMonths(command.getDesiredDurationMonths())
                 .usagePurpose(command.getUsagePurpose())
@@ -77,3 +101,4 @@ public class ContractService implements ContractUseCase {
                 .build();
     }
 }
+

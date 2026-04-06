@@ -3,12 +3,19 @@ package com.coliving.user.contract.application.port.in;
 import com.coliving.user.contract.application.command.ContractApplyCommand;
 import com.coliving.user.contract.application.result.ContractResult;
 
+import com.coliving.user.contract.application.result.ContractDraftResult;
+
 public interface ContractUseCase {
 
     /**
      * 계약 임시저장
      */
     ContractResult saveDraft(Long userId, ContractApplyCommand command);
+
+    /**
+     * 임시저장된 계약 조회
+     */
+    ContractDraftResult getDraft(Long userId, Long spaceId);
 
     /**
      * 최종 계약 신청 (제출)

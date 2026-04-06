@@ -1,8 +1,8 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { adminBffGet } from "../_api/admin-bff-server";
-import type { AdminVocDetail, ApiResponse } from "../_types/admin-voc";
-import { adminVocCategoryLabel, adminVocStatusLabel } from "../_types/admin-voc";
+import type { AdminVocDetail, ApiResponse } from "../_types/admin-vocs";
+import { adminVocCategoryLabel, adminVocStatusLabel } from "../_types/admin-vocs";
 import { MotionEnter } from "../_components/MotionEnter";
 import { AdminVocActions } from "./_components/AdminVocActions";
 import { formatDateTimeKo } from "@/lib/format-date";
