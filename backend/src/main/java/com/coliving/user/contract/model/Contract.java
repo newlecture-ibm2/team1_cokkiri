@@ -40,6 +40,9 @@ public class Contract {
     private String rejectedReason;
     private OffsetDateTime contractedAt;
 
+    // 감사 필드
+    private OffsetDateTime createdAt;
+
     public void applyDraft(LocalDate desiredStartDate, Integer desiredDurationMonths,
                            String address, String bankAccount,
                            String usagePurpose, String requestNote, Boolean privacyAgreed) {

@@ -37,6 +37,8 @@ public class ContractService implements ContractUseCase {
                         .usagePurpose(c.getUsagePurpose())
                         .requestNote(c.getRequestNote())
                         .privacyAgreed(c.getPrivacyAgreed())
+                        .rejectedReason(c.getRejectedReason())
+                        .createdAt(c.getCreatedAt())
                         .build())
                 .orElse(null);
     }
@@ -55,6 +57,8 @@ public class ContractService implements ContractUseCase {
                         .usagePurpose(c.getUsagePurpose())
                         .requestNote(c.getRequestNote())
                         .privacyAgreed(c.getPrivacyAgreed())
+                        .rejectedReason(c.getRejectedReason())
+                        .createdAt(c.getCreatedAt())
                         .build())
                 .collect(Collectors.toList());
     }
