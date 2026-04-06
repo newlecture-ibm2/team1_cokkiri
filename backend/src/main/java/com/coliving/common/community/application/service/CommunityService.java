@@ -23,10 +23,14 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
+import java.util.Set;
 import java.util.List;
 
 @Service
 public class CommunityService implements CommunityUseCase {
+    private static final Set<String> ALLOWED_SORT_PROPERTIES = Set.of(
+            "createdAt", "updatedAt", "viewCount", "likeCount", "commentCount"
+    );
 
     private final CommunityRepositoryPort repositoryPort;
 
@@ -37,12 +41,14 @@ public class CommunityService implements CommunityUseCase {
     @Override
     @Transactional(readOnly = true)
     public PostListResult getPostList(GetPostListCommand command) {
+        int safePage = Math.max(0, command.getPage());
+        int safeSize = normalizeSize(command.getSize());
         PageRequest pageRequest;
         if (command.getCategory() == null) {
             // 전체 목록: NOTICE 우선 정렬은 저장소 쿼리에서 처리. Pageable Sort는 비워야 ORDER BY가 충돌하지 않음.
-            pageRequest = PageRequest.of(command.getPage(), command.getSize(), Sort.unsorted());
+            pageRequest = PageRequest.of(safePage, safeSize, Sort.unsorted());
         } else {
-            pageRequest = PageRequest.of(command.getPage(), command.getSize(), parseSort(command.getSort()));
+            pageRequest = PageRequest.of(safePage, safeSize, parseSort(command.getSort()));
         }
 
         Page<Post> page = repositoryPort.findPosts(command.getCategory(), pageRequest);
@@ -77,7 +83,8 @@ public class CommunityService implements CommunityUseCase {
         Sort commentSort = Sort.by(Sort.Direction.ASC, "createdAt");
         List<Comment> comments = repositoryPort.findCommentsByPostId(command.getPostId(), commentSort);
 
-        boolean likedByMe = repositoryPort.isLikedByMe(command.getPostId(), command.getActorId());
+        boolean likedByMe = command.getActorId() != null
+                && repositoryPort.isLikedByMe(command.getPostId(), command.getActorId());
 
         return PostDetailResult.builder()
                 .postId(post.getPostId())
@@ -266,7 +273,19 @@ public class CommunityService implements CommunityUseCase {
                 ? Sort.Direction.ASC
                 : Sort.Direction.DESC;
 
-        return Sort.by(direction, property.isBlank() ? "createdAt" : property);
+        String safeProperty = property.isBlank() ? "createdAt" : property;
+        if (!ALLOWED_SORT_PROPERTIES.contains(safeProperty)) {
+            safeProperty = "createdAt";
+        }
+
+        return Sort.by(direction, safeProperty);
+    }
+
+    private int normalizeSize(int size) {
+        if (size <= 0) {
+            return 20;
+        }
+        return Math.min(size, 100);
     }
 }
 

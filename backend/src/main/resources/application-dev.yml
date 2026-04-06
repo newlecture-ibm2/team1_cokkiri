@@ -10,7 +10,7 @@ spring:
   jpa:
     show-sql: true
     hibernate:
-      ddl-auto: update
+      ddl-auto: ${DDL_AUTO:validate}
   sql.init.mode: never
 
 jwt:

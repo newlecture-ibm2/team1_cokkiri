@@ -44,7 +44,9 @@ public class CommentPersistenceAdapter implements CommentRepositoryPort {
 
     @Override
     public Comment createComment(Long postId, Long userId, String content) {
-        // post 존재 여부 검증은 commentCount port에서 같은 규칙으로 수행됩니다.
+        if (!postJpaRepository.existsById(postId)) {
+            throw new BusinessException(ErrorCode.NOT_FOUND);
+        }
 
         CommentEntity entity = new CommentEntity();
         entity.setPost(postJpaRepository.getReferenceById(postId));
