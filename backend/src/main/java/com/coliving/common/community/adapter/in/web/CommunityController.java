@@ -69,7 +69,7 @@ public class CommunityController {
                 .content(result.getContent().stream()
                         .map(item -> PostListItemResponseDto.builder()
                                 .postId(item.getPostId())
-                                .category(item.getCategory().name())
+                                .category(item.getCategory() != null ? item.getCategory().name() : null)
                                 .title(item.getTitle())
                                 .authorUserId(item.getAuthorUserId())
                                 .viewCount(item.getViewCount())
@@ -111,7 +111,7 @@ public class CommunityController {
 
         PostDetailResponseDto response = PostDetailResponseDto.builder()
                 .postId(result.getPostId())
-                .category(result.getCategory().name())
+                .category(result.getCategory() != null ? result.getCategory().name() : null)
                 .title(result.getTitle())
                 .content(result.getContent())
                 .attachments(result.getAttachments())

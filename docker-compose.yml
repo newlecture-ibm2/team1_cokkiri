@@ -19,6 +19,7 @@ services:
     restart: unless-stopped
     environment:
       - SPRING_PROFILES_ACTIVE=dev
+      - DDL_AUTO=${DDL_AUTO:-validate}
       - DB_URL=${DB_URL:-jdbc:postgresql://db:5432/coliving}
       - DB_USERNAME=${DB_USERNAME:-coliving}
       - DB_PASSWORD=${DB_PASSWORD}
