@@ -16,6 +16,9 @@ v2.0: BOOKING+CONTRACT합병, SPACE상속패턴분리, JSONB통합(첨부/링크
 ### ROOM_TYPE (동적관리)
 `room_type_id(PK), code(UK: SINGLE,DOUBLE,STUDIO,SUITE 등), name, is_system_default, created_at, updated_at, deleted_at`
 
+### ROOM_TYPE (동적관리)
+`room_type_id(PK), code(UK: SINGLE,DOUBLE,STUDIO,SUITE 등), name, is_system_default, created_at, updated_at, deleted_at`
+
 ### PRIVATE_SPACE_DETAIL (1:1→SPACE)
 `space_id(PK,FK), room_type_id(FK→ROOM_TYPE), room_count, bathroom_count, direction(남/북/동/서), deposit, monthly_rent, maintenance_fee, parking_available`
 
@@ -32,7 +35,7 @@ v2.0: BOOKING+CONTRACT합병, SPACE상속패턴분리, JSONB통합(첨부/링크
 `device_type_id(PK), code(UK: DOOR_LOCK,LIGHT,AIR_CONDITIONER,WASHER,DRYER,CCTV,HEATER), name, commands(JSONB), ui_type(toggle/slider/button), is_system_default, created_at, updated_at, deleted_at`
 
 ### devices
-`device_id(PK), space_id(FK→spaces), device_type_id(FK→device_types), name(1~100), model_name, mock_endpoint(URL), status(ONLINE/OFFLINE/ERROR), current_state(JSONB: power,temperature,brightness등), is_active, installed_at, last_online_at, created_at, updated_at, deleted_at`
+`device_id(PK), space_id(FK→spaces), device_type_id(FK→device_types), name(1~100), model_name, mac_address(UK,50자), mock_endpoint(URL), status(ONLINE/OFFLINE/ERROR), current_state(JSONB: power,temperature,brightness등), is_active, installed_at, last_online_at, created_at, updated_at, deleted_at`
 
 ### contracts (BOOKING 합병)
 `contract_id(PK), user_id(FK→users), space_id(FK→spaces), origin(USER_INITIATED/ADMIN_INITIATED), status(DRAFT/PENDING/APPROVED/REJECTED/CANCELLED/ACTIVE/EXPIRED/TERMINATED)` — **초안/제출 구분은 `status`만 사용**(별도 `is_draft` 컬럼 없음)
@@ -44,7 +47,7 @@ v2.0: BOOKING+CONTRACT합병, SPACE상속패턴분리, JSONB통합(첨부/링크
 `reservation_id(PK), user_id(FK→users), space_id(FK→spaces, COMMON 행만), status(PENDING/APPROVED/CANCELLED/COMPLETED), reservation_date, start_time, end_time, approved_by(FK→users), created_at, updated_at, deleted_at`
 
 ### control_logs
-`control_log_id(PK), device_id(FK→devices), user_id(FK→users), actor_type(RESIDENT/ADMIN), command(TURN_ON/SET_TEMP등), command_params(JSONB), result(SUCCESS/FAILURE), error_message, correlation_id, created_at, updated_at, deleted_at`
+`control_log_id(PK), device_id(FK→devices), user_id(FK→users), actor_type(RESIDENT/ADMIN), command(ON/OFF/SET_TEMP등), command_params(JSONB), result(SUCCESS/FAILURE), error_message, correlation_id, created_at, updated_at, deleted_at`
 
 ### payments
 `payment_id(PK), contract_id(FK,nullable), reservation_id(FK,nullable), user_id(FK→users), type(RENT/MAINTENANCE/FACILITY), amount, status(UNPAID/PENDING/PAID), payment_method(CARD/TRANSFER/CASH), billing_date, paid_date, created_at, updated_at, deleted_at`
@@ -132,7 +135,7 @@ ADMIN_INITIATED: →ACTIVE→EXPIRED/TERMINATED (신청필드 NULL가능)
 | ROOM_TYPE | code(UK) | 유형코드조회 |
 | SPACE | type+status, floor | 유형/상태/층별조회 |
 | CONTRACT | user_id+status, space_id+status, space_id(UK WHERE ACTIVE) | 현황조회,활성계약1개제한 |
-| DEVICE | space_id+is_active, device_type_id | 공간별기기,종류별 |
+| DEVICE | space_id+is_active, device_type_id, mac_address(UK) | 공간별기기,종류별,MAC중복방지 |
 | RESERVATION | space_id+date+status, user_id+status | 시설별현황,사용자별 |
 | CONTROL_LOG | user_id+created_at, device_id+created_at | 이력조회 |
 | POST | user_id, category+created_at | 작성자별,유형별최신순 |

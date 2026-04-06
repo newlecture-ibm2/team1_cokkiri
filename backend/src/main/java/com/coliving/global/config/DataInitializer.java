@@ -2,7 +2,7 @@ package com.coliving.global.config;
 
 import com.coliving.admin.device.adapter.out.jpa.DeviceEntity;
 import com.coliving.admin.device.adapter.out.jpa.DeviceJpaRepository;
-import com.coliving.admin.device.adapter.out.jpa.DeviceStatus;
+import com.coliving.admin.device.model.DeviceStatus;
 import com.coliving.admin.device.adapter.out.jpa.DeviceTypeEntity;
 import com.coliving.admin.device.adapter.out.jpa.DeviceTypeJpaRepository;
 import com.coliving.common.auth.adapter.out.jpa.UserEntity;
@@ -12,6 +12,8 @@ import com.coliving.common.auth.model.UserRole;
 import com.coliving.common.auth.model.UserStatus;
 import com.coliving.common.comment.adapter.out.jpa.CommentEntity;
 import com.coliving.common.comment.adapter.out.jpa.CommentJpaRepository;
+import com.coliving.common.community.adapter.out.jpa.PostLikeEntity;
+import com.coliving.common.community.adapter.out.jpa.PostLikeJpaRepository;
 import com.coliving.common.community.adapter.out.jpa.PostEntity;
 import com.coliving.common.community.adapter.out.jpa.PostJpaRepository;
 import com.coliving.common.community.model.PostCategory;
@@ -42,6 +44,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Profile;
 import org.springframework.core.annotation.Order;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -50,12 +53,15 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
+import java.util.Optional;
 
 /**
  * {@code app.demo-data.enabled=true} 이고 프로필이 {@code local}, {@code dev}, {@code prod} 중 하나일 때
- * 데모용 기본 데이터를 한 번만 적재합니다.
+ * 데모용 기본 데이터를 적재합니다.
  * <p>
- * 이미 {@code users} 테이블에 행이 있으면 전체 시드를 건너뜁니다.
+ * 최초 기동(USERS 비어 있음)에는 공간/기기/커뮤니티/VoC/알림 전체를 적재하고,
+ * 기존 사용자 데이터가 있어도 {@code app.demo-data.seed-content-on-existing-users=true}면
+ * 커뮤니티/댓글/좋아요/VoC/알림 콘텐츠 시드를 idempotent 하게 보강합니다.
  * 운영 환경에서는 {@code APP_DEMO_DATA_ENABLED=false} 등으로 끄는 것을 권장합니다.
  * </p>
  */
@@ -78,127 +84,251 @@ public class DataInitializer implements ApplicationRunner {
     private final SpaceImageJpaRepository spaceImageJpaRepository;
     private final DeviceTypeJpaRepository deviceTypeJpaRepository;
     private final DeviceJpaRepository deviceJpaRepository;
+    private final PostLikeJpaRepository postLikeJpaRepository;
     private final PostJpaRepository postJpaRepository;
     private final CommentJpaRepository commentJpaRepository;
     private final VocJpaRepository vocJpaRepository;
     private final NotificationJpaRepository notificationJpaRepository;
     private final ObjectMapper objectMapper;
+    @Value("${app.demo-data.seed-content-on-existing-users:true}")
+    private boolean seedContentOnExistingUsers;
 
     @Override
     @Transactional
     public void run(ApplicationArguments args) {
-        if (userJpaRepository.count() > 0) {
-            log.info("[DataInitializer] 기존 사용자 데이터가 있어 시드 생략");
+        long userCount = userJpaRepository.count();
+        UserEntity admin = getOrCreateDemoAdmin();
+        UserEntity user = getOrCreateDemoUser();
+
+        if (userCount == 0) {
+            SpaceEntity deviceHostSpace = seedSpacesFromDevDataset();
+            seedDefaultDeviceTypesAndDevice(deviceHostSpace);
+            seedCommunityVocNotification(admin, user);
+            log.info("[DataInitializer] 초기 전체 시드 완료 (로그인: admin / demo, 비밀번호: {})", DEMO_PASSWORD);
             return;
         }
 
-        String hash = passwordEncoder.encode(DEMO_PASSWORD);
+        if (seedContentOnExistingUsers) {
+            seedCommunityVocNotification(admin, user);
+            log.info("[DataInitializer] 기존 USERS 존재: 콘텐츠 시드만 보강 완료");
+        } else {
+            log.info("[DataInitializer] 기존 USERS 존재 + seed-content-on-existing-users=false: 시드 생략");
+        }
+    }
 
-        UserEntity admin = userJpaRepository.save(UserEntity.builder()
-                .loginId("admin")
-                .passwordHash(hash)
-                .name("관리자")
-                .birthDate("900101")
-                .gender(Gender.MALE)
-                .nationality("KR")
-                .phone("010-0000-0001")
-                .email("admin@cokkiri.local")
-                .role(UserRole.ADMIN)
-                .status(UserStatus.ACTIVE)
-                .build());
+    private UserEntity getOrCreateDemoAdmin() {
+        return userJpaRepository.findByLoginId("admin")
+                .or(() -> findFirstByRole(UserRole.ADMIN))
+                .orElseGet(() -> userJpaRepository.save(UserEntity.builder()
+                        .loginId("admin")
+                        .passwordHash(passwordEncoder.encode(DEMO_PASSWORD))
+                        .name("관리자")
+                        .birthDate("900101")
+                        .gender(Gender.MALE)
+                        .nationality("KR")
+                        .phone("010-0000-0001")
+                        .email("admin@cokkiri.local")
+                        .role(UserRole.ADMIN)
+                        .status(UserStatus.ACTIVE)
+                        .build()));
+    }
 
-        UserEntity user = userJpaRepository.save(UserEntity.builder()
-                .loginId("demo")
-                .passwordHash(hash)
-                .name("데모유저")
-                .birthDate("950505")
-                .gender(Gender.FEMALE)
-                .nationality("KR")
-                .phone("010-0000-0002")
-                .email("demo@cokkiri.local")
-                .role(UserRole.USER)
-                .status(UserStatus.ACTIVE)
-                .build());
+    private UserEntity getOrCreateDemoUser() {
+        return userJpaRepository.findByLoginId("demo")
+                .or(() -> findFirstByRole(UserRole.USER))
+                .orElseGet(() -> userJpaRepository.save(UserEntity.builder()
+                        .loginId("demo")
+                        .passwordHash(passwordEncoder.encode(DEMO_PASSWORD))
+                        .name("데모유저")
+                        .birthDate("950505")
+                        .gender(Gender.FEMALE)
+                        .nationality("KR")
+                        .phone("010-0000-0002")
+                        .email("demo@cokkiri.local")
+                        .role(UserRole.USER)
+                        .status(UserStatus.ACTIVE)
+                        .build()));
+    }
 
-        SpaceEntity deviceHostSpace = seedSpacesFromDevDataset();
+    private Optional<UserEntity> findFirstByRole(UserRole role) {
+        return userJpaRepository.findAll().stream()
+                .filter(u -> u.getRole() == role)
+                .findFirst();
+    }
 
-        DeviceTypeEntity lightType = deviceTypeJpaRepository.save(DeviceTypeEntity.builder()
-                .code("LIGHT")
-                .name("조명")
-                .commands("{\"ON\":{},\"OFF\":{}}")
-                .uiType("toggle")
-                .isSystemDefault(true)
-                .build());
+    private void seedDefaultDeviceTypesAndDevice(SpaceEntity deviceHostSpace) {
+        DeviceTypeEntity lightType = deviceTypeJpaRepository.findAll().stream()
+                .filter(t -> "LIGHT".equals(t.getCode()))
+                .findFirst()
+                .orElseGet(() -> deviceTypeJpaRepository.save(DeviceTypeEntity.builder()
+                        .code("LIGHT")
+                        .name("조명")
+                        .commands("{\"ON\":{},\"OFF\":{}}")
+                        .uiType("toggle")
+                        .isSystemDefault(true)
+                        .build()));
 
-        deviceTypeJpaRepository.save(DeviceTypeEntity.builder()
-                .code("DOOR_LOCK")
-                .name("도어락")
-                .commands("{\"LOCK\":{},\"UNLOCK\":{}}")
-                .uiType("toggle")
-                .isSystemDefault(true)
-                .build());
+        if (deviceTypeJpaRepository.findAll().stream().noneMatch(t -> "DOOR_LOCK".equals(t.getCode()))) {
+            deviceTypeJpaRepository.save(DeviceTypeEntity.builder()
+                    .code("DOOR_LOCK")
+                    .name("도어락")
+                    .commands("{\"LOCK\":{},\"UNLOCK\":{}}")
+                    .uiType("toggle")
+                    .isSystemDefault(true)
+                    .build());
+        }
 
-        deviceJpaRepository.save(DeviceEntity.builder()
-                .spaceId(deviceHostSpace.getSpaceId())
-                .deviceType(lightType)
-                .name("거실 메인 조명")
-                .modelName("Mock-L1")
-                .mockEndpoint("http://mock-iot:8000/devices/1")
-                .status(DeviceStatus.ONLINE)
-                .currentState("{\"power\":\"ON\"}")
-                .isActive(true)
-                .installedAt(OffsetDateTime.now())
-                .build());
+        boolean deviceExists = deviceJpaRepository.findAll().stream()
+                .anyMatch(d -> d.getSpaceId().equals(deviceHostSpace.getSpaceId()) && "거실 메인 조명".equals(d.getName()));
+        if (!deviceExists) {
+            deviceJpaRepository.save(DeviceEntity.builder()
+                    .spaceId(deviceHostSpace.getSpaceId())
+                    .deviceType(lightType)
+                    .name("거실 메인 조명")
+                    .modelName("Mock-L1")
+                    .mockEndpoint("http://mock-iot:8000/devices/1")
+                    .status(DeviceStatus.ONLINE)
+                    .currentState("{\"power\":\"ON\"}")
+                    .isActive(true)
+                    .installedAt(OffsetDateTime.now())
+                    .build());
+        }
+    }
 
-        PostEntity notice = new PostEntity();
-        notice.setUserId(admin.getUserId());
-        notice.setCategory(PostCategory.NOTICE.name());
-        notice.setTitle("입주자 공지 · 공용 세탁실 점검 안내");
-        notice.setContent("<p>다음 주 화요일 10:00~12:00 세탁실 점검이 있습니다.</p>");
-        notice.setAttachments(objectMapper.createArrayNode());
-        notice.setLinks(objectMapper.createArrayNode());
-        notice = postJpaRepository.save(notice);
+    private void seedCommunityVocNotification(UserEntity admin, UserEntity user) {
+        PostEntity notice = findPostByTitle("[시드] 공용 공간 이용 가이드")
+                .orElseGet(() -> {
+                    PostEntity p = new PostEntity();
+                    p.setUserId(admin.getUserId());
+                    p.setCategory(PostCategory.NOTICE.name());
+                    p.setTitle("[시드] 공용 공간 이용 가이드");
+                    p.setContent("<p>공용 공간 이용 시간과 정숙 규칙을 확인해 주세요.</p>");
+                    p.setAttachments(objectMapper.createArrayNode());
+                    p.setLinks(objectMapper.createArrayNode());
+                    p.setLikeCount(0);
+                    p.setCommentCount(0);
+                    return postJpaRepository.save(p);
+                });
 
-        PostEntity question = new PostEntity();
-        question.setUserId(user.getUserId());
-        question.setCategory(PostCategory.QUESTION.name());
-        question.setTitle("주차 등록은 어디서 하나요?");
-        question.setContent("앱에서 가능한지 알려주세요.");
-        question.setAttachments(objectMapper.createArrayNode());
-        question.setLinks(objectMapper.createArrayNode());
-        question = postJpaRepository.save(question);
+        PostEntity question = findPostByTitle("[시드] 와이파이 비밀번호는 어디서 확인하나요?")
+                .orElseGet(() -> {
+                    PostEntity p = new PostEntity();
+                    p.setUserId(user.getUserId());
+                    p.setCategory(PostCategory.QUESTION.name());
+                    p.setTitle("[시드] 와이파이 비밀번호는 어디서 확인하나요?");
+                    p.setContent("<p>입주 후 공용 와이파이 정보는 어디서 확인할 수 있나요?</p>");
+                    p.setAttachments(objectMapper.createArrayNode());
+                    p.setLinks(objectMapper.createArrayNode().add("https://newlecture.com"));
+                    p.setLikeCount(0);
+                    p.setCommentCount(0);
+                    return postJpaRepository.save(p);
+                });
 
-        CommentEntity comment = new CommentEntity();
-        comment.setPost(question);
-        comment.setUserId(admin.getUserId());
-        comment.setContent("로비 태블릿 또는 관리사무소에 문의 부탁드립니다.");
-        commentJpaRepository.save(comment);
-        question.setCommentCount(1);
+        PostEntity meetup = findPostByTitle("[시드] 주말 보드게임 모임 하실 분?")
+                .orElseGet(() -> {
+                    PostEntity p = new PostEntity();
+                    p.setUserId(user.getUserId());
+                    p.setCategory(PostCategory.FREE.name());
+                    p.setTitle("[시드] 주말 보드게임 모임 하실 분?");
+                    p.setContent("<p>이번 주말 라운지에서 가볍게 보드게임 하실 분 구합니다!</p>");
+                    p.setAttachments(objectMapper.createArrayNode());
+                    p.setLinks(objectMapper.createArrayNode());
+                    p.setLikeCount(0);
+                    p.setCommentCount(0);
+                    return postJpaRepository.save(p);
+                });
+
+        ensureComment(question, user.getUserId(), "저도 궁금했는데 감사합니다!");
+        ensureComment(meetup, user.getUserId(), "토요일 오후면 저도 참여 가능합니다.");
+        ensureLike(question, user.getUserId());
+        ensureLike(meetup, user.getUserId());
+
+        notice.setCommentCount(commentJpaRepository.findByPost_PostId(notice.getPostId()).size());
+        question.setCommentCount(commentJpaRepository.findByPost_PostId(question.getPostId()).size());
+        meetup.setCommentCount(commentJpaRepository.findByPost_PostId(meetup.getPostId()).size());
+        notice.setLikeCount((int) postLikeJpaRepository.findAll().stream().filter(pl -> pl.getPostId().equals(notice.getPostId())).count());
+        question.setLikeCount((int) postLikeJpaRepository.findAll().stream().filter(pl -> pl.getPostId().equals(question.getPostId())).count());
+        meetup.setLikeCount((int) postLikeJpaRepository.findAll().stream().filter(pl -> pl.getPostId().equals(meetup.getPostId())).count());
+        postJpaRepository.save(notice);
         postJpaRepository.save(question);
+        postJpaRepository.save(meetup);
 
-        VocEntity voc = new VocEntity();
-        voc.setUserId(user.getUserId());
-        voc.setCategory(VocCategory.FACILITY);
-        voc.setTitle("엘리베이터 소음 문의");
-        voc.setContent("야간에 소음이 커서 민원 드립니다.");
-        voc.setAttachments(null);
-        voc.setStatus(VocStatus.RESOLVED);
-        voc.setAdminReply("점검 후 베어링 교체 완료했습니다.");
-        voc.setReplyUserId(admin.getUserId());
-        voc.setRepliedAt(OffsetDateTime.now());
-        voc = vocJpaRepository.save(voc);
+        findVocByTitle("[시드] 세탁실 건조기 점검 요청")
+                .orElseGet(() -> {
+                    VocEntity v = new VocEntity();
+                    v.setUserId(user.getUserId());
+                    v.setCategory(VocCategory.FACILITY);
+                    v.setTitle("[시드] 세탁실 건조기 점검 요청");
+                    v.setContent("<p>3층 세탁실 건조기 한 대가 동작하지 않습니다. 점검 부탁드립니다.</p>");
+                    v.setAttachments(objectMapper.createArrayNode());
+                    v.setStatus(VocStatus.OPEN);
+                    return vocJpaRepository.save(v);
+                });
 
-        NotificationEntity n = new NotificationEntity();
-        n.setUserId(user.getUserId());
-        n.setType(NotificationType.VOC_REPLIED);
-        n.setTitle("민원 답변 등록");
-        n.setMessage("등록하신 민원에 답변이 등록되었습니다.");
-        n.setReferenceType(ReferenceType.VOC);
-        n.setReferenceId(voc.getVocId());
-        n.setRead(false);
-        notificationJpaRepository.save(n);
+        VocEntity repliedVoc = findVocByTitle("[시드] 야간 소음 문의")
+                .orElseGet(() -> {
+                    VocEntity v = new VocEntity();
+                    v.setUserId(user.getUserId());
+                    v.setCategory(VocCategory.NOISE);
+                    v.setTitle("[시드] 야간 소음 문의");
+                    v.setContent("<p>심야 시간대 복도 소음이 있어 문의드립니다.</p>");
+                    v.setAttachments(objectMapper.createArrayNode());
+                    v.setStatus(VocStatus.IN_PROGRESS);
+                    v.setAdminReply("관리자가 확인 중이며 금일 중 조치 예정입니다.");
+                    v.setReplyUserId(admin.getUserId());
+                    v.setRepliedAt(OffsetDateTime.now().minusHours(9));
+                    return vocJpaRepository.save(v);
+                });
 
-        log.info("[DataInitializer] 데모 시드 완료 (로그인: admin / demo, 비밀번호: {})", DEMO_PASSWORD);
+        boolean alreadyNotified = notificationJpaRepository.findByReferenceTypeAndReferenceId(ReferenceType.VOC, repliedVoc.getVocId())
+                .stream()
+                .anyMatch(n -> n.getType() == NotificationType.VOC_REPLIED);
+        if (!alreadyNotified) {
+            NotificationEntity n = new NotificationEntity();
+            n.setUserId(repliedVoc.getUserId());
+            n.setType(NotificationType.VOC_REPLIED);
+            n.setTitle("민원 답변이 등록되었습니다.");
+            n.setMessage("문의하신 민원에 관리자의 답변이 도착했습니다.");
+            n.setReferenceType(ReferenceType.VOC);
+            n.setReferenceId(repliedVoc.getVocId());
+            n.setRead(false);
+            notificationJpaRepository.save(n);
+        }
+    }
+
+    private Optional<PostEntity> findPostByTitle(String title) {
+        return postJpaRepository.findAll().stream()
+                .filter(p -> title.equals(p.getTitle()))
+                .findFirst();
+    }
+
+    private Optional<VocEntity> findVocByTitle(String title) {
+        return vocJpaRepository.findAll().stream()
+                .filter(v -> title.equals(v.getTitle()))
+                .findFirst();
+    }
+
+    private void ensureComment(PostEntity post, Long userId, String content) {
+        boolean exists = commentJpaRepository.findByPost_PostId(post.getPostId()).stream()
+                .anyMatch(c -> content.equals(c.getContent()) && userId.equals(c.getUserId()));
+        if (exists) {
+            return;
+        }
+        CommentEntity c = new CommentEntity();
+        c.setPost(post);
+        c.setUserId(userId);
+        c.setContent(content);
+        commentJpaRepository.save(c);
+    }
+
+    private void ensureLike(PostEntity post, Long userId) {
+        if (postLikeJpaRepository.findByPost_PostIdAndUserId(post.getPostId(), userId).isPresent()) {
+            return;
+        }
+        PostLikeEntity like = new PostLikeEntity();
+        like.setPost(post);
+        like.setUserId(userId);
+        postLikeJpaRepository.save(like);
     }
 
     /** {@code data-dev.sql} 과 동일한 공간·상세·이미지 시드. IoT 데모 기기 부착용으로 301호를 반환합니다. */
