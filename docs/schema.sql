@@ -120,6 +120,7 @@ CREATE TABLE DEVICE (
     device_type_id BIGINT NOT NULL REFERENCES DEVICE_TYPE(device_type_id),
     name VARCHAR(100) NOT NULL,
     model_name VARCHAR(100),
+    mac_address VARCHAR(50),
     mock_endpoint VARCHAR(255),
     status VARCHAR(20) NOT NULL CHECK (status IN ('ONLINE', 'OFFLINE', 'ERROR')),
     current_state JSONB,
@@ -132,6 +133,7 @@ CREATE TABLE DEVICE (
 );
 CREATE INDEX idx_device_space_id_is_active ON DEVICE (space_id, is_active);
 CREATE INDEX idx_device_device_type_id ON DEVICE (device_type_id);
+CREATE UNIQUE INDEX uk_device_mac_address ON DEVICE (mac_address) WHERE deleted_at IS NULL AND mac_address IS NOT NULL;
 
 -- 계약 (CONTRACT)
 CREATE TABLE CONTRACT (

@@ -38,7 +38,7 @@ public class AdminVocController {
         this.adminVocUseCase = adminVocUseCase;
     }
 
-    @GetMapping("/api/admin/voc")
+    @GetMapping("/api/admin/vocs")
     public ApiResponse<AdminVocListResponseDto> listVocs(
             @RequestParam(required = false) String status,
             @RequestParam(value = "p", defaultValue = "0") int page,
@@ -67,7 +67,7 @@ public class AdminVocController {
         return ApiResponse.ok(response);
     }
 
-    @GetMapping("/api/admin/voc/{vocId}")
+    @GetMapping("/api/admin/vocs/{vocId}")
     public ApiResponse<AdminVocDetailResponseDto> getVoc(@PathVariable Long vocId) {
         GetAdminVocCommand command = GetAdminVocCommand.builder()
                 .vocId(vocId)
@@ -77,7 +77,7 @@ public class AdminVocController {
         return ApiResponse.ok(toDetailDto(result));
     }
 
-    @PostMapping("/api/admin/voc/{vocId}/reply")
+    @PostMapping("/api/admin/vocs/{vocId}/reply")
     public ApiResponse<AdminVocDetailResponseDto> reply(
             @PathVariable Long vocId,
             @Valid @RequestBody AdminReplyVocRequestDto request
@@ -94,7 +94,7 @@ public class AdminVocController {
         return ApiResponse.ok(toDetailDto(result));
     }
 
-    @PostMapping("/api/admin/voc/{vocId}/resolve")
+    @PostMapping("/api/admin/vocs/{vocId}/resolve")
     public ApiResponse<AdminVocDetailResponseDto> resolveVoc(@PathVariable Long vocId) {
         ResolveVocCommand command = ResolveVocCommand.builder()
                 .vocId(vocId)

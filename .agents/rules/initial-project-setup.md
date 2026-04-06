@@ -89,7 +89,7 @@ scripts: dev→port3000, start→port3111
 ## 4. 환경변수
 
 ### application.yml (공통)
-`spring.jpa.hibernate.ddl-auto:validate`, `open-in-view:false`, `jackson.time-zone:Asia/Seoul`, `property-naming-strategy:SNAKE_CASE`
+`spring.jpa.hibernate.ddl-auto:validate`, `open-in-view:false`, `jackson.time-zone:Asia/Seoul` — REST JSON은 **camelCase 기본**(snake_case 네이밍 전략 설정 금지, `03-backend-architecture.md` §4와 동일)
 `multipart: max-file-size:15MB, max-request-size:50MB` | `server.port:8080` | swagger-ui:`/swagger-ui.html`
 
 ### application-dev.yml
@@ -119,11 +119,17 @@ volumes: postgres-data
 
 ## 6. 프론트엔드 설정
 
+### 6.0 API 경로 역할 분담 (api-specification.md 와의 관계)
+- **`api-specification.md`:** 백엔드 실제 엔드포인트 **`/api/...`** 만 정의한다(`bff` 세그먼트 없음).
+- **프론트엔드:** 브라우저·클라이언트는 반드시 **`/api/bff/...`** 만 호출한다. Next rewrite·Route Handler가 **`/api/:path*`** 로 Spring에 넘긴다.
+- **충돌 아님:** 같은 리소스에 대해 프론트는 `bff` 접두, 백엔드 명세는 `bff` 없음이 정상이다. 백엔드에 `bff` 경로를 새로 두지 않는다.
+- **`02-frontend-architecture.md` §3:** 클라이언트에서 백엔드 호스트로 직접 `fetch` 하면 규칙 위반.
+
 ### next.config.ts
 rewrites: `/api/bff/:path*` → `INTERNAL_BACKEND_URL/api/:path*` | images.remotePatterns: localhost:8080 | output:'standalone'
 
 ### BFF프록시 (route.ts)
-`/api/bff/...`→Spring백엔드 프록시. httpOnly쿠키에서 access_token추출→`Authorization:Bearer`헤더변환
+`/api/bff/...` → Spring **`/api/...`** 프록시. httpOnly쿠키에서 access_token추출→`Authorization:Bearer`헤더변환
 핸들러: GET,POST,PUT,PATCH,DELETE 모두 동일 handler
 
 ### 공통타입
@@ -156,7 +162,7 @@ BusinessException→ErrorCode정의값 | MethodArgumentNotValid→400 | AccessDe
 
 ### 7.6 Entity 작성 철칙
 ```java
-@Entity @Table(name="USERS", uniqueConstraints={@UniqueConstraint(columnNames="login_id")})
+@Entity @Table(name="users", uniqueConstraints={@UniqueConstraint(columnNames="login_id")})
 @SQLDelete(sql="UPDATE users SET deleted_at=CURRENT_TIMESTAMP WHERE user_id=?")
 @Where(clause="deleted_at IS NULL") // Hibernate6.3+: @SQLRestriction
 @Check(constraints="length(phone)>=10")
