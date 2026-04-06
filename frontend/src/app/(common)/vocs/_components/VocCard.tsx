@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { MessageSquareText } from "lucide-react";
-import { vocCategoryLabel, vocStatusLabel, type VocListItem } from "../_types/voc";
+import { vocCategoryLabel, vocStatusLabel, type VocListItem } from "../_types/vocs";
 import { formatDateTimeKo } from "@/lib/format-date";
 import { cn } from "@/lib/utils";
 
@@ -22,7 +22,7 @@ function statusPillClass(status: string) {
 export function VocCard({ item }: { item: VocListItem }) {
   return (
     <Link
-      href={`/voc/${item.vocId}`}
+      href={`/vocs/${item.vocId}`}
       className="group block rounded-[2rem] border border-border bg-background/80 p-6 backdrop-blur-sm transition-transform duration-200 hover:-translate-y-0.5 hover:border-secondary/50 md:p-8"
     >
       <div className="flex flex-wrap items-start justify-between gap-3">

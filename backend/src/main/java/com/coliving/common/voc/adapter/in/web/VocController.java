@@ -56,7 +56,7 @@ public class VocController {
         this.objectMapper = objectMapper;
     }
 
-    @PostMapping(value = "/api/voc/upload-editor-image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PostMapping(value = "/api/vocs/upload-editor-image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ApiResponse<VocEditorImageResponseDto> uploadEditorImage(@RequestPart("file") MultipartFile file) {
         getAuthenticatedUserId();
         VocAttachment stored = multipartFileStorage.storeSingleVocImage(file);
@@ -66,7 +66,7 @@ public class VocController {
         return ApiResponse.ok(dto);
     }
 
-    @PostMapping(value = "/api/voc", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PostMapping(value = "/api/vocs", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ApiResponse<VocDetailResponseDto> createVoc(@Valid @ModelAttribute VocMultipartRequestDto form) {
         Long userId = getAuthenticatedUserId();
         VocCategory category = parseVocCategory(form.getCategory());
@@ -83,7 +83,7 @@ public class VocController {
         return ApiResponse.ok(toDetailDto(result), "민원이 등록되었습니다.");
     }
 
-    @GetMapping("/api/voc/my")
+    @GetMapping("/api/vocs/my")
     public ApiResponse<VocListResponseDto> listMyVocs(
             @RequestParam(value = "p", defaultValue = "0") int page,
             @RequestParam(value = "s", defaultValue = "20") int size,
@@ -111,7 +111,7 @@ public class VocController {
         return ApiResponse.ok(response);
     }
 
-    @GetMapping("/api/voc/{vocId}")
+    @GetMapping("/api/vocs/{vocId}")
     public ApiResponse<VocDetailResponseDto> getMyVoc(@PathVariable Long vocId) {
         Long userId = getAuthenticatedUserId();
 
@@ -124,7 +124,7 @@ public class VocController {
         return ApiResponse.ok(toDetailDto(result));
     }
 
-    @PutMapping(value = "/api/voc/{vocId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PutMapping(value = "/api/vocs/{vocId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ApiResponse<VocDetailResponseDto> updateVoc(
             @PathVariable Long vocId,
             @Valid @ModelAttribute VocUpdateMultipartRequestDto form
@@ -149,7 +149,7 @@ public class VocController {
         return ApiResponse.ok(toDetailDto(result));
     }
 
-    @PostMapping("/api/voc/{vocId}/cancel")
+    @PostMapping("/api/vocs/{vocId}/cancel")
     public ApiResponse<VocDetailResponseDto> cancelVoc(@PathVariable Long vocId) {
         Long userId = getAuthenticatedUserId();
 

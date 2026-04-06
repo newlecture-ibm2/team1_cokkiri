@@ -9,13 +9,13 @@ type Props = {
   pageSize?: number;
 };
 
-/** `/admin/voc` 목록 전용 페이지네이션. */
+/** `/admin/vocs` 목록 전용 페이지네이션. */
 export function AdminVocPaginationBar({ page, totalPages, baseQuery, pageSize }: Props) {
   if (totalPages <= 1) return null;
 
   const q = baseQuery ? `${baseQuery}&` : "";
   const sz = pageSize != null && pageSize !== 20 ? `s=${pageSize}&` : "";
-  const base = "/admin/voc";
+  const base = "/admin/vocs";
   const prev = page > 0 ? `${base}?${q}${sz}p=${page - 1}` : null;
   const next = page < totalPages - 1 ? `${base}?${q}${sz}p=${page + 1}` : null;
 

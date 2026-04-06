@@ -13,17 +13,23 @@ import type { ApiResponse } from "@/types/api";
 import {
   VOC_BODY_HTML_MAX_LENGTH,
   VOC_TITLE_MAX_LENGTH,
+  normalizeVocApiFileUrlsToBff,
   normalizeVocBffFileUrlsToApi,
-} from "@/lib/voc-html";
-import { VOC_CATEGORIES, type VocCategoryCode } from "../../_types/voc";
+} from "@/lib/vocs-html";
+import {
+  VOC_CATEGORIES,
+  type VocCategoryCode,
+  type VocAttachment,
+  type VocDetail,
+} from "../../../_types/vocs";
 import { CancelModal } from "@/components/shared/CancelModal";
 
 const VocRichTextEditor = dynamic(
-  () => import("../../_components/VocRichTextEditor").then((m) => ({ default: m.VocRichTextEditor })),
+  () => import("../../../_components/VocRichTextEditor").then((m) => ({ default: m.VocRichTextEditor })),
   {
     ssr: false,
     loading: () => (
-      <div className="mt-3 min-h-[260px] rounded-xl border border-dashed border-border bg-muted/15" />
+      <div className="mt-3 min-h-[220px] rounded-xl border border-dashed border-border bg-muted/15" />
     ),
   },
 );
@@ -34,15 +40,26 @@ const labelClass =
 const fieldClass =
   "mt-3 w-full rounded-xl border border-input bg-surface px-4 py-4 font-medium tracking-tight text-lg text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring";
 
-export function NewVocForm() {
+type Props = {
+  initial: VocDetail;
+};
+
+export function VocEditForm({ initial }: Props) {
   const router = useRouter();
-  const [category, setCategory] = useState<VocCategoryCode>("FACILITY");
-  const [title, setTitle] = useState("");
-  const [content, setContent] = useState("");
-  const [files, setFiles] = useState<FileList | null>(null);
+  const [category, setCategory] = useState<VocCategoryCode>(
+    (initial.category as VocCategoryCode) ?? "OTHER",
+  );
+  const [title, setTitle] = useState(initial.title);
+  const [content, setContent] = useState(() => normalizeVocApiFileUrlsToBff(initial.content));
+  const [attachments, setAttachments] = useState<VocAttachment[]>(initial.attachments ?? []);
+  const [newFiles, setNewFiles] = useState<FileList | null>(null);
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const [showCancelModal, setShowCancelModal] = useState(false);
+
+  function removeAttachment(index: number) {
+    setAttachments((prev) => prev.filter((_, i) => i !== index));
+  }
 
   function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -71,18 +88,28 @@ export function NewVocForm() {
         formData.append("category", category);
         formData.append("title", titleTrim);
         formData.append("content", body);
-        if (files?.length) {
-          for (let i = 0; i < files.length; i++) {
-            formData.append("files", files[i]);
+        formData.append(
+          "attachmentsJson",
+          JSON.stringify(
+            attachments.map((a) => ({
+              fileUrl: a.fileUrl,
+              fileName: a.fileName,
+              fileSize: a.fileSize ?? undefined,
+            })),
+          ),
+        );
+        if (newFiles?.length) {
+          for (let i = 0; i < newFiles.length; i++) {
+            formData.append("files", newFiles[i]);
           }
         }
 
-        const res = await fetch("/api/bff/voc", {
-          method: "POST",
+        const res = await fetch(`/api/bff/vocs/${initial.vocId}`, {
+          method: "PUT",
           credentials: "include",
           body: formData,
         });
-        let json: ApiResponse<{ vocId: number } | null>;
+        let json: ApiResponse<unknown>;
         try {
           json = await res.json();
         } catch {
@@ -91,16 +118,11 @@ export function NewVocForm() {
         }
         if (!res.ok || !json.success) {
           setError(
-            messageFromBffResponse(json, "등록하지 못했습니다. 입력 내용을 확인한 뒤 다시 시도해 주세요."),
+            messageFromBffResponse(json, "저장하지 못했습니다. 입력 내용을 확인한 뒤 다시 시도해 주세요."),
           );
           return;
         }
-        const vid = json.data?.vocId;
-        if (vid == null) {
-          setError("등록은 되었지만 민원 번호를 받지 못했습니다. 목록에서 확인해 주세요.");
-          return;
-        }
-        router.push(`/voc/${vid}`);
+        router.push(`/vocs/${initial.vocId}`);
         router.refresh();
       } catch {
         setError("네트워크 오류가 발생했습니다. 연결을 확인한 뒤 다시 시도해 주세요.");
@@ -111,11 +133,11 @@ export function NewVocForm() {
   return (
     <form onSubmit={submit} className="mx-auto max-w-2xl space-y-10">
       <Link
-        href="/voc"
+        href={`/vocs/${initial.vocId}`}
         className="group inline-flex items-center gap-2 font-black text-xs uppercase tracking-[0.3em] text-secondary transition-colors hover:text-foreground"
       >
         <ArrowLeft className="size-4 transition-transform group-hover:-translate-x-0.5" aria-hidden />
-        목록으로
+        상세로
       </Link>
 
       {error ? (
@@ -128,12 +150,12 @@ export function NewVocForm() {
       ) : null}
 
       <div>
-        <label htmlFor="voc-category" className={labelClass}>
+        <label htmlFor="edit-voc-category" className={labelClass}>
           유형
         </label>
         <div className="relative">
           <select
-            id="voc-category"
+            id="edit-voc-category"
             value={category}
             onChange={(e) => setCategory(e.target.value as VocCategoryCode)}
             className={cn(fieldClass, "appearance-none pr-10 leading-none py-0 h-14")}
@@ -152,11 +174,11 @@ export function NewVocForm() {
       </div>
 
       <div>
-        <label htmlFor="voc-title" className={labelClass}>
+        <label htmlFor="edit-voc-title" className={labelClass}>
           제목
         </label>
         <input
-          id="voc-title"
+          id="edit-voc-title"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           maxLength={VOC_TITLE_MAX_LENGTH}
@@ -169,33 +191,56 @@ export function NewVocForm() {
       </div>
 
       <div>
-        <label htmlFor="voc-content" className={labelClass}>
+        <label htmlFor="edit-voc-content" className={labelClass}>
           내용
         </label>
         <VocRichTextEditor
-          id="voc-content"
+          key={initial.vocId}
+          id="edit-voc-content"
           value={content}
           onChange={setContent}
-          placeholder="민원 내용을 입력하고, 필요 시 툴바에서 이미지를 넣을 수 있습니다."
+          placeholder="민원 내용을 수정하세요. 이미지는 툴바에서 추가할 수 있습니다."
         />
       </div>
 
       <div>
-        <label htmlFor="voc-files" className={labelClass}>
-          첨부 파일 (선택)
+        <p className={labelClass}>첨부</p>
+        {attachments.length === 0 ? (
+          <p className="mt-3 text-sm font-medium text-muted-foreground">기존 첨부 없음</p>
+        ) : (
+          <ul className="mt-3 space-y-2">
+            {attachments.map((a, i) => (
+              <li
+                key={`${a.fileUrl}-${i}`}
+                className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-border bg-muted/20 px-4 py-3"
+              >
+                <span className="truncate text-sm font-medium text-foreground">{a.fileName}</span>
+                <button
+                  type="button"
+                  onClick={() => removeAttachment(i)}
+                  className="shrink-0 text-[11px] font-black uppercase tracking-wider text-destructive"
+                >
+                  제거
+                </button>
+              </li>
+            ))}
+          </ul>
+        )}
+        <label htmlFor="edit-voc-new-files" className={cn(labelClass, "mt-8")}>
+          새 파일 추가 (선택)
         </label>
         <input
-          id="voc-files"
+          id="edit-voc-new-files"
           type="file"
           multiple
-          onChange={(e) => setFiles(e.target.files)}
+          onChange={(e) => setNewFiles(e.target.files)}
           className={cn(
             fieldClass,
             "cursor-pointer py-3 file:mr-4 file:rounded-lg file:border-0 file:bg-primary file:px-4 file:py-2 file:text-xs file:font-black file:uppercase file:tracking-wider file:text-primary-foreground",
           )}
         />
         <p className="mt-2 text-sm font-medium tracking-tight text-muted-foreground">
-          여러 파일을 선택할 수 있습니다. 본문 이미지는 위 에디터의 이미지 버튼으로도 추가할 수 있습니다.
+          저장 시 위에서 선택한 파일이 기존 첨부 뒤에 추가됩니다. 본문 이미지는 에디터의 이미지 버튼으로도 넣을 수 있습니다.
         </p>
       </div>
 
@@ -218,13 +263,13 @@ export function NewVocForm() {
           )}
         >
           {pending && <Loader2 className="size-4 animate-spin" aria-hidden />}
-          등록
+          저장
         </motion.button>
       </div>
       <CancelModal
         isOpen={showCancelModal}
         onClose={() => setShowCancelModal(false)}
-        onConfirm={() => router.push("/voc")}
+        onConfirm={() => router.push(`/vocs/${initial.vocId}`)}
       />
     </form>
   );

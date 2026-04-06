@@ -22,7 +22,7 @@ function statusPillClass(status: string) {
 export function AdminVocListCard({ item }: { item: AdminVocListItem }) {
   return (
     <Link
-      href={`/admin/voc/${item.vocId}`}
+      href={`/admin/vocs/${item.vocId}`}
       className="group block rounded-[2rem] border border-border bg-background/80 p-6 backdrop-blur-sm transition-transform duration-200 hover:-translate-y-0.5 hover:border-secondary/50 md:p-8"
     >
       <div className="flex flex-wrap items-start justify-between gap-3">
