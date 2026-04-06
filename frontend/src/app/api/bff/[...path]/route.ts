@@ -3,6 +3,16 @@ import { cookies } from 'next/headers';
 import { NextRequest, NextResponse } from 'next/server';
 
 const BACKEND_URL = process.env.INTERNAL_BACKEND_URL || 'http://localhost:8080';
+const HOP_BY_HOP_HEADERS = new Set([
+  'connection',
+  'keep-alive',
+  'proxy-authenticate',
+  'proxy-authorization',
+  'te',
+  'trailers',
+  'transfer-encoding',
+  'upgrade',
+]);
 
 async function handler(req: NextRequest, { params }: { params: Promise<{ path: string[] }> }) {
   const { path } = await params;
@@ -29,9 +39,19 @@ async function handler(req: NextRequest, { params }: { params: Promise<{ path: s
     body,
   });
 
+  const forwardedHeaders = new Headers();
+  response.headers.forEach((value, key) => {
+    if (!HOP_BY_HOP_HEADERS.has(key.toLowerCase())) {
+      forwardedHeaders.set(key, value);
+    }
+  });
+  if (!forwardedHeaders.has('Content-Type')) {
+    forwardedHeaders.set('Content-Type', 'application/json');
+  }
+
   return new NextResponse(response.body, {
     status: response.status,
-    headers: { 'Content-Type': response.headers.get('Content-Type') || 'application/json' },
+    headers: forwardedHeaders,
   });
 }
 
