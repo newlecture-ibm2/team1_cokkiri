@@ -2,7 +2,7 @@ package com.coliving.global.config;
 
 import com.coliving.admin.device.adapter.out.jpa.DeviceEntity;
 import com.coliving.admin.device.adapter.out.jpa.DeviceJpaRepository;
-import com.coliving.admin.device.adapter.out.jpa.DeviceStatus;
+import com.coliving.admin.device.model.DeviceStatus;
 import com.coliving.admin.device.adapter.out.jpa.DeviceTypeEntity;
 import com.coliving.admin.device.adapter.out.jpa.DeviceTypeJpaRepository;
 import com.coliving.common.auth.adapter.out.jpa.UserEntity;
