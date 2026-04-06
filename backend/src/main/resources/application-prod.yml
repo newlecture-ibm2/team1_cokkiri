@@ -12,6 +12,11 @@ spring:
 
 jwt:
   secret: ${JWT_SECRET}
+  access-expiration: ${JWT_ACCESS_EXP:1800000}      # 30분
+  refresh-expiration: ${JWT_REFRESH_EXP:604800000}   # 7일
+
+mock-iot:
+  base-url: ${MOCK_IOT_URL:http://mock-iot:8000}
 
 logging:
   level:
