@@ -1,9 +1,11 @@
 package com.coliving.reservation.application.port.in;
 
-import com.coliving.reservation.adapter.in.web.dto.ReservationCreateRequest;
+import com.coliving.reservation.adapter.in.web.dto.req.ReservationCreateRequestDto;
 
 /**
  * 예약 생성 유스케이스 (Inbound Port)
+ * #80 예약 동시성 차단 신청 로직
+ * #81 예약 조회 및 취소 롤백
  */
 public interface ReservationCommandUseCase {
     
@@ -11,17 +13,10 @@ public interface ReservationCommandUseCase {
      * 시설 예약을 신청한다.
      * 
      * @param userId 요청한 사용자 ID
-     * @param request 예약 요청 정보
+     * @param request 예약 요청 정보 (ReservationCreateRequestDto)
      * @return 생성된 예약 ID
      */
-    /**
-     * 시설 예약을 신청한다.
-     * 
-     * @param userId 요청한 사용자 ID
-     * @param request 예약 요청 정보
-     * @return 생성된 예약 ID
-     */
-    Long reserveFacility(Long userId, ReservationCreateRequest request);
+    Long reserveFacility(Long userId, ReservationCreateRequestDto request);
 
     /**
      * 예약을 취소한다.
