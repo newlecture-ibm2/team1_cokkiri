@@ -120,8 +120,16 @@ src/main/java/com/coliving/
 └── model/                          ← 도메인 모델 (순수 Java 객체)
     └── {Feature}.java
 ```
-> 조회 전용 모듈(읽기만 있는 모듈)은 `dto/` 폴더에 DTO를 플랫하게 배치해도 됩니다. CRUD가 있는 모듈은 반드시 `dto/req/` · `dto/res/` 로 분리합니다.
+> **DTO 폴더 규칙 (엄격):** **생성·수정·삭제 등 쓰기 유스케이스가 하나라도 있는 모듈**(예: `contract`, `space`, `device`, `admin/space`)은 Web DTO를 **반드시** `adapter/in/web/dto/req/` · `dto/res/` 로 분리한다. **조회 전용 모듈**(목록·상세 GET만, CUD 없음)만 `dto/` 플랫 허용. 경계가 애매하면 **req/res 분리를 기본**으로 한다.
 > User-facing 모듈 클래스에는 접두사 없음 (기본).
+
+### 1-3-1. DTO 분리 빠른 판별
+
+| 모듈 유형 | `dto/` 구조 | 예시 |
+|-----------|-------------|------|
+| CRUD 또는 POST/PUT/PATCH/DELETE 보유 | **`dto/req/` + `dto/res/`** 필수 | Contract, Space, Device, Post(작성·수정 있음) |
+| 읽기 전용(View) | `dto/` 플랫 허용 | 단순 조회 전용 리포트 모듈 |
+| Admin 동일 도메인 | 동일 규칙 — Admin도 CUD 있으면 **req/res** | `admin/space/adapter/in/web/dto/req` … |
 
 ### 1-4. 레이어별 책임
 
@@ -164,6 +172,8 @@ src/main/java/com/coliving/
 
 ### 1-7. 파일(클래스) 네이밍 규칙
 
+**Web DTO (Option A — 채택):** 요청·응답 클래스는 **`…RequestDto` / `…ResponseDto` 접미사로 통일**한다. 기존 코드에 `~Request`·`~Response`·`~VO`만 붙은 클래스가 있으면 **리팩터링하여 Option A에 맞출 것**(규칙 완화 Option B는 채택하지 않음).
+
 | 요소 | 접미사 | 금지 |
 |------|--------|------|
 | Controller | `Controller` | `~Api`, `~Rest` |
@@ -191,7 +201,7 @@ src/main/java/com/coliving/
 7. `{feature}/application/port/in/` — UseCase 인터페이스
 8. `{feature}/application/service/` — `{Feature}Service.java` (UseCase 구현)
 9. `{feature}/adapter/in/web/` — `{Feature}Controller.java`
-10. `{feature}/adapter/in/web/dto/` — Request/Response DTO들
+10. `{feature}/adapter/in/web/dto/req/` · `dto/res/` — Request/Response DTO들 (**CUD 있으면 이 경로 필수**. 조회 전용이면 `dto/` 플랫 가능)
 11. Admin이 필요하면 `admin/{feature}/` 동일 구조로 별도 생성
 
 ### 1-9. ❌ 금지 사항
@@ -232,7 +242,14 @@ src/main/java/com/coliving/
 
 ---
 
-## 5. 트랜잭션 및 JPA 영속화 룰
+## 5. 트랜잭션 및 JPA 영속화 룰 (마스터) — C-2
+
+이 절은 **`jpaRepository.save(entity)` 명시 호출**의 **단일 기준**이다. `01-general-convention.md` §2는 **소프트 삭제** 맥락에서의 `save()`를 강조하며, **생성·수정·소프트 삭제 전 구간**의 공통 원칙은 **본 §5**에 따른다.
 
 - **Service 계층:** 생성/변경/Soft Delete Service 메서드에 반드시 **`@Transactional`** 명시. (영속성 컨텍스트 보장)
-- **Persistence Adapter:** 더티 체킹에만 의존 금지. 변경 후 반드시 **`jpaRepository.save(entity)`를 명시적으로 호출**. 어댑터가 포트의 요청을 받아 DB에 영속시켰다는 맥락을 명확히 전달하며, 예기치 않은 트랜잭션 롤백 누락을 방지합니다.
+- **Persistence Adapter:** 더티 체킹에만 의존 금지. **신규 INSERT·필드 변경 UPDATE·`softDelete()` 후** 모두 **`jpaRepository.save(entity)`를 명시적으로 호출**한다. 어댑터가 포트 요청을 DB에 반영했음을 코드로 명확히 한다.
+- **팀 DTO 표준:** Web 계층 요청/응답은 **`XxxRequestDto` / `XxxResponseDto`** 접미사를 기본으로 한다(§1-7 표와 함께 적용).
+
+### 5-1. 내 활동 이력 API
+- `user/history/` 등 **GET `/api/users/me/history`** 구현 시, 타 도메인은 **식별자·조회 전용 포트**로만 연동하고, 타 도메인 **Service를 직접 호출해 쓰기**하지 않는다(도메인 협업 룰과 일치).
+
