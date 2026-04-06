@@ -14,12 +14,12 @@ import java.time.OffsetDateTime;
  * - Soft Delete 적용
  */
 @Entity
-@Table(name = "token_blacklists",
+@Table(name = "token_blacklist",
         indexes = {
                 @Index(name = "idx_token_blacklist_expires_at", columnList = "expires_at")
         }
 )
-@SQLDelete(sql = "UPDATE token_blacklists SET deleted_at = CURRENT_TIMESTAMP WHERE token_blacklist_id = ?")
+@SQLDelete(sql = "UPDATE token_blacklist SET deleted_at = CURRENT_TIMESTAMP WHERE token_blacklist_id = ?")
 @SQLRestriction("deleted_at IS NULL")
 @Getter
 @Builder

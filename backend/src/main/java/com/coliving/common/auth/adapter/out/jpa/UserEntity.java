@@ -18,13 +18,13 @@ import java.time.OffsetDateTime;
  * - 조회 시 deleted_at IS NULL 자동 필터링
  */
 @Entity
-@Table(name = "users",
+@Table(name = "\"user\"",
         indexes = {
-                @Index(name = "idx_users_role", columnList = "role"),
-                @Index(name = "idx_users_email", columnList = "email")
+                @Index(name = "idx_user_role", columnList = "role"),
+                @Index(name = "idx_user_email", columnList = "email")
         }
 )
-@SQLDelete(sql = "UPDATE users SET deleted_at = CURRENT_TIMESTAMP WHERE user_id = ?")
+@SQLDelete(sql = "UPDATE \"user\" SET deleted_at = CURRENT_TIMESTAMP WHERE user_id = ?")
 @SQLRestriction("deleted_at IS NULL")
 @Getter
 @Builder

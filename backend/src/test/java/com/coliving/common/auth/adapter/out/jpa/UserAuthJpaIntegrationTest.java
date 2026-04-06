@@ -151,7 +151,7 @@ class UserAuthJpaIntegrationTest {
         assertThat(userJpaRepository.findById(id)).isEmpty();
 
         // Native 쿼리를 통해 실제로 행이 삭제되지 않았고, deleted_at만 업데이트 되었는지 확인
-        Number count = (Number) entityManager.createNativeQuery("SELECT count(*) FROM users WHERE user_id = :id AND deleted_at IS NOT NULL")
+        Number count = (Number) entityManager.createNativeQuery("SELECT count(*) FROM \"user\" WHERE user_id = :id AND deleted_at IS NOT NULL")
                 .setParameter("id", id)
                 .getSingleResult();
         assertThat(count.intValue()).isEqualTo(1);

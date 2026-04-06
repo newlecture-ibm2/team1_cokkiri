@@ -15,10 +15,10 @@ import java.time.OffsetDateTime;
  * - token 컬럼에 unique 인덱스 (deleted_at IS NULL 기준은 @SQLRestriction으로 처리)
  */
 @Entity
-@Table(name = "refresh_tokens", indexes = {
+@Table(name = "refresh_token", indexes = {
         @Index(name = "idx_refresh_token_user_id", columnList = "user_id")
 })
-@SQLDelete(sql = "UPDATE refresh_tokens SET deleted_at = CURRENT_TIMESTAMP WHERE refresh_token_id = ?")
+@SQLDelete(sql = "UPDATE refresh_token SET deleted_at = CURRENT_TIMESTAMP WHERE refresh_token_id = ?")
 @SQLRestriction("deleted_at IS NULL")
 @Getter
 @Builder
