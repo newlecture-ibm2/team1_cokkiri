@@ -145,4 +145,4 @@ ADMIN_INITIATED: →ACTIVE→EXPIRED/TERMINATED (신청필드 NULL가능)
 | VOC | user_id+status | 사용자별민원 |
 | NOTIFICATION | user_id+is_read+created_at | 미읽은알림 |
 | REFRESH_TOKEN | user_id, token(UK) | 토큰조회 |
-| TOKEN_BLACKLIST | token_jti(UK), expires_at | 블랙리스트조회,정리 |
+| TOKEN_BLACKLISTS | token_jti(UK), expires_at | 블랙리스트조회,정리 |
