@@ -94,6 +94,11 @@ public class ReservationEntity extends BaseEntity {
         return this.space != null ? this.space.getSpaceId() : null;
     }
 
+    /** 시설 이름 편의 getter */
+    public String getSpaceName() {
+        return this.space != null ? this.space.getName() : null;
+    }
+
     /** 승인자 ID 편의 getter */
     public Long getApprovedById() {
         return this.approvedBy != null ? this.approvedBy.getUserId() : null;

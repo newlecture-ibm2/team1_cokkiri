@@ -6,7 +6,8 @@ import com.coliving.common.auth.model.Gender;
 import com.coliving.common.auth.model.UserRole;
 import com.coliving.common.auth.model.UserStatus;
 
-import com.coliving.reservation.adapter.in.web.dto.ReservationCreateRequest;
+import com.coliving.global.error.BusinessException;
+import com.coliving.reservation.adapter.in.web.dto.req.ReservationCreateRequestDto;
 import com.coliving.reservation.adapter.out.jpa.ReservationEntity;
 import com.coliving.reservation.adapter.out.jpa.ReservationJpaRepository;
 import com.coliving.reservation.exception.ReservationOverlapException;
@@ -97,8 +98,8 @@ class ReservationCommandServiceTest {
         return space;
     }
 
-    private ReservationCreateRequest createMockRequest(LocalTime startTime, LocalTime endTime) {
-        ReservationCreateRequest request = new ReservationCreateRequest();
+    private ReservationCreateRequestDto createMockRequest(LocalTime startTime, LocalTime endTime) {
+        ReservationCreateRequestDto request = new ReservationCreateRequestDto();
         request.setSpaceId(1L);
         request.setReservationDate(LocalDate.of(2026, 5, 1));
         request.setStartTime(startTime);
@@ -113,7 +114,7 @@ class ReservationCommandServiceTest {
         Long userId = 100L;
         UserEntity user = mockUser(userId);
         SpaceEntity space = mockSpace(1L);
-        ReservationCreateRequest request = createMockRequest(LocalTime.of(14, 0), LocalTime.of(16, 0));
+        ReservationCreateRequestDto request = createMockRequest(LocalTime.of(14, 0), LocalTime.of(16, 0));
 
         given(userRepository.findById(userId)).willReturn(Optional.of(user));
         given(spaceRepository.findById(request.getSpaceId())).willReturn(Optional.of(space));
@@ -142,7 +143,7 @@ class ReservationCommandServiceTest {
         Long userId = 100L;
         UserEntity user = mockUser(userId);
         SpaceEntity space = mockSpace(1L);
-        ReservationCreateRequest request = createMockRequest(LocalTime.of(14, 0), LocalTime.of(16, 0));
+        ReservationCreateRequestDto request = createMockRequest(LocalTime.of(14, 0), LocalTime.of(16, 0));
 
         given(userRepository.findById(userId)).willReturn(Optional.of(user));
         given(spaceRepository.findById(request.getSpaceId())).willReturn(Optional.of(space));
@@ -162,11 +163,12 @@ class ReservationCommandServiceTest {
         // given
         Long userId = 100L;
         // 16시 시작, 14시 종료 (잘못된 범위)
-        ReservationCreateRequest request = createMockRequest(LocalTime.of(16, 0), LocalTime.of(14, 0));
+        ReservationCreateRequestDto request = createMockRequest(LocalTime.of(16, 0), LocalTime.of(14, 0));
 
         // when & then
+        // #81: 유효하지 않은 시간 범위 → BusinessException(VALIDATION_ERROR) 발생
         assertThatThrownBy(() -> reservationCommandService.reserveFacility(userId, request))
-                .isInstanceOf(IllegalArgumentException.class)
+                .isInstanceOf(BusinessException.class)
                 .hasMessageContaining("종료 시간은 시작 시간보다 이후여야 합니다");
     }
 
