@@ -45,6 +45,7 @@ src/main/java/com/coliving/
 │   ├── payment/                     # 결제 목록 및 승인
 │   ├── monitoring/                  # 장애 모니터링 및 에너지 통계
 │   ├── dashboard/                   # 대시보드 통계 요약
+│   ├── community/                   # 커뮤니티 게시글/댓글 관리자 검수
 │   └── voc/                         # 민원 조회 및 답변 처리
 ├── user/                            # 일반 유저 유스케이스
 │   ├── room/                        # 방(공간) 둘러보기
