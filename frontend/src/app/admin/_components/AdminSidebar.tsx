@@ -10,6 +10,7 @@ import {
   CalendarDays,
   CreditCard,
   MessageSquareText,
+  MessagesSquare,
   X,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -31,6 +32,7 @@ const NAV_SECTIONS: {
       { href: "/admin/reservations", label: "예약", icon: CalendarDays },
       { href: "/admin/billing", label: "결제·청구", icon: CreditCard },
       { href: "/admin/vocs", label: "민원", icon: MessageSquareText },
+      { href: "/admin/community", label: "커뮤니티", icon: MessagesSquare },
     ],
   },
 ];

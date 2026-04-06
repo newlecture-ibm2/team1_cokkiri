@@ -2,10 +2,11 @@ package com.coliving.common.community.adapter.out.jpa;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
-public interface PostJpaRepository extends JpaRepository<PostEntity, Long> {
+public interface PostJpaRepository extends JpaRepository<PostEntity, Long>, JpaSpecificationExecutor<PostEntity> {
 
     Page<PostEntity> findByCategory(String category, Pageable pageable);
 
