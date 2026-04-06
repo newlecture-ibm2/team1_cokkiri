@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { ClipboardList } from "lucide-react";
 import { bffGet } from "./_api/bff-server";
-import type { ApiResponse, VocListData } from "./_types/vocs";
+import type { ApiResponse, VocListData } from "./_types/voc";
 import { VocShell } from "./_components/VocShell";
 import { MotionEnter } from "../community/_components/MotionEnter";
 import { VocCard } from "./_components/VocCard";

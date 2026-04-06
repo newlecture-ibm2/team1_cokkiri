@@ -14,8 +14,8 @@ import {
   VOC_BODY_HTML_MAX_LENGTH,
   VOC_TITLE_MAX_LENGTH,
   normalizeVocBffFileUrlsToApi,
-} from "@/lib/vocs-html";
-import { VOC_CATEGORIES, type VocCategoryCode } from "../../_types/vocs";
+} from "@/lib/voc-html";
+import { VOC_CATEGORIES, type VocCategoryCode } from "../../_types/voc";
 import { CancelModal } from "@/components/shared/CancelModal";
 
 const VocRichTextEditor = dynamic(

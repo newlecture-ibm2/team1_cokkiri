@@ -6,7 +6,7 @@ import type Toolbar from "quill/modules/toolbar";
 import "quill/dist/quill.snow.css";
 import { apiFileUrlToBffPath } from "@/lib/bff-file-url";
 import { messageFromBffResponse } from "@/lib/bff-error-message";
-import { VOC_BODY_HTML_MAX_LENGTH } from "@/lib/vocs-html";
+import { VOC_BODY_HTML_MAX_LENGTH } from "@/lib/voc-html";
 import type { ApiResponse } from "@/types/api";
 
 type Props = {

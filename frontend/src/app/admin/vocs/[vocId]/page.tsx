@@ -8,7 +8,7 @@ import { AdminVocActions } from "./_components/AdminVocActions";
 import { formatDateTimeKo } from "@/lib/format-date";
 import { apiFileUrlToBffPath } from "@/lib/bff-file-url";
 import { isRichTextBodyHtml } from "@/lib/post-html";
-import { prepareVocBodyForDisplay, VOC_RICH_BODY_CLASSNAME } from "@/lib/vocs-html";
+import { prepareVocBodyForDisplay, VOC_RICH_BODY_CLASSNAME } from "@/lib/voc-html";
 import { cn } from "@/lib/utils";
 
 type Params = Promise<{ vocId: string }>;

@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { bffGet } from "../../_api/bff-server";
-import type { ApiResponse, VocDetail } from "../../_types/vocs";
+import type { ApiResponse, VocDetail } from "../../_types/voc";
 import { VocShell } from "../../_components/VocShell";
 import { MotionEnter } from "../../../community/_components/MotionEnter";
 import { VocEditForm } from "./_components/VocEditForm";
