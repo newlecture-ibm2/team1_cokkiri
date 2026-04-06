@@ -3,6 +3,7 @@ package com.coliving.reservation.adapter.out.jpa;
 import com.coliving.common.auth.adapter.out.jpa.UserEntity;
 import com.coliving.global.entity.BaseEntity;
 import com.coliving.reservation.model.ReservationStatus;
+import com.coliving.user.room.adapter.out.jpa.SpaceEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -20,15 +21,15 @@ import java.time.LocalTime;
  * schema.sql의 reservation 테이블에 매핑된다.
  *
  * ┌──────────────────────────────────────────────────────────────────┐
- * │ 관계 전환 현황 (USR-1.1 머지 완료)                                 │
+ * │ 관계 전환 현황 (SPC-2.1 머지 완료)                                 │
  * │                                                                  │
- * │ ✅ user    → @ManyToOne UserEntity (USR-1.1 머지 완료)            │
- * │ ⏳ spaceId → Long FK 유지 (SPC-2.1 SpaceEntity 미완성)            │
- * │ ⏳ approvedBy → Long FK 유지 (도메인 분리 원칙 유지)               │
+ * │ ✅ user       → @ManyToOne UserEntity (USR-1.1 머지 완료)         │
+ * │ ✅ space      → @ManyToOne SpaceEntity (SPC-2.1 머지 완료)        │
+ * │ ✅ approvedBy → @ManyToOne UserEntity (nullable, 관리자 참조)      │
  * └──────────────────────────────────────────────────────────────────┘
  */
 @Entity
-@Table(name = "reservation")
+@Table(name = "reservations")
 @SQLRestriction("deleted_at IS NULL")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -44,9 +45,10 @@ public class ReservationEntity extends BaseEntity {
     @JoinColumn(name = "user_id", nullable = false)
     private UserEntity user;
 
-    // SPC-2.1 미완성 → 도메인 분리 원칙으로 Long FK 유지
-    @Column(name = "space_id", nullable = false)
-    private Long spaceId;
+    // SPC-2.1 머지 완료 → @ManyToOne 전환
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "space_id", nullable = false)
+    private SpaceEntity space;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false, length = 15)
@@ -61,22 +63,23 @@ public class ReservationEntity extends BaseEntity {
     @Column(name = "end_time", nullable = false)
     private LocalTime endTime;
 
-    // 도메인 분리 원칙으로 Long FK 유지 (승인자 ID만 저장)
-    @Column(name = "approved_by")
-    private Long approvedBy;
+    // 승인자 (관리자) 참조 — nullable (PENDING 상태에서는 null)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "approved_by")
+    private UserEntity approvedBy;
 
     @Builder
-    public ReservationEntity(UserEntity user, Long spaceId, LocalDate reservationDate,
+    public ReservationEntity(UserEntity user, SpaceEntity space, LocalDate reservationDate,
                              LocalTime startTime, LocalTime endTime) {
         this.user = user;
-        this.spaceId = spaceId;
+        this.space = space;
         this.reservationDate = reservationDate;
         this.startTime = startTime;
         this.endTime = endTime;
         this.status = ReservationStatus.PENDING;
     }
 
-    /** 예약자 ID 편의 getter (FK 직접 노출 없이 ID만 반환) */
+    /** 예약자 ID 편의 getter */
     public Long getUserId() {
         return this.user != null ? this.user.getUserId() : null;
     }
@@ -84,6 +87,16 @@ public class ReservationEntity extends BaseEntity {
     /** 예약자 이름 편의 getter */
     public String getUserName() {
         return this.user != null ? this.user.getName() : null;
+    }
+
+    /** 시설 ID 편의 getter */
+    public Long getSpaceId() {
+        return this.space != null ? this.space.getSpaceId() : null;
+    }
+
+    /** 승인자 ID 편의 getter */
+    public Long getApprovedById() {
+        return this.approvedBy != null ? this.approvedBy.getUserId() : null;
     }
 
     // ── 상태 전환 비즈니스 메서드 ──
@@ -95,10 +108,10 @@ public class ReservationEntity extends BaseEntity {
      * @param adminId 승인한 관리자 ID
      * @throws IllegalStateException PENDING 상태가 아닌 경우
      */
-    public void approve(Long adminId) {
+    public void approve(UserEntity admin) {
         validateStatus(ReservationStatus.PENDING, "승인");
         this.status = ReservationStatus.APPROVED;
-        this.approvedBy = adminId;
+        this.approvedBy = admin;
     }
 
     /**

@@ -3,7 +3,7 @@ package com.coliving.reservation.adapter.in.web;
 import com.coliving.global.dto.ApiResponse;
 import com.coliving.reservation.adapter.out.dto.FacilityDetailResponse;
 import com.coliving.reservation.adapter.out.dto.ReservableFacilityResponse;
-import com.coliving.reservation.application.service.FacilityQueryService;
+import com.coliving.reservation.application.port.in.FacilityQueryUseCase;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -36,7 +36,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class FacilityController {
 
-    private final FacilityQueryService facilityQueryService;
+    private final FacilityQueryUseCase facilityQueryUseCase;
 
     /**
      * 예약 가능한 공용시설 전체 목록 조회
@@ -54,7 +54,7 @@ public class FacilityController {
     )
     @GetMapping
     public ResponseEntity<ApiResponse<List<ReservableFacilityResponse>>> getReservableFacilities() {
-        List<ReservableFacilityResponse> facilities = facilityQueryService.getReservableFacilities();
+        List<ReservableFacilityResponse> facilities = facilityQueryUseCase.getReservableFacilities();
         return ResponseEntity.ok(ApiResponse.ok(facilities));
     }
 
@@ -76,7 +76,7 @@ public class FacilityController {
     public ResponseEntity<ApiResponse<FacilityDetailResponse>> getFacilityDetail(
             @Parameter(description = "공용시설 ID", example = "1")
             @PathVariable Long spaceId) {
-        FacilityDetailResponse detail = facilityQueryService.getFacilityDetail(spaceId);
+        FacilityDetailResponse detail = facilityQueryUseCase.getFacilityDetail(spaceId);
         return ResponseEntity.ok(ApiResponse.ok(detail));
     }
 }
