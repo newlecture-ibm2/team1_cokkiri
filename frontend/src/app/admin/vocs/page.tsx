@@ -25,7 +25,7 @@ export default async function AdminVocListPage({ searchParams }: { searchParams:
   qs.set("s", String(size));
   qs.set("sort", "createdAt,desc");
 
-  const res = await adminBffGet(`admin/voc?${qs.toString()}`);
+  const res = await adminBffGet(`admin/vocs?${qs.toString()}`);
   let list: AdminVocListData | null = null;
   let error: string | null = null;
 
@@ -56,7 +56,7 @@ export default async function AdminVocListPage({ searchParams }: { searchParams:
             </p>
           </div>
           <Link
-            href="/voc"
+            href="/vocs"
             className="shrink-0 rounded-xl bg-primary px-7 py-4 text-center text-sm font-black uppercase tracking-wider text-white transition-all hover:-translate-y-0.5 hover:bg-primary/90 hover:shadow-md md:self-start"
           >
             입주민 민원 화면

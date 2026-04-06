@@ -35,7 +35,7 @@ export function AdminVocActions({ vocId, status }: Props) {
     setError(null);
     startTransition(async () => {
       try {
-        const res = await fetch(`/api/bff/admin/voc/${vocId}/reply`, {
+        const res = await fetch(`/api/bff/admin/vocs/${vocId}/reply`, {
           method: "POST",
           credentials: "include",
           headers: { "Content-Type": "application/json" },
@@ -60,7 +60,7 @@ export function AdminVocActions({ vocId, status }: Props) {
     setError(null);
     startTransition(async () => {
       try {
-        const res = await fetch(`/api/bff/admin/voc/${vocId}/resolve`, {
+        const res = await fetch(`/api/bff/admin/vocs/${vocId}/resolve`, {
           method: "POST",
           credentials: "include",
         });

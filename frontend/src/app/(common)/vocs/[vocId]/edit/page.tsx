@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { bffGet } from "../../_api/bff-server";
-import type { ApiResponse, VocDetail } from "../../_types/voc";
+import type { ApiResponse, VocDetail } from "../../_types/vocs";
 import { VocShell } from "../../_components/VocShell";
 import { MotionEnter } from "../../../community/_components/MotionEnter";
 import { VocEditForm } from "./_components/VocEditForm";
@@ -18,7 +18,7 @@ export default async function VocEditPage({ params }: { params: Params }) {
   const id = parseInt(vocId, 10);
   if (Number.isNaN(id)) notFound();
 
-  const res = await bffGet(`voc/${id}`);
+  const res = await bffGet(`vocs/${id}`);
   if (res.status === 401) {
     return (
       <VocShell>
@@ -34,7 +34,7 @@ export default async function VocEditPage({ params }: { params: Params }) {
   if (!body.success || !body.data) notFound();
 
   if (body.data.status !== "OPEN") {
-    redirect(`/voc/${id}`);
+    redirect(`/vocs/${id}`);
   }
 
   return (
@@ -43,7 +43,7 @@ export default async function VocEditPage({ params }: { params: Params }) {
         <div className="mx-auto max-w-4xl">
           <header className="space-y-4">
             <Link
-              href={`/voc/${id}`}
+              href={`/vocs/${id}`}
               className="inline-flex font-black text-xs uppercase tracking-[0.3em] text-secondary hover:text-foreground"
             >
               ← 상세

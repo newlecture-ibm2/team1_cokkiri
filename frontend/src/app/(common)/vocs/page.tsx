@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { ClipboardList } from "lucide-react";
 import { bffGet } from "./_api/bff-server";
-import type { ApiResponse, VocListData } from "./_types/voc";
+import type { ApiResponse, VocListData } from "./_types/vocs";
 import { VocShell } from "./_components/VocShell";
 import { MotionEnter } from "../community/_components/MotionEnter";
 import { VocCard } from "./_components/VocCard";
@@ -23,7 +23,7 @@ export default async function VocPage({ searchParams }: { searchParams: SearchPa
   qs.set("s", String(size));
   qs.set("sort", "createdAt,desc");
 
-  const res = await bffGet(`voc/my?${qs.toString()}`);
+  const res = await bffGet(`vocs/my?${qs.toString()}`);
   let list: VocListData | null = null;
   let error: string | null = null;
 
@@ -53,7 +53,7 @@ export default async function VocPage({ searchParams }: { searchParams: SearchPa
               </p>
             </div>
             <Link
-              href="/voc/new"
+              href="/vocs/new"
               className="shrink-0 rounded-xl bg-primary px-6 py-3 text-center text-sm font-black uppercase tracking-wider text-primary-foreground transition-transform duration-200 hover:scale-[1.02] md:self-start"
             >
               민원 등록
@@ -92,7 +92,7 @@ export default async function VocPage({ searchParams }: { searchParams: SearchPa
                 totalPages={list.totalPages}
                 baseQuery=""
                 pageSize={size}
-                hrefBase="/voc"
+                hrefBase="/vocs"
               />
             </>
           )}
