@@ -91,6 +91,10 @@ public class SpaceEntity extends BaseEntity {
         this.description = description;
     }
 
+    public void changeStatus(SpaceStatus status) {
+        this.status = status;
+    }
+
     public void updatePosition(Integer positionX, Integer positionY) {
         this.positionX = positionX;
         this.positionY = positionY;

@@ -1,7 +1,9 @@
 package com.coliving.user.contract.application.port.in;
 
 import com.coliving.user.contract.application.command.ContractApplyCommand;
+import com.coliving.user.contract.application.command.ContractSignCommand;
 import com.coliving.user.contract.application.result.ContractResult;
+import com.coliving.user.contract.application.result.ContractSignResult;
 import com.coliving.user.contract.application.result.ContractDraftResult;
 import java.util.List;
 
@@ -26,4 +28,10 @@ public interface ContractUseCase {
      * 최종 계약 신청 (제출)
      */
     ContractResult submitContract(Long userId, ContractApplyCommand command);
+
+    /**
+     * 계약 체결 (전자서명)
+     * APPROVED → ACTIVE 전환, User 역할 RESIDENT 승격, Space OCCUPIED 전환
+     */
+    ContractSignResult signContract(Long userId, ContractSignCommand command);
 }

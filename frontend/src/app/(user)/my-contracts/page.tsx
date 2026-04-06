@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   Plus,
   FileText,
@@ -16,14 +17,18 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ContractStatusStepper } from "./_components/ContractStatusStepper";
-import { ContractDraftResult } from "@/types/contract";
+import { ContractSignModal } from "./_components/ContractSignModal";
+import { ContractDraftResult, ContractSignResponse } from "@/types/contract";
 import { ApiResponse } from "@/types/api";
 
 export default function MyContractsPage() {
+  const router = useRouter();
   const [filter, setFilter] = useState("all");
   const [contracts, setContracts] = useState<ContractDraftResult[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [signingContractId, setSigningContractId] = useState<number | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     const fetchContracts = async () => {
@@ -66,6 +71,35 @@ export default function MyContractsPage() {
       TERMINATED: "해지됨"
     };
     return labels[status] || status;
+  };
+
+  const handleSign = async (signatureData: string) => {
+    if (!signingContractId) return;
+    setIsSubmitting(true);
+    try {
+      const response = await fetch(`/api/bff/contracts/${signingContractId}/sign`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({
+          termsAgreed: true,
+          privacyPolicyAgreed: true,
+          signatureData,
+        }),
+      });
+      const result: ApiResponse<ContractSignResponse> = await response.json();
+      if (result.success && result.data) {
+        setSigningContractId(null);
+        alert(result.data.message || "계약이 체결되었습니다!");
+        router.push("/my-devices");
+      } else {
+        alert(result.message || "계약 체결에 실패했습니다.");
+      }
+    } catch (err: any) {
+      alert(err.message || "네트워크 오류가 발생했습니다.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -263,7 +297,13 @@ export default function MyContractsPage() {
                         VIEW SUBMISSION
                       </button>
                     </Link>
-                    <button className={`h-16 px-10 rounded-2xl text-[10px] font-black tracking-[0.2em] uppercase transition-all flex items-center gap-4 whitespace-nowrap shadow-xl ${contract.status === 'APPROVED' ? 'bg-accent text-white hover:bg-primary shadow-accent/20' :
+                    <button
+                      onClick={() => {
+                        if (contract.status === 'APPROVED') {
+                          setSigningContractId(contract.contractId);
+                        }
+                      }}
+                      className={`h-16 px-10 rounded-2xl text-[10px] font-black tracking-[0.2em] uppercase transition-all flex items-center gap-4 whitespace-nowrap shadow-xl ${contract.status === 'APPROVED' ? 'bg-accent text-white hover:bg-primary shadow-accent/20' :
                       contract.status === 'REJECTED' ? 'bg-red-500 text-white hover:bg-red-600' :
                         'bg-primary text-background'
                       }`}>
@@ -300,6 +340,15 @@ export default function MyContractsPage() {
           </div>
         )}
       </main>
+
+      {/* Contract Sign Modal */}
+      <ContractSignModal
+        isOpen={signingContractId !== null}
+        onClose={() => setSigningContractId(null)}
+        onSign={handleSign}
+        contractId={signingContractId ?? 0}
+        isSubmitting={isSubmitting}
+      />
     </div>
   );
 }
