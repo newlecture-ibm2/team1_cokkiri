@@ -35,6 +35,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Profile;
 import org.springframework.core.annotation.Order;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -45,14 +46,17 @@ import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 
 /**
- * 로컬·개발 프로필에서 데모용 기본 데이터를 한 번만 적재합니다.
+ * {@code app.demo-data.enabled=true} 이고 프로필이 {@code local}, {@code dev}, {@code prod} 중 하나일 때
+ * 데모용 기본 데이터를 한 번만 적재합니다.
  * <p>
  * 이미 {@code users} 테이블에 행이 있으면 전체 시드를 건너뜁니다.
+ * 운영 환경에서는 {@code APP_DEMO_DATA_ENABLED=false} 등으로 끄는 것을 권장합니다.
  * </p>
  */
 @Slf4j
 @Component
-@Profile({"local", "dev"})
+@Profile({"local", "dev", "prod"})
+@ConditionalOnProperty(name = "app.demo-data.enabled", havingValue = "true")
 @Order(100)
 @RequiredArgsConstructor
 public class DataInitializer implements ApplicationRunner {
