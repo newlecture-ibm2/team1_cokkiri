@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useTransition } from "react";
+import Link from "next/link";
 import { MessageSquare, Trash2 } from "lucide-react";
 import {
   deleteAdminComment,
@@ -109,15 +110,23 @@ export function CommunityModerationPanel() {
                       작성자 #{item.authorUserId} · 조회 {item.viewCount} · 좋아요 {item.likeCount} · 댓글 {item.commentCount}
                     </p>
                   </div>
-                  <button
-                    type="button"
-                    disabled={isPending}
-                    onClick={() => handleDeletePost(item.postId)}
-                    className="inline-flex items-center gap-1 rounded-lg border border-destructive/40 px-3 py-1.5 text-xs font-bold text-destructive hover:bg-destructive/10 disabled:opacity-50"
-                  >
-                    <Trash2 className="size-3.5" />
-                    삭제
-                  </button>
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      disabled={isPending}
+                      onClick={() => handleDeletePost(item.postId)}
+                      className="inline-flex items-center gap-1 rounded-lg border border-destructive/40 px-3 py-1.5 text-xs font-bold text-destructive hover:bg-destructive/10 disabled:opacity-50"
+                    >
+                      <Trash2 className="size-3.5" />
+                      삭제
+                    </button>
+                    <Link
+                      href={`/admin/community/posts/${item.postId}`}
+                      className="inline-flex items-center gap-1 rounded-lg border border-border px-3 py-1.5 text-xs font-bold text-primary hover:bg-muted"
+                    >
+                      상세
+                    </Link>
+                  </div>
                 </div>
               </li>
             ))
@@ -142,15 +151,23 @@ export function CommunityModerationPanel() {
                       작성자 #{item.authorUserId}
                     </p>
                   </div>
-                  <button
-                    type="button"
-                    disabled={isPending}
-                    onClick={() => handleDeleteComment(item.commentId)}
-                    className="inline-flex items-center gap-1 rounded-lg border border-destructive/40 px-3 py-1.5 text-xs font-bold text-destructive hover:bg-destructive/10 disabled:opacity-50"
-                  >
-                    <Trash2 className="size-3.5" />
-                    삭제
-                  </button>
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      disabled={isPending}
+                      onClick={() => handleDeleteComment(item.commentId)}
+                      className="inline-flex items-center gap-1 rounded-lg border border-destructive/40 px-3 py-1.5 text-xs font-bold text-destructive hover:bg-destructive/10 disabled:opacity-50"
+                    >
+                      <Trash2 className="size-3.5" />
+                      삭제
+                    </button>
+                    <Link
+                      href={`/admin/community/comments/${item.commentId}`}
+                      className="inline-flex items-center gap-1 rounded-lg border border-border px-3 py-1.5 text-xs font-bold text-primary hover:bg-muted"
+                    >
+                      상세
+                    </Link>
+                  </div>
                 </div>
               </li>
             ))

@@ -1,5 +1,11 @@
 import { apiFetch } from "@/lib/api";
-import type { AdminCommentItem, AdminPostItem, PageData } from "../_types/community-admin";
+import type {
+  AdminCommentDetail,
+  AdminCommentItem,
+  AdminPostDetail,
+  AdminPostItem,
+  PageData,
+} from "../_types/community-admin";
 
 export async function fetchAdminPosts(params: { p?: number; s?: number; sort?: string; keyword?: string }) {
   const qs = new URLSearchParams();
@@ -25,4 +31,12 @@ export async function deleteAdminPost(postId: number) {
 
 export async function deleteAdminComment(commentId: number) {
   return apiFetch<void>(`/admin/comments/${commentId}`, { method: "DELETE" });
+}
+
+export async function fetchAdminPostDetail(postId: number) {
+  return apiFetch<AdminPostDetail>(`/admin/posts/${postId}`);
+}
+
+export async function fetchAdminCommentDetail(commentId: number) {
+  return apiFetch<AdminCommentDetail>(`/admin/comments/${commentId}`);
 }
