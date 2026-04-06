@@ -1,3 +1,10 @@
+export interface RoomTypeDTO {
+  roomTypeId: number;
+  code: string;
+  name: string;
+  isSystemDefault: boolean;
+}
+
 export interface SpaceDTO {
   spaceId?: number;
   name: string;
@@ -9,7 +16,8 @@ export interface SpaceDTO {
   amenities: string[];
   
   // Private Detail
-  roomType?: string;
+  roomTypeId?: number;
+  roomTypeName?: string;
   roomCount?: number;
   bathroomCount?: number;
   direction?: string;
@@ -83,5 +91,44 @@ export const deleteSpace = async (spaceId: number) => {
     method: 'DELETE',
   });
   if (!res.ok) throw new Error('Failed to delete space');
+  return res.json();
+};
+
+// ===== Room Type (방 유형) API =====
+
+export const fetchRoomTypes = async (): Promise<{ success: boolean; data: RoomTypeDTO[] }> => {
+  const res = await fetch('/api/bff/admin/room-types');
+  if (!res.ok) throw new Error('Failed to fetch room types');
+  return res.json();
+};
+
+export const createRoomType = async (data: { code: string; name: string }) => {
+  const res = await fetch('/api/bff/admin/room-types', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) throw new Error('Failed to create room type');
+  return res.json();
+};
+
+export const updateRoomType = async (roomTypeId: number, data: { name: string }) => {
+  const res = await fetch(`/api/bff/admin/room-types/${roomTypeId}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) throw new Error('Failed to update room type');
+  return res.json();
+};
+
+export const deleteRoomType = async (roomTypeId: number) => {
+  const res = await fetch(`/api/bff/admin/room-types/${roomTypeId}`, {
+    method: 'DELETE',
+  });
+  if (!res.ok) {
+    const errorData = await res.json().catch(() => null);
+    throw new Error(errorData?.message || 'Failed to delete room type');
+  }
   return res.json();
 };

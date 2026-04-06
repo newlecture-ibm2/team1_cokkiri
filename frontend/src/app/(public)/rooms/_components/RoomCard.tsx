@@ -49,9 +49,9 @@ export function RoomCard({ room, index }: RoomCardProps) {
             <h3 className="text-xl font-black tracking-tighter group-hover:text-[var(--color-secondary)] transition-colors">
               {room.name}
             </h3>
-            {room.roomType && (
+            {room.roomTypeName && (
               <span className="px-2.5 py-0.5 bg-[var(--color-accent)] text-[var(--color-accent-foreground)] text-[10px] font-bold rounded-full">
-                {room.roomType}
+                {room.roomTypeName}
               </span>
             )}
           </div>

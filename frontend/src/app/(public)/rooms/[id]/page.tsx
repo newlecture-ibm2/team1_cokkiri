@@ -57,7 +57,7 @@ export default function RoomDetailPage() {
   }
 
   const statusInfo = STATUS_LABELS[room.status] || STATUS_LABELS.AVAILABLE;
-  const isPrivate = room.roomType !== undefined && room.roomType !== null;
+  const isPrivate = room.roomTypeId !== undefined && room.roomTypeId !== null;
 
   return (
     <div className="min-h-screen bg-background text-foreground">

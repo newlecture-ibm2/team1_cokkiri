@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Save, Trash2 } from 'lucide-react';
-import { updateSpace, deleteSpace, SpaceDTO } from '../_api/spaceAdminApi';
+import { updateSpace, deleteSpace, fetchRoomTypes, SpaceDTO, RoomTypeDTO } from '../_api/spaceAdminApi';
 
 interface SpaceEditModalProps {
   isOpen: boolean;
@@ -17,6 +17,7 @@ export default function SpaceEditModal({ isOpen, space, onClose, onUpdated }: Sp
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [roomTypes, setRoomTypes] = useState<RoomTypeDTO[]>([]);
 
   useEffect(() => {
     if (space) {
@@ -24,6 +25,14 @@ export default function SpaceEditModal({ isOpen, space, onClose, onUpdated }: Sp
       setShowDeleteConfirm(false);
     }
   }, [space]);
+
+  useEffect(() => {
+    if (isOpen) {
+      fetchRoomTypes()
+        .then((res) => setRoomTypes(res.data || []))
+        .catch(console.error);
+    }
+  }, [isOpen]);
 
   if (!isOpen || !space) return null;
 
@@ -165,6 +174,22 @@ export default function SpaceEditModal({ isOpen, space, onClose, onUpdated }: Sp
             {space.type === 'PRIVATE' && (
               <div className="mb-4 p-4 bg-black/5 rounded-2xl space-y-3">
                 <h3 className="text-sm font-black tracking-tighter mb-2">개인 공간 상세</h3>
+                {/* 방 유형 드롭다운 */}
+                {roomTypes.length > 0 && (
+                  <div>
+                    <label className="block text-xs font-bold mb-1">방 유형</label>
+                    <select
+                      className="w-full px-3 py-2 rounded-xl bg-[var(--color-muted)] text-sm outline-none"
+                      value={formData.roomTypeId || ''}
+                      onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setFormData({ ...formData, roomTypeId: e.target.value ? Number(e.target.value) : undefined })}
+                    >
+                      <option value="">유형 선택</option>
+                      {roomTypes.map((rt) => (
+                        <option key={rt.roomTypeId} value={rt.roomTypeId}>{rt.name} ({rt.code})</option>
+                      ))}
+                    </select>
+                  </div>
+                )}
                 <div className="grid grid-cols-2 gap-3">
                   <div>
                     <label className="block text-xs font-bold mb-1">보증금</label>
