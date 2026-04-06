@@ -9,4 +9,7 @@ public interface DeviceTypeJpaRepository extends JpaRepository<DeviceTypeEntity,
     Optional<DeviceTypeEntity> findByCode(String code);
 
     boolean existsByCode(String code);
+
+    boolean existsByCodeAndDeviceTypeIdNot(String code, Long deviceTypeId);
 }
+
