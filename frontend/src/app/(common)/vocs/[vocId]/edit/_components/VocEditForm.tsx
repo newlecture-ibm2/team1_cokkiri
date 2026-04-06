@@ -15,13 +15,13 @@ import {
   VOC_TITLE_MAX_LENGTH,
   normalizeVocApiFileUrlsToBff,
   normalizeVocBffFileUrlsToApi,
-} from "@/lib/voc-html";
+} from "@/lib/vocs-html";
 import {
   VOC_CATEGORIES,
   type VocCategoryCode,
   type VocAttachment,
   type VocDetail,
-} from "../../../_types/voc";
+} from "../../../_types/vocs";
 import { CancelModal } from "@/components/shared/CancelModal";
 
 const VocRichTextEditor = dynamic(

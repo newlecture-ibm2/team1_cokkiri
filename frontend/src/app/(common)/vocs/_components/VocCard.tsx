@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { MessageSquareText } from "lucide-react";
-import { vocCategoryLabel, vocStatusLabel, type VocListItem } from "../_types/voc";
+import { vocCategoryLabel, vocStatusLabel, type VocListItem } from "../_types/vocs";
 import { formatDateTimeKo } from "@/lib/format-date";
 import { cn } from "@/lib/utils";
 

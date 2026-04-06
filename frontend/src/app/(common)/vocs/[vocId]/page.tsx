@@ -1,15 +1,15 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { bffGet } from "../_api/bff-server";
-import type { ApiResponse, VocDetail } from "../_types/voc";
+import type { ApiResponse, VocDetail } from "../_types/vocs";
 import { VocShell } from "../_components/VocShell";
 import { MotionEnter } from "../../community/_components/MotionEnter";
 import { VocDetailActions } from "../_components/VocDetailActions";
-import { vocCategoryLabel, vocStatusLabel } from "../_types/voc";
+import { vocCategoryLabel, vocStatusLabel } from "../_types/vocs";
 import { formatDateTimeKo } from "@/lib/format-date";
 import { apiFileUrlToBffPath } from "@/lib/bff-file-url";
 import { isRichTextBodyHtml } from "@/lib/post-html";
-import { prepareVocBodyForDisplay, VOC_RICH_BODY_CLASSNAME } from "@/lib/voc-html";
+import { prepareVocBodyForDisplay, VOC_RICH_BODY_CLASSNAME } from "@/lib/vocs-html";
 import { cn } from "@/lib/utils";
 
 type Params = Promise<{ vocId: string }>;

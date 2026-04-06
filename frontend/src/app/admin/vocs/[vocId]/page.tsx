@@ -1,14 +1,14 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { adminBffGet } from "../_api/admin-bff-server";
-import type { AdminVocDetail, ApiResponse } from "../_types/admin-voc";
-import { adminVocCategoryLabel, adminVocStatusLabel } from "../_types/admin-voc";
+import type { AdminVocDetail, ApiResponse } from "../_types/admin-vocs";
+import { adminVocCategoryLabel, adminVocStatusLabel } from "../_types/admin-vocs";
 import { MotionEnter } from "../_components/MotionEnter";
 import { AdminVocActions } from "./_components/AdminVocActions";
 import { formatDateTimeKo } from "@/lib/format-date";
 import { apiFileUrlToBffPath } from "@/lib/bff-file-url";
 import { isRichTextBodyHtml } from "@/lib/post-html";
-import { prepareVocBodyForDisplay, VOC_RICH_BODY_CLASSNAME } from "@/lib/voc-html";
+import { prepareVocBodyForDisplay, VOC_RICH_BODY_CLASSNAME } from "@/lib/vocs-html";
 import { cn } from "@/lib/utils";
 
 type Params = Promise<{ vocId: string }>;
