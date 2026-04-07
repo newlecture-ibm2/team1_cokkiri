@@ -1,7 +1,7 @@
 package com.coliving.user.contract.application.service;
 
-import com.coliving.common.auth.adapter.out.jpa.UserEntity;
-import com.coliving.common.auth.adapter.out.jpa.UserJpaRepository;
+import com.coliving.admin.space.application.port.out.AdminSpaceRepositoryPort;
+import com.coliving.admin.user.application.port.out.AdminUserRepositoryPort;
 import com.coliving.common.auth.model.UserRole;
 import com.coliving.common.notification.application.port.out.NotificationRepositoryPort;
 import com.coliving.common.notification.model.NotificationType;
@@ -9,8 +9,6 @@ import com.coliving.common.notification.model.ReferenceType;
 import com.coliving.global.error.BusinessException;
 import com.coliving.global.error.ErrorCode;
 import com.coliving.global.security.JwtTokenProvider;
-import com.coliving.user.contract.adapter.out.jpa.ContractEntity;
-import com.coliving.user.contract.adapter.out.jpa.ContractJpaRepository;
 import com.coliving.user.contract.application.command.ContractApplyCommand;
 import com.coliving.user.contract.application.command.ContractSignCommand;
 import com.coliving.user.contract.application.port.in.ContractUseCase;
@@ -21,8 +19,6 @@ import com.coliving.user.contract.application.result.ContractSignResult;
 import com.coliving.user.contract.model.Contract;
 import com.coliving.user.contract.model.ContractOrigin;
 import com.coliving.user.contract.model.ContractStatus;
-import com.coliving.user.room.adapter.out.jpa.SpaceEntity;
-import com.coliving.user.room.adapter.out.jpa.SpaceJpaRepository;
 import com.coliving.user.room.model.SpaceStatus;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -37,9 +33,8 @@ import java.util.stream.Collectors;
 public class ContractService implements ContractUseCase {
 
     private final ContractRepositoryPort contractRepositoryPort;
-    private final ContractJpaRepository contractJpaRepository;
-    private final UserJpaRepository userJpaRepository;
-    private final SpaceJpaRepository spaceJpaRepository;
+    private final AdminUserRepositoryPort adminUserRepositoryPort;
+    private final AdminSpaceRepositoryPort adminSpaceRepositoryPort;
     private final JwtTokenProvider jwtTokenProvider;
     private final NotificationRepositoryPort notificationRepositoryPort;
 
@@ -138,7 +133,7 @@ public class ContractService implements ContractUseCase {
     @Override
     public ContractSignResult signContract(Long userId, ContractSignCommand command) {
         // 1. 계약 조회 + APPROVED 상태 검증
-        ContractEntity contract = contractJpaRepository.findById(command.getContractId())
+        Contract contract = contractRepositoryPort.findById(command.getContractId())
                 .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND));
 
         if (!contract.getUserId().equals(userId)) {
@@ -149,8 +144,8 @@ public class ContractService implements ContractUseCase {
             throw new BusinessException(ErrorCode.INVALID_STATUS);
         }
 
-        // 2. 호실 AVAILABLE 확인
-        SpaceEntity space = spaceJpaRepository.findById(contract.getSpaceId())
+        // 2. 호실 AVAILABLE 확인 (AdminSpaceRepositoryPort 사용)
+        var space = adminSpaceRepositoryPort.findById(contract.getSpaceId())
                 .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND));
 
         if (space.getStatus() != SpaceStatus.AVAILABLE) {
@@ -158,25 +153,22 @@ public class ContractService implements ContractUseCase {
         }
 
         // 3. 이미 활성 계약 보유 체크
-        boolean hasActive = contractJpaRepository.existsByUserIdAndStatusIn(
-                userId, List.of(ContractStatus.ACTIVE));
+        boolean hasActive = contractRepositoryPort.findAllByUserId(userId).stream()
+                .anyMatch(c -> c.getStatus() == ContractStatus.ACTIVE);
         if (hasActive) {
             throw new BusinessException(ErrorCode.ACTIVE_CONTRACT_EXISTS);
         }
 
         // 4. 계약 체결 (전자서명 데이터 영구 보존)
         contract.sign(command.getSignatureData());
-        contractJpaRepository.save(contract);
+        contractRepositoryPort.save(contract);
 
-        // 5. Space → OCCUPIED
+        // 5. Space → OCCUPIED (AdminSpaceRepositoryPort 사용)
         space.changeStatus(SpaceStatus.OCCUPIED);
-        spaceJpaRepository.save(space);
+        adminSpaceRepositoryPort.save(space);
 
-        // 6. User → RESIDENT
-        UserEntity user = userJpaRepository.findById(userId)
-                .orElseThrow(() -> new BusinessException(ErrorCode.ACCOUNT_NOT_FOUND));
-        user.changeRole(UserRole.RESIDENT);
-        userJpaRepository.save(user);
+        // 6. User → RESIDENT (AdminUserRepositoryPort 사용)
+        adminUserRepositoryPort.changeUserRole(userId, UserRole.RESIDENT);
 
         // 7. JWT 재발급 (RESIDENT + contract_id + space_id)
         String accessToken = jwtTokenProvider.createAccessToken(

@@ -25,6 +25,11 @@ import com.coliving.common.voc.adapter.out.jpa.VocEntity;
 import com.coliving.common.voc.adapter.out.jpa.VocJpaRepository;
 import com.coliving.common.voc.model.VocCategory;
 import com.coliving.common.voc.model.VocStatus;
+import com.coliving.user.contract.adapter.out.jpa.ContractEntity;
+import com.coliving.user.contract.adapter.out.jpa.ContractJpaRepository;
+import com.coliving.user.contract.model.ContractLanguage;
+import com.coliving.user.contract.model.ContractOrigin;
+import com.coliving.user.contract.model.ContractStatus;
 import com.coliving.user.room.adapter.out.jpa.CommonSpaceDetailEntity;
 import com.coliving.user.room.adapter.out.jpa.CommonSpaceDetailJpaRepository;
 import com.coliving.user.room.adapter.out.jpa.PrivateSpaceDetailEntity;
@@ -52,7 +57,9 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.OffsetDateTime;
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -89,6 +96,7 @@ public class DataInitializer implements ApplicationRunner {
     private final CommentJpaRepository commentJpaRepository;
     private final VocJpaRepository vocJpaRepository;
     private final NotificationJpaRepository notificationJpaRepository;
+    private final ContractJpaRepository contractJpaRepository;
     private final ObjectMapper objectMapper;
     @Value("${app.demo-data.seed-content-on-existing-users:true}")
     private boolean seedContentOnExistingUsers;
@@ -99,17 +107,22 @@ public class DataInitializer implements ApplicationRunner {
         long userCount = userJpaRepository.count();
         UserEntity admin = getOrCreateDemoAdmin();
         UserEntity user = getOrCreateDemoUser();
+        UserEntity user2 = getOrCreateUser("user2", "김민지", "980315", Gender.FEMALE, "010-1234-5678", "minji@cokkiri.local");
+        UserEntity user3 = getOrCreateUser("user3", "이준호", "970820", Gender.MALE, "010-2345-6789", "junho@cokkiri.local");
+        UserEntity user4 = getOrCreateUser("user4", "박서연", "000112", Gender.FEMALE, "010-3456-7890", "seoyeon@cokkiri.local");
 
         if (userCount == 0) {
             SpaceEntity deviceHostSpace = seedSpacesFromDevDataset();
             seedDefaultDeviceTypesAndDevice(deviceHostSpace);
             seedCommunityVocNotification(admin, user);
-            log.info("[DataInitializer] 초기 전체 시드 완료 (로그인: admin / demo, 비밀번호: {})", DEMO_PASSWORD);
+            seedContracts(admin, user, user2, user3, user4);
+            log.info("[DataInitializer] 초기 전체 시드 완료 (로그인: admin / demo / user2~4, 비밀번호: {})", DEMO_PASSWORD);
             return;
         }
 
         if (seedContentOnExistingUsers) {
             seedCommunityVocNotification(admin, user);
+            seedContracts(admin, user, user2, user3, user4);
             log.info("[DataInitializer] 기존 USERS 존재: 콘텐츠 시드만 보강 완료");
         } else {
             log.info("[DataInitializer] 기존 USERS 존재 + seed-content-on-existing-users=false: 시드 생략");
@@ -145,6 +158,23 @@ public class DataInitializer implements ApplicationRunner {
                         .nationality("KR")
                         .phone("010-0000-0002")
                         .email("demo@cokkiri.local")
+                        .role(UserRole.USER)
+                        .status(UserStatus.ACTIVE)
+                        .build()));
+    }
+
+    private UserEntity getOrCreateUser(String loginId, String name, String birthDate,
+                                        Gender gender, String phone, String email) {
+        return userJpaRepository.findByLoginId(loginId)
+                .orElseGet(() -> userJpaRepository.save(UserEntity.builder()
+                        .loginId(loginId)
+                        .passwordHash(passwordEncoder.encode(DEMO_PASSWORD))
+                        .name(name)
+                        .birthDate(birthDate)
+                        .gender(gender)
+                        .nationality("KR")
+                        .phone(phone)
+                        .email(email)
                         .role(UserRole.USER)
                         .status(UserStatus.ACTIVE)
                         .build()));
@@ -319,6 +349,126 @@ public class DataInitializer implements ApplicationRunner {
         c.setUserId(userId);
         c.setContent(content);
         commentJpaRepository.save(c);
+    }
+
+    /**
+     * 계약 시드 데이터 — 다양한 상태의 계약을 생성합니다.
+     * idempotent: 동일 userId+spaceId 조합이 이미 있으면 건너뜁니다.
+     */
+    private void seedContracts(UserEntity admin, UserEntity user,
+                               UserEntity user2, UserEntity user3, UserEntity user4) {
+        List<SpaceEntity> privateSpaces = spaceJpaRepository.findAll().stream()
+                .filter(s -> s.getType() == SpaceType.PRIVATE)
+                .toList();
+
+        if (privateSpaces.size() < 4) {
+            log.warn("[DataInitializer] PRIVATE 공간이 4개 미만이어서 계약 시드 생략");
+            return;
+        }
+
+        // 1) DRAFT — demo 유저가 301호에 임시저장
+        SpaceEntity s301 = privateSpaces.stream().filter(s -> s.getName().contains("301")).findFirst().orElse(privateSpaces.get(0));
+        ensureContract(user.getUserId(), s301.getSpaceId(), ContractStatus.DRAFT, ContractOrigin.USER_INITIATED,
+                "서울시 강남구 삼성동 123", "110-123-456789",
+                LocalDate.now().plusMonths(1), 6,
+                "재택근무 목적", "조용한 환경 희망합니다.",
+                null, null, null, null, null, null, null);
+
+        // 2) PENDING — user2가 302호에 신청 제출
+        SpaceEntity s302 = privateSpaces.stream().filter(s -> s.getName().contains("302")).findFirst().orElse(privateSpaces.get(1));
+        ensureContract(user2.getUserId(), s302.getSpaceId(), ContractStatus.PENDING, ContractOrigin.USER_INITIATED,
+                "서울시 마포구 합정동 456", "333-456-789012",
+                LocalDate.now().plusWeeks(2), 12,
+                "대학원 통학", "2인실 가능한 방으로 부탁드립니다.",
+                null, null, null, null, null, null, null);
+
+        // 3) APPROVED — user3이 401호 승인됨 (체결 대기)
+        SpaceEntity s401 = privateSpaces.stream().filter(s -> s.getName().contains("401")).findFirst().orElse(privateSpaces.get(2));
+        ensureContract(user3.getUserId(), s401.getSpaceId(), ContractStatus.APPROVED, ContractOrigin.USER_INITIATED,
+                "서울시 서초구 반포동 789", "222-789-012345",
+                LocalDate.now().plusDays(7), 3,
+                "단기 거주", null,
+                admin.getUserId(), LocalDate.now().plusDays(7), LocalDate.now().plusMonths(3).plusDays(7),
+                new BigDecimal("400000"), new BigDecimal("3000000"), "반려동물 불가", null);
+
+        // 4) ACTIVE — 관리자 직접 등록으로 402호 입주 중
+        SpaceEntity s402 = privateSpaces.stream().filter(s -> s.getName().contains("402")).findFirst().orElse(privateSpaces.get(3));
+        ensureContract(user4.getUserId(), s402.getSpaceId(), ContractStatus.ACTIVE, ContractOrigin.ADMIN_INITIATED,
+                null, null, null, null, null, null,
+                admin.getUserId(), LocalDate.now().minusMonths(3), LocalDate.now().plusMonths(9),
+                new BigDecimal("550000"), new BigDecimal("6000000"), null, OffsetDateTime.now().minusMonths(3));
+
+        // 5) REJECTED — demo 유저가 501호에 신청했다가 거절됨
+        SpaceEntity s501 = privateSpaces.stream().filter(s -> s.getName().contains("501")).findFirst().orElse(privateSpaces.get(0));
+        ensureContractRejected(user.getUserId(), s501.getSpaceId(),
+                "서울시 강남구 삼성동 123", "110-123-456789",
+                LocalDate.now().plusMonths(1), 12,
+                "프리미엄 방 입주 희망", null,
+                admin.getUserId(), "현재 해당 호실은 리모델링 예정으로 입주가 어렵습니다.");
+
+        log.info("[DataInitializer] 계약 시드 데이터 적재 완료 (DRAFT/PENDING/APPROVED/ACTIVE/REJECTED)");
+    }
+
+    private void ensureContract(Long userId, Long spaceId, ContractStatus status, ContractOrigin origin,
+                                String address, String bankAccount,
+                                LocalDate desiredStartDate, Integer desiredDurationMonths,
+                                String usagePurpose, String requestNote,
+                                Long approvedBy, LocalDate startDate, LocalDate endDate,
+                                BigDecimal monthlyRent, BigDecimal deposit, String specialTerms,
+                                OffsetDateTime contractedAt) {
+        boolean exists = contractJpaRepository.findByUserIdAndSpaceId(userId, spaceId).isPresent();
+        if (exists) return;
+
+        ContractEntity.ContractEntityBuilder builder = ContractEntity.builder()
+                .userId(userId)
+                .spaceId(spaceId)
+                .origin(origin)
+                .status(status)
+                .address(address)
+                .bankAccount(bankAccount)
+                .desiredStartDate(desiredStartDate)
+                .desiredDurationMonths(desiredDurationMonths)
+                .contractLanguage(ContractLanguage.KO)
+                .privacyAgreed(true)
+                .usagePurpose(usagePurpose)
+                .requestNote(requestNote)
+                .approvedBy(approvedBy)
+                .startDate(startDate)
+                .endDate(endDate)
+                .monthlyRent(monthlyRent)
+                .deposit(deposit)
+                .specialTerms(specialTerms)
+                .contractedAt(contractedAt);
+
+        contractJpaRepository.save(builder.build());
+    }
+
+    private void ensureContractRejected(Long userId, Long spaceId,
+                                        String address, String bankAccount,
+                                        LocalDate desiredStartDate, Integer desiredDurationMonths,
+                                        String usagePurpose, String requestNote,
+                                        Long approvedBy, String rejectedReason) {
+        boolean exists = contractJpaRepository.findByUserIdAndSpaceId(userId, spaceId).isPresent();
+        if (exists) return;
+
+        ContractEntity contract = ContractEntity.builder()
+                .userId(userId)
+                .spaceId(spaceId)
+                .origin(ContractOrigin.USER_INITIATED)
+                .status(ContractStatus.REJECTED)
+                .address(address)
+                .bankAccount(bankAccount)
+                .desiredStartDate(desiredStartDate)
+                .desiredDurationMonths(desiredDurationMonths)
+                .contractLanguage(ContractLanguage.KO)
+                .privacyAgreed(true)
+                .usagePurpose(usagePurpose)
+                .requestNote(requestNote)
+                .approvedBy(approvedBy)
+                .rejectedReason(rejectedReason)
+                .build();
+
+        contractJpaRepository.save(contract);
     }
 
     private void ensureLike(PostEntity post, Long userId) {
