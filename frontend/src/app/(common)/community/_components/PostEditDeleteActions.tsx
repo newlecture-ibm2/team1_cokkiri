@@ -8,6 +8,8 @@ import { ChevronDown, Edit3, Loader2, Trash2 } from "lucide-react";
 import { POST_CATEGORIES, type PostAttachment, type PostLink } from "../_types/community";
 import { cn } from "@/lib/utils";
 import { messageFromBffResponse } from "@/lib/bff-error-message";
+import { LoginRequiredModal } from "@/components/shared/LoginRequiredModal";
+import { LOGIN_REQUIRED_MESSAGE } from "@/lib/auth-messages";
 import {
   POST_BODY_HTML_MAX_LENGTH,
   POST_TITLE_MAX_LENGTH,
@@ -98,6 +100,7 @@ export function PostEditDeleteActions({
   const [newFiles, setNewFiles] = useState<FileList | null>(null);
   const [editSession, setEditSession] = useState(0);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [showLoginModal, setShowLoginModal] = useState(false);
 
   useEffect(() => {
     if (editing) return;
@@ -121,6 +124,11 @@ export function PostEditDeleteActions({
         method: "DELETE",
         credentials: "include",
       });
+      if (res.status === 401) {
+        setSubmitError(LOGIN_REQUIRED_MESSAGE);
+        setShowLoginModal(true);
+        return;
+      }
       if (res.ok) router.push("/community");
     });
   }
@@ -181,6 +189,11 @@ export function PostEditDeleteActions({
           credentials: "include",
           body: formData,
         });
+        if (res.status === 401) {
+          setSubmitError(LOGIN_REQUIRED_MESSAGE);
+          setShowLoginModal(true);
+          return;
+        }
         let json: ApiResponse<unknown>;
         try {
           json = await res.json();
@@ -206,6 +219,7 @@ export function PostEditDeleteActions({
 
   return (
     <section className="mt-8 rounded-[2rem] border border-border bg-background/80 p-4 backdrop-blur-sm md:p-6">
+      <LoginRequiredModal isOpen={showLoginModal} onClose={() => setShowLoginModal(false)} />
       {!editing ? (
         <div className="flex flex-wrap items-center gap-3">
           <motion.button

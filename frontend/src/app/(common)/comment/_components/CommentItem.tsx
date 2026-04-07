@@ -7,6 +7,7 @@ import { Edit3, Trash2 } from "lucide-react";
 import { bffErrorMessageFromResponse } from "@/lib/bff-error-message";
 import { formatDateTimeKo } from "@/lib/format-date";
 import { CancelModal } from "@/components/shared/CancelModal";
+import { LoginRequiredModal } from "@/components/shared/LoginRequiredModal";
 
 type CurrentUser = {
   userId: number;
@@ -39,6 +40,7 @@ export function CommentItem({
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
   const [showCancelModal, setShowCancelModal] = useState(false);
+  const [showLoginModal, setShowLoginModal] = useState(false);
 
   useEffect(() => {
     if (!editing) setDraft(content);
@@ -70,6 +72,10 @@ export function CommentItem({
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ content: text }),
         });
+        if (res.status === 401) {
+          setShowLoginModal(true);
+          return;
+        }
         if (res.ok) {
           setEditing(false);
           router.refresh();
@@ -93,6 +99,10 @@ export function CommentItem({
           method: "DELETE",
           credentials: "include",
         });
+        if (res.status === 401) {
+          setShowLoginModal(true);
+          return;
+        }
         if (res.ok) {
           router.refresh();
           return;
@@ -210,6 +220,7 @@ export function CommentItem({
           cancelEdit();
         }}
       />
+      <LoginRequiredModal isOpen={showLoginModal} onClose={() => setShowLoginModal(false)} />
     </li>
   );
 }

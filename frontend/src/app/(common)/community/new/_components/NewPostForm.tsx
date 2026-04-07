@@ -8,6 +8,8 @@ import { motion } from "framer-motion";
 import { ArrowLeft, ChevronDown, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { messageFromBffResponse } from "@/lib/bff-error-message";
+import { LoginRequiredModal } from "@/components/shared/LoginRequiredModal";
+import { LOGIN_REQUIRED_MESSAGE } from "@/lib/auth-messages";
 import {
   POST_BODY_HTML_MAX_LENGTH,
   POST_TITLE_MAX_LENGTH,
@@ -45,6 +47,7 @@ export function NewPostForm() {
   const [files, setFiles] = useState<FileList | null>(null);
   const [pending, startTransition] = useTransition();
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [showLoginModal, setShowLoginModal] = useState(false);
   const [showCancelModal, setShowCancelModal] = useState(false);
 
   function submit(e: React.FormEvent) {
@@ -93,6 +96,11 @@ export function NewPostForm() {
           credentials: "include",
           body: formData,
         });
+        if (res.status === 401) {
+          setSubmitError(LOGIN_REQUIRED_MESSAGE);
+          setShowLoginModal(true);
+          return;
+        }
         let json: ApiResponse<{ postId: number } | null>;
         try {
           json = await res.json();
@@ -119,6 +127,7 @@ export function NewPostForm() {
 
   return (
     <form onSubmit={submit} className="mx-auto max-w-2xl space-y-10">
+      <LoginRequiredModal isOpen={showLoginModal} onClose={() => setShowLoginModal(false)} />
       <Link
         href="/community"
         className="group inline-flex items-center gap-2 font-black text-xs uppercase tracking-[0.3em] text-secondary transition-colors hover:text-foreground"
