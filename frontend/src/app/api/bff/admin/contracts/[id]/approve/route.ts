@@ -2,10 +2,10 @@ import { NextResponse } from 'next/server';
 
 export async function POST(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const body = await request.json();
-  const { id } = params;
+  const { id } = await params;
 
   console.log(`[MOCK] Contract ${id} Approval Status:`, body);
 
