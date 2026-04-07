@@ -2,10 +2,18 @@ app:
   demo-data:
     enabled: false
   upload:
-    dir: uploads/spaces
+    # 업로드 파일 루트 경로 (community/voc 하위 폴더는 코드에서 추가)
+    dir: data/uploads
+  community:
+    view-sync-ms: 10000
 
 spring:
   profiles.active: dev
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      timeout: 1500ms
   jpa:
     # 마이그레이션 도구(Flyway 등) 미사용 → JPA Entity가 스키마를 직접 관리
     # update: 엔티티 변경 시 컬럼/테이블 자동 추가 (삭제는 안 함)

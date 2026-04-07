@@ -30,18 +30,18 @@ export default async function ProfileVocsPage({ searchParams }: { searchParams: 
 
   let list: VocListData | null = null;
   let listError: string | null = null;
+  let authError: string | null = null;
 
-  if (showList) {
-    const res = await bffGet(`vocs/my?${qs.toString()}`);
-    if (res.status === 401 || res.status === 403) {
-      listError = LOGIN_REQUIRED_MESSAGE;
-    } else if (!res.ok) {
-      listError = "목록을 불러오지 못했습니다.";
-    } else {
-      const body = (await res.json()) as ApiResponse<VocListData>;
-      if (body.success && body.data) list = body.data;
-      else listError = body.message ?? "목록을 불러오지 못했습니다.";
-    }
+  // 기본 탭(민원 등록) 진입에서도 즉시 로그인 필요 모달을 띄우기 위해 인증 체크를 항상 수행한다.
+  const res = await bffGet(`vocs/my?${qs.toString()}`);
+  if (res.status === 401 || res.status === 403) {
+    authError = LOGIN_REQUIRED_MESSAGE;
+  } else if (showList && !res.ok) {
+    listError = "목록을 불러오지 못했습니다.";
+  } else if (showList) {
+    const body = (await res.json()) as ApiResponse<VocListData>;
+    if (body.success && body.data) list = body.data;
+    else listError = body.message ?? "목록을 불러오지 못했습니다.";
   }
 
   const listBaseQuery = "tab=list";
@@ -66,6 +66,8 @@ export default async function ProfileVocsPage({ searchParams }: { searchParams: 
           </header>
 
           <MyVocTabLinks active={showList ? "list" : "register"} />
+
+          {authError === LOGIN_REQUIRED_MESSAGE ? <LoginRequiredGate /> : null}
 
           {!showList ? (
             <div className="mx-auto max-w-4xl">
