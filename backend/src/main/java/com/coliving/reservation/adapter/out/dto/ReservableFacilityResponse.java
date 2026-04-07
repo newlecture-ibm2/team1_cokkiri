@@ -38,7 +38,8 @@ public class ReservableFacilityResponse {
 
     // ── CommonSpaceDetail 정보 ──
     private Integer maxCapacity;    // 최대 수용 인원
-    private String operatingHours;  // 운영 시간 (예: "09:00-22:00")
+    private String operatingHours;  // 운영 시간 (예: "09:00~22:00")
+    private Boolean isReservable;   // 예약 필요 여부 (true=예약제, false=자유이용)
     private BigDecimal usageFee;    // 시설 이용료
 
     // ── SpaceImage 정보 ──
