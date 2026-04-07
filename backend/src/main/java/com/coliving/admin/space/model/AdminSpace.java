@@ -64,4 +64,8 @@ public class AdminSpace {
         private Integer sortOrder;
         private Boolean isThumbnail;
     }
+
+    public void changeStatus(SpaceStatus status) {
+        this.status = status;
+    }
 }
