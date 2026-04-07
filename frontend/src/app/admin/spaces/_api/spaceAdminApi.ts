@@ -60,6 +60,18 @@ export const fetchSpaces = async () => {
   return res.json();
 };
 
+export const updateSpaceLayout = async (
+  positions: { spaceId: number; positionX: number; positionY: number }[],
+) => {
+  const res = await fetch('/api/bff/admin/spaces/layout', {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ positions }),
+  });
+  if (!res.ok) throw new Error('Failed to save layout');
+  return res.json();
+};
+
 export const createSpace = async (data: SpaceDTO) => {
   const res = await fetch('/api/bff/admin/spaces', {
     method: 'POST',

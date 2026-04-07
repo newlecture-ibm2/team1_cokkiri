@@ -2,9 +2,11 @@ package com.coliving.admin.space.adapter.in.web;
 
 import com.coliving.admin.space.adapter.in.web.dto.req.CreateSpaceRequestDto;
 import com.coliving.admin.space.adapter.in.web.dto.req.UpdateSpaceRequestDto;
+import com.coliving.admin.space.adapter.in.web.dto.req.UpdateSpaceLayoutRequestDto;
 import com.coliving.admin.space.adapter.in.web.dto.res.AdminSpaceResponseDto;
 import com.coliving.admin.space.application.command.CreateSpaceCommand;
 import com.coliving.admin.space.application.command.UpdateSpaceCommand;
+import com.coliving.admin.space.application.command.UpdateSpaceLayoutCommand;
 import com.coliving.admin.space.application.port.in.AdminSpaceUseCase;
 import com.coliving.admin.space.application.result.AdminSpaceResult;
 import com.coliving.global.dto.ApiResponse;
@@ -23,6 +25,7 @@ import org.springframework.core.io.UrlResource;
 import org.springframework.web.bind.annotation.*;
 import java.nio.file.Path;
 import java.nio.file.Files;
+import java.util.List;
 
 @Tag(name = "Admin Space", description = "관리자 공간 관리 API")
 @RestController
@@ -31,6 +34,24 @@ import java.nio.file.Files;
 public class AdminSpaceController {
 
     private final AdminSpaceUseCase adminSpaceUseCase;
+
+    @Operation(summary = "공간 배치 저장 (Bulk 좌표 업데이트)")
+    @PutMapping("/layout")
+    public ApiResponse<Void> updateLayout(
+            @Valid @RequestBody UpdateSpaceLayoutRequestDto request) {
+        UpdateSpaceLayoutCommand command = UpdateSpaceLayoutCommand.builder()
+                .positions(request.getPositions().stream()
+                        .map(p -> UpdateSpaceLayoutCommand.SpacePositionItem.builder()
+                                .spaceId(p.getSpaceId())
+                                .positionX(p.getPositionX())
+                                .positionY(p.getPositionY())
+                                .build())
+                        .toList())
+                .build();
+
+        adminSpaceUseCase.updateLayout(command);
+        return ApiResponse.ok(null, "배치가 저장되었습니다.");
+    }
 
     @Operation(summary = "공간 생성")
     @PostMapping

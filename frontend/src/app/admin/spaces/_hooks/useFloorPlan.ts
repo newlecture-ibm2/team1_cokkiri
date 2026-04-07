@@ -1,7 +1,7 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
-import { fetchSpaces, SpaceDTO, extractRoomTypeName } from '../_api/spaceAdminApi';
+import { useEffect, useState, useCallback, useRef } from 'react';
+import { fetchSpaces, updateSpaceLayout, SpaceDTO, extractRoomTypeName } from '../_api/spaceAdminApi';
 import type { FloorPlanBlock } from '../_types/layout';
 
 /** SpaceDTO → FloorPlanBlock 변환 */
@@ -24,6 +24,12 @@ export function useFloorPlan() {
   const [blocks, setBlocks] = useState<FloorPlanBlock[]>([]);
   const [selectedFloor, setSelectedFloor] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [dirty, setDirty] = useState(false);
+  const [saveMessage, setSaveMessage] = useState<string | null>(null);
+
+  // 원본 좌표 스냅샷 (dirty 판별용)
+  const originalPositions = useRef<Map<number, { x: number; y: number }>>(new Map());
 
   // 전체 공간 로드
   const loadSpaces = useCallback(async () => {
@@ -33,12 +39,22 @@ export function useFloorPlan() {
       const spaces: SpaceDTO[] = res.data?.content || res.data || [];
       setAllSpaces(spaces);
 
+      // 원본 좌표 기록
+      const posMap = new Map<number, { x: number; y: number }>();
+      spaces.forEach((s: SpaceDTO) => {
+        if (s.spaceId != null) {
+          posMap.set(s.spaceId, { x: s.positionX ?? 0, y: s.positionY ?? 0 });
+        }
+      });
+      originalPositions.current = posMap;
+
       // 첫 로드 시 가장 낮은 층을 자동 선택
       const floors = [...new Set(spaces.map((s: SpaceDTO) => s.floor).filter(Boolean))] as number[];
       floors.sort((a, b) => a - b);
       if (floors.length > 0 && selectedFloor === null) {
         setSelectedFloor(floors[0]);
       }
+      setDirty(false);
     } catch (e) {
       console.error('Failed to load spaces for floor plan:', e);
     } finally {
@@ -65,15 +81,58 @@ export function useFloorPlan() {
     ...new Set(allSpaces.map((s) => s.floor).filter((f): f is number => f != null)),
   ].sort((a, b) => a - b);
 
-  // 블록 위치 업데이트 (로컬 상태만, #63에서 서버 저장)
+  // 블록 위치 업데이트 (로컬 상태)
   const updateBlockPosition = useCallback(
     (spaceId: number, gridX: number, gridY: number) => {
       setBlocks((prev) =>
         prev.map((b) => (b.spaceId === spaceId ? { ...b, gridX, gridY } : b)),
       );
+      setDirty(true);
+      setSaveMessage(null);
     },
     [],
   );
+
+  // 배치 저장 (서버 전송)
+  const saveLayout = useCallback(async () => {
+    if (!dirty || blocks.length === 0) return;
+
+    // 변경된 블록만 필터링
+    const changed = blocks.filter((b) => {
+      const orig = originalPositions.current.get(b.spaceId);
+      return !orig || orig.x !== b.gridX || orig.y !== b.gridY;
+    });
+
+    if (changed.length === 0) {
+      setDirty(false);
+      setSaveMessage('변경된 항목이 없습니다.');
+      return;
+    }
+
+    try {
+      setSaving(true);
+      await updateSpaceLayout(
+        changed.map((b) => ({
+          spaceId: b.spaceId,
+          positionX: b.gridX,
+          positionY: b.gridY,
+        })),
+      );
+
+      // 원본 좌표 갱신
+      changed.forEach((b) => {
+        originalPositions.current.set(b.spaceId, { x: b.gridX, y: b.gridY });
+      });
+
+      setDirty(false);
+      setSaveMessage(`${changed.length}개 공간의 배치가 저장되었습니다.`);
+    } catch (e) {
+      console.error('Failed to save layout:', e);
+      setSaveMessage('저장에 실패했습니다. 다시 시도해 주세요.');
+    } finally {
+      setSaving(false);
+    }
+  }, [blocks, dirty]);
 
   return {
     blocks,
@@ -81,6 +140,10 @@ export function useFloorPlan() {
     selectedFloor,
     setSelectedFloor,
     updateBlockPosition,
+    saveLayout,
     loading,
+    saving,
+    dirty,
+    saveMessage,
   };
 }
