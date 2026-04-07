@@ -2,15 +2,17 @@
 
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { useTransition } from "react";
+import { useState, useTransition } from "react";
 import { motion } from "framer-motion";
 import { Loader2, Pencil, Ban } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { bffErrorMessageFromResponse } from "@/lib/bff-error-message";
+import { LoginRequiredModal } from "@/components/shared/LoginRequiredModal";
 
 export function VocDetailActions({ vocId, status }: { vocId: number; status: string }) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
+  const [showLoginModal, setShowLoginModal] = useState(false);
   const canMutate = status === "OPEN";
 
   function cancelVoc() {
@@ -23,6 +25,10 @@ export function VocDetailActions({ vocId, status }: { vocId: number; status: str
           method: "POST",
           credentials: "include",
         });
+        if (res.status === 401) {
+          setShowLoginModal(true);
+          return;
+        }
         if (res.ok) {
           router.refresh();
           return;
@@ -37,28 +43,31 @@ export function VocDetailActions({ vocId, status }: { vocId: number; status: str
   if (!canMutate) return null;
 
   return (
-    <div className="mt-10 flex flex-wrap items-center justify-end gap-3 border-t border-border pt-10">
-      <Link
-        href={`/vocs/${vocId}/edit`}
-        className="inline-flex items-center gap-2 rounded-xl border border-secondary bg-secondary/15 px-5 py-2.5 text-[11px] font-black uppercase tracking-wider text-secondary transition-transform hover:-translate-y-0.5"
-      >
-        <Pencil className="size-4" aria-hidden />
-        수정
-      </Link>
-      <motion.button
-        type="button"
-        disabled={pending}
-        whileHover={{ scale: 1.02 }}
-        whileTap={{ scale: 0.98 }}
-        onClick={cancelVoc}
-        className={cn(
-          "inline-flex items-center gap-2 rounded-xl border border-destructive/40 bg-destructive/10 px-5 py-2.5 text-[11px] font-black uppercase tracking-wider text-destructive",
-          pending && "opacity-60",
-        )}
-      >
-        {pending ? <Loader2 className="size-4 animate-spin" aria-hidden /> : <Ban className="size-4" aria-hidden />}
-        민원 취소
-      </motion.button>
-    </div>
+    <>
+      <LoginRequiredModal isOpen={showLoginModal} onClose={() => setShowLoginModal(false)} />
+      <div className="mt-10 flex flex-wrap items-center justify-end gap-3 border-t border-border pt-10">
+        <Link
+          href={`/vocs/${vocId}/edit`}
+          className="inline-flex items-center gap-2 rounded-xl border border-secondary bg-secondary/15 px-5 py-2.5 text-[11px] font-black uppercase tracking-wider text-secondary transition-transform hover:-translate-y-0.5"
+        >
+          <Pencil className="size-4" aria-hidden />
+          수정
+        </Link>
+        <motion.button
+          type="button"
+          disabled={pending}
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.98 }}
+          onClick={cancelVoc}
+          className={cn(
+            "inline-flex items-center gap-2 rounded-xl border border-destructive/40 bg-destructive/10 px-5 py-2.5 text-[11px] font-black uppercase tracking-wider text-destructive",
+            pending && "opacity-60",
+          )}
+        >
+          {pending ? <Loader2 className="size-4 animate-spin" aria-hidden /> : <Ban className="size-4" aria-hidden />}
+          민원 취소
+        </motion.button>
+      </div>
+    </>
   );
 }
