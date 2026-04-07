@@ -1,17 +1,28 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  // NOTE:
-  // /api/bff/*는 App Router Route Handler(src/app/api/bff/[...path]/route.ts)에서 프록시한다.
-  // rewrites로 동일 경로를 다시 프록시하면 배포 빌드 시점 값(localhost)으로 고정되어
-  // 컨테이너 환경에서 ECONNREFUSED를 유발할 수 있어 제거한다.
+  /**
+   * [hotfix] rewrites 제거
+   *
+   * 문제: rewrites의 destination은 Docker standalone 빌드 시점에 평가됨.
+   *      빌드 시 INTERNAL_BACKEND_URL 미설정 → 'http://localhost:8080' 하드코딩
+   *      → 컨테이너 런타임에서 ECONNREFUSED → 502 Bad Gateway
+   *
+   * 해결: rewrites 제거. /api/bff/* 는 Route Handler가 전담.
+   *      src/app/api/bff/[...path]/route.ts 는 런타임에 INTERNAL_BACKEND_URL을 읽음.
+   */
 
-  // 이미지 도메인 허용 (Space 이미지 등)
+  // 이미지 도메인 허용
   images: {
     remotePatterns: [
       {
         protocol: 'http',
-        hostname: 'localhost',
+        hostname: 'backend', // Docker 내부 컨테이너명
+        port: '8080',
+      },
+      {
+        protocol: 'http',
+        hostname: 'localhost', // 로컬 개발용
         port: '8080',
       },
     ],
@@ -27,3 +38,4 @@ const nextConfig: NextConfig = {
 };
 
 export default nextConfig;
+

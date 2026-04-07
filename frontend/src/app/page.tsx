@@ -102,7 +102,7 @@ export default function Home() {
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: 1, duration: 0.8 }}
             >
-              <Link href="/my-contracts" className="group relative inline-block">
+              <Link href="/rooms" className="group relative inline-block">
                 <motion.div
                   className="relative flex h-32 w-32 flex-col items-center justify-center overflow-hidden border border-primary/20 p-0 md:h-44 md:w-44"
                   animate={{
@@ -130,17 +130,19 @@ export default function Home() {
 
                   <div className="relative z-10 flex flex-col items-center justify-center">
                     <motion.span
-                      className="mb-2 text-sm font-black tracking-[0.3em] uppercase text-primary transition-colors duration-300 group-hover:text-secondary-foreground"
+                      className="mb-2 text-sm font-black tracking-[0.3em] uppercase"
+                      variants={{
+                        hover: { color: "#FFFFFF" },
+                      }}
                       transition={{ duration: 0.4 }}
                     >
-                      MY CONTRACTS
+                      EXPLORE
                     </motion.span>
                     <motion.div
                       variants={{
-                        hover: { y: -2 },
+                        hover: { color: "#FFFFFF", y: -2 },
                       }}
                       transition={{ duration: 0.4 }}
-                      className="text-primary transition-colors duration-300 group-hover:text-secondary-foreground"
                     >
                       <ArrowRight className="h-6 w-6 opacity-50" />
                     </motion.div>
@@ -157,10 +159,32 @@ export default function Home() {
         />
       </section>
 
-      {/* CURATED SPACES section hidden for focus on Contract domain */}
+      <section className="px-6 py-20 md:px-12 md:py-32 lg:px-24">
+        <div className="mx-auto max-w-[1400px]">
+          <motion.div
+            className="mb-24 flex flex-col items-baseline justify-between border-b border-primary/10 pb-8 md:flex-row"
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            viewport={{ once: true }}
+          >
+            <h2 className="text-5xl font-black tracking-tighter md:text-7xl">CURATED SPACES</h2>
+          </motion.div>
 
+          <div className="grid grid-cols-1 gap-12 md:grid-cols-12 lg:gap-24">
+            <div className="md:col-span-8">
+              <LandingFeaturedListing listing={featuredListings[0]} size="large" />
+            </div>
+            <div className="md:col-span-4 md:mt-48">
+              <LandingFeaturedListing listing={featuredListings[1]} size="small" />
+            </div>
+            <div className="md:col-span-6 md:col-start-4">
+              <LandingFeaturedListing listing={featuredListings[2]} size="medium" />
+            </div>
+          </div>
+        </div>
+      </section>
 
-      <section className="relative overflow-hidden bg-editorial py-24 text-secondary-foreground md:py-48">
+      <section className="relative overflow-hidden bg-[#030213] py-24 text-white md:py-48">
         <div className="container mx-auto px-6">
           <div className="grid grid-cols-1 items-center gap-24 md:grid-cols-2">
             <motion.div
@@ -177,9 +201,9 @@ export default function Home() {
                 </h2>
               </div>
 
-              <div className="max-w-xl space-y-12 border-t border-secondary-foreground/10 pt-12 md:pt-20">
+              <div className="max-w-xl space-y-12 border-t border-white/10 pt-12 md:pt-20">
                 <div className="group flex gap-8">
-                  <Globe className="h-8 w-8 shrink-0 text-secondary-foreground/20 transition-colors group-hover:text-accent" />
+                  <Globe className="h-8 w-8 shrink-0 text-white/20 transition-colors group-hover:text-accent" />
                   <div className="space-y-3">
                     <h4 className="text-xl font-black tracking-tight text-accent uppercase md:text-2xl">
                       지능형 보안 시스템
@@ -191,7 +215,7 @@ export default function Home() {
                 </div>
 
                 <div className="group flex gap-8">
-                  <LifeBuoy className="h-8 w-8 shrink-0 text-secondary-foreground/20 transition-colors group-hover:text-accent" />
+                  <LifeBuoy className="h-8 w-8 shrink-0 text-white/20 transition-colors group-hover:text-accent" />
                   <div className="space-y-3">
                     <h4 className="text-xl font-black tracking-tight text-accent uppercase md:text-2xl">
                       편리한 관리 서비스
@@ -203,7 +227,7 @@ export default function Home() {
                 </div>
 
                 <div className="group flex gap-8">
-                  <Zap className="h-8 w-8 shrink-0 text-secondary-foreground/20 transition-colors group-hover:text-accent" />
+                  <Zap className="h-8 w-8 shrink-0 text-white/20 transition-colors group-hover:text-accent" />
                   <div className="space-y-3">
                     <h4 className="text-xl font-black tracking-tight text-accent uppercase md:text-2xl">
                       지속 가능한 공유 가치
