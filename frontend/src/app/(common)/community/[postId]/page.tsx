@@ -1,4 +1,7 @@
+import Link from "next/link";
 import { notFound } from "next/navigation";
+import { LOGIN_REQUIRED_MESSAGE } from "@/lib/auth-messages";
+import { LoginRequiredGate } from "@/components/shared/LoginRequiredGate";
 import { bffGet } from "../_api/bff-server";
 import type { ApiResponse, PostDetail } from "../_types/community";
 import { CommunityShell } from "../_components/CommunityShell";
@@ -24,7 +27,10 @@ export default async function CommunityPostDetailPage({ params }: { params: Para
     return (
       <CommunityShell>
         <MotionEnter>
-          <p className="mx-auto max-w-3xl text-center font-medium text-destructive">로그인이 필요합니다.</p>
+          <div className="mx-auto max-w-3xl text-center">
+            <LoginRequiredGate />
+            <p className="font-medium text-destructive">{LOGIN_REQUIRED_MESSAGE}</p>
+          </div>
         </MotionEnter>
       </CommunityShell>
     );
