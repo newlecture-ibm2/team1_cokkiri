@@ -498,10 +498,10 @@ public class DataInitializer implements ApplicationRunner {
 
     /** {@code data-dev.sql} 과 동일한 공간·상세·이미지 시드. IoT 데모 기기 부착용으로 301호를 반환합니다. */
     private SpaceEntity seedSpacesFromDevDataset() {
-        RoomTypeEntity singleType = roomTypeJpaRepository.save(RoomTypeEntity.builder().code("SINGLE").name("싱글룸").isSystemDefault(true).build());
-        RoomTypeEntity doubleType = roomTypeJpaRepository.save(RoomTypeEntity.builder().code("DOUBLE").name("더블룸").isSystemDefault(true).build());
-        RoomTypeEntity studioType = roomTypeJpaRepository.save(RoomTypeEntity.builder().code("STUDIO").name("스튜디오").isSystemDefault(true).build());
-        RoomTypeEntity suiteType = roomTypeJpaRepository.save(RoomTypeEntity.builder().code("SUITE").name("스위트").isSystemDefault(true).build());
+        RoomTypeEntity singleType = getOrCreateRoomType("SINGLE", "싱글룸");
+        RoomTypeEntity doubleType = getOrCreateRoomType("DOUBLE", "더블룸");
+        RoomTypeEntity studioType = getOrCreateRoomType("STUDIO", "스튜디오");
+        RoomTypeEntity suiteType = getOrCreateRoomType("SUITE", "스위트");
 
         SpaceEntity s301 = savePrivateSpace(
                 "301호", 3, new BigDecimal("25.00"), "[\"에어컨\",\"냉장고\"]", "남향 채광 좋은 싱글룸",
@@ -655,5 +655,15 @@ public class DataInitializer implements ApplicationRunner {
                 .sortOrder(sortOrder)
                 .isThumbnail(thumbnail)
                 .build());
+    }
+
+    private RoomTypeEntity getOrCreateRoomType(String code, String name) {
+        return roomTypeJpaRepository.findByCode(code)
+                .orElseGet(() -> roomTypeJpaRepository.save(
+                        RoomTypeEntity.builder()
+                                .code(code)
+                                .name(name)
+                                .isSystemDefault(true)
+                                .build()));
     }
 }
