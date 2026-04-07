@@ -19,8 +19,8 @@ import java.time.LocalDate;
  * - contract_id 또는 reservation_id 중 하나는 반드시 존재 (DB CHECK 제약)
  */
 @Entity
-@Table(name = "payment")
-@SQLDelete(sql = "UPDATE payment SET deleted_at = CURRENT_TIMESTAMP WHERE payment_id = ?")
+@Table(name = "payments")
+@SQLDelete(sql = "UPDATE payments SET deleted_at = CURRENT_TIMESTAMP WHERE payment_id = ?")
 @SQLRestriction("deleted_at IS NULL")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)

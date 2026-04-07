@@ -23,14 +23,17 @@ import java.util.List;
  * - 조회 시 deleted_at IS NULL 자동 필터링
  */
 @Entity
-@Table(name = "contract")
-@SQLDelete(sql = "UPDATE contract SET deleted_at = CURRENT_TIMESTAMP WHERE contract_id = ?")
+@Table(name = "contracts")
+@SQLDelete(sql = "UPDATE contracts SET deleted_at = CURRENT_TIMESTAMP WHERE contract_id = ?")
 @SQLRestriction("deleted_at IS NULL")
 @Getter
 @Builder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class ContractEntity extends BaseEntity {
+
+    @Version
+    private Long version;
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -110,6 +113,14 @@ public class ContractEntity extends BaseEntity {
     @Column(name = "contracted_at")
     private OffsetDateTime contractedAt;
 
+    // ── 전자서명 ──
+
+    @Column(name = "signature_data", columnDefinition = "TEXT")
+    private String signatureData;
+
+    @Column(name = "terms_agreed_at")
+    private OffsetDateTime termsAgreedAt;
+
     // ── 상태 변경 메서드 ──
 
     public void applyDraft(LocalDate desiredStartDate, Integer desiredDurationMonths, 
@@ -145,6 +156,13 @@ public class ContractEntity extends BaseEntity {
 
     public void activate() {
         this.status = ContractStatus.ACTIVE;
+    }
+
+    public void sign(String signatureData) {
+        this.status = ContractStatus.ACTIVE;
+        this.signatureData = signatureData;
+        this.termsAgreedAt = OffsetDateTime.now();
+        this.contractedAt = OffsetDateTime.now();
     }
 
     public void terminate() {
