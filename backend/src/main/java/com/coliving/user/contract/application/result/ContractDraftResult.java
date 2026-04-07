@@ -4,6 +4,7 @@ import com.coliving.user.contract.model.ContractStatus;
 import lombok.Builder;
 import lombok.Getter;
 import java.time.LocalDate;
+import java.time.OffsetDateTime;
 
 @Getter
 @Builder
@@ -18,4 +19,6 @@ public class ContractDraftResult {
     private final String usagePurpose;
     private final String requestNote;
     private final Boolean privacyAgreed;
+    private final String rejectedReason;
+    private final OffsetDateTime createdAt;
 }

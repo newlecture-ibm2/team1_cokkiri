@@ -19,4 +19,16 @@ export interface ContractDraftResult {
   usagePurpose: string;
   requestNote: string;
   privacyAgreed: boolean;
+  rejectedReason?: string;
+  createdAt: string;
 }
+
+export interface ContractSignResponse {
+  contractId: number;
+  status: string;
+  role: string;
+  accessToken: string;
+  refreshToken: string;
+  message: string;
+}
+

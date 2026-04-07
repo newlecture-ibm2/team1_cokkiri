@@ -46,6 +46,7 @@ public class SecurityConfig {
                         .permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/rooms/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/posts", "/api/posts/*").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/facilities").permitAll() // §6.1 🔓 Public
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html").permitAll()
 
                         // ADMIN only

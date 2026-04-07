@@ -40,4 +40,9 @@ public interface ContractJpaRepository extends JpaRepository<ContractEntity, Lon
      * 특정 공간에 ACTIVE 계약이 존재하는지 확인
      */
     boolean existsBySpaceIdAndStatus(Long spaceId, ContractStatus status);
+
+    /**
+     * 특정 상태의 모든 계약 목록 조회 (관리자용)
+     */
+    List<ContractEntity> findByStatus(ContractStatus status);
 }
