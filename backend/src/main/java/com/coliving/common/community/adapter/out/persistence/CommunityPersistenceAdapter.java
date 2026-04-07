@@ -177,11 +177,12 @@ public class CommunityPersistenceAdapter implements CommunityRepositoryPort {
     private Post mapPostEntityToModel(PostEntity entity) {
         List<PostAttachment> attachments = parseAttachments(entity.getAttachments());
         List<PostLink> links = parseLinks(entity.getLinks());
+        PostCategory category = parseCategory(entity.getCategory());
 
         return Post.builder()
                 .postId(entity.getPostId())
                 .userId(entity.getUserId())
-                .category(PostCategory.valueOf(entity.getCategory()))
+                .category(category)
                 .title(entity.getTitle())
                 .content(entity.getContent())
                 .attachments(attachments)
@@ -192,6 +193,14 @@ public class CommunityPersistenceAdapter implements CommunityRepositoryPort {
                 .createdAt(entity.getCreatedAt())
                 .updatedAt(entity.getUpdatedAt())
                 .build();
+    }
+
+    private PostCategory parseCategory(String rawCategory) {
+        try {
+            return PostCategory.valueOf(rawCategory);
+        } catch (Exception e) {
+            throw new BusinessException(ErrorCode.VALIDATION_ERROR);
+        }
     }
 
     private JsonNode toJsonArray(List<?> items) {

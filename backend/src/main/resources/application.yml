@@ -5,7 +5,10 @@ app:
 spring:
   profiles.active: dev
   jpa:
-    hibernate.ddl-auto: validate
+    # 마이그레이션 도구(Flyway 등) 미사용 → JPA Entity가 스키마를 직접 관리
+    # update: 엔티티 변경 시 컬럼/테이블 자동 추가 (삭제는 안 함)
+    # 운영 환경에서 마이그레이션 도구를 도입하면 validate로 전환 권장
+    hibernate.ddl-auto: update
     open-in-view: false
     properties:
       hibernate:

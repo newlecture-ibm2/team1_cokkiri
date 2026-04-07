@@ -51,12 +51,12 @@ public class CommunityController {
             @RequestParam(value = "s", defaultValue = "20") int size,
             @RequestParam(required = false, defaultValue = "createdAt,desc") String sort
     ) {
-        ActorInfo actor = getActorInfo();
+        ActorInfo actor = getOptionalActorInfo();
         PostCategory parsedCategory = parseCategoryOrNull(category);
 
         GetPostListCommand command = GetPostListCommand.builder()
-                .actorId(actor.actorId)
-                .actorRole(actor.role)
+                .actorId(actor != null ? actor.actorId : null)
+                .actorRole(actor != null ? actor.role : null)
                 .category(parsedCategory)
                 .page(page)
                 .size(size)
@@ -69,7 +69,7 @@ public class CommunityController {
                 .content(result.getContent().stream()
                         .map(item -> PostListItemResponseDto.builder()
                                 .postId(item.getPostId())
-                                .category(item.getCategory().name())
+                                .category(item.getCategory() != null ? item.getCategory().name() : null)
                                 .title(item.getTitle())
                                 .authorUserId(item.getAuthorUserId())
                                 .viewCount(item.getViewCount())
@@ -89,11 +89,11 @@ public class CommunityController {
 
     @GetMapping("/api/posts/{postId}")
     public ApiResponse<PostDetailResponseDto> getPostDetail(@PathVariable Long postId) {
-        ActorInfo actor = getActorInfo();
+        ActorInfo actor = getOptionalActorInfo();
 
         GetPostDetailCommand command = GetPostDetailCommand.builder()
-                .actorId(actor.actorId)
-                .actorRole(actor.role)
+                .actorId(actor != null ? actor.actorId : null)
+                .actorRole(actor != null ? actor.role : null)
                 .postId(postId)
                 .build();
 
@@ -111,7 +111,7 @@ public class CommunityController {
 
         PostDetailResponseDto response = PostDetailResponseDto.builder()
                 .postId(result.getPostId())
-                .category(result.getCategory().name())
+                .category(result.getCategory() != null ? result.getCategory().name() : null)
                 .title(result.getTitle())
                 .content(result.getContent())
                 .attachments(result.getAttachments())
@@ -281,6 +281,28 @@ public class CommunityController {
 
         ActorRole role = extractRole(authentication);
         return new ActorInfo(actorId, role);
+    }
+
+    private ActorInfo getOptionalActorInfo() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || authentication.getName() == null
+                || "anonymousUser".equals(authentication.getName())) {
+            return null;
+        }
+
+        long actorId;
+        try {
+            actorId = Long.parseLong(authentication.getName());
+        } catch (NumberFormatException e) {
+            return null;
+        }
+
+        try {
+            ActorRole role = extractRole(authentication);
+            return new ActorInfo(actorId, role);
+        } catch (BusinessException e) {
+            return null;
+        }
     }
 
     private ActorRole extractRole(Authentication authentication) {

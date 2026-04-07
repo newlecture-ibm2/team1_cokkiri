@@ -28,4 +28,10 @@ jwt:
   refresh-expiration: 604800000
 
 mock-iot:
-  base-url: http://mock-iot:8000
+  # 로컬 환경에서는 Docker 네트워크(mock-iot)가 아닌 localhost로 접근
+  base-url: http://localhost:8000
+
+logging:
+  level:
+    com.coliving: DEBUG
+    org.hibernate.SQL: DEBUG

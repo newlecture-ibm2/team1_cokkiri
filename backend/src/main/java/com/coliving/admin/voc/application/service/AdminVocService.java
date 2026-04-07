@@ -26,9 +26,13 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Set;
 
 @Service
 public class AdminVocService implements AdminVocUseCase {
+    private static final Set<String> ALLOWED_SORT_PROPERTIES = Set.of(
+            "createdAt", "updatedAt", "status"
+    );
 
     private final VocRepositoryPort vocRepositoryPort;
     private final CreateNotificationUseCase createNotificationUseCase;
@@ -42,8 +46,10 @@ public class AdminVocService implements AdminVocUseCase {
     @Override
     @Transactional(readOnly = true)
     public AdminVocListResult listVocs(ListAdminVocsCommand command) {
+        int safePage = Math.max(0, command.getPage());
+        int safeSize = normalizeSize(command.getSize());
         Sort sort = parseSort(command.getSort());
-        PageRequest pageRequest = PageRequest.of(command.getPage(), command.getSize(), sort);
+        PageRequest pageRequest = PageRequest.of(safePage, safeSize, sort);
 
         Page<Voc> page = vocRepositoryPort.findPageForAdmin(command.getStatus(), pageRequest);
 
@@ -144,6 +150,18 @@ public class AdminVocService implements AdminVocUseCase {
                 ? Sort.Direction.ASC
                 : Sort.Direction.DESC;
 
-        return Sort.by(direction, property.isBlank() ? "createdAt" : property);
+        String safeProperty = property.isBlank() ? "createdAt" : property;
+        if (!ALLOWED_SORT_PROPERTIES.contains(safeProperty)) {
+            safeProperty = "createdAt";
+        }
+
+        return Sort.by(direction, safeProperty);
+    }
+
+    private int normalizeSize(int size) {
+        if (size <= 0) {
+            return 20;
+        }
+        return Math.min(size, 100);
     }
 }
