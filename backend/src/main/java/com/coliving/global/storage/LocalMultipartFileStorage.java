@@ -4,6 +4,7 @@ import com.coliving.common.community.model.PostAttachment;
 import com.coliving.common.voc.model.VocAttachment;
 import com.coliving.global.error.BusinessException;
 import com.coliving.global.error.ErrorCode;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
@@ -20,7 +21,11 @@ import java.util.UUID;
 @Component
 public class LocalMultipartFileStorage {
 
-    private final Path baseDir = Paths.get("data", "uploads").toAbsolutePath().normalize();
+    private final Path baseDir;
+
+    public LocalMultipartFileStorage(@Value("${app.upload.dir:data/uploads}") String uploadDir) {
+        this.baseDir = Paths.get(uploadDir).toAbsolutePath().normalize();
+    }
 
     public List<PostAttachment> storePostFiles(List<MultipartFile> files) {
         return storeFiles(files, "community", this::toPostAttachment);

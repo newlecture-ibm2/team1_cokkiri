@@ -24,6 +24,10 @@ services:
       - DB_PASSWORD=${DB_PASSWORD}
       - JWT_SECRET=${JWT_SECRET}
       - MOCK_IOT_URL=${MOCK_IOT_URL:-http://mock-iot:8000}
+      - APP_UPLOAD_DIR=${APP_UPLOAD_DIR:-/var/lib/cokkiri/uploads}
+      - APP_DEMO_DATA_ENABLED=${APP_DEMO_DATA_ENABLED:-false}
+    volumes:
+      - uploads-data:/var/lib/cokkiri/uploads
     depends_on:
       db: { condition: service_healthy }
 
@@ -56,3 +60,5 @@ services:
 volumes:
   postgres-data:
     name: team1-cokkiri-pg-data
+  uploads-data:
+    name: team1-cokkiri-uploads-data

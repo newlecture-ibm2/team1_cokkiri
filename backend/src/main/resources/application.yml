@@ -2,7 +2,8 @@ app:
   demo-data:
     enabled: false
   upload:
-    dir: uploads/spaces
+    # 업로드 파일 루트 경로 (community/voc 하위 폴더는 코드에서 추가)
+    dir: data/uploads
 
 spring:
   profiles.active: dev

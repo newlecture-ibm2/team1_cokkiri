@@ -74,7 +74,7 @@ import java.util.Optional;
  */
 @Slf4j
 @Component
-@Profile({"local", "dev", "prod"})
+@Profile({"local", "dev"})
 @ConditionalOnProperty(name = "app.demo-data.enabled", havingValue = "true")
 @Order(100)
 @RequiredArgsConstructor
