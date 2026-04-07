@@ -1,4 +1,5 @@
 import type { ApiResponse } from "@/types/api";
+import { LOGIN_REQUIRED_MESSAGE } from "@/lib/auth-messages";
 
 const DEFAULT_SAVE_FAIL = "저장하지 못했습니다. 잠시 후 다시 시도해 주세요.";
 
@@ -7,6 +8,9 @@ export function messageFromBffResponse<T>(
   json: ApiResponse<T>,
   fallback: string = DEFAULT_SAVE_FAIL,
 ): string {
+  if (json.error_code === "UNAUTHORIZED") {
+    return LOGIN_REQUIRED_MESSAGE;
+  }
   const m = json.message?.trim();
   if (m) return m;
   return fallback;
@@ -20,6 +24,9 @@ export async function bffErrorMessageFromResponse(
   res: Response,
   fallback: string = DEFAULT_SAVE_FAIL,
 ): Promise<string> {
+  if (res.status === 401) {
+    return LOGIN_REQUIRED_MESSAGE;
+  }
   try {
     const json = (await res.json()) as ApiResponse<unknown>;
     return messageFromBffResponse(json, fallback);

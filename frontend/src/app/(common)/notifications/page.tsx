@@ -1,5 +1,7 @@
 import Link from "next/link";
 import { Bell } from "lucide-react";
+import { LOGIN_REQUIRED_MESSAGE } from "@/lib/auth-messages";
+import { LoginRequiredGate } from "@/components/shared/LoginRequiredGate";
 import { bffGet } from "./_api/bff-server";
 
 type ApiResponse<T> = {
@@ -51,7 +53,7 @@ export default async function NotificationsPage({ searchParams }: { searchParams
   let error: string | null = null;
 
   if (res.status === 401) {
-    error = "로그인이 필요합니다.";
+    error = LOGIN_REQUIRED_MESSAGE;
   } else if (!res.ok) {
     error = "알림을 불러오지 못했습니다.";
   } else {
@@ -73,12 +75,22 @@ export default async function NotificationsPage({ searchParams }: { searchParams
       </header>
 
       {error && (
+        <>
+        {error === LOGIN_REQUIRED_MESSAGE ? <LoginRequiredGate /> : null}
         <div
           className="rounded-xl border border-destructive/40 bg-destructive/10 px-4 py-3 text-sm font-medium text-destructive"
           role="alert"
         >
-          {error}
+          <p>{error}</p>
+          {error === LOGIN_REQUIRED_MESSAGE ? (
+            <p className="mt-2 text-sm">
+              <Link href="/login" className="font-black text-secondary underline underline-offset-4">
+                로그인 페이지로 이동
+              </Link>
+            </p>
+          ) : null}
         </div>
+        </>
       )}
 
       {list && (

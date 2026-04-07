@@ -8,6 +8,8 @@ import { motion } from "framer-motion";
 import { ArrowLeft, ChevronDown, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { messageFromBffResponse } from "@/lib/bff-error-message";
+import { LoginRequiredModal } from "@/components/shared/LoginRequiredModal";
+import { LOGIN_REQUIRED_MESSAGE } from "@/lib/auth-messages";
 import { plainTextFromHtml } from "@/lib/post-html";
 import type { ApiResponse } from "@/types/api";
 import {
@@ -55,6 +57,7 @@ export function VocEditForm({ initial }: Props) {
   const [newFiles, setNewFiles] = useState<FileList | null>(null);
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
+  const [showLoginModal, setShowLoginModal] = useState(false);
   const [showCancelModal, setShowCancelModal] = useState(false);
 
   function removeAttachment(index: number) {
@@ -109,6 +112,11 @@ export function VocEditForm({ initial }: Props) {
           credentials: "include",
           body: formData,
         });
+        if (res.status === 401) {
+          setError(LOGIN_REQUIRED_MESSAGE);
+          setShowLoginModal(true);
+          return;
+        }
         let json: ApiResponse<unknown>;
         try {
           json = await res.json();
@@ -132,6 +140,7 @@ export function VocEditForm({ initial }: Props) {
 
   return (
     <form onSubmit={submit} className="mx-auto max-w-2xl space-y-10">
+      <LoginRequiredModal isOpen={showLoginModal} onClose={() => setShowLoginModal(false)} />
       <Link
         href={`/vocs/${initial.vocId}`}
         className="group inline-flex items-center gap-2 font-black text-xs uppercase tracking-[0.3em] text-secondary transition-colors hover:text-foreground"

@@ -1,5 +1,6 @@
 // src/lib/api.ts
 import { ApiResponse } from '@/types/api';
+import { LOGIN_REQUIRED_MESSAGE } from '@/lib/auth-messages';
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL || '/api';
 
@@ -36,7 +37,7 @@ export async function apiFetch<T>(
       );
     }
     if (response.status === 401) {
-      throw new ApiError('로그인이 필요합니다.', 'UNAUTHORIZED');
+      throw new ApiError(LOGIN_REQUIRED_MESSAGE, 'UNAUTHORIZED');
     }
     if (looksJson && trimmed.length > 0) {
       const data = parseApiJson<T>(trimmed);

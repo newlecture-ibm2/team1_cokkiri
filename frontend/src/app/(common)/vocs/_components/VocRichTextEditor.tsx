@@ -6,6 +6,8 @@ import type Toolbar from "quill/modules/toolbar";
 import "quill/dist/quill.snow.css";
 import { apiFileUrlToBffPath } from "@/lib/bff-file-url";
 import { messageFromBffResponse } from "@/lib/bff-error-message";
+import { LoginRequiredModal } from "@/components/shared/LoginRequiredModal";
+import { LOGIN_REQUIRED_MESSAGE } from "@/lib/auth-messages";
 import { VOC_BODY_HTML_MAX_LENGTH } from "@/lib/vocs-html";
 import type { ApiResponse } from "@/types/api";
 
@@ -27,6 +29,7 @@ export function VocRichTextEditor({ value, onChange, placeholder, id }: Props) {
   onChangeRef.current = onChange;
   const lastEmittedRef = useRef("");
   const [uploadError, setUploadError] = useState<string | null>(null);
+  const [showLoginModal, setShowLoginModal] = useState(false);
 
   useEffect(() => {
     const wrapper = wrapperRef.current;
@@ -69,6 +72,11 @@ export function VocRichTextEditor({ value, onChange, placeholder, id }: Props) {
             body: fd,
             credentials: "include",
           });
+          if (res.status === 401) {
+            setUploadError(LOGIN_REQUIRED_MESSAGE);
+            setShowLoginModal(true);
+            return;
+          }
           let json: ApiResponse<{ url: string } | null>;
           try {
             json = await res.json();
@@ -141,6 +149,7 @@ export function VocRichTextEditor({ value, onChange, placeholder, id }: Props) {
 
   return (
     <div className="space-y-2">
+      <LoginRequiredModal isOpen={showLoginModal} onClose={() => setShowLoginModal(false)} />
       <div
         className="voc-quill [&_.ql-toolbar]:rounded-t-xl [&_.ql-toolbar]:border-border [&_.ql-toolbar]:bg-surface [&_.ql-container]:rounded-b-xl [&_.ql-container]:border-border [&_.ql-container]:font-sans [&_.ql-editor]:min-h-[220px] [&_.ql-editor]:px-4 [&_.ql-editor]:py-3 [&_.ql-editor]:font-medium [&_.ql-editor]:text-base [&_.ql-editor]:text-foreground [&_.ql-stroke]:stroke-muted-foreground [&_.ql-fill]:fill-muted-foreground"
         ref={wrapperRef}
