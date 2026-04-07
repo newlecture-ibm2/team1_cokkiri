@@ -23,8 +23,8 @@ import java.util.List;
  * - 조회 시 deleted_at IS NULL 자동 필터링
  */
 @Entity
-@Table(name = "contract")
-@SQLDelete(sql = "UPDATE contract SET deleted_at = CURRENT_TIMESTAMP WHERE contract_id = ?")
+@Table(name = "contracts")
+@SQLDelete(sql = "UPDATE contracts SET deleted_at = CURRENT_TIMESTAMP WHERE contract_id = ?")
 @SQLRestriction("deleted_at IS NULL")
 @Getter
 @Builder
