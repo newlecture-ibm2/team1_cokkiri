@@ -44,8 +44,8 @@ public class Contract {
     private OffsetDateTime createdAt;
 
     public void applyDraft(LocalDate desiredStartDate, Integer desiredDurationMonths,
-                           String address, String bankAccount,
-                           String usagePurpose, String requestNote, Boolean privacyAgreed) {
+            String address, String bankAccount,
+            String usagePurpose, String requestNote, Boolean privacyAgreed) {
         this.desiredStartDate = desiredStartDate;
         this.desiredDurationMonths = desiredDurationMonths;
         this.address = address;
@@ -55,13 +55,12 @@ public class Contract {
         this.privacyAgreed = privacyAgreed;
     }
 
-
     public void updateStatus(ContractStatus status) {
         this.status = status;
     }
 
     public void approve(Long approvedBy, LocalDate startDate, LocalDate endDate,
-                        BigDecimal monthlyRent, BigDecimal deposit, String specialTerms) {
+            BigDecimal monthlyRent, BigDecimal deposit, String specialTerms) {
         this.status = ContractStatus.APPROVED;
         this.approvedBy = approvedBy;
         this.startDate = startDate;
@@ -76,5 +75,12 @@ public class Contract {
         this.status = ContractStatus.REJECTED;
         this.approvedBy = approvedBy;
         this.rejectedReason = rejectedReason;
+    }
+
+    public void sign(String signatureData) {
+        this.status = ContractStatus.ACTIVE;
+        this.contractedAt = OffsetDateTime.now();
+        // 실제 서명 데이터는 history나 별도 테이블에 저장될 수 있으나 
+        // 현재는 status 변경 및 체결 시점 기록을 핵심 행위로 간주함
     }
 }
