@@ -23,7 +23,7 @@ export default async function CommunityPostDetailPage({ params }: { params: Para
   const res = await bffGet(`posts/${id}`);
 
   if (res.status === 404) notFound();
-  if (res.status === 401) {
+  if (res.status === 401 || res.status === 403) {
     return (
       <CommunityShell>
         <MotionEnter>

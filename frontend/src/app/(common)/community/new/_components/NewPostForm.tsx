@@ -96,7 +96,7 @@ export function NewPostForm() {
           credentials: "include",
           body: formData,
         });
-        if (res.status === 401) {
+        if (res.status === 401 || res.status === 403) {
           setSubmitError(LOGIN_REQUIRED_MESSAGE);
           setShowLoginModal(true);
           return;

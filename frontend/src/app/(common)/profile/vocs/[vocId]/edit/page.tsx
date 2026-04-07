@@ -21,7 +21,7 @@ export default async function ProfileVocEditPage({ params }: { params: Params })
   if (Number.isNaN(id)) notFound();
 
   const res = await bffGet(`vocs/${id}`);
-  if (res.status === 401) {
+  if (res.status === 401 || res.status === 403) {
     return (
       <VocShell>
         <MotionEnter>

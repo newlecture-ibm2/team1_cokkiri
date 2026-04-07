@@ -25,7 +25,7 @@ export function VocDetailActions({ vocId, status }: { vocId: number; status: str
           method: "POST",
           credentials: "include",
         });
-        if (res.status === 401) {
+        if (res.status === 401 || res.status === 403) {
           setShowLoginModal(true);
           return;
         }

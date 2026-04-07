@@ -72,7 +72,7 @@ export function CommentItem({
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ content: text }),
         });
-        if (res.status === 401) {
+        if (res.status === 401 || res.status === 403) {
           setShowLoginModal(true);
           return;
         }
@@ -99,7 +99,7 @@ export function CommentItem({
           method: "DELETE",
           credentials: "include",
         });
-        if (res.status === 401) {
+        if (res.status === 401 || res.status === 403) {
           setShowLoginModal(true);
           return;
         }
