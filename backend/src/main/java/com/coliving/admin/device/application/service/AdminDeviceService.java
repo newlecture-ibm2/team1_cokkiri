@@ -1,5 +1,6 @@
 package com.coliving.admin.device.application.service;
 
+import com.coliving.admin.device.application.command.ControlAdminDeviceCommand;
 import com.coliving.admin.device.application.command.CreateAdminDeviceCommand;
 import com.coliving.admin.device.application.command.DeleteAdminDeviceCommand;
 import com.coliving.admin.device.application.command.UpdateAdminDeviceActiveCommand;
@@ -8,36 +9,39 @@ import com.coliving.admin.device.application.command.UpdateAdminDeviceStatusComm
 import com.coliving.admin.device.application.port.in.AdminDeviceUseCase;
 import com.coliving.admin.device.application.port.in.CreateAdminDeviceUseCase;
 import com.coliving.admin.device.application.port.out.AdminDeviceRepositoryPort;
+import com.coliving.admin.device.application.result.ControlAdminDeviceResult;
 import com.coliving.admin.device.application.result.CreateAdminDeviceResult;
 import com.coliving.admin.device.model.AdminDevice;
 import com.coliving.admin.device.model.DeviceStatus;
 import com.coliving.global.error.BusinessException;
 import com.coliving.global.error.ErrorCode;
+import com.coliving.infra.iot.MockIotClient;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class AdminDeviceService implements CreateAdminDeviceUseCase, AdminDeviceUseCase {
 
     private final AdminDeviceRepositoryPort adminDeviceRepositoryPort;
+    private final MockIotClient mockIotClient;
 
     // ── 기기 등록 (Create) ──
 
     @Override
     @Transactional
     public CreateAdminDeviceResult execute(CreateAdminDeviceCommand command) {
-        // MAC 주소 중복 검증
         if (command.macAddress() != null && !command.macAddress().isBlank()) {
             if (adminDeviceRepositoryPort.existsByMacAddress(command.macAddress())) {
                 throw new BusinessException(ErrorCode.DUPLICATE_MAC_ADDRESS);
             }
         }
 
-        // DOOR_LOCK은 PRIVATE 공간에만 설치 가능 (ERD 비즈니스 규칙 #14)
         if (command.deviceTypeId() != null) {
             validateDoorLockSpaceType(command.spaceId(), command.deviceTypeId());
         }
@@ -76,7 +80,6 @@ public class AdminDeviceService implements CreateAdminDeviceUseCase, AdminDevice
         AdminDevice existing = adminDeviceRepositoryPort.findById(command.deviceId())
                 .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND, "기기를 찾을 수 없습니다"));
 
-        // MAC 주소 중복 검증 (자기 자신 제외)
         if (command.macAddress() != null && !command.macAddress().isBlank()) {
             if (adminDeviceRepositoryPort.existsByMacAddressAndDeviceIdNot(
                     command.macAddress(), command.deviceId())) {
@@ -84,7 +87,6 @@ public class AdminDeviceService implements CreateAdminDeviceUseCase, AdminDevice
             }
         }
 
-        // DOOR_LOCK 공간 검증 — 공간이 변경되는 경우에도 PRIVATE만 허용
         if (!existing.spaceId().equals(command.spaceId())) {
             validateDoorLockSpaceType(command.spaceId(), existing.deviceTypeId());
         }
@@ -116,7 +118,6 @@ public class AdminDeviceService implements CreateAdminDeviceUseCase, AdminDevice
         adminDeviceRepositoryPort.findById(command.deviceId())
                 .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND, "기기를 찾을 수 없습니다"));
 
-        // 상태값 유효성 검증
         try {
             DeviceStatus.valueOf(command.status());
         } catch (IllegalArgumentException e) {
@@ -137,12 +138,10 @@ public class AdminDeviceService implements CreateAdminDeviceUseCase, AdminDevice
         AdminDevice device = adminDeviceRepositoryPort.findById(command.deviceId())
                 .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND, "기기를 찾을 수 없습니다"));
 
-        // 활성 상태 기기 삭제 불가
         if (Boolean.TRUE.equals(device.isActive())) {
             throw new BusinessException(ErrorCode.DEVICE_ACTIVE);
         }
 
-        // 제어 이력 있는 기기 삭제 불가
         if (adminDeviceRepositoryPort.hasControlLogs(command.deviceId())) {
             throw new BusinessException(ErrorCode.CONTROL_LOG_EXISTS);
         }
@@ -150,12 +149,69 @@ public class AdminDeviceService implements CreateAdminDeviceUseCase, AdminDevice
         adminDeviceRepositoryPort.softDelete(command.deviceId());
     }
 
+    /**
+     * 기기 제어 (ADM-DEV-04)
+     * RES-DEV-02와 동일 흐름이나 ADMIN은 space_id 제한 없이 전체 접근
+     * CONTROL_LOG actor_type=ADMIN
+     *
+     * 검증 순서:
+     *   1. 기기 존재 확인
+     *   2. 기기 활성화(isActive) 상태 검증
+     *   3. 기기 온라인(ONLINE) 상태 검증
+     *   4. MockIoT 명령 전송
+     *   5. CONTROL_LOG 감사 이력 기록 (성공/실패 모두)
+     */
+    @Override
+    @Transactional
+    public ControlAdminDeviceResult controlDevice(ControlAdminDeviceCommand command) {
+        // 1. 기기 존재 확인
+        AdminDevice device = adminDeviceRepositoryPort.findById(command.deviceId())
+                .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND, "기기를 찾을 수 없습니다"));
+
+        // 2. 기기 활성화 상태 검증
+        if (!Boolean.TRUE.equals(device.isActive())) {
+            throw new BusinessException(ErrorCode.DEVICE_INACTIVE);
+        }
+
+        // 3. 기기 온라인 상태 검증
+        if ("OFFLINE".equals(device.status()) || "ERROR".equals(device.status())) {
+            throw new BusinessException(ErrorCode.DEVICE_OFFLINE);
+        }
+
+        // 4. MockIoT 제어 명령 전송
+        boolean success = mockIotClient.sendCommand(
+                command.deviceId(), command.command(), command.params());
+
+        // 5. CONTROL_LOG 감사 이력 기록 (성공/실패 모두 기록)
+        adminDeviceRepositoryPort.saveControlLog(
+                command.deviceId(),
+                command.userId(),
+                "ADMIN",
+                command.command(),
+                command.params(),
+                success ? "SUCCESS" : "FAILURE",
+                success ? null : "IoT 통신 실패",
+                command.correlationId()
+        );
+
+        if (!success) {
+            throw new BusinessException(ErrorCode.IOT_COMMUNICATION_FAIL);
+        }
+
+        return new ControlAdminDeviceResult(
+                command.deviceId(),
+                command.command(),
+                true,
+                "기기 제어가 완료되었습니다"
+        );
+    }
+
     // ── DOOR_LOCK은 PRIVATE 공간에만 설치 가능 (ERD 비즈니스 규칙 #14) ──
 
     private void validateDoorLockSpaceType(Long spaceId, Long deviceTypeId) {
         String deviceTypeCode = adminDeviceRepositoryPort.findDeviceTypeCodeById(deviceTypeId);
         if (!"DOOR_LOCK".equals(deviceTypeCode)) {
-            return; // DOOR_LOCK이 아니면 검증 불필요
+            return;
         }
 
         String spaceType = adminDeviceRepositoryPort.findSpaceTypeById(spaceId);

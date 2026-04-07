@@ -7,6 +7,8 @@ import type {
   DeviceType,
   SaveDeviceTypeRequest,
   Space,
+  ControlAdminDeviceRequest,
+  ControlAdminDeviceResponse,
 } from "../_types";
 
 // ── Device CRUD ──
@@ -72,6 +74,18 @@ export async function updateDeviceType(id: number, data: SaveDeviceTypeRequest) 
 export async function deleteDeviceType(id: number) {
   return apiFetch<void>(`/admin/device-types/${id}`, {
     method: "DELETE",
+  });
+}
+
+// ── Device Control (ADM-DEV-04) ──
+
+export async function controlAdminDevice(
+  deviceId: number,
+  data: ControlAdminDeviceRequest
+) {
+  return apiFetch<ControlAdminDeviceResponse>(`/admin/devices/${deviceId}/control`, {
+    method: "POST",
+    body: JSON.stringify(data),
   });
 }
 
