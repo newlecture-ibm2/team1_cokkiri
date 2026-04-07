@@ -34,7 +34,7 @@ export function AdminVocListCard({ item }: { item: AdminVocListItem }) {
           />
           <div className="min-w-0 space-y-2">
             <p className="font-black text-[10px] uppercase tracking-[0.25em] text-muted-foreground">
-              {adminVocCategoryLabel(item.category)} · 사용자 #{item.userId}
+              {adminVocCategoryLabel(item.category)} · 회원 ID {item.userId}
             </p>
             <h2 className="font-black text-lg tracking-tight text-balance text-foreground group-hover:text-secondary md:text-xl">
               {item.title}

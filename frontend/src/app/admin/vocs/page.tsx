@@ -52,14 +52,14 @@ export default async function AdminVocListPage({ searchParams }: { searchParams:
               <span className="underline decoration-secondary decoration-2 underline-offset-[0.18em]">관리</span>
             </h1>
             <p className="max-w-xl font-medium tracking-tight text-balance text-foreground/85 md:text-lg">
-              접수·처리 중·완료 건을 조회하고 답변 및 처리 완료를 등록합니다.
+              전체 입주민 민원을 조회합니다. 답변 등록과 처리 완료는 각 건 상세에서 진행합니다.
             </p>
           </div>
           <Link
-            href="/vocs"
+            href="/profile/vocs"
             className="shrink-0 rounded-xl bg-primary px-7 py-4 text-center text-sm font-black uppercase tracking-wider text-white transition-all hover:-translate-y-0.5 hover:bg-primary/90 hover:shadow-md md:self-start"
           >
-            입주민 민원 화면
+            내 민원 화면(미리보기)
           </Link>
         </header>
 
