@@ -3,6 +3,8 @@
 import { useEffect, useState, useTransition } from "react";
 import Link from "next/link";
 import { MessageSquare, Trash2 } from "lucide-react";
+import { LoginRequiredModal } from "@/components/shared/LoginRequiredModal";
+import { ApiError } from "@/lib/api";
 import {
   deleteAdminComment,
   deleteAdminPost,
@@ -21,6 +23,7 @@ export function CommunityModerationPanel() {
   const [comments, setComments] = useState<AdminCommentItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showAuthModal, setShowAuthModal] = useState(false);
   const [isPending, startTransition] = useTransition();
 
   useEffect(() => {
@@ -44,6 +47,9 @@ export function CommunityModerationPanel() {
           if (mounted) setComments(res.data?.content ?? []);
         }
       } catch (e) {
+        if (e instanceof ApiError && (e.errorCode === "UNAUTHORIZED" || e.errorCode === "FORBIDDEN")) {
+          setShowAuthModal(true);
+        }
         if (mounted) setError(e instanceof Error ? e.message : "목록을 불러오지 못했습니다.");
       } finally {
         if (mounted) setLoading(false);
@@ -61,6 +67,9 @@ export function CommunityModerationPanel() {
         await deleteAdminPost(postId);
         setPosts((prev) => prev.filter((p) => p.postId !== postId));
       } catch (e) {
+        if (e instanceof ApiError && (e.errorCode === "UNAUTHORIZED" || e.errorCode === "FORBIDDEN")) {
+          setShowAuthModal(true);
+        }
         setError(e instanceof Error ? e.message : "게시글 삭제에 실패했습니다.");
       }
     });
@@ -72,6 +81,9 @@ export function CommunityModerationPanel() {
         await deleteAdminComment(commentId);
         setComments((prev) => prev.filter((c) => c.commentId !== commentId));
       } catch (e) {
+        if (e instanceof ApiError && (e.errorCode === "UNAUTHORIZED" || e.errorCode === "FORBIDDEN")) {
+          setShowAuthModal(true);
+        }
         setError(e instanceof Error ? e.message : "댓글 삭제에 실패했습니다.");
       }
     });
@@ -79,6 +91,12 @@ export function CommunityModerationPanel() {
 
   return (
     <section className="space-y-6">
+      <LoginRequiredModal
+        isOpen={showAuthModal}
+        onClose={() => setShowAuthModal(false)}
+        title="관리자 권한이 필요합니다."
+        description="관리자 계정으로 로그인 후 다시 시도해 주세요."
+      />
       <div className="flex gap-2">
         <button
           type="button"
