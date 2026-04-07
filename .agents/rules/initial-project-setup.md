@@ -55,8 +55,8 @@ frontend/src/
 │   ├── (resident-app)/        # 📱 모바일지향: my-devices,facilities,my-contract,device-history,reservation-history
 │   ├── (user)/                # 👤 contract-apply,my-contracts,my-contract-info,my-history
 │   ├── (admin)/               # 🏢 dashboard,spaces,devices,contracts,reservations,billing,vocs
-│   ├── (common)/              # 💬 community,profile,vocs
-│   └── api/bff/[...path]/route.ts  # BFF프록시
+│   └── (common)/              # 💬 community,profile,vocs
+├── middleware.ts               # 프록시 및 JWT 인가 미들웨어
 ├── components/                 # 전역UI
 │   ├── ui/ (Button,Input,Modal,shadcn)
 │   └── layout/ (Header,Sidebar,Footer,NavBar,ScrollToTop,PageLayout)
@@ -123,17 +123,15 @@ volumes: postgres-data
 ## 6. 프론트엔드 설정
 
 ### 6.0 API 경로 역할 분담 (api-specification.md 와의 관계)
-- **`api-specification.md`:** 백엔드 실제 엔드포인트 **`/api/...`** 만 정의한다(`bff` 세그먼트 없음).
-- **프론트엔드:** 브라우저·클라이언트는 반드시 **`/api/bff/...`** 만 호출한다. Next rewrite·Route Handler가 **`/api/:path*`** 로 Spring에 넘긴다.
-- **충돌 아님:** 같은 리소스에 대해 프론트는 `bff` 접두, 백엔드 명세는 `bff` 없음이 정상이다. 백엔드에 `bff` 경로를 새로 두지 않는다.
-- **`02-frontend-architecture.md` §3:** 클라이언트에서 백엔드 호스트로 직접 `fetch` 하면 규칙 위반.
+- **`api-specification.md`:** 백엔드의 1:1 대응되는 실제 엔드포인트 **`/api/...`** 만 정의한다.
+- **프론트엔드:** 브라우저·클라이언트는 백엔드와 완전히 동일하게 **`/api/...`** 경로를 직접 호출한다.
+- **`02-frontend-architecture.md` §3:** 클라이언트에서 백엔드 호스트 호스트를 직접 적어 `fetch` 하면 규칙 위반. 선행 도메인 없이 `/api/...` 를 찌른다.
 
 ### next.config.ts
-rewrites: `/api/bff/:path*` → `INTERNAL_BACKEND_URL/api/:path*` | images.remotePatterns: localhost:8080 | output:'standalone'
+images.remotePatterns: localhost:8080 | output:'standalone'
 
-### BFF프록시 (route.ts)
-`/api/bff/...` → Spring **`/api/...`** 프록시. httpOnly쿠키에서 access_token추출→`Authorization:Bearer`헤더변환
-핸들러: GET,POST,PUT,PATCH,DELETE 모두 동일 handler
+### API 프록시 (middleware.ts)
+클라이언트의 `/api/...` 호출 → Middleware가 가로채어 Spring **`INTERNAL_BACKEND_URL/api/...`** 로 포워딩. httpOnly쿠키에서 access_token을 추출해 `Authorization: Bearer` 헤더 추가. 내부 통신.
 
 ### 공통타입
 ```typescript
@@ -141,7 +139,7 @@ interface ApiResponse<T> { success:boolean; data:T|null; message:string|null; er
 ```
 
 ### fetch래퍼 (api.ts)
-`apiFetch<T>(path, options)` → `BASE_URL/bff${path}` + credentials:'include'(httpOnly쿠키자동전달) → ApiResponse<T> 반환, 실패시 ApiError throw
+`apiFetch<T>(path, options)` → `BASE_URL${path}` + credentials:'include'(httpOnly쿠키자동전달) → ApiResponse<T> 반환, 실패시 ApiError throw
 
 ## 7. 백엔드 공통처리
 
@@ -237,13 +235,13 @@ RestTemplate→MockIoT HTTP POST. 명령JSON전달→SUCCESS/FAILURE반환. `moc
 |---|---|---|
 | 28 | `frontend/package.json` | 의존성 및 스크립트 |
 | 29 | `frontend/tsconfig.json` | TypeScript 설정 |
-| 30 | `frontend/next.config.ts` | Next.js 설정 (BFF 프록시 포함) |
+| 30 | `frontend/next.config.ts` | Next.js 설정 |
 | 31 | `frontend/Dockerfile` | 컨테이너 빌드 (multi-stage) |
 | 32 | `frontend/.gitignore` | 빌드 산출물 제외 |
 | 33 | `frontend/.env.local.example` | 환경변수 템플릿 |
 | 34 | `frontend/src/app/layout.tsx` | 루트 레이아웃 |
 | 35 | `frontend/src/app/page.tsx` | 랜딩(리다이렉트) 페이지 |
 | 36 | `frontend/src/app/globals.css` | 전역 스타일 (CSS 변수) |
-| 37 | `frontend/src/app/api/bff/[...path]/route.ts` | BFF 프록시 (JWT 쿠키 → 헤더) |
+| 37 | `frontend/src/middleware.ts` | 프록시 미들웨어 (JWT 쿠키 → 헤더) |
 | 38 | `frontend/src/lib/api.ts` | API fetch 래퍼 |
 | 39 | `frontend/src/types/api.ts` | `ApiResponse<T>` 공통 타입 |

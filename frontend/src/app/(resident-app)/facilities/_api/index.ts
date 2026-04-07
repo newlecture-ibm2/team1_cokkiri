@@ -1,5 +1,5 @@
 // #78: 시설 예약 API 클라이언트
-// 02-frontend-architecture §3: 브라우저는 /api/bff/... 만 호출
+// 02-frontend-architecture §3: 브라우저는 /api/... 만 호출
 
 import { apiFetch } from "@/lib/api";
 import type { Facility, MyReservation, ReservationRequest } from "../_types";

@@ -107,7 +107,7 @@ export function VocEditForm({ initial }: Props) {
           }
         }
 
-        const res = await fetch(`/api/bff/vocs/${initial.vocId}`, {
+        const res = await fetch(`/api/vocs/${initial.vocId}`, {
           method: "PUT",
           credentials: "include",
           body: formData,
