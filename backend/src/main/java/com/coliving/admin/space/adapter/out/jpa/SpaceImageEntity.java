@@ -1,7 +1,7 @@
-package com.coliving.user.room.adapter.out.jpa;
+package com.coliving.admin.space.adapter.out.jpa;
 
 import com.coliving.global.entity.BaseEntity;
-import com.coliving.user.room.model.ImageType;
+import com.coliving.admin.space.model.ImageType;
 
 import jakarta.persistence.*;
 import lombok.AccessLevel;

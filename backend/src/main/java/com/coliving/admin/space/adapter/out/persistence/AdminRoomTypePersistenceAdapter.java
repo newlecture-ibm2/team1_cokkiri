@@ -2,9 +2,9 @@ package com.coliving.admin.space.adapter.out.persistence;
 
 import com.coliving.admin.space.application.port.out.AdminRoomTypeRepositoryPort;
 import com.coliving.admin.space.model.AdminRoomType;
-import com.coliving.user.room.adapter.out.jpa.PrivateSpaceDetailJpaRepository;
-import com.coliving.user.room.adapter.out.jpa.RoomTypeEntity;
-import com.coliving.user.room.adapter.out.jpa.RoomTypeJpaRepository;
+import com.coliving.admin.space.adapter.out.jpa.PrivateSpaceDetailJpaRepository;
+import com.coliving.admin.space.adapter.out.jpa.RoomTypeEntity;
+import com.coliving.admin.space.adapter.out.jpa.RoomTypeJpaRepository;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;

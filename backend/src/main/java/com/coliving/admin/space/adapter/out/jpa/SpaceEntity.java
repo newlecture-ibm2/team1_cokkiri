@@ -1,8 +1,8 @@
-package com.coliving.user.room.adapter.out.jpa;
+package com.coliving.admin.space.adapter.out.jpa;
 
 import com.coliving.global.entity.BaseEntity;
-import com.coliving.user.room.model.SpaceStatus;
-import com.coliving.user.room.model.SpaceType;
+import com.coliving.admin.space.model.SpaceStatus;
+import com.coliving.admin.space.model.SpaceType;
 
 import jakarta.persistence.*;
 import lombok.AccessLevel;

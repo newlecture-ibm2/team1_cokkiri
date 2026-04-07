@@ -1,4 +1,4 @@
-package com.coliving.user.room.adapter.out.jpa;
+package com.coliving.admin.space.adapter.out.jpa;
 
 import com.coliving.global.entity.BaseEntity;
 import jakarta.persistence.Column;

@@ -1,5 +1,8 @@
 package com.coliving.user.room.model;
 
+import com.coliving.admin.space.model.ImageType;
+import com.coliving.admin.space.model.SpaceStatus;
+
 import java.math.BigDecimal;
 import java.util.List;
 

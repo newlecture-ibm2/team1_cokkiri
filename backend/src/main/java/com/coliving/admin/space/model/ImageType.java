@@ -1,4 +1,4 @@
-package com.coliving.user.room.model;
+package com.coliving.admin.space.model;
 
 public enum ImageType {
     PHOTO,
