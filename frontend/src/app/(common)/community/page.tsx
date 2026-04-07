@@ -32,7 +32,7 @@ export default async function CommunityPage({ searchParams }: { searchParams: Se
   let list: PostListData | null = null;
   let error: string | null = null;
 
-  if (res.status === 401) {
+  if (res.status === 401 || res.status === 403) {
     error = LOGIN_REQUIRED_MESSAGE;
   } else if (!res.ok) {
     error = "목록을 불러오지 못했습니다.";

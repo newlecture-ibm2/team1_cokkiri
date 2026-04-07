@@ -21,6 +21,7 @@ export function CommentItem({
   authorName,
   createdAt,
   currentUser,
+  footerSlot,
 }: {
   commentId: number;
   content: string;
@@ -28,6 +29,7 @@ export function CommentItem({
   authorName: string;
   createdAt: string;
   currentUser?: CurrentUser;
+  footerSlot?: React.ReactNode;
 }) {
   const router = useRouter();
   const canMutate =
@@ -72,7 +74,7 @@ export function CommentItem({
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ content: text }),
         });
-        if (res.status === 401) {
+        if (res.status === 401 || res.status === 403) {
           setShowLoginModal(true);
           return;
         }
@@ -99,7 +101,7 @@ export function CommentItem({
           method: "DELETE",
           credentials: "include",
         });
-        if (res.status === 401) {
+        if (res.status === 401 || res.status === 403) {
           setShowLoginModal(true);
           return;
         }
@@ -221,6 +223,7 @@ export function CommentItem({
         }}
       />
       <LoginRequiredModal isOpen={showLoginModal} onClose={() => setShowLoginModal(false)} />
+      {footerSlot ? <div className="mt-4">{footerSlot}</div> : null}
     </li>
   );
 }

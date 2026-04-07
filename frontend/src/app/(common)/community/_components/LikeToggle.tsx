@@ -28,7 +28,7 @@ export function LikeToggle({ postId, initialLiked, initialCount }: Props) {
           credentials: "include",
           headers: { "Content-Type": "application/json" },
         });
-        if (res.status === 401) {
+        if (res.status === 401 || res.status === 403) {
           setShowLoginModal(true);
           return;
         }

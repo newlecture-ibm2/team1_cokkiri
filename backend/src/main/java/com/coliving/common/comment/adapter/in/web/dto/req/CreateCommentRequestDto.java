@@ -7,6 +7,8 @@ import lombok.Getter;
 @Getter
 public class CreateCommentRequestDto {
 
+    private Long parentCommentId;
+
     @NotBlank
     @Size(max = 2000)
     private String content;

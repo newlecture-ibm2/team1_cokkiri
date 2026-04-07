@@ -42,7 +42,7 @@ public interface CommunityRepositoryPort {
 
     Post incrementViewCount(Long postId);
 
-    Comment createComment(Long postId, Long userId, String content);
+    Comment createComment(Long postId, Long userId, Long parentCommentId, String content);
 
     Optional<Comment> findCommentById(Long commentId);
 

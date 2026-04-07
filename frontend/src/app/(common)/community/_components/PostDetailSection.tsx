@@ -4,8 +4,7 @@ import type { PostDetail } from "../_types/community";
 import { POST_CATEGORIES } from "../_types/community";
 import { LikeToggle } from "./LikeToggle";
 import { PostEditDeleteActions } from "./PostEditDeleteActions";
-import { CommentComposer } from "../../comment/_components/CommentComposer";
-import { CommentItem } from "../../comment/_components/CommentItem";
+import { CommentThreadSection } from "../../comment/_components/CommentThreadSection";
 import { formatDateTimeKo } from "@/lib/format-date";
 import { apiFileUrlToBffPath } from "@/lib/bff-file-url";
 import { isRichTextBodyHtml, prepareCommunityPostBodyForDisplay } from "@/lib/post-html";
@@ -147,41 +146,11 @@ export function PostDetailSection({
         </section>
       )}
 
-      <section className="mt-14 border-t border-border pt-12">
-        <h2 className="font-black text-[10px] uppercase tracking-[0.3em] text-muted-foreground">
-          댓글
-        </h2>
-        {comments.length === 0 ? (
-          <div
-            className="mt-8 flex flex-col items-center justify-center gap-4 rounded-[2rem] border border-dashed border-border bg-background/60 px-8 py-14 text-center backdrop-blur-sm md:px-12"
-            aria-live="polite"
-          >
-            <MessageCircle
-              className="size-10 text-muted-foreground opacity-80"
-              strokeWidth={1.25}
-              aria-hidden
-            />
-            <p className="max-w-sm font-medium tracking-tight text-balance text-muted-foreground md:text-base">
-              아직 댓글이 없습니다. 첫 댓글을 남겨 대화를 시작해 보세요.
-            </p>
-          </div>
-        ) : (
-          <ul className="mt-8 space-y-6">
-            {comments.map((c) => (
-              <CommentItem
-                key={c.commentId}
-                commentId={c.commentId}
-                content={c.content}
-                authorUserId={c.author.userId}
-                authorName={c.author.name}
-                createdAt={c.createdAt}
-                currentUser={currentUser}
-              />
-            ))}
-          </ul>
-        )}
-        <CommentComposer postId={detail.postId} />
-      </section>
+      <CommentThreadSection
+        postId={detail.postId}
+        initialComments={comments}
+        currentUser={currentUser}
+      />
     </article>
   );
 }
