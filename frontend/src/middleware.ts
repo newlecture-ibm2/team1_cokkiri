@@ -65,10 +65,20 @@ export async function middleware(req: NextRequest) {
         forwardedHeaders.set('Content-Type', 'application/json');
       }
 
-      return new NextResponse(response.body, {
+      const nextRes = new NextResponse(response.body, {
         status: response.status,
         headers: forwardedHeaders,
       });
+
+      // [fix] set-cookie: 백엔드 응답의 httpOnly 쿠키를 브라우저에 전달
+      // WHITELIST에서 제외되어 있으므로 별도 처리 필요.
+      // 로그인 응답의 access_token·refresh_token 쿠키가 브라우저에 저장되어야 이후 API 인증 가능.
+      const rawSetCookies = response.headers.getSetCookie?.() ?? [];
+      for (const cookie of rawSetCookies) {
+        nextRes.headers.append('Set-Cookie', cookie);
+      }
+
+      return nextRes;
     } catch (error) {
       console.error('[Middleware BFF] proxy failed:', error);
       return NextResponse.json(
