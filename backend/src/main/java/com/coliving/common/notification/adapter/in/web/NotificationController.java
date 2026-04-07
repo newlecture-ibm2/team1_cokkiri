@@ -83,7 +83,7 @@ public class NotificationController {
     private NotificationItemResponseDto toItemDto(NotificationItemResult item) {
         return NotificationItemResponseDto.builder()
                 .notificationId(item.getNotificationId())
-                .type(item.getType().name())
+                .type(item.getType() != null ? item.getType().name() : null)
                 .title(item.getTitle())
                 .message(item.getMessage())
                 .referenceType(item.getReferenceType() != null ? item.getReferenceType().name() : null)

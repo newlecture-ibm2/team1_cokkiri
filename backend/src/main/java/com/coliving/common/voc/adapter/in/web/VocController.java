@@ -165,9 +165,9 @@ public class VocController {
     private VocListItemResponseDto toListItemDto(VocListItemResult item) {
         return VocListItemResponseDto.builder()
                 .vocId(item.getVocId())
-                .category(item.getCategory().name())
+                .category(item.getCategory() != null ? item.getCategory().name() : null)
                 .title(item.getTitle())
-                .status(item.getStatus().name())
+                .status(item.getStatus() != null ? item.getStatus().name() : null)
                 .createdAt(item.getCreatedAt())
                 .build();
     }
@@ -186,11 +186,11 @@ public class VocController {
         return VocDetailResponseDto.builder()
                 .vocId(r.getVocId())
                 .userId(r.getUserId())
-                .category(r.getCategory().name())
+                .category(r.getCategory() != null ? r.getCategory().name() : null)
                 .title(r.getTitle())
                 .content(r.getContent())
                 .attachments(attachments)
-                .status(r.getStatus().name())
+                .status(r.getStatus() != null ? r.getStatus().name() : null)
                 .adminReply(r.getAdminReply())
                 .replyUserId(r.getReplyUserId())
                 .repliedAt(r.getRepliedAt())

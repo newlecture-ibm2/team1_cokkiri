@@ -21,6 +21,7 @@ export function Footer() {
       { name: "VOC", path: "/vocs" },
     ],
     support: [
+      { name: "Notification", path: "/notifications" },
       { name: "Profile", path: "/profile" },
       { name: "Device", path: "/" },
       { name: "Contract", path: "/" },
