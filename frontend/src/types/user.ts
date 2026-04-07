@@ -10,5 +10,6 @@ export interface User {
   birthDate?: string;
   gender?: string;
   nationality?: string;
+  profileImage?: string;
   createdAt?: string;
 }
