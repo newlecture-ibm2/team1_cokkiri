@@ -105,10 +105,10 @@ export function NewVocForm() {
         }
         const vid = json.data?.vocId;
         if (vid == null) {
-          setError("등록은 되었지만 민원 번호를 받지 못했습니다. 목록에서 확인해 주세요.");
+          setError("등록은 되었지만 민원 번호를 받지 못했습니다. 나의 민원 내역에서 확인해 주세요.");
           return;
         }
-        router.push(`/vocs/${vid}`);
+        router.push(`/profile/vocs/${vid}`);
         router.refresh();
       } catch {
         setError("네트워크 오류가 발생했습니다. 연결을 확인한 뒤 다시 시도해 주세요.");
@@ -120,11 +120,11 @@ export function NewVocForm() {
     <form onSubmit={submit} className="mx-auto max-w-2xl space-y-10">
       <LoginRequiredModal isOpen={showLoginModal} onClose={() => setShowLoginModal(false)} />
       <Link
-        href="/vocs"
+        href="/profile/vocs?tab=list"
         className="group inline-flex items-center gap-2 font-black text-xs uppercase tracking-[0.3em] text-secondary transition-colors hover:text-foreground"
       >
         <ArrowLeft className="size-4 transition-transform group-hover:-translate-x-0.5" aria-hidden />
-        목록으로
+        내역으로
       </Link>
 
       {error ? (
@@ -233,7 +233,7 @@ export function NewVocForm() {
       <CancelModal
         isOpen={showCancelModal}
         onClose={() => setShowCancelModal(false)}
-        onConfirm={() => router.push("/vocs")}
+        onConfirm={() => router.push("/profile/vocs")}
       />
     </form>
   );

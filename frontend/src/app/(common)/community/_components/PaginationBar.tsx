@@ -8,7 +8,7 @@ type Props = {
   baseQuery: string;
   /** Spec query name `s`; preserved in pagination links */
   pageSize?: number;
-  /** List route prefix, e.g. `/community` or `/vocs` */
+  /** List route prefix, e.g. `/community` or `/profile/vocs` */
   hrefBase?: string;
 };
 
