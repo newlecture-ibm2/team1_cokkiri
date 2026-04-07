@@ -25,7 +25,7 @@ public class DeviceTypeEntity extends BaseEntity {
     @Column(name = "device_type_id")
     private Long deviceTypeId;
 
-    @Column(name = "code", nullable = false, unique = true, length = 50)
+    @Column(name = "code", nullable = false, length = 50)
     private String code;
 
     @Column(name = "name", nullable = false, length = 100)

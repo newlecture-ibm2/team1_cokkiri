@@ -8,7 +8,7 @@ spring:
     username: ${DB_USERNAME:coliving}
     password: ${DB_PASSWORD}
   jpa:
-    show-sql: true
+    show-sql: false
     hibernate:
       # 마이그레이션 도구 미사용 → Entity 변경 시 스키마 자동 반영
       ddl-auto: update
@@ -24,5 +24,6 @@ mock-iot:
 
 logging:
   level:
-    com.coliving: DEBUG
-    org.hibernate.SQL: DEBUG
+    com.coliving: INFO
+    org.hibernate.SQL: WARN
+
