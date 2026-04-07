@@ -3,6 +3,7 @@ package com.coliving.admin.device.application.port.out;
 import com.coliving.admin.device.model.AdminDevice;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 /**
@@ -37,4 +38,9 @@ public interface AdminDeviceRepositoryPort {
 
     /** deviceTypeId로 기기 종류 코드(DOOR_LOCK 등) 조회. 없으면 null 반환 */
     String findDeviceTypeCodeById(Long deviceTypeId);
+
+    /** 기기 제어 감사 이력 기록 (ADM-DEV-04) */
+    void saveControlLog(Long deviceId, Long userId, String actorType,
+                        String command, Map<String, Object> commandParams,
+                        String result, String errorMessage, String correlationId);
 }

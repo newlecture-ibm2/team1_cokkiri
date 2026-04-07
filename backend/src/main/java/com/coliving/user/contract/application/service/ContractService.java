@@ -1,6 +1,7 @@
 package com.coliving.user.contract.application.service;
 
 import com.coliving.admin.space.application.port.out.AdminSpaceRepositoryPort;
+import com.coliving.admin.space.model.AdminSpace;
 import com.coliving.admin.user.application.port.out.AdminUserRepositoryPort;
 import com.coliving.common.auth.model.UserRole;
 import com.coliving.common.notification.application.port.out.NotificationRepositoryPort;
@@ -97,8 +98,7 @@ public class ContractService implements ContractUseCase {
                     command.getBankAccount(),
                     command.getUsagePurpose(),
                     command.getRequestNote(),
-                    command.getPrivacyAgreed()
-            );
+                    command.getPrivacyAgreed());
         }
 
         Contract saved = contractRepositoryPort.save(contract);
@@ -121,8 +121,7 @@ public class ContractService implements ContractUseCase {
                     command.getBankAccount(),
                     command.getUsagePurpose(),
                     command.getRequestNote(),
-                    command.getPrivacyAgreed()
-            );
+                    command.getPrivacyAgreed());
             contract.updateStatus(ContractStatus.PENDING);
         }
 
@@ -182,8 +181,7 @@ public class ContractService implements ContractUseCase {
                 "계약이 체결되었습니다.",
                 "입주를 축하합니다! 호실 정보와 IoT 기기를 확인해 보세요.",
                 ReferenceType.CONTRACT,
-                contract.getContractId()
-        );
+                contract.getContractId());
 
         return ContractSignResult.builder()
                 .contractId(contract.getContractId())

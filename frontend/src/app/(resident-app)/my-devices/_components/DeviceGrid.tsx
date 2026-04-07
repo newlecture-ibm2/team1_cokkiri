@@ -1,10 +1,14 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { fetchMyDevices, controlDevice } from "../_api";
 import type { MyDevice } from "../_types";
 import { ApiError } from "@/lib/api";
+
+/* ── 상수 ── */
+
+const COOLDOWN_MS = 1500; // Throttle 쿨다운 (1.5초)
 
 const STATUS_MAP: Record<string, { label: string; color: string; dot: string }> = {
   ONLINE: { label: "동작중", color: "border-green-400/40 bg-green-50/80", dot: "bg-green-500" },
@@ -22,12 +26,21 @@ const DEVICE_ICONS: Record<string, string> = {
   CCTV: "📹",
 };
 
+/* ── 컴포넌트 ── */
+
 export function DeviceGrid() {
   const [devices, setDevices] = useState<MyDevice[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [controllingId, setControllingId] = useState<number | null>(null);
+
+  // Throttle: 쿨다운 중인 기기 ID
+  const cooldownRef = useRef<Set<number>>(new Set());
+  const [, forceUpdate] = useState(0);
+
+  // Toast 피드백
   const [feedback, setFeedback] = useState<string | null>(null);
+  const [feedbackType, setFeedbackType] = useState<"success" | "error">("success");
 
   const loadDevices = useCallback(async () => {
     try {
@@ -53,7 +66,7 @@ export function DeviceGrid() {
     return () => clearInterval(interval);
   }, [loadDevices]);
 
-  // 알림 자동 숨김
+  // Toast 자동 숨김 (2.5초)
   useEffect(() => {
     if (feedback) {
       const t = setTimeout(() => setFeedback(null), 2500);
@@ -61,8 +74,21 @@ export function DeviceGrid() {
     }
   }, [feedback]);
 
+  const showFeedback = (msg: string, type: "success" | "error") => {
+    setFeedbackType(type);
+    setFeedback(msg);
+  };
+
   const handleToggle = async (device: MyDevice) => {
+    // 상태 검증
     if (device.status !== "ONLINE") return;
+
+    // Throttle: 제어 진행 중이면 무시
+    if (controllingId !== null) return;
+
+    // Throttle: 쿨다운 중이면 무시
+    if (cooldownRef.current.has(device.deviceId)) return;
+
     setControllingId(device.deviceId);
 
     try {
@@ -76,15 +102,27 @@ export function DeviceGrid() {
       const command = isPowerOn ? "OFF" : "ON";
 
       await controlDevice(device.deviceId, { command });
-      setFeedback(`"${device.name}" ${isPowerOn ? "OFF" : "ON"}`);
+      showFeedback(`"${device.name}" ${command}`, "success");
       loadDevices();
     } catch (err) {
-      if (err instanceof ApiError) setFeedback(err.message);
-      else setFeedback("제어에 실패했습니다");
+      if (err instanceof ApiError) showFeedback(err.message, "error");
+      else showFeedback("제어에 실패했습니다", "error");
     } finally {
       setControllingId(null);
+
+      // Throttle 쿨다운 적용
+      cooldownRef.current.add(device.deviceId);
+      forceUpdate((n) => n + 1);
+      setTimeout(() => {
+        cooldownRef.current.delete(device.deviceId);
+        forceUpdate((n) => n + 1);
+      }, COOLDOWN_MS);
     }
   };
+
+  /* ── 기기 분류 ── */
+  const privateDevices = devices.filter((d) => d.spaceType === "PRIVATE");
+  const commonDevices = devices.filter((d) => d.spaceType === "COMMON");
 
   // ── 로딩 ──
   if (loading && devices.length === 0) {
@@ -128,90 +166,154 @@ export function DeviceGrid() {
   }
 
   return (
-    <div className="space-y-4">
-      {/* 피드백 */}
+    <div className="space-y-6">
+      {/* Toast 피드백 */}
       <AnimatePresence>
         {feedback && (
           <motion.div
-            initial={{ opacity: 0, y: -8 }}
+            initial={{ opacity: 0, y: -12 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0 }}
-            className="rounded-xl border border-secondary/40 bg-surface px-4 py-3 text-sm font-medium text-primary"
+            exit={{ opacity: 0, y: -8 }}
+            className={`rounded-xl border px-4 py-3 text-sm font-medium ${
+              feedbackType === "error"
+                ? "border-destructive/40 bg-destructive/10 text-destructive"
+                : "border-accent/40 bg-accent/10 text-primary"
+            }`}
           >
+            {feedbackType === "error" ? "⚠️ " : "✅ "}
             {feedback}
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* 기기 그리드 */}
-      <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
-        {devices.map((device, idx) => {
-          const status = STATUS_MAP[device.status] ?? STATUS_MAP.OFFLINE;
-          const icon = DEVICE_ICONS[device.deviceTypeCode] ?? "📱";
-          const isControlling = controllingId === device.deviceId;
+      {/* 개인 공간 기기 */}
+      {privateDevices.length > 0 && (
+        <section>
+          <h2 className="mb-3 text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground">
+            🏠 내 공간
+          </h2>
+          <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
+            {privateDevices.map((device, idx) => (
+              <DeviceCard
+                key={device.deviceId}
+                device={device}
+                idx={idx}
+                isControlling={controllingId === device.deviceId}
+                isCooldown={cooldownRef.current.has(device.deviceId)}
+                onToggle={handleToggle}
+              />
+            ))}
+          </div>
+        </section>
+      )}
 
-          let currentState: Record<string, unknown> = {};
-          try {
-            currentState = JSON.parse(device.currentState || "{}");
-          } catch { /* ignore */ }
-          const isPowerOn = currentState.power === true || currentState.power === "ON";
-
-          return (
-            <motion.div
-              key={device.deviceId}
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: idx * 0.05 }}
-              className={`group relative cursor-pointer rounded-[2rem] border p-5 transition-all
-                duration-200 hover:shadow-md ${status.color}
-                ${isControlling ? "animate-pulse" : ""}`}
-              onClick={() => handleToggle(device)}
-            >
-              {/* 상태 점 */}
-              <span className={`absolute right-4 top-4 h-2.5 w-2.5 rounded-full ${status.dot}`} />
-
-              {/* 아이콘 */}
-              <div className="text-3xl">{icon}</div>
-
-              {/* 기기명 */}
-              <p className="mt-3 text-sm font-bold tracking-tight text-primary">
-                {device.name}
-              </p>
-
-              {/* 종류 */}
-              <p className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">
-                {device.deviceTypeName}
-              </p>
-
-              {/* 전원 상태 */}
-              {device.status === "ONLINE" && (
-                <div className="mt-3 flex items-center gap-2">
-                  <div
-                    className={`relative h-5 w-9 rounded-full transition-colors duration-200
-                      ${isPowerOn ? "bg-accent" : "bg-muted/40"}`}
-                  >
-                    <span
-                      className={`absolute top-0.5 left-0.5 h-4 w-4 rounded-full bg-white shadow
-                        transition-transform duration-200
-                        ${isPowerOn ? "translate-x-4" : "translate-x-0"}`}
-                    />
-                  </div>
-                  <span className="text-[10px] font-semibold text-muted-foreground">
-                    {isPowerOn ? "ON" : "OFF"}
-                  </span>
-                </div>
-              )}
-
-              {/* 오프라인/에러 표시 */}
-              {device.status !== "ONLINE" && (
-                <p className="mt-3 text-[10px] font-semibold text-muted-foreground">
-                  {status.label}
-                </p>
-              )}
-            </motion.div>
-          );
-        })}
-      </div>
+      {/* 공용 공간 기기 */}
+      {commonDevices.length > 0 && (
+        <section>
+          <h2 className="mb-3 text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground">
+            🏢 공용 공간
+          </h2>
+          <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
+            {commonDevices.map((device, idx) => (
+              <DeviceCard
+                key={device.deviceId}
+                device={device}
+                idx={idx}
+                isControlling={controllingId === device.deviceId}
+                isCooldown={cooldownRef.current.has(device.deviceId)}
+                onToggle={handleToggle}
+              />
+            ))}
+          </div>
+        </section>
+      )}
     </div>
+  );
+}
+
+/* ── 기기 카드 (하위 컴포넌트) ── */
+
+function DeviceCard({
+  device,
+  idx,
+  isControlling,
+  isCooldown,
+  onToggle,
+}: {
+  device: MyDevice;
+  idx: number;
+  isControlling: boolean;
+  isCooldown: boolean;
+  onToggle: (device: MyDevice) => void;
+}) {
+  const status = STATUS_MAP[device.status] ?? STATUS_MAP.OFFLINE;
+  const icon = DEVICE_ICONS[device.deviceTypeCode] ?? "📱";
+
+  let currentState: Record<string, unknown> = {};
+  try {
+    currentState = JSON.parse(device.currentState || "{}");
+  } catch { /* ignore */ }
+  const isPowerOn = currentState.power === true || currentState.power === "ON";
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: idx * 0.05 }}
+      className={`group relative cursor-pointer rounded-[2rem] border p-5 transition-all
+        duration-200 hover:shadow-md ${status.color}
+        ${isControlling ? "animate-pulse pointer-events-none" : ""}
+        ${isCooldown ? "opacity-70 pointer-events-none" : ""}`}
+      onClick={() => onToggle(device)}
+    >
+      {/* 상태 점 */}
+      <span className={`absolute right-4 top-4 h-2.5 w-2.5 rounded-full ${status.dot}`} />
+
+      {/* 아이콘 */}
+      <div className="text-3xl">{icon}</div>
+
+      {/* 기기명 */}
+      <p className="mt-3 text-sm font-bold tracking-tight text-primary">
+        {device.name}
+      </p>
+
+      {/* 공간명 */}
+      {device.spaceName && (
+        <p className="text-[10px] font-medium text-muted-foreground">
+          {device.spaceName}
+        </p>
+      )}
+
+      {/* 종류 */}
+      <p className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">
+        {device.deviceTypeName}
+      </p>
+
+      {/* 전원 상태 토글 */}
+      {device.status === "ONLINE" && (
+        <div className="mt-3 flex items-center gap-2">
+          <div
+            className={`relative h-5 w-9 rounded-full transition-colors duration-200
+              ${isPowerOn ? "bg-accent" : "bg-muted/40"}`}
+          >
+            <span
+              className={`absolute top-0.5 left-0.5 h-4 w-4 rounded-full bg-white shadow
+                transition-transform duration-200
+                ${isPowerOn ? "translate-x-4" : "translate-x-0"}`}
+            />
+          </div>
+          <span className="text-[10px] font-semibold text-muted-foreground">
+            {isPowerOn ? "ON" : "OFF"}
+          </span>
+        </div>
+      )}
+
+      {/* 오프라인/에러 표시 */}
+      {device.status !== "ONLINE" && (
+        <p className="mt-3 text-[10px] font-semibold text-muted-foreground">
+          {status.label}
+        </p>
+      )}
+    </motion.div>
   );
 }

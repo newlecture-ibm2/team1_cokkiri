@@ -3,6 +3,7 @@ package com.coliving.resident.device_control.application.port.out;
 import com.coliving.resident.device_control.model.ResidentDevice;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 /**
@@ -33,6 +34,14 @@ public interface ResidentDeviceRepositoryPort {
      */
     boolean hasActiveContract(Long userId);
 
-    /** spaceId의 공간 타입(PRIVATE/COMMON) 반환 */
-    String findSpaceTypeById(Long spaceId);
+    /**
+     * 기기 제어 후 CONTROL_LOG 감사 이력 저장 (RES-DEV-02 필수)
+     * ※ resident/log 도메인의 ControlLogJpaRepository 사용 — 같은 resident 최상위 도메인
+     *
+     * @param actorType  "RESIDENT" 또는 "ADMIN"
+     * @param result     "SUCCESS" 또는 "FAILURE"
+     */
+    void saveControlLog(Long deviceId, Long userId, String actorType,
+                        String command, Map<String, Object> commandParams,
+                        String result, String errorMessage, String correlationId);
 }

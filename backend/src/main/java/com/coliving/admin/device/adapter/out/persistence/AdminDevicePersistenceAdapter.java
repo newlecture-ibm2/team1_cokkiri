@@ -6,20 +6,31 @@ import com.coliving.admin.device.model.AdminDevice;
 import com.coliving.admin.device.model.DeviceStatus;
 import com.coliving.global.error.BusinessException;
 import com.coliving.global.error.ErrorCode;
+import com.coliving.resident.log.adapter.out.jpa.ActorType;
+import com.coliving.resident.log.adapter.out.jpa.ControlLogEntity;
+import com.coliving.resident.log.adapter.out.jpa.ControlLogJpaRepository;
+import com.coliving.resident.log.adapter.out.jpa.ControlResult;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import java.time.OffsetDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class AdminDevicePersistenceAdapter implements AdminDeviceRepositoryPort {
 
     private final DeviceJpaRepository deviceJpaRepository;
     private final DeviceTypeJpaRepository deviceTypeJpaRepository;
+    private final ControlLogJpaRepository controlLogJpaRepository;
     private final jakarta.persistence.EntityManager entityManager;
+    private final ObjectMapper objectMapper;
 
     @Override
     public AdminDevice save(AdminDevice device) {
@@ -29,7 +40,6 @@ public class AdminDevicePersistenceAdapter implements AdminDeviceRepositoryPort 
         DeviceEntity entity;
 
         if (device.deviceId() != null) {
-            // 수정
             entity = deviceJpaRepository.findById(device.deviceId())
                     .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND, "기기를 찾을 수 없습니다"));
             entity.update(
@@ -41,7 +51,6 @@ public class AdminDevicePersistenceAdapter implements AdminDeviceRepositoryPort 
                     deviceType
             );
         } else {
-            // 신규 등록
             entity = DeviceEntity.builder()
                     .spaceId(device.spaceId())
                     .deviceType(deviceType)
@@ -138,6 +147,42 @@ public class AdminDevicePersistenceAdapter implements AdminDeviceRepositoryPort 
         return deviceTypeJpaRepository.findById(deviceTypeId)
                 .map(DeviceTypeEntity::getCode)
                 .orElse(null);
+    }
+
+    /**
+     * 기기 제어 감사 이력 기록 (ADM-DEV-04)
+     * ※ resident/log 도메인의 ControlLogJpaRepository 사용
+     *    — ResidentDevicePersistenceAdapter와 동일 패턴
+     *    jpaRepository.save() 명시 호출 (03-backend-architecture.md §5)
+     */
+    @Override
+    public void saveControlLog(Long deviceId, Long userId, String actorType,
+                               String command, Map<String, Object> commandParams,
+                               String result, String errorMessage, String correlationId) {
+        String paramsJson = null;
+        if (commandParams != null && !commandParams.isEmpty()) {
+            try {
+                paramsJson = objectMapper.writeValueAsString(commandParams);
+            } catch (JsonProcessingException e) {
+                log.warn("CONTROL_LOG commandParams 직렬화 실패: {}", commandParams, e);
+                paramsJson = commandParams.toString();
+            }
+        }
+
+        ControlLogEntity logEntity = ControlLogEntity.builder()
+                .deviceId(deviceId)
+                .userId(userId)
+                .actorType(ActorType.valueOf(actorType))
+                .command(command)
+                .commandParams(paramsJson)
+                .result(ControlResult.valueOf(result))
+                .errorMessage(errorMessage)
+                .correlationId(correlationId)
+                .build();
+
+        controlLogJpaRepository.save(logEntity);
+        log.info("CONTROL_LOG 저장 완료 — deviceId: {}, userId: {}, actor: ADMIN, command: {}, result: {}",
+                deviceId, userId, command, result);
     }
 
     private AdminDevice toModel(DeviceEntity entity) {

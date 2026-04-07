@@ -1,6 +1,8 @@
 export interface MyDevice {
   deviceId: number;
   spaceId: number;
+  spaceName: string | null;
+  spaceType: "PRIVATE" | "COMMON";
   deviceTypeCode: string;
   deviceTypeName: string;
   uiType: string;
