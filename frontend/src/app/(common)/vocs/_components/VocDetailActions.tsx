@@ -21,7 +21,7 @@ export function VocDetailActions({ vocId, status }: { vocId: number; status: str
 
     startTransition(async () => {
       try {
-        const res = await fetch(`/api/bff/vocs/${vocId}/cancel`, {
+        const res = await fetch(`/api/vocs/${vocId}/cancel`, {
           method: "POST",
           credentials: "include",
         });

@@ -13,13 +13,13 @@ export const POST_BODY_HTML_MAX_LENGTH = 65535;
  */
 export function normalizePostBodyApiCommunityUrlsToBff(html: string): string {
   if (!html) return html;
-  return html.replaceAll("/api/files/community/", "/api/bff/files/community/");
+  return html.replaceAll("/api/files/community/", "/api/files/community/");
 }
 
 /** 저장 직전: BFF 경로를 API 규약 경로로 되돌립니다. */
 export function normalizePostBodyBffCommunityUrlsToApi(html: string): string {
   if (!html) return html;
-  return html.replaceAll("/api/bff/files/community/", "/api/files/community/");
+  return html.replaceAll("/api/files/community/", "/api/files/community/");
 }
 
 /**
