@@ -27,6 +27,11 @@ const RESPONSE_HEADER_WHITELIST = new Set([
 
 export async function middleware(req: NextRequest) {
   if (req.nextUrl.pathname.startsWith('/api/')) {
+    // [MOCK] /api/bff/admin/contracts 관련 모든 요청(목록, 승인, 반려)은 프록시하지 않고 통과시킵니다.
+    if (req.nextUrl.pathname.includes('/admin/contracts')) {
+      return NextResponse.next();
+    }
+
     try {
       // /api/bff/... → /api/... 변환 (백엔드는 /bff 경로 없음)
       const backendPath = req.nextUrl.pathname.replace(/^\/api\/bff/, '/api');
