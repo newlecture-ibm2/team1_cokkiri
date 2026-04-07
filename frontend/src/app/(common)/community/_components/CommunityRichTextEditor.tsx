@@ -67,12 +67,12 @@ export function CommunityRichTextEditor({ value, onChange, placeholder, id }: Pr
         const fd = new FormData();
         fd.append("file", file);
         try {
-          const res = await fetch("/api/bff/posts/upload-editor-image", {
+          const res = await fetch("/api/posts/upload-editor-image", {
             method: "POST",
             body: fd,
             credentials: "include",
           });
-          if (res.status === 401) {
+          if (res.status === 401 || res.status === 403) {
             setUploadError(LOGIN_REQUIRED_MESSAGE);
             setShowLoginModal(true);
             return;

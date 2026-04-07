@@ -23,11 +23,11 @@ import {
   type VocCategoryCode,
   type VocAttachment,
   type VocDetail,
-} from "../../../_types/vocs";
+} from "../_types/vocs";
 import { CancelModal } from "@/components/shared/CancelModal";
 
 const VocRichTextEditor = dynamic(
-  () => import("../../../_components/VocRichTextEditor").then((m) => ({ default: m.VocRichTextEditor })),
+  () => import("./VocRichTextEditor").then((m) => ({ default: m.VocRichTextEditor })),
   {
     ssr: false,
     loading: () => (
@@ -107,12 +107,12 @@ export function VocEditForm({ initial }: Props) {
           }
         }
 
-        const res = await fetch(`/api/bff/vocs/${initial.vocId}`, {
+        const res = await fetch(`/api/vocs/${initial.vocId}`, {
           method: "PUT",
           credentials: "include",
           body: formData,
         });
-        if (res.status === 401) {
+        if (res.status === 401 || res.status === 403) {
           setError(LOGIN_REQUIRED_MESSAGE);
           setShowLoginModal(true);
           return;
@@ -130,7 +130,7 @@ export function VocEditForm({ initial }: Props) {
           );
           return;
         }
-        router.push(`/vocs/${initial.vocId}`);
+        router.push(`/profile/vocs/${initial.vocId}`);
         router.refresh();
       } catch {
         setError("네트워크 오류가 발생했습니다. 연결을 확인한 뒤 다시 시도해 주세요.");
@@ -142,7 +142,7 @@ export function VocEditForm({ initial }: Props) {
     <form onSubmit={submit} className="mx-auto max-w-2xl space-y-10">
       <LoginRequiredModal isOpen={showLoginModal} onClose={() => setShowLoginModal(false)} />
       <Link
-        href={`/vocs/${initial.vocId}`}
+        href={`/profile/vocs/${initial.vocId}`}
         className="group inline-flex items-center gap-2 font-black text-xs uppercase tracking-[0.3em] text-secondary transition-colors hover:text-foreground"
       >
         <ArrowLeft className="size-4 transition-transform group-hover:-translate-x-0.5" aria-hidden />
@@ -278,7 +278,7 @@ export function VocEditForm({ initial }: Props) {
       <CancelModal
         isOpen={showCancelModal}
         onClose={() => setShowCancelModal(false)}
-        onConfirm={() => router.push(`/vocs/${initial.vocId}`)}
+        onConfirm={() => router.push(`/profile/vocs/${initial.vocId}`)}
       />
     </form>
   );

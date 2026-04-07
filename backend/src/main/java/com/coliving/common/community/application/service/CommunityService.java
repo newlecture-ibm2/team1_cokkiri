@@ -210,6 +210,7 @@ public class CommunityService implements CommunityUseCase {
         Comment created = repositoryPort.createComment(
                 command.getPostId(),
                 command.getActorId(),
+                command.getParentCommentId(),
                 command.getContent()
         );
 

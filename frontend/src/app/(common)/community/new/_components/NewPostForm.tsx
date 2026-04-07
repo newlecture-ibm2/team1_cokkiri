@@ -91,12 +91,12 @@ export function NewPostForm() {
           }
         }
 
-        const res = await fetch("/api/bff/posts", {
+        const res = await fetch("/api/posts", {
           method: "POST",
           credentials: "include",
           body: formData,
         });
-        if (res.status === 401) {
+        if (res.status === 401 || res.status === 403) {
           setSubmitError(LOGIN_REQUIRED_MESSAGE);
           setShowLoginModal(true);
           return;

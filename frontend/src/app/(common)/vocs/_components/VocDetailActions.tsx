@@ -21,11 +21,11 @@ export function VocDetailActions({ vocId, status }: { vocId: number; status: str
 
     startTransition(async () => {
       try {
-        const res = await fetch(`/api/bff/vocs/${vocId}/cancel`, {
+        const res = await fetch(`/api/vocs/${vocId}/cancel`, {
           method: "POST",
           credentials: "include",
         });
-        if (res.status === 401) {
+        if (res.status === 401 || res.status === 403) {
           setShowLoginModal(true);
           return;
         }
@@ -47,7 +47,7 @@ export function VocDetailActions({ vocId, status }: { vocId: number; status: str
       <LoginRequiredModal isOpen={showLoginModal} onClose={() => setShowLoginModal(false)} />
       <div className="mt-10 flex flex-wrap items-center justify-end gap-3 border-t border-border pt-10">
         <Link
-          href={`/vocs/${vocId}/edit`}
+          href={`/profile/vocs/${vocId}/edit`}
           className="inline-flex items-center gap-2 rounded-xl border border-secondary bg-secondary/15 px-5 py-2.5 text-[11px] font-black uppercase tracking-wider text-secondary transition-transform hover:-translate-y-0.5"
         >
           <Pencil className="size-4" aria-hidden />

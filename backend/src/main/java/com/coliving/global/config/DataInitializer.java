@@ -406,6 +406,21 @@ public class DataInitializer implements ApplicationRunner {
                 "프리미엄 방 입주 희망", null,
                 admin.getUserId(), "현재 해당 호실은 리모델링 예정으로 입주가 어렵습니다.");
 
+        // 6) PENDING — user3이 301호에 추가 신청 (중복 신청 시나리오 테스트용)
+        ensureContract(user3.getUserId(), s301.getSpaceId(), ContractStatus.PENDING, ContractOrigin.USER_INITIATED,
+                "서울시 서초구 방배동 555", "555-555-555555",
+                LocalDate.now().plusMonths(2), 24,
+                "직장 근처 이사", "채광이 중요합니다.",
+                null, null, null, null, null, null, null);
+
+        // 7) APPROVED — user4가 302호 승인됨 (체결 대기 시나리오)
+        ensureContract(user4.getUserId(), s302.getSpaceId(), ContractStatus.APPROVED, ContractOrigin.USER_INITIATED,
+                "경기도 성남시 분당구 111", "111-111-111111",
+                LocalDate.now().plusWeeks(3), 12,
+                "신규 입사", "깔끔한 방 부탁드려요.",
+                admin.getUserId(), LocalDate.now().plusWeeks(3), LocalDate.now().plusMonths(12).plusWeeks(3),
+                new BigDecimal("700000"), new BigDecimal("10000000"), "특약 사항 없음", null);
+
         log.info("[DataInitializer] 계약 시드 데이터 적재 완료 (DRAFT/PENDING/APPROVED/ACTIVE/REJECTED)");
     }
 

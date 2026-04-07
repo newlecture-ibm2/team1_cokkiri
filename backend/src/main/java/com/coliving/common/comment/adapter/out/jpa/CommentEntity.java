@@ -33,6 +33,10 @@ public class CommentEntity extends BaseEntity {
     @JoinColumn(name = "post_id", nullable = false)
     private PostEntity post;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "parent_comment_id")
+    private CommentEntity parentComment;
+
     @Column(name = "user_id", nullable = false)
     private Long userId;
 
@@ -43,8 +47,16 @@ public class CommentEntity extends BaseEntity {
         return post == null ? null : post.getPostId();
     }
 
+    public Long getParentCommentId() {
+        return parentComment == null ? null : parentComment.getCommentId();
+    }
+
     public void setPost(PostEntity post) {
         this.post = post;
+    }
+
+    public void setParentComment(CommentEntity parentComment) {
+        this.parentComment = parentComment;
     }
 
     public void setUserId(Long userId) {

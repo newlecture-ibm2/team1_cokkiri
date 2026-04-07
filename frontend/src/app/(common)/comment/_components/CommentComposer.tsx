@@ -23,13 +23,13 @@ export function CommentComposer({ postId }: { postId: number }) {
     setError(null);
     startTransition(async () => {
       try {
-        const res = await fetch(`/api/bff/posts/${postId}/comments`, {
+        const res = await fetch(`/api/posts/${postId}/comments`, {
           method: "POST",
           credentials: "include",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ content: text }),
         });
-        if (res.status === 401) {
+        if (res.status === 401 || res.status === 403) {
           setShowLoginModal(true);
           return;
         }

@@ -11,14 +11,14 @@ export function Footer() {
     explore: [
       { name: "Living Spaces", path: "/rooms" },
       { name: "Community", path: "/community" },
-      { name: "VOC", path: "/vocs" },
+      { name: "My VOC", path: "/profile/vocs" },
       { name: "IoT Guide", path: "/rooms" },
     ],
     community: [
       { name: "Board", path: "/community" },
       { name: "Event", path: "/" },
       { name: "Notice", path: "/" },
-      { name: "VOC", path: "/vocs" },
+      { name: "My VOC", path: "/profile/vocs" },
     ],
     support: [
       { name: "Notification", path: "/notifications" },
@@ -26,7 +26,7 @@ export function Footer() {
       { name: "Device", path: "/" },
       { name: "Contract", path: "/" },
       { name: "Reservation", path: "/" },
-      { name: "Concierge", path: "/vocs" },
+      { name: "Concierge", path: "/profile/vocs" },
       { name: "Terms & Privacy", path: "/community" },
     ],
   };

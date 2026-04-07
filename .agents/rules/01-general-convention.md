@@ -24,9 +24,10 @@ trigger: always_on
   - 경로 변수는 명세와 동일하게 쓴다. 방 상세는 **`/api/rooms/{roomId}`** 처럼 `roomId` 사용(내부적으로 space id).
 
 ### 1-1. BFF (Next.js) — 프론트 호출면
-- 브라우저·클라이언트 컴포넌트는 **`/api/bff/...`** 만 호출한다. 백엔드 호스트는 서버 전용 환경변수로만 둔다.
-- **`bff` 뒤의 경로**는 백엔드와 **동일한 `/api/` 이하 세그먼트**와 1:1 대응한다(예: `GET /api/bff/rooms` → Spring `GET /api/rooms`). 역할 프리픽스 `/user/`, `/resident/` URL 삽입은 **필수 아님**(Spring Security·`@PreAuthorize`로 인가).
-- 문서 역할: 백엔드 스펙 = `api-specification.md`(`bff` 없음) · 프록시·env = `initial-project-setup.md` §6.
+- 브라우저·클라이언트 컴포넌트는 백엔드와 동일하게 **`/api/...`** 만 호출한다. 백엔드 호스트는 서버 전용 환경변수로만 둔다.
+- **프록시 경로**는 백엔드와 **동일한 `/api/` 이하 세그먼트**와 1:1 대응하며, 미들웨어가 이를 가로채 포워딩한다(예: 브라우저 `GET /api/rooms` → Next Middleware → Spring `GET /api/rooms`). 역할 프리픽스 `/user/`, `/resident/` URL 삽입은 **필수 아님**(Spring Security·`@PreAuthorize`로 인가).
+- 프론트엔드 코드 내에 수동으로 `/bff` 등을 추가할 필요가 없다.
+- 문서 역할: 백엔드 스펙 = `api-specification.md` · 프록시·env = `initial-project-setup.md` §6.
 
 ### 2. Core Policies (핵심 데이터 규칙)
 - **Soft Delete 지침 (BaseEntity 활용 강제):**

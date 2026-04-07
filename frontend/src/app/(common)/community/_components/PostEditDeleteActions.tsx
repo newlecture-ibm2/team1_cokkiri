@@ -120,11 +120,11 @@ export function PostEditDeleteActions({
     if (!confirm("이 게시글을 삭제할까요?")) return;
 
     startTransition(async () => {
-      const res = await fetch(`/api/bff/posts/${postId}`, {
+      const res = await fetch(`/api/posts/${postId}`, {
         method: "DELETE",
         credentials: "include",
       });
-      if (res.status === 401) {
+      if (res.status === 401 || res.status === 403) {
         setSubmitError(LOGIN_REQUIRED_MESSAGE);
         setShowLoginModal(true);
         return;
@@ -184,12 +184,12 @@ export function PostEditDeleteActions({
           }
         }
 
-        const res = await fetch(`/api/bff/posts/${postId}`, {
+        const res = await fetch(`/api/posts/${postId}`, {
           method: "PUT",
           credentials: "include",
           body: formData,
         });
-        if (res.status === 401) {
+        if (res.status === 401 || res.status === 403) {
           setSubmitError(LOGIN_REQUIRED_MESSAGE);
           setShowLoginModal(true);
           return;

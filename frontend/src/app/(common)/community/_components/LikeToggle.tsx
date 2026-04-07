@@ -23,12 +23,12 @@ export function LikeToggle({ postId, initialLiked, initialCount }: Props) {
   function toggle() {
     startTransition(async () => {
       try {
-        const res = await fetch(`/api/bff/posts/${postId}/like`, {
+        const res = await fetch(`/api/posts/${postId}/like`, {
           method: "POST",
           credentials: "include",
           headers: { "Content-Type": "application/json" },
         });
-        if (res.status === 401) {
+        if (res.status === 401 || res.status === 403) {
           setShowLoginModal(true);
           return;
         }

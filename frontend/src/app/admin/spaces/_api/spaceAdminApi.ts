@@ -41,13 +41,13 @@ export interface SpaceDTO {
 }
 
 export const fetchSpaces = async () => {
-  const res = await fetch('/api/bff/admin/spaces');
+  const res = await fetch('/api/admin/spaces');
   if (!res.ok) throw new Error('Failed to fetch spaces');
   return res.json();
 };
 
 export const createSpace = async (data: SpaceDTO) => {
-  const res = await fetch('/api/bff/admin/spaces', {
+  const res = await fetch('/api/admin/spaces', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(data),
@@ -62,7 +62,7 @@ export const uploadSpaceImage = async (spaceId: number, file: File, isThumbnail:
   formData.append('imageType', 'PHOTO');
   formData.append('isThumbnail', String(isThumbnail));
 
-  const res = await fetch(`/api/bff/admin/spaces/${spaceId}/images`, {
+  const res = await fetch(`/api/admin/spaces/${spaceId}/images`, {
     method: 'POST',
     body: formData,
   });
@@ -71,13 +71,13 @@ export const uploadSpaceImage = async (spaceId: number, file: File, isThumbnail:
 };
 
 export const fetchSpace = async (spaceId: number) => {
-  const res = await fetch(`/api/bff/admin/spaces/${spaceId}`);
+  const res = await fetch(`/api/admin/spaces/${spaceId}`);
   if (!res.ok) throw new Error('Failed to fetch space');
   return res.json();
 };
 
 export const updateSpace = async (spaceId: number, data: Partial<SpaceDTO>) => {
-  const res = await fetch(`/api/bff/admin/spaces/${spaceId}`, {
+  const res = await fetch(`/api/admin/spaces/${spaceId}`, {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(data),
@@ -87,7 +87,7 @@ export const updateSpace = async (spaceId: number, data: Partial<SpaceDTO>) => {
 };
 
 export const deleteSpace = async (spaceId: number) => {
-  const res = await fetch(`/api/bff/admin/spaces/${spaceId}`, {
+  const res = await fetch(`/api/admin/spaces/${spaceId}`, {
     method: 'DELETE',
   });
   if (!res.ok) throw new Error('Failed to delete space');
@@ -97,13 +97,13 @@ export const deleteSpace = async (spaceId: number) => {
 // ===== Room Type (방 유형) API =====
 
 export const fetchRoomTypes = async (): Promise<{ success: boolean; data: RoomTypeDTO[] }> => {
-  const res = await fetch('/api/bff/admin/room-types');
+  const res = await fetch('/api/admin/room-types');
   if (!res.ok) throw new Error('Failed to fetch room types');
   return res.json();
 };
 
 export const createRoomType = async (data: { code: string; name: string }) => {
-  const res = await fetch('/api/bff/admin/room-types', {
+  const res = await fetch('/api/admin/room-types', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(data),
@@ -113,7 +113,7 @@ export const createRoomType = async (data: { code: string; name: string }) => {
 };
 
 export const updateRoomType = async (roomTypeId: number, data: { name: string }) => {
-  const res = await fetch(`/api/bff/admin/room-types/${roomTypeId}`, {
+  const res = await fetch(`/api/admin/room-types/${roomTypeId}`, {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(data),
@@ -123,7 +123,7 @@ export const updateRoomType = async (roomTypeId: number, data: { name: string })
 };
 
 export const deleteRoomType = async (roomTypeId: number) => {
-  const res = await fetch(`/api/bff/admin/room-types/${roomTypeId}`, {
+  const res = await fetch(`/api/admin/room-types/${roomTypeId}`, {
     method: 'DELETE',
   });
   if (!res.ok) {

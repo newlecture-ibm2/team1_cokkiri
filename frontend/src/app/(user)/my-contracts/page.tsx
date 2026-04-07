@@ -34,7 +34,7 @@ export default function MyContractsPage() {
     const fetchContracts = async () => {
       setIsLoading(true);
       try {
-        const response = await fetch("/api/bff/contracts/my");
+        const response = await fetch("/api/contracts/my");
         if (!response.ok) throw new Error("계약 내역을 불러오는데 실패했습니다.");
         const result: ApiResponse<ContractDraftResult[]> = await response.json();
         if (result.success && result.data) {
@@ -77,7 +77,7 @@ export default function MyContractsPage() {
     if (!signingContractId) return;
     setIsSubmitting(true);
     try {
-      const response = await fetch(`/api/bff/contracts/${signingContractId}/sign`, {
+      const response = await fetch(`/api/contracts/${signingContractId}/sign`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",

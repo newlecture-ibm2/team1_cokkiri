@@ -43,13 +43,18 @@ public class CommentPersistenceAdapter implements CommentRepositoryPort {
     }
 
     @Override
-    public Comment createComment(Long postId, Long userId, String content) {
+    public Comment createComment(Long postId, Long userId, Long parentCommentId, String content) {
         if (!postJpaRepository.existsById(postId)) {
             throw new BusinessException(ErrorCode.NOT_FOUND);
         }
 
         CommentEntity entity = new CommentEntity();
         entity.setPost(postJpaRepository.getReferenceById(postId));
+        if (parentCommentId != null) {
+            CommentEntity parent = commentJpaRepository.findByCommentIdAndPost_PostId(parentCommentId, postId)
+                    .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND));
+            entity.setParentComment(parent);
+        }
         entity.setUserId(userId);
         entity.setContent(content);
         entity = commentJpaRepository.save(entity);
@@ -68,6 +73,11 @@ public class CommentPersistenceAdapter implements CommentRepositoryPort {
         entity = commentJpaRepository.save(entity);
 
         return mapCommentEntityToModel(entity);
+    }
+
+    @Override
+    public boolean hasActiveChildren(Long commentId) {
+        return commentJpaRepository.existsByParentComment_CommentId(commentId);
     }
 
     @Override
@@ -97,6 +107,7 @@ public class CommentPersistenceAdapter implements CommentRepositoryPort {
         return Comment.builder()
                 .commentId(entity.getCommentId())
                 .postId(entity.getPostId())
+                .parentCommentId(entity.getParentCommentId())
                 .userId(entity.getUserId())
                 .content(entity.getContent())
                 .createdAt(entity.getCreatedAt())

@@ -155,8 +155,8 @@ public class CommunityPersistenceAdapter implements CommunityRepositoryPort {
     }
 
     @Override
-    public Comment createComment(Long postId, Long userId, String content) {
-        return commentRepositoryPort.createComment(postId, userId, content);
+    public Comment createComment(Long postId, Long userId, Long parentCommentId, String content) {
+        return commentRepositoryPort.createComment(postId, userId, parentCommentId, content);
     }
 
     @Override

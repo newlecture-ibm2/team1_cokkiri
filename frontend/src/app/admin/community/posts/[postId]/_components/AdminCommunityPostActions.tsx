@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { Trash2, Loader2 } from "lucide-react";
 import { bffErrorMessageFromResponse } from "@/lib/bff-error-message";
+import { LoginRequiredModal } from "@/components/shared/LoginRequiredModal";
 
 type Props = {
   postId: number;
@@ -14,6 +15,7 @@ export function AdminCommunityPostActions({ postId }: Props) {
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
   const [success, setSuccess] = useState<string | null>(null);
+  const [showAuthModal, setShowAuthModal] = useState(false);
 
   function handleDelete() {
     if (pending) return;
@@ -23,10 +25,13 @@ export function AdminCommunityPostActions({ postId }: Props) {
     setSuccess(null);
     startTransition(async () => {
       try {
-        const res = await fetch(`/api/bff/admin/posts/${postId}`, {
+        const res = await fetch(`/api/admin/posts/${postId}`, {
           method: "DELETE",
           credentials: "include",
         });
+        if (res.status === 401 || res.status === 403) {
+          setShowAuthModal(true);
+        }
         if (!res.ok) {
           setError(await bffErrorMessageFromResponse(res, "게시글 삭제에 실패했습니다."));
           return;
@@ -41,6 +46,12 @@ export function AdminCommunityPostActions({ postId }: Props) {
 
   return (
     <div className="mt-8 space-y-3 border-t border-border pt-6">
+      <LoginRequiredModal
+        isOpen={showAuthModal}
+        onClose={() => setShowAuthModal(false)}
+        title="관리자 권한이 필요합니다."
+        description="관리자 계정으로 로그인 후 다시 시도해 주세요."
+      />
       {error ? <p className="text-sm font-medium text-destructive">{error}</p> : null}
       {success ? <p className="text-sm font-medium text-primary">{success}</p> : null}
       <button

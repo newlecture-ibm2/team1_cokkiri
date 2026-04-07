@@ -26,16 +26,14 @@ const navItems: NavItem[] = [
   },
   {
     name: "Community",
-    children: [
-      { name: "Board", path: "/community" },
-      { name: "Voc", path: "/vocs" },
-    ],
+    children: [{ name: "Board", path: "/community" }],
   },
   {
     name: "My",
     children: [
       { name: "Notification", path: "/notifications" },
       { name: "Profile", path: "/profile" },
+      { name: "My VOC", path: "/profile/vocs" },
       { name: "My Contracts", path: "/my-contracts" },
       { name: "Logout", path: "/login" },
     ],
@@ -139,9 +137,13 @@ export function Header() {
       active ? "underline underline-offset-8 opacity-100" : "opacity-40",
     );
 
-  const subLinkClass = (active: boolean) =>
+  /** `compact`: My 메뉴 등 항목이 많을 때 드롭다운 글자만 살짝 축소 */
+  const subLinkClass = (active: boolean, compact?: boolean) =>
     cn(
-      "flex w-full items-center justify-center text-center text-balance whitespace-nowrap rounded-md py-2.5 text-sm font-black tracking-[0.16em] text-primary uppercase transition-colors hover:bg-primary/5 md:py-3 md:text-[0.95rem] md:tracking-[0.18em]",
+      "flex w-full items-center justify-center text-center text-balance whitespace-nowrap rounded-md font-black text-primary uppercase transition-colors hover:bg-primary/5",
+      compact
+        ? "py-2 text-xs tracking-[0.12em] md:py-2.5 md:text-[0.8125rem] md:tracking-[0.14em]"
+        : "py-2.5 text-sm tracking-[0.16em] md:py-3 md:text-[0.95rem] md:tracking-[0.18em]",
       active ? "bg-primary/10 text-primary" : "text-primary/70",
     );
 
@@ -227,7 +229,10 @@ export function Header() {
                                 <motion.div key={child.path} variants={dropdownLinkVariants} className="w-full">
                                   <Link
                                     href={child.path}
-                                    className={subLinkClass(pathActive(pathname, child.path))}
+                                    className={subLinkClass(
+                                      pathActive(pathname, child.path),
+                                      item.name === "My",
+                                    )}
                                     role="menuitem"
                                   >
                                     {child.name}
@@ -367,7 +372,10 @@ export function Header() {
                                         href={child.path}
                                         onClick={() => setIsMobileMenuOpen(false)}
                                         className={cn(
-                                          "block rounded-lg py-3.5 pl-5 text-base font-black tracking-[0.22em] uppercase transition-colors",
+                                          "block rounded-lg py-3 pl-5 font-black uppercase transition-colors",
+                                          item.name === "My"
+                                            ? "text-sm tracking-[0.18em]"
+                                            : "py-3.5 text-base tracking-[0.22em]",
                                           active
                                             ? "border-l-2 border-l-secondary bg-primary/5 text-primary"
                                             : "text-primary/50 hover:text-primary",
