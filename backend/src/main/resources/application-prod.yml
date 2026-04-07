@@ -1,6 +1,8 @@
 app:
   demo-data:
-    enabled: true
+    enabled: false
+  upload:
+    dir: ${APP_UPLOAD_DIR:/var/lib/cokkiri/uploads}
 
 spring:
   datasource:
