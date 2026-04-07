@@ -12,9 +12,11 @@ public interface CommentRepositoryPort {
 
     Optional<Comment> findCommentById(Long commentId);
 
-    Comment createComment(Long postId, Long userId, String content);
+    Comment createComment(Long postId, Long userId, Long parentCommentId, String content);
 
     Comment updateComment(Long commentId, String content);
+
+    boolean hasActiveChildren(Long commentId);
 
     void softDeleteComment(Long commentId);
 

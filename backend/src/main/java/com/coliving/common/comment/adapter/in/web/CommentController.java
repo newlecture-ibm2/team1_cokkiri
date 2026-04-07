@@ -35,6 +35,7 @@ public class CommentController {
                 .actorId(actor.actorId)
                 .actorRole(actor.actorRole)
                 .postId(postId)
+                .parentCommentId(request.getParentCommentId())
                 .content(request.getContent())
                 .build();
 

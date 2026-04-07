@@ -260,6 +260,7 @@ public class CommunityController {
 
         return PostCommentResponseDto.builder()
                 .commentId(comment.getCommentId())
+                .parentCommentId(comment.getParentCommentId())
                 .content(comment.getContent())
                 .author(author)
                 .createdAt(comment.getCreatedAt())
