@@ -1,5 +1,6 @@
 package com.coliving.common.community.adapter.out.persistence;
 
+import com.coliving.common.community.adapter.out.cache.CommunityViewCountCache;
 import com.coliving.common.community.adapter.out.jpa.PostEntity;
 import com.coliving.common.community.adapter.out.jpa.PostJpaRepository;
 import com.coliving.common.community.adapter.out.jpa.PostLikeEntity;
@@ -31,15 +32,18 @@ public class CommunityPersistenceAdapter implements CommunityRepositoryPort {
     private final PostLikeJpaRepository postLikeJpaRepository;
     private final CommentRepositoryPort commentRepositoryPort;
     private final ObjectMapper objectMapper;
+    private final CommunityViewCountCache viewCountCache;
 
     public CommunityPersistenceAdapter(PostJpaRepository postJpaRepository,
                                        PostLikeJpaRepository postLikeJpaRepository,
                                        CommentRepositoryPort commentRepositoryPort,
-                                       ObjectMapper objectMapper) {
+                                       ObjectMapper objectMapper,
+                                       CommunityViewCountCache viewCountCache) {
         this.postJpaRepository = postJpaRepository;
         this.postLikeJpaRepository = postLikeJpaRepository;
         this.commentRepositoryPort = commentRepositoryPort;
         this.objectMapper = objectMapper;
+        this.viewCountCache = viewCountCache;
     }
 
     @Override
@@ -76,20 +80,17 @@ public class CommunityPersistenceAdapter implements CommunityRepositoryPort {
             PostLikeEntity likeEntity = existingLike.get();
             likeEntity.softDelete();
             postLikeJpaRepository.save(likeEntity);
-
-            postEntity.decreaseLikeCount();
-            postJpaRepository.save(postEntity);
+            postJpaRepository.decreaseLikeCount(postId);
         } else {
             PostLikeEntity likeEntity = new PostLikeEntity();
             likeEntity.setPost(postEntity);
             likeEntity.setUserId(userId);
             postLikeJpaRepository.save(likeEntity);
-
-            postEntity.increaseLikeCount();
-            postJpaRepository.save(postEntity);
+            postJpaRepository.increaseLikeCount(postId);
         }
-
-        return mapPostEntityToModel(postEntity);
+        PostEntity refreshed = postJpaRepository.findById(postId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND));
+        return mapPostEntityToModel(refreshed);
     }
 
     @Override
@@ -148,10 +149,23 @@ public class CommunityPersistenceAdapter implements CommunityRepositoryPort {
     public Post incrementViewCount(Long postId) {
         PostEntity entity = postJpaRepository.findById(postId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND));
-
-        entity.incrementViewCount();
-        entity = postJpaRepository.save(entity);
-        return mapPostEntityToModel(entity);
+        long delta = viewCountCache.incrementAndGetDelta(postId);
+        Post base = mapPostEntityToModel(entity);
+        int mergedViewCount = (base.getViewCount() == null ? 0 : base.getViewCount()) + (int) Math.max(0L, delta);
+        return Post.builder()
+                .postId(base.getPostId())
+                .userId(base.getUserId())
+                .category(base.getCategory())
+                .title(base.getTitle())
+                .content(base.getContent())
+                .attachments(base.getAttachments())
+                .links(base.getLinks())
+                .viewCount(mergedViewCount)
+                .likeCount(base.getLikeCount())
+                .commentCount(base.getCommentCount())
+                .createdAt(base.getCreatedAt())
+                .updatedAt(base.getUpdatedAt())
+                .build();
     }
 
     @Override

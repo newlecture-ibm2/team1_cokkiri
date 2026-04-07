@@ -1,5 +1,6 @@
 package com.coliving.common.community.application.service;
 
+import com.coliving.common.community.adapter.out.cache.CommunityLikeActionGuard;
 import com.coliving.common.community.application.command.*;
 import com.coliving.common.community.application.port.in.CommunityUseCase;
 import com.coliving.common.community.application.port.out.CommunityRepositoryPort;
@@ -33,9 +34,12 @@ public class CommunityService implements CommunityUseCase {
     );
 
     private final CommunityRepositoryPort repositoryPort;
+    private final CommunityLikeActionGuard likeActionGuard;
 
-    public CommunityService(CommunityRepositoryPort repositoryPort) {
+    public CommunityService(CommunityRepositoryPort repositoryPort,
+                            CommunityLikeActionGuard likeActionGuard) {
         this.repositoryPort = repositoryPort;
+        this.likeActionGuard = likeActionGuard;
     }
 
     @Override
@@ -194,14 +198,17 @@ public class CommunityService implements CommunityUseCase {
     @Override
     @Transactional
     public ToggleLikeResult toggleLike(TogglePostLikeCommand command) {
-        Post after = repositoryPort.toggleLike(command.getPostId(), command.getActorId());
-        boolean likedByMe = repositoryPort.isLikedByMe(command.getPostId(), command.getActorId());
+        try (CommunityLikeActionGuard.LockHandle ignored =
+                     likeActionGuard.acquire(command.getPostId(), command.getActorId())) {
+            Post after = repositoryPort.toggleLike(command.getPostId(), command.getActorId());
+            boolean likedByMe = repositoryPort.isLikedByMe(command.getPostId(), command.getActorId());
 
-        return ToggleLikeResult.builder()
-                .postId(after.getPostId())
-                .liked(likedByMe)
-                .likeCount(after.getLikeCount())
-                .build();
+            return ToggleLikeResult.builder()
+                    .postId(after.getPostId())
+                    .liked(likedByMe)
+                    .likeCount(after.getLikeCount())
+                    .build();
+        }
     }
 
     @Override
