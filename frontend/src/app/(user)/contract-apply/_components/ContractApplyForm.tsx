@@ -70,7 +70,7 @@ export default function ContractApplyForm() {
         }
 
         // 2. Fetch from Server for latest truth
-        const response = await fetch(`/api/bff/contracts/draft?spaceId=${spaceId}`);
+        const response = await fetch(`/api/contracts/draft?spaceId=${spaceId}`);
         if (response.ok) {
           const result = await response.json();
           if (result.success && result.data) {
@@ -100,7 +100,7 @@ export default function ContractApplyForm() {
   const saveDraft = useCallback(async (data: ContractFormData, isManual: boolean = false) => {
     if (isManual) setIsSaving(true);
     try {
-      await fetch('/api/bff/contracts/draft', {
+      await fetch('/api/contracts/draft', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ ...data, spaceId: Number(spaceId) })
@@ -153,7 +153,7 @@ export default function ContractApplyForm() {
     setError(null);
 
     try {
-      const response = await fetch('/api/bff/contracts/submit', {
+      const response = await fetch('/api/contracts/submit', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 

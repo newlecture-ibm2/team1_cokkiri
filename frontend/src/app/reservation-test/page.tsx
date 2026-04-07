@@ -38,7 +38,7 @@ export default function ReservationTestPage() {
 
   const fetchFacilities = async () => {
     try {
-      const res = await fetch("/api/bff/facilities");
+      const res = await fetch("/api/facilities");
       const data = await res.json();
       if (data.success) {
         setFacilities(data.data);
@@ -53,7 +53,7 @@ export default function ReservationTestPage() {
 
   const fetchMyReservations = async () => {
     try {
-      const res = await fetch("/api/bff/reservations", {
+      const res = await fetch("/api/reservations", {
         headers: { "X-User-Id": userId },
       });
       const data = await res.json();
@@ -69,7 +69,7 @@ export default function ReservationTestPage() {
 
   const fetchAdminReservations = async () => {
     try {
-      const res = await fetch("/api/bff/admin/reservations", {
+      const res = await fetch("/api/admin/reservations", {
         headers: { "X-Admin-Id": adminId },
       });
       const data = await res.json();
@@ -85,7 +85,7 @@ export default function ReservationTestPage() {
 
   const createReservation = async () => {
     try {
-      const res = await fetch("/api/bff/reservations", {
+      const res = await fetch("/api/reservations", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -113,7 +113,7 @@ export default function ReservationTestPage() {
 
   const cancelReservation = async (resId: number) => {
     try {
-      const res = await fetch(`/api/bff/reservations/${resId}/cancel`, {
+      const res = await fetch(`/api/reservations/${resId}/cancel`, {
         method: "PATCH",
         headers: { "X-User-Id": userId },
       });
@@ -132,7 +132,7 @@ export default function ReservationTestPage() {
 
   const adminPatchReservation = async (resId: number, action: "approve" | "reject") => {
     try {
-      const res = await fetch(`/api/bff/admin/reservations/${resId}/${action}`, {
+      const res = await fetch(`/api/admin/reservations/${resId}/${action}`, {
         method: "PATCH",
         headers: { "X-Admin-Id": adminId },
       });

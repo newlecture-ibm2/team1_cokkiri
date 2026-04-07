@@ -23,7 +23,7 @@ export function AdminCommunityCommentActions({ commentId }: Props) {
     setSuccess(null);
     startTransition(async () => {
       try {
-        const res = await fetch(`/api/bff/admin/comments/${commentId}`, {
+        const res = await fetch(`/api/admin/comments/${commentId}`, {
           method: "DELETE",
           credentials: "include",
         });

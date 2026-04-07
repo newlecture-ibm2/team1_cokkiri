@@ -91,7 +91,7 @@ export function NewPostForm() {
           }
         }
 
-        const res = await fetch("/api/bff/posts", {
+        const res = await fetch("/api/posts", {
           method: "POST",
           credentials: "include",
           body: formData,

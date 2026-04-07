@@ -9,13 +9,13 @@ export const VOC_BODY_HTML_MAX_LENGTH = 65535;
 /** 민원 본문의 `/api/files/voc/...` 를 BFF 경로로 바꿉니다. */
 export function normalizeVocApiFileUrlsToBff(html: string): string {
   if (!html) return html;
-  return html.replaceAll("/api/files/voc/", "/api/bff/files/voc/");
+  return html.replaceAll("/api/files/voc/", "/api/files/voc/");
 }
 
 /** 저장 직전: BFF 경로를 API 규약으로 되돌립니다. */
 export function normalizeVocBffFileUrlsToApi(html: string): string {
   if (!html) return html;
-  return html.replaceAll("/api/bff/files/voc/", "/api/files/voc/");
+  return html.replaceAll("/api/files/voc/", "/api/files/voc/");
 }
 
 /** 상세 화면용: 업로드 파일 URL만 BFF로 (폐쇄형, 외부 이미지 없음). */

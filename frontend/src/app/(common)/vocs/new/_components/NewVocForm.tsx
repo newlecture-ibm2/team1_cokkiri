@@ -80,7 +80,7 @@ export function NewVocForm() {
           }
         }
 
-        const res = await fetch("/api/bff/vocs", {
+        const res = await fetch("/api/vocs", {
           method: "POST",
           credentials: "include",
           body: formData,

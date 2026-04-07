@@ -214,7 +214,7 @@ PENDING목록→승인: 조건확정(startDate,endDate,rent,deposit,specialTerms
 ## 5. BFF/Gateway
 
 ### 5.1 라우팅 | GW-ROUTE-01 | Must
-Next **`/api/bff/...`** 는 Spring **`/api/...`** 와 **동일 경로**로 프록시한다(예: BFF `GET /api/bff/rooms` → Spring `GET /api/rooms`). URL에 `/user/`, `/resident/` 등 역할 프리픽스를 두는 방식은 **필수 아님** — 인가는 Spring Security·`@PreAuthorize`로 처리. Mock IoT 등 예외 경로만 별도 라우팅.
+Next 미들웨어가 프론트엔드의 **`/api/...`** 요청을 가로채어 Spring **`/api/...`** 와 **동일 경로**로 프록시한다(예: 클라이언트 `GET /api/rooms` → 미들웨어 → Spring `GET /api/rooms`). 과거의 `/bff` 세그먼트는 더 이상 사용하지 않는다. URL에 `/user/`, `/resident/` 등 역할 프리픽스를 두는 방식은 **필수 아님** — 인가는 Spring Security·`@PreAuthorize`로 처리. Mock IoT 등 예외 경로만 별도 라우팅.
 
 ### 5.2 인증/인가 | GW-AUTH-01 | Must
 JWT검증→역할기반인가. IoT접근: ①role=RESIDENT/ADMIN아니면403 ②RESIDENT→space_id비교→불일치시403 ③ADMIN→전체허용

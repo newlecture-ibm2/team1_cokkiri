@@ -67,7 +67,7 @@ export function VocRichTextEditor({ value, onChange, placeholder, id }: Props) {
         const fd = new FormData();
         fd.append("file", file);
         try {
-          const res = await fetch("/api/bff/vocs/upload-editor-image", {
+          const res = await fetch("/api/vocs/upload-editor-image", {
             method: "POST",
             body: fd,
             credentials: "include",

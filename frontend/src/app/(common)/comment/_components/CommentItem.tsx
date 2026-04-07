@@ -66,7 +66,7 @@ export function CommentItem({
     setError(null);
     startTransition(async () => {
       try {
-        const res = await fetch(`/api/bff/comments/${commentId}`, {
+        const res = await fetch(`/api/comments/${commentId}`, {
           method: "PUT",
           credentials: "include",
           headers: { "Content-Type": "application/json" },
@@ -95,7 +95,7 @@ export function CommentItem({
     setError(null);
     startTransition(async () => {
       try {
-        const res = await fetch(`/api/bff/comments/${commentId}`, {
+        const res = await fetch(`/api/comments/${commentId}`, {
           method: "DELETE",
           credentials: "include",
         });

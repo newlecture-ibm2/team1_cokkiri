@@ -23,7 +23,7 @@ export function AdminCommunityPostActions({ postId }: Props) {
     setSuccess(null);
     startTransition(async () => {
       try {
-        const res = await fetch(`/api/bff/admin/posts/${postId}`, {
+        const res = await fetch(`/api/admin/posts/${postId}`, {
           method: "DELETE",
           credentials: "include",
         });

@@ -32,7 +32,7 @@ const secretKey = new TextEncoder().encode(JWT_SECRET);
 export async function middleware(req: NextRequest) {
   if (req.nextUrl.pathname.startsWith('/api/')) {
     try {
-      // /api/bff/... → /api/... 변환 (백엔드는 /bff 경로 없음)
+      // /api/... → /api/... 변환 (백엔드는 /bff 경로 없음)
       const backendPath = req.nextUrl.pathname.replace(/^\/api\/bff/, '/api');
       const url = `${BACKEND_URL}${backendPath}${req.nextUrl.search}`;
 

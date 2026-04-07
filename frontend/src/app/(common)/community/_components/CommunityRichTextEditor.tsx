@@ -67,7 +67,7 @@ export function CommunityRichTextEditor({ value, onChange, placeholder, id }: Pr
         const fd = new FormData();
         fd.append("file", file);
         try {
-          const res = await fetch("/api/bff/posts/upload-editor-image", {
+          const res = await fetch("/api/posts/upload-editor-image", {
             method: "POST",
             body: fd,
             credentials: "include",
