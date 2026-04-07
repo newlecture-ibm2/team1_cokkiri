@@ -1,6 +1,8 @@
 app:
   demo-data:
     enabled: false
+  upload:
+    dir: uploads/spaces
 
 spring:
   profiles.active: dev
