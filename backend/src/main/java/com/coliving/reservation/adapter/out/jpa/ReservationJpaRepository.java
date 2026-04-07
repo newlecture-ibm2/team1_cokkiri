@@ -1,6 +1,8 @@
 package com.coliving.reservation.adapter.out.jpa;
 
 import com.coliving.reservation.model.ReservationStatus;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -25,6 +27,17 @@ public interface ReservationJpaRepository extends JpaRepository<ReservationEntit
 
     /** 모든 예약 목록 조회 (최신순 정렬) - 관리자용 */
     List<ReservationEntity> findAllByOrderByReservationDateDescStartTimeDesc();
+
+    /**
+     * 상태 필터 + 페이지네이션 전체 조회 (관리자 #82)
+     * status == null 이면 전체, 아니면 해당 상태만 반환
+     */
+    @Query("SELECT r FROM ReservationEntity r " +
+           "WHERE (:status IS NULL OR r.status = :status) " +
+           "ORDER BY r.reservationDate DESC, r.startTime DESC")
+    Page<ReservationEntity> findAllByStatusFilter(
+            @Param("status") ReservationStatus status,
+            Pageable pageable);
 
     // ── 사용자별 조회 ──
 
