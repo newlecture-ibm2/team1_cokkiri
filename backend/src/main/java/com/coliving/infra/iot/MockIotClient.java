@@ -2,22 +2,30 @@ package com.coliving.infra.iot;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
+import java.time.Duration;
 import java.util.Map;
 
 @Slf4j
 @Component
 public class MockIotClient {
 
+    private static final Duration IOT_TIMEOUT = Duration.ofSeconds(5);
+
     private final RestTemplate restTemplate;
     private final String baseUrl;
 
-    public MockIotClient(@Value("${mock-iot.base-url}") String baseUrl) {
-        this.restTemplate = new RestTemplate();
+    public MockIotClient(@Value("${mock-iot.base-url}") String baseUrl,
+                         RestTemplateBuilder restTemplateBuilder) {
+        this.restTemplate = restTemplateBuilder
+                .setConnectTimeout(IOT_TIMEOUT)
+                .setReadTimeout(IOT_TIMEOUT)
+                .build();
         this.baseUrl = baseUrl;
     }
 

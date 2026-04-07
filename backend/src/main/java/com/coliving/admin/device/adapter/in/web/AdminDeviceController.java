@@ -1,21 +1,30 @@
 package com.coliving.admin.device.adapter.in.web;
 
+import com.coliving.admin.device.adapter.in.web.dto.req.ControlAdminDeviceRequestDto;
 import com.coliving.admin.device.adapter.in.web.dto.req.CreateAdminDeviceRequestDto;
 import com.coliving.admin.device.adapter.in.web.dto.req.UpdateAdminDeviceActiveRequestDto;
 import com.coliving.admin.device.adapter.in.web.dto.req.UpdateAdminDeviceRequestDto;
 import com.coliving.admin.device.adapter.in.web.dto.req.UpdateAdminDeviceStatusRequestDto;
 import com.coliving.admin.device.adapter.in.web.dto.res.AdminDeviceResponseDto;
+import com.coliving.admin.device.adapter.in.web.dto.res.ControlAdminDeviceResponseDto;
 import com.coliving.admin.device.adapter.in.web.dto.res.CreateAdminDeviceResponseDto;
+import com.coliving.admin.device.application.command.ControlAdminDeviceCommand;
 import com.coliving.admin.device.application.command.DeleteAdminDeviceCommand;
 import com.coliving.admin.device.application.port.in.AdminDeviceUseCase;
 import com.coliving.admin.device.application.port.in.CreateAdminDeviceUseCase;
+import com.coliving.admin.device.application.result.ControlAdminDeviceResult;
 import com.coliving.admin.device.application.result.CreateAdminDeviceResult;
 import com.coliving.admin.device.model.AdminDevice;
 import com.coliving.global.dto.ApiResponse;
+import com.coliving.global.error.BusinessException;
+import com.coliving.global.error.ErrorCode;
+import com.coliving.global.security.JwtTokenProvider;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -27,6 +36,7 @@ public class AdminDeviceController {
 
     private final CreateAdminDeviceUseCase createAdminDeviceUseCase;
     private final AdminDeviceUseCase adminDeviceUseCase;
+    private final JwtTokenProvider jwtTokenProvider;
 
     /**
      * 기기 목록 조회 (ADM-DEV-01)
@@ -60,8 +70,6 @@ public class AdminDeviceController {
     /**
      * 기기 수정 (ADM-DEV-05)
      * PUT /api/admin/devices/{id}
-     * 수정 가능: name, spaceId, modelName, macAddress, mockEndpoint
-     * deviceType 변경 불가 — 삭제 후 재등록 필요
      */
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<AdminDeviceResponseDto>> updateDevice(
@@ -108,5 +116,41 @@ public class AdminDeviceController {
     public ResponseEntity<ApiResponse<Void>> deleteDevice(@PathVariable Long id) {
         adminDeviceUseCase.deleteDevice(new DeleteAdminDeviceCommand(id));
         return ResponseEntity.ok(ApiResponse.ok(null, "기기가 삭제되었습니다"));
+    }
+
+    /**
+     * 기기 제어 (ADM-DEV-04)
+     * POST /api/admin/devices/{id}/control
+     * ADMIN은 space_id 제한 없이 전체 접근
+     */
+    @PostMapping("/{id}/control")
+    public ResponseEntity<ApiResponse<ControlAdminDeviceResponseDto>> controlDevice(
+            @PathVariable Long id,
+            @Valid @RequestBody ControlAdminDeviceRequestDto requestDto,
+            HttpServletRequest request) {
+
+        String token = resolveToken(request);
+        Long userId = jwtTokenProvider.getUserId(token);
+        String correlationId = request.getHeader("X-Correlation-Id");
+
+        ControlAdminDeviceCommand command = new ControlAdminDeviceCommand(
+                id, userId,
+                requestDto.command(), requestDto.params(),
+                correlationId
+        );
+
+        ControlAdminDeviceResult result = adminDeviceUseCase.controlDevice(command);
+        return ResponseEntity.ok(ApiResponse.ok(
+                ControlAdminDeviceResponseDto.from(result), result.message()));
+    }
+
+    // ── JWT 토큰 추출 ──
+
+    private String resolveToken(HttpServletRequest request) {
+        String bearerToken = request.getHeader("Authorization");
+        if (StringUtils.hasText(bearerToken) && bearerToken.startsWith("Bearer ")) {
+            return bearerToken.substring(7);
+        }
+        throw new BusinessException(ErrorCode.TOKEN_EXPIRED);
     }
 }

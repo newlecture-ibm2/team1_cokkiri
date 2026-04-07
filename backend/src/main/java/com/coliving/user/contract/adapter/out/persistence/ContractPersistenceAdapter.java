@@ -89,6 +89,7 @@ public class ContractPersistenceAdapter implements ContractRepositoryPort {
                 .approvedBy(entity.getApprovedBy())
                 .rejectedReason(entity.getRejectedReason())
                 .contractedAt(entity.getContractedAt())
+                .createdAt(entity.getCreatedAt())
                 .build();
     }
 }

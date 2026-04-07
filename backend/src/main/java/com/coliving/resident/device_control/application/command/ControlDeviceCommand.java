@@ -10,6 +10,7 @@ public record ControlDeviceCommand(
         Long userId,
         Long spaceId,
         String command,
-        Map<String, Object> params
+        Map<String, Object> params,
+        String correlationId
 ) {
 }

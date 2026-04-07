@@ -53,6 +53,7 @@ public class SecurityConfig {
 
                         // --- 커뮤니티: 목록·상세만 비로그인 조회 (Controller에서 Optional Actor 처리) ---
                         .requestMatchers(HttpMethod.GET, "/api/posts", "/api/posts/*").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/facilities").permitAll() // §6.1 🔓 Public
                         // 게시글 본문(리치 텍스트)에 포함된 업로드 이미지 조회
                         .requestMatchers(HttpMethod.GET, "/api/files/community/**").permitAll()
 

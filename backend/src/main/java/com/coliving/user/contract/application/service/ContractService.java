@@ -1,13 +1,26 @@
 package com.coliving.user.contract.application.service;
 
+import com.coliving.admin.space.application.port.out.AdminSpaceRepositoryPort;
+import com.coliving.admin.space.model.AdminSpace;
+import com.coliving.admin.user.application.port.out.AdminUserRepositoryPort;
+import com.coliving.common.auth.model.UserRole;
+import com.coliving.common.notification.application.port.out.NotificationRepositoryPort;
+import com.coliving.common.notification.model.NotificationType;
+import com.coliving.common.notification.model.ReferenceType;
+import com.coliving.global.error.BusinessException;
+import com.coliving.global.error.ErrorCode;
+import com.coliving.global.security.JwtTokenProvider;
 import com.coliving.user.contract.application.command.ContractApplyCommand;
+import com.coliving.user.contract.application.command.ContractSignCommand;
 import com.coliving.user.contract.application.port.in.ContractUseCase;
 import com.coliving.user.contract.application.port.out.ContractRepositoryPort;
+import com.coliving.user.contract.application.result.ContractDraftResult;
 import com.coliving.user.contract.application.result.ContractResult;
+import com.coliving.user.contract.application.result.ContractSignResult;
 import com.coliving.user.contract.model.Contract;
 import com.coliving.user.contract.model.ContractOrigin;
 import com.coliving.user.contract.model.ContractStatus;
-import com.coliving.user.contract.application.result.ContractDraftResult;
+import com.coliving.user.room.model.SpaceStatus;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,8 +34,13 @@ import java.util.stream.Collectors;
 public class ContractService implements ContractUseCase {
 
     private final ContractRepositoryPort contractRepositoryPort;
+    private final AdminUserRepositoryPort adminUserRepositoryPort;
+    private final AdminSpaceRepositoryPort adminSpaceRepositoryPort;
+    private final JwtTokenProvider jwtTokenProvider;
+    private final NotificationRepositoryPort notificationRepositoryPort;
 
     @Override
+    @Transactional(readOnly = true)
     public ContractDraftResult getDraft(Long userId, Long spaceId) {
         return contractRepositoryPort.findByUserIdAndSpaceId(userId, spaceId)
                 .filter(c -> c.getStatus() == ContractStatus.DRAFT)
@@ -37,11 +55,14 @@ public class ContractService implements ContractUseCase {
                         .usagePurpose(c.getUsagePurpose())
                         .requestNote(c.getRequestNote())
                         .privacyAgreed(c.getPrivacyAgreed())
+                        .rejectedReason(c.getRejectedReason())
+                        .createdAt(c.getCreatedAt())
                         .build())
                 .orElse(null);
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<ContractDraftResult> getMyContracts(Long userId) {
         return contractRepositoryPort.findAllByUserId(userId).stream()
                 .map(c -> ContractDraftResult.builder()
@@ -55,6 +76,8 @@ public class ContractService implements ContractUseCase {
                         .usagePurpose(c.getUsagePurpose())
                         .requestNote(c.getRequestNote())
                         .privacyAgreed(c.getPrivacyAgreed())
+                        .rejectedReason(c.getRejectedReason())
+                        .createdAt(c.getCreatedAt())
                         .build())
                 .collect(Collectors.toList());
     }
@@ -75,8 +98,7 @@ public class ContractService implements ContractUseCase {
                     command.getBankAccount(),
                     command.getUsagePurpose(),
                     command.getRequestNote(),
-                    command.getPrivacyAgreed()
-            );
+                    command.getPrivacyAgreed());
         }
 
         Contract saved = contractRepositoryPort.save(contract);
@@ -99,13 +121,77 @@ public class ContractService implements ContractUseCase {
                     command.getBankAccount(),
                     command.getUsagePurpose(),
                     command.getRequestNote(),
-                    command.getPrivacyAgreed()
-            );
+                    command.getPrivacyAgreed());
             contract.updateStatus(ContractStatus.PENDING);
         }
 
         Contract saved = contractRepositoryPort.save(contract);
         return ContractResult.success(saved.getContractId(), "계약 신청이 완료되었습니다.");
+    }
+
+    @Override
+    public ContractSignResult signContract(Long userId, ContractSignCommand command) {
+        // 1. 계약 조회 + APPROVED 상태 검증
+        Contract contract = contractRepositoryPort.findById(command.getContractId())
+                .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND));
+
+        if (!contract.getUserId().equals(userId)) {
+            throw new BusinessException(ErrorCode.FORBIDDEN);
+        }
+
+        if (contract.getStatus() != ContractStatus.APPROVED) {
+            throw new BusinessException(ErrorCode.INVALID_STATUS);
+        }
+
+        // 2. 호실 AVAILABLE 확인 (AdminSpaceRepositoryPort 사용)
+        var space = adminSpaceRepositoryPort.findById(contract.getSpaceId())
+                .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND));
+
+        if (space.getStatus() != SpaceStatus.AVAILABLE) {
+            throw new BusinessException(ErrorCode.SPACE_NOT_AVAILABLE);
+        }
+
+        // 3. 이미 활성 계약 보유 체크
+        boolean hasActive = contractRepositoryPort.findAllByUserId(userId).stream()
+                .anyMatch(c -> c.getStatus() == ContractStatus.ACTIVE);
+        if (hasActive) {
+            throw new BusinessException(ErrorCode.ACTIVE_CONTRACT_EXISTS);
+        }
+
+        // 4. 계약 체결 (전자서명 데이터 영구 보존)
+        contract.sign(command.getSignatureData());
+        contractRepositoryPort.save(contract);
+
+        // 5. Space → OCCUPIED (AdminSpaceRepositoryPort 사용)
+        space.changeStatus(SpaceStatus.OCCUPIED);
+        adminSpaceRepositoryPort.save(space);
+
+        // 6. User → RESIDENT (AdminUserRepositoryPort 사용)
+        adminUserRepositoryPort.changeUserRole(userId, UserRole.RESIDENT);
+
+        // 7. JWT 재발급 (RESIDENT + contract_id + space_id)
+        String accessToken = jwtTokenProvider.createAccessToken(
+                userId, UserRole.RESIDENT.name(), contract.getContractId(), contract.getSpaceId());
+        String refreshToken = jwtTokenProvider.createRefreshToken(userId);
+
+        // 8. 알림 생성
+        notificationRepositoryPort.create(
+                userId,
+                NotificationType.CONTRACT_ACTIVATED,
+                "계약이 체결되었습니다.",
+                "입주를 축하합니다! 호실 정보와 IoT 기기를 확인해 보세요.",
+                ReferenceType.CONTRACT,
+                contract.getContractId());
+
+        return ContractSignResult.builder()
+                .contractId(contract.getContractId())
+                .spaceId(contract.getSpaceId())
+                .status(ContractStatus.ACTIVE.name())
+                .role(UserRole.RESIDENT.name())
+                .accessToken(accessToken)
+                .refreshToken(refreshToken)
+                .message("계약이 성공적으로 체결되었습니다.")
+                .build();
     }
 
     private Contract createContractFromCommand(Long userId, ContractApplyCommand command, ContractStatus status) {
@@ -124,4 +210,3 @@ public class ContractService implements ContractUseCase {
                 .build();
     }
 }
-
