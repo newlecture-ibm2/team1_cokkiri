@@ -32,12 +32,26 @@ export interface SpaceDTO {
   isReservable?: boolean;
   usageFee?: number;
   
+  // Position (평면도 배치용)
+  positionX?: number;
+  positionY?: number;
+
   // Images
   images?: {
     imageUrl: string;
     imageType: string;
     isThumbnail: boolean;
   }[];
+}
+
+/** 응답의 중첩 구조에서 roomTypeName 안전 추출 */
+export function extractRoomTypeName(space: SpaceDTO): string | undefined {
+  // Backend 응답이 중첩 구조(privateDetail.roomTypeName)인 경우 대응
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const nested = (space as any).privateDetail as
+    | { roomTypeName?: string }
+    | undefined;
+  return space.roomTypeName || nested?.roomTypeName;
 }
 
 export const fetchSpaces = async () => {
