@@ -16,7 +16,7 @@ export async function apiFetch<T>(
   path: string,
   options?: RequestInit
 ): Promise<ApiResponse<T>> {
-  const response = await fetch(`${BASE_URL}/bff${path}`, {
+  const response = await fetch(`${BASE_URL}${path}`, {
     ...options,
     headers: {
       'Content-Type': 'application/json',

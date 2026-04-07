@@ -10,6 +10,7 @@ public class CreateCommentCommand {
     private final Long actorId;
     private final ActorRole actorRole;
     private final Long postId;
+    private final Long parentCommentId;
     private final String content;
 }
 

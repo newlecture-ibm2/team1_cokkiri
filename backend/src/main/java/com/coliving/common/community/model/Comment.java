@@ -10,6 +10,7 @@ import java.time.OffsetDateTime;
 public class Comment {
     private Long commentId;
     private Long postId;
+    private Long parentCommentId;
     private Long userId;
     private String content;
     private OffsetDateTime createdAt;

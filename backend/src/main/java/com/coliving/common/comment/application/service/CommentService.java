@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class CommentService implements CommentUseCase {
+    private static final String DELETED_WITH_REPLY_PLACEHOLDER = "[삭제된 댓글입니다.]";
 
     private final CommentRepositoryPort commentRepositoryPort;
 
@@ -26,6 +27,7 @@ public class CommentService implements CommentUseCase {
         Comment created = commentRepositoryPort.createComment(
                 command.getPostId(),
                 command.getActorId(),
+                command.getParentCommentId(),
                 command.getContent()
         );
 
@@ -41,6 +43,11 @@ public class CommentService implements CommentUseCase {
     public CommentResult updateComment(UpdateCommentCommand command) {
         Comment existing = commentRepositoryPort.findCommentById(command.getCommentId())
                 .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND));
+
+        // 자식 댓글 보존을 위해 삭제 처리된 부모 댓글은 수정 불가
+        if (DELETED_WITH_REPLY_PLACEHOLDER.equals(existing.getContent())) {
+            throw new BusinessException(ErrorCode.FORBIDDEN);
+        }
 
         if (command.getActorRole() != ActorRole.ADMIN && !existing.getUserId().equals(command.getActorId())) {
             throw new BusinessException(ErrorCode.FORBIDDEN);
@@ -65,7 +72,11 @@ public class CommentService implements CommentUseCase {
             throw new BusinessException(ErrorCode.FORBIDDEN);
         }
 
-        commentRepositoryPort.softDeleteComment(command.getCommentId());
+        if (commentRepositoryPort.hasActiveChildren(command.getCommentId())) {
+            commentRepositoryPort.updateComment(command.getCommentId(), DELETED_WITH_REPLY_PLACEHOLDER);
+        } else {
+            commentRepositoryPort.softDeleteComment(command.getCommentId());
+        }
 
         return CommentResult.builder()
                 .commentId(existing.getCommentId())

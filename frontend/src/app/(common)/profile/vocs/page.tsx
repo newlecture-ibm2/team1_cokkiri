@@ -33,7 +33,7 @@ export default async function ProfileVocsPage({ searchParams }: { searchParams: 
 
   if (showList) {
     const res = await bffGet(`vocs/my?${qs.toString()}`);
-    if (res.status === 401) {
+    if (res.status === 401 || res.status === 403) {
       listError = LOGIN_REQUIRED_MESSAGE;
     } else if (!res.ok) {
       listError = "목록을 불러오지 못했습니다.";

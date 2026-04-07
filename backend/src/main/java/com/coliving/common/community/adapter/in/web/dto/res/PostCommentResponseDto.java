@@ -9,6 +9,7 @@ import java.time.OffsetDateTime;
 @Builder
 public class PostCommentResponseDto {
     private final Long commentId;
+    private final Long parentCommentId;
     private final String content;
     private final PostAuthorResponseDto author;
     private final OffsetDateTime createdAt;

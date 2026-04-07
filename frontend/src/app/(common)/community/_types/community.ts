@@ -43,6 +43,7 @@ export type PostLink = {
 
 export type PostComment = {
   commentId: number;
+  parentCommentId?: number | null;
   content: string;
   author: PostAuthor;
   createdAt: string;

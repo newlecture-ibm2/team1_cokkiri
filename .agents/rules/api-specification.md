@@ -4,10 +4,10 @@ trigger: always_on
 
 # API Specification (압축본)
 
-**적용 대상:** Spring Boot **백엔드 HTTP 계약**만 기술한다. 아래 경로는 모두 **`/api` + 표에 적힌 세그먼트**(예: `POST /api/auth/register`). **`/api/bff`는 이 문서에 넣지 않는다** — BFF는 프론트 전용이며 `initial-project-setup.md` §6·`02-frontend-architecture.md` §3·`01-general-convention.md` §1-1을 따른다.
+**적용 대상:** Spring Boot **백엔드 HTTP 계약**만 기술한다. 아래 경로는 모두 **`/api` + 표에 적힌 세그먼트**(예: `POST /api/auth/register`).
 
 Base:`/api` | 인증:JWT Bearer (🔓Public,🔑Auth,👤USER+,🏠RESIDENT+,🔒ADMIN)
-> **프론트(브라우저):** 동일 리소스는 **`/api/bff` + 동일 세그먼트**만 호출(예: `GET /api/bff/rooms` → 프록시 → `GET /api/rooms`). 백엔드 URL 직접 호출·`bff`를 백엔드 컨트롤러에 붙이는 것은 금지.
+> **프론트(브라우저):** 백엔드 규격과 완전히 동일하게 **`/api` + 세그먼트**를 직접 호출한다(예: `GET /api/rooms` → 프록시 → `GET /api/rooms`). 수동으로 `bff` 세그먼트를 덧붙이거나 백엔드 URL을 직접 호출하는 것은 금지.
 응답:`{success, data, message, errorCode}` | 페이징:`{content, page, size, totalElements, totalPages}`
 
 ## 1. Auth

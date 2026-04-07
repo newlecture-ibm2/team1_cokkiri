@@ -47,7 +47,7 @@ export default function AdminContractsPage() {
   const fetchApplications = async () => {
     setIsLoading(true);
     try {
-      const res = await fetch("/api/bff/admin/contracts/applications");
+      const res = await fetch("/api/admin/contracts/applications");
       const result = await res.json();
       if (result.success) setContracts(result.data);
     } catch (err) {
@@ -64,7 +64,7 @@ export default function AdminContractsPage() {
   const handleApprove = async () => {
     if (!selectedId) return;
     try {
-      const res = await fetch(`/api/bff/admin/contracts/${selectedId}/approve`, {
+      const res = await fetch(`/api/admin/contracts/${selectedId}/approve`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -91,7 +91,7 @@ export default function AdminContractsPage() {
   const handleReject = async () => {
     if (!selectedId) return;
     try {
-      const res = await fetch(`/api/bff/admin/contracts/${selectedId}/reject`, {
+      const res = await fetch(`/api/admin/contracts/${selectedId}/reject`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ rejectedReason: rejectReason })

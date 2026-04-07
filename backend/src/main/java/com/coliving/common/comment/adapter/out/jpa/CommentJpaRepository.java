@@ -12,6 +12,10 @@ public interface CommentJpaRepository extends JpaRepository<CommentEntity, Long>
 
     Optional<CommentEntity> findByCommentId(Long commentId);
 
+    Optional<CommentEntity> findByCommentIdAndPost_PostId(Long commentId, Long postId);
+
+    boolean existsByParentComment_CommentId(Long parentCommentId);
+
     @EntityGraph(attributePaths = {"post"})
     List<CommentEntity> findByPost_PostId(Long postId, Sort sort);
 
