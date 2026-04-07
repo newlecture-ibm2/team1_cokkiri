@@ -4,7 +4,9 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 public interface PostJpaRepository extends JpaRepository<PostEntity, Long>, JpaSpecificationExecutor<PostEntity> {
 
@@ -23,5 +25,17 @@ public interface PostJpaRepository extends JpaRepository<PostEntity, Long>, JpaS
             countQuery = "SELECT COUNT(p) FROM PostEntity p"
     )
     Page<PostEntity> findAllNoticeFirst(Pageable pageable);
+
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
+    @Query("UPDATE PostEntity p SET p.viewCount = p.viewCount + :delta WHERE p.postId = :postId")
+    int addViewCount(@Param("postId") Long postId, @Param("delta") long delta);
+
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
+    @Query("UPDATE PostEntity p SET p.likeCount = p.likeCount + 1 WHERE p.postId = :postId")
+    int increaseLikeCount(@Param("postId") Long postId);
+
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
+    @Query("UPDATE PostEntity p SET p.likeCount = CASE WHEN p.likeCount <= 0 THEN 0 ELSE p.likeCount - 1 END WHERE p.postId = :postId")
+    int decreaseLikeCount(@Param("postId") Long postId);
 }
 
