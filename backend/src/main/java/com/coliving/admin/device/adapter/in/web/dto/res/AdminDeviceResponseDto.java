@@ -18,6 +18,7 @@ public record AdminDeviceResponseDto(
         String macAddress,
         String mockEndpoint,
         String status,
+        String currentState,
         Boolean isActive,
         OffsetDateTime installedAt,
         OffsetDateTime lastOnlineAt,
@@ -36,6 +37,7 @@ public record AdminDeviceResponseDto(
                 device.macAddress(),
                 device.mockEndpoint(),
                 device.status(),
+                device.currentState(),
                 device.isActive(),
                 device.installedAt(),
                 device.lastOnlineAt(),
@@ -44,3 +46,4 @@ public record AdminDeviceResponseDto(
         );
     }
 }
+

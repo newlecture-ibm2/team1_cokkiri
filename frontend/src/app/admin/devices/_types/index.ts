@@ -68,9 +68,25 @@ export interface AdminDevice {
   macAddress: string;
   mockEndpoint: string;
   status: "ONLINE" | "OFFLINE" | "ERROR";
+  currentState: string;
   isActive: boolean;
   installedAt: string;
   lastOnlineAt: string;
   createdAt: string;
   updatedAt: string;
 }
+
+// ── Device Control (ADM-DEV-04) ──
+
+export interface ControlAdminDeviceRequest {
+  command: string;
+  params?: Record<string, unknown>;
+}
+
+export interface ControlAdminDeviceResponse {
+  deviceId: number;
+  command: string;
+  success: boolean;
+  message: string;
+}
+
