@@ -36,6 +36,7 @@ const navItems: NavItem[] = [
     children: [
       { name: "Notification", path: "/notifications" },
       { name: "Profile", path: "/profile" },
+      { name: "My Contracts", path: "/my-contracts" },
       { name: "Logout", path: "/login" },
     ],
   },
