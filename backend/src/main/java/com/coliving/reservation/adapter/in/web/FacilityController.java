@@ -1,9 +1,11 @@
 package com.coliving.reservation.adapter.in.web;
 
 import com.coliving.global.dto.ApiResponse;
+import com.coliving.reservation.adapter.in.web.dto.res.FacilityTimeSlotResponseDto;
 import com.coliving.reservation.adapter.out.dto.FacilityDetailResponse;
 import com.coliving.reservation.adapter.out.dto.ReservableFacilityResponse;
 import com.coliving.reservation.application.port.in.FacilityQueryUseCase;
+import com.coliving.reservation.application.result.FacilityTimeSlotResult;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -11,7 +13,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import org.springframework.format.annotation.DateTimeFormat;
+import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 
 /**
  * 예약 시설 조회 REST Controller
@@ -78,5 +83,29 @@ public class FacilityController {
             @PathVariable Long spaceId) {
         FacilityDetailResponse detail = facilityQueryUseCase.getFacilityDetail(spaceId);
         return ResponseEntity.ok(ApiResponse.ok(detail));
+    }
+
+    @Operation(
+            summary = "공용시설 주간 타임슬롯 조회",
+            description = "특정 공용시설의 주간 예약 슬롯을 30분 단위로 조회합니다."
+    )
+    @GetMapping("/{spaceId}/slots")
+    public ResponseEntity<ApiResponse<Map<String, List<FacilityTimeSlotResponseDto>>>> getFacilitySlots(
+            @RequestHeader(value = "X-User-Id", required = false) Long userId,
+            @Parameter(description = "공용시설 ID", example = "7")
+            @PathVariable Long spaceId,
+            @Parameter(description = "조회 기준일", example = "2026-04-06")
+            @RequestParam("week_start") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate weekStart
+    ) {
+        Map<String, List<FacilityTimeSlotResult>> slots = facilityQueryUseCase.getWeeklyTimeSlots(userId, spaceId, weekStart);
+        Map<String, List<FacilityTimeSlotResponseDto>> response = slots.entrySet().stream()
+                .collect(java.util.stream.Collectors.toMap(
+                        Map.Entry::getKey,
+                        entry -> entry.getValue().stream().map(FacilityTimeSlotResponseDto::from).toList(),
+                        (left, right) -> left,
+                        java.util.LinkedHashMap::new
+                ));
+
+        return ResponseEntity.ok(ApiResponse.ok(response));
     }
 }
