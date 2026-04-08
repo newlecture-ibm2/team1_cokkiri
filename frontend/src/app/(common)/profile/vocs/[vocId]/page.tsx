@@ -85,12 +85,12 @@ export default async function ProfileVocDetailPage({ params }: { params: Params 
         <article className="mx-auto max-w-3xl">
           <Link
             href="/profile/vocs?tab=list"
-            className="group inline-flex items-center gap-2 font-black text-xs uppercase tracking-[0.3em] text-secondary transition-colors hover:text-foreground"
+            className="group inline-flex h-11 items-center gap-2 rounded-full border border-secondary/40 bg-secondary/10 px-5 font-black text-[10px] uppercase tracking-[0.24em] text-secondary transition-colors hover:border-secondary/70"
           >
             ← 나의 민원 내역
           </Link>
 
-          <header className="mt-8 space-y-4 border-b border-border pb-10">
+          <header className="mt-8 space-y-4 border-b border-primary/10 pb-10">
             <div className="flex flex-wrap items-center gap-3">
               <span className="font-black text-[10px] uppercase tracking-[0.25em] text-muted-foreground">
                 {vocCategoryLabel(d.category)}
@@ -104,7 +104,7 @@ export default async function ProfileVocDetailPage({ params }: { params: Params 
                 {vocStatusLabel(d.status)}
               </span>
             </div>
-            <h1 className="text-3xl font-black tracking-tight text-balance text-foreground md:text-4xl">{d.title}</h1>
+            <h1 className="text-3xl font-black uppercase tracking-tighter text-balance text-foreground md:text-4xl">{d.title}</h1>
             <time
               dateTime={d.createdAt}
               className="block font-black text-[10px] uppercase tracking-[0.2em] text-muted-foreground"
@@ -113,7 +113,7 @@ export default async function ProfileVocDetailPage({ params }: { params: Params 
             </time>
           </header>
 
-          <div className="mt-10">
+          <div className="mt-10 rounded-[2rem] border border-primary/10 bg-background p-6 shadow-2xl shadow-primary/5 md:p-8">
             <p className="font-black text-[10px] uppercase tracking-[0.3em] text-muted-foreground">내용</p>
             {isRichTextBodyHtml(d.content) ? (
               <div
@@ -131,7 +131,7 @@ export default async function ProfileVocDetailPage({ params }: { params: Params 
           </div>
 
           {d.attachments?.length ? (
-            <div className="mt-10">
+            <div className="mt-10 rounded-[2rem] border border-primary/10 bg-background p-6 shadow-2xl shadow-primary/5 md:p-8">
               <p className="font-black text-[10px] uppercase tracking-[0.3em] text-muted-foreground">첨부</p>
               <ul className="mt-4 space-y-2">
                 {d.attachments.map((a, i) => (
@@ -151,7 +151,7 @@ export default async function ProfileVocDetailPage({ params }: { params: Params 
           ) : null}
 
           {(d.adminReply || d.status === "RESOLVED" || d.status === "IN_PROGRESS") && (
-            <section className="mt-12 rounded-[2rem] border border-border bg-muted/20 p-6 md:p-8">
+            <section className="mt-12 rounded-[2rem] border border-primary/10 bg-primary/5 p-6 md:p-8">
               <p className="font-black text-[10px] uppercase tracking-[0.3em] text-secondary">운영 답변</p>
               {d.repliedAt ? (
                 <time

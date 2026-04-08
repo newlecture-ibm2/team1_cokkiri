@@ -17,29 +17,29 @@ export function PostCard({ post }: { post: PostListItem }) {
       <motion.div
         whileHover={{ y: -8, scale: 1.01 }}
         transition={{ type: "spring", stiffness: 420, damping: 26 }}
-        className="rounded-[2rem] border border-border bg-background/80 p-6 shadow-sm backdrop-blur-sm md:p-8"
+        className="rounded-[2.25rem] border border-primary/10 bg-background p-7 shadow-2xl shadow-primary/5 md:p-9"
       >
         <div className="flex flex-wrap items-center gap-3">
-          <span className="font-black text-[10px] uppercase tracking-[0.28em] text-secondary">
+          <span className="rounded-full bg-secondary/15 px-3 py-1 font-black text-[10px] uppercase tracking-[0.24em] text-secondary">
             {categoryLabel(post.category)}
           </span>
-          <span className="font-black text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
+          <span className="font-black text-[10px] uppercase tracking-[0.24em] text-muted-foreground">
             {formatDateTimeKo(post.createdAt)}
           </span>
         </div>
         <h2 className="mt-4 line-clamp-2 text-xl font-black uppercase leading-tight tracking-tighter text-foreground md:text-2xl">
           {post.title}
         </h2>
-        <div className="mt-6 flex flex-wrap gap-6 font-medium text-sm text-muted-foreground">
-          <span className="inline-flex items-center gap-1.5">
+        <div className="mt-7 flex flex-wrap gap-3 text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-border px-3 py-1.5">
             <Eye className="size-4 shrink-0 opacity-80" aria-hidden />
             {post.viewCount}
           </span>
-          <span className="inline-flex items-center gap-1.5">
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-border px-3 py-1.5">
             <Heart className="size-4 shrink-0 opacity-80" aria-hidden />
             {post.likeCount}
           </span>
-          <span className="inline-flex items-center gap-1.5">
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-border px-3 py-1.5">
             <MessageCircle className="size-4 shrink-0 opacity-80" aria-hidden />
             {post.commentCount}
           </span>
