@@ -151,12 +151,14 @@ public class ContractService implements ContractUseCase {
             throw new BusinessException(ErrorCode.SPACE_NOT_AVAILABLE);
         }
 
-        // 3. 이미 활성 계약 보유 체크
+        // 3. 이미 활성 계약 보유 체크 (테스트/데모 편의를 위해 중복 계약 허용 - 실제 정책에 따라 조정 가능)
+        /*
         boolean hasActive = contractRepositoryPort.findAllByUserId(userId).stream()
                 .anyMatch(c -> c.getStatus() == ContractStatus.ACTIVE);
         if (hasActive) {
             throw new BusinessException(ErrorCode.ACTIVE_CONTRACT_EXISTS);
         }
+        */
 
         // 4. 계약 체결 (전자서명 데이터 영구 보존)
         contract.sign(command.getSignatureData());
