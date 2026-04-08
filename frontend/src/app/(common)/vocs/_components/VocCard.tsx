@@ -23,7 +23,7 @@ export function VocCard({ item }: { item: VocListItem }) {
   return (
     <Link
       href={`/profile/vocs/${item.vocId}`}
-      className="group block rounded-[2rem] border border-border bg-background/80 p-6 backdrop-blur-sm transition-transform duration-200 hover:-translate-y-0.5 hover:border-secondary/50 md:p-8"
+      className="group block rounded-[2.25rem] border border-primary/10 bg-background p-7 shadow-2xl shadow-primary/5 transition-transform duration-200 hover:-translate-y-0.5 hover:border-secondary/50 md:p-9"
     >
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="flex min-w-0 flex-1 items-start gap-3">
@@ -36,7 +36,7 @@ export function VocCard({ item }: { item: VocListItem }) {
             <p className="font-black text-[10px] uppercase tracking-[0.25em] text-muted-foreground">
               {vocCategoryLabel(item.category)}
             </p>
-            <h2 className="font-black text-lg tracking-tight text-balance text-foreground group-hover:text-secondary md:text-xl">
+            <h2 className="font-black text-xl tracking-tight text-balance text-foreground group-hover:text-secondary md:text-2xl">
               {item.title}
             </h2>
             <time
@@ -49,7 +49,7 @@ export function VocCard({ item }: { item: VocListItem }) {
         </div>
         <span
           className={cn(
-            "shrink-0 rounded-full border px-3 py-1 text-[10px] font-black uppercase tracking-wider",
+            "shrink-0 rounded-full border px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.2em]",
             statusPillClass(item.status),
           )}
         >

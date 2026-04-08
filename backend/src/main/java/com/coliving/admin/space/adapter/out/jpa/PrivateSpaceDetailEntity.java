@@ -9,6 +9,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.SQLRestriction;
+import org.hibernate.annotations.SQLDelete;
 
 import java.math.BigDecimal;
 
@@ -16,6 +17,7 @@ import java.math.BigDecimal;
 @Table(name = "private_space_details")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@SQLDelete(sql = "UPDATE private_space_details SET deleted_at = CURRENT_TIMESTAMP WHERE space_id = ?")
 @SQLRestriction("deleted_at IS NULL")
 public class PrivateSpaceDetailEntity extends BaseEntity {
 

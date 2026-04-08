@@ -124,7 +124,7 @@ export function PostEditDeleteActions({
         method: "DELETE",
         credentials: "include",
       });
-      if (res.status === 401 || res.status === 403) {
+      if (res.status === 401) {
         setSubmitError(LOGIN_REQUIRED_MESSAGE);
         setShowLoginModal(true);
         return;
@@ -189,7 +189,7 @@ export function PostEditDeleteActions({
           credentials: "include",
           body: formData,
         });
-        if (res.status === 401 || res.status === 403) {
+        if (res.status === 401) {
           setSubmitError(LOGIN_REQUIRED_MESSAGE);
           setShowLoginModal(true);
           return;

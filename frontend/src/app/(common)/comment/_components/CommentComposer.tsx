@@ -29,7 +29,7 @@ export function CommentComposer({ postId }: { postId: number }) {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ content: text }),
         });
-        if (res.status === 401 || res.status === 403) {
+        if (res.status === 401) {
           setShowLoginModal(true);
           return;
         }
@@ -48,7 +48,7 @@ export function CommentComposer({ postId }: { postId: number }) {
   return (
     <form
       onSubmit={submit}
-      className="mt-8 rounded-[2rem] border border-border bg-background/80 p-6 backdrop-blur-sm md:p-8"
+      className="mt-8 rounded-[2rem] border border-primary/10 bg-background p-6 shadow-2xl shadow-primary/5 md:p-8"
     >
       <LoginRequiredModal isOpen={showLoginModal} onClose={() => setShowLoginModal(false)} />
       <label htmlFor={`comment-${postId}`} className="sr-only">

@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { LOGIN_REQUIRED_MESSAGE } from "@/lib/auth-messages";
+import { ACCESS_DENIED_MESSAGE, LOGIN_REQUIRED_MESSAGE } from "@/lib/auth-messages";
 import { LoginRequiredGate } from "@/components/shared/LoginRequiredGate";
 import { bffGet } from "../_api/bff-server";
 import type { ApiResponse, PostDetail } from "../_types/community";
@@ -23,13 +23,24 @@ export default async function CommunityPostDetailPage({ params }: { params: Para
   const res = await bffGet(`posts/${id}`);
 
   if (res.status === 404) notFound();
-  if (res.status === 401 || res.status === 403) {
+  if (res.status === 401) {
     return (
       <CommunityShell>
         <MotionEnter>
           <div className="mx-auto max-w-3xl text-center">
             <LoginRequiredGate />
             <p className="font-medium text-destructive">{LOGIN_REQUIRED_MESSAGE}</p>
+          </div>
+        </MotionEnter>
+      </CommunityShell>
+    );
+  }
+  if (res.status === 403) {
+    return (
+      <CommunityShell>
+        <MotionEnter>
+          <div className="mx-auto max-w-3xl text-center">
+            <p className="font-medium text-destructive">{ACCESS_DENIED_MESSAGE}</p>
           </div>
         </MotionEnter>
       </CommunityShell>

@@ -104,7 +104,7 @@ export function CommentThreadSection({
           body: JSON.stringify({ content: text, parentCommentId }),
         });
 
-        if (res.status === 401 || res.status === 403) {
+        if (res.status === 401) {
           setShowLoginModal(true);
           setComments((prev) => prev.filter((c) => c.commentId !== tempId));
           return;
@@ -157,14 +157,14 @@ export function CommentThreadSection({
                         e.preventDefault();
                         addComment(node.commentId, replyDraft);
                       }}
-                      className="rounded-xl border border-border bg-muted/20 p-3"
+                      className="rounded-2xl border border-primary/10 bg-background p-4 shadow-sm"
                     >
                       <textarea
                         value={replyDraft}
                         onChange={(e) => setReplyDraftById((prev) => ({ ...prev, [node.commentId]: e.target.value }))}
                         rows={2}
                         placeholder="답글을 입력하세요"
-                        className="w-full resize-y rounded-lg border border-input bg-surface px-3 py-2 text-sm font-medium tracking-tight text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                        className="w-full resize-y rounded-xl border border-input bg-surface px-3 py-2 text-sm font-medium tracking-tight text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                       />
                       <div className="mt-2 flex justify-end gap-2">
                         <button
@@ -203,7 +203,7 @@ export function CommentThreadSection({
 
       {tree.length === 0 ? (
         <div
-          className="mt-8 flex flex-col items-center justify-center gap-4 rounded-[2rem] border border-dashed border-border bg-background/60 px-8 py-14 text-center backdrop-blur-sm md:px-12"
+          className="mt-8 flex flex-col items-center justify-center gap-4 rounded-[2rem] border border-dashed border-primary/20 bg-background px-8 py-14 text-center md:px-12"
           aria-live="polite"
         >
           <MessageCircle className="size-10 text-muted-foreground opacity-80" strokeWidth={1.25} aria-hidden />
@@ -229,7 +229,7 @@ export function CommentThreadSection({
           e.preventDefault();
           addComment(null, rootDraft);
         }}
-        className="mt-8 rounded-[2rem] border border-border bg-background/80 p-6 backdrop-blur-sm md:p-8"
+        className="mt-8 rounded-[2rem] border border-primary/10 bg-background p-6 shadow-2xl shadow-primary/5 md:p-8"
       >
         <label htmlFor={`comment-root-${postId}`} className="sr-only">
           댓글 작성

@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Search } from "lucide-react";
-import { LOGIN_REQUIRED_MESSAGE } from "@/lib/auth-messages";
+import { ACCESS_DENIED_MESSAGE, LOGIN_REQUIRED_MESSAGE } from "@/lib/auth-messages";
 import { LoginRequiredGate } from "@/components/shared/LoginRequiredGate";
 import { bffGet } from "./_api/bff-server";
 import type { ApiResponse, PostListData } from "./_types/community";
@@ -32,8 +32,10 @@ export default async function CommunityPage({ searchParams }: { searchParams: Se
   let list: PostListData | null = null;
   let error: string | null = null;
 
-  if (res.status === 401 || res.status === 403) {
+  if (res.status === 401) {
     error = LOGIN_REQUIRED_MESSAGE;
+  } else if (res.status === 403) {
+    error = ACCESS_DENIED_MESSAGE;
   } else if (!res.ok) {
     error = "목록을 불러오지 못했습니다.";
   } else {
@@ -56,7 +58,7 @@ export default async function CommunityPage({ searchParams }: { searchParams: Se
                   니티
                 </span>
               </h1>
-              <p className="max-w-xl font-medium tracking-tight text-balance text-foreground/85 md:text-lg">
+              <p className="mt-8 max-w-xl border-l-2 border-accent pl-6 text-lg font-medium tracking-tight text-balance text-foreground/75">
                 공지·질문·모임 — 입주자들이 모이는{" "}
                 <span className="text-secondary">함께</span>의 공간입니다.
               </p>
