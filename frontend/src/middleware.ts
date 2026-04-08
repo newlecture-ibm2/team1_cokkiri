@@ -31,6 +31,11 @@ const secretKey = new TextEncoder().encode(JWT_SECRET);
 
 export async function middleware(req: NextRequest) {
   if (req.nextUrl.pathname.startsWith('/api/')) {
+    // SSE 스트림은 app/api route handler에서 직접 처리 (장시간 연결 안정성 확보)
+    if (req.nextUrl.pathname === '/api/notifications/stream') {
+      return NextResponse.next();
+    }
+
     // [MOCK] /api/bff/admin/contracts 관련 모든 요청(목록, 승인, 반려)은 프록시하지 않고 통과시킵니다.
     if (req.nextUrl.pathname.includes('/admin/contracts')) {
       return NextResponse.next();
@@ -44,15 +49,16 @@ export async function middleware(req: NextRequest) {
       // Extract JWT from httpOnly cookie
       const accessToken = req.cookies.get('access_token')?.value;
 
-      let jwtPayload: any = null;
+      let jwtPayload: Record<string, unknown> | null = null;
 
       if (accessToken) {
         try {
           // Verify token format, signature, and expiration at the Edge
           const { payload } = await jwtVerify(accessToken, secretKey);
           jwtPayload = payload;
-        } catch (err: any) {
-          console.warn('[Middleware BFF] JWT Verification Failed:', err.code || err.message);
+        } catch (err: unknown) {
+          const errMsg = err instanceof Error ? err.message : String(err);
+          console.warn('[Middleware BFF] JWT Verification Failed:', errMsg);
           return NextResponse.json(
             {
               success: false,

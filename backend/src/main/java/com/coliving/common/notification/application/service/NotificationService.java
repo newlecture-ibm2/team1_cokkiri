@@ -3,6 +3,7 @@ package com.coliving.common.notification.application.service;
 import com.coliving.common.notification.application.command.CreateNotificationCommand;
 import com.coliving.common.notification.application.command.ListNotificationsCommand;
 import com.coliving.common.notification.application.command.MarkNotificationReadCommand;
+import com.coliving.common.notification.application.event.NotificationCreatedEvent;
 import com.coliving.common.notification.application.port.in.CreateNotificationUseCase;
 import com.coliving.common.notification.application.port.in.NotificationUseCase;
 import com.coliving.common.notification.application.port.out.NotificationRepositoryPort;
@@ -17,6 +18,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
@@ -29,9 +31,12 @@ public class NotificationService implements NotificationUseCase, CreateNotificat
     );
 
     private final NotificationRepositoryPort notificationRepositoryPort;
+    private final ApplicationEventPublisher eventPublisher;
 
-    public NotificationService(NotificationRepositoryPort notificationRepositoryPort) {
+    public NotificationService(NotificationRepositoryPort notificationRepositoryPort,
+                               ApplicationEventPublisher eventPublisher) {
         this.notificationRepositoryPort = notificationRepositoryPort;
+        this.eventPublisher = eventPublisher;
     }
 
     @Override
@@ -89,6 +94,7 @@ public class NotificationService implements NotificationUseCase, CreateNotificat
                 command.getReferenceType(),
                 command.getReferenceId()
         );
+        eventPublisher.publishEvent(new NotificationCreatedEvent(saved));
 
         return CreateNotificationResult.builder()
                 .notificationId(saved.getNotificationId())
