@@ -9,7 +9,7 @@ import { ArrowLeft, ChevronDown, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { messageFromBffResponse } from "@/lib/bff-error-message";
 import { LoginRequiredModal } from "@/components/shared/LoginRequiredModal";
-import { LOGIN_REQUIRED_MESSAGE } from "@/lib/auth-messages";
+import { LOGIN_REQUIRED_MESSAGE, VOC_MY_VOC_FORBIDDEN_MESSAGE } from "@/lib/auth-messages";
 import { plainTextFromHtml } from "@/lib/post-html";
 import type { ApiResponse } from "@/types/api";
 import {
@@ -112,7 +112,7 @@ export function VocEditForm({ initial }: Props) {
           credentials: "include",
           body: formData,
         });
-        if (res.status === 401 || res.status === 403) {
+        if (res.status === 401) {
           setError(LOGIN_REQUIRED_MESSAGE);
           setShowLoginModal(true);
           return;
@@ -122,6 +122,10 @@ export function VocEditForm({ initial }: Props) {
           json = await res.json();
         } catch {
           setError("서버 응답을 처리하지 못했습니다. 잠시 후 다시 시도해 주세요.");
+          return;
+        }
+        if (res.status === 403) {
+          setError(messageFromBffResponse(json, VOC_MY_VOC_FORBIDDEN_MESSAGE));
           return;
         }
         if (!res.ok || !json.success) {

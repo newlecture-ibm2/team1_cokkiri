@@ -20,7 +20,10 @@ public interface VocRepositoryPort {
 
     Page<Voc> findByUserId(Long userId, Pageable pageable);
 
-    Page<Voc> findPageForAdmin(VocStatus status, Pageable pageable);
+    /**
+     * @param pendingOnly true이면 OPEN·IN_PROGRESS만 조회(미처리 큐). status는 무시됩니다.
+     */
+    Page<Voc> findPageForAdmin(VocStatus status, boolean pendingOnly, Pageable pageable);
 
     Voc updateOwned(Long vocId, Long userId, VocCategory category, String title, String content,
                     List<VocAttachment> attachments);

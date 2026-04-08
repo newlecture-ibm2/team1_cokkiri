@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { User, Menu, X, ChevronDown } from "lucide-react";
 import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
+import { useAuthStore } from "@/store/useAuthStore";
 
 type NavChild = { name: string; path: string };
 
@@ -104,6 +105,7 @@ const dropdownPanelShellVariants = {
 
 export function Header() {
   const pathname = usePathname();
+  const { user, isLoggedIn, isLoading } = useAuthStore();
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [openMobileSection, setOpenMobileSection] = useState<string | null>(null);
@@ -257,16 +259,38 @@ export function Header() {
             </nav>
 
             <div className="flex items-center gap-4 border-l border-primary/10 pl-4 md:gap-5 md:pl-5">
-              <Link href="/profile" className="hidden md:block">
-                <Button
-                  size="icon"
-                  variant="ghost"
-                  className="h-12 w-12 rounded-full text-primary transition-all duration-500 hover:bg-primary/5 md:h-14 md:w-14"
-                  aria-label="Profile"
-                >
-                  <User className="h-7 w-7 md:h-8 md:w-8" />
-                </Button>
-              </Link>
+              {!isLoading && (
+                isLoggedIn ? (
+                  <Link href="/profile" className="hidden md:block">
+                    <Button
+                      size="icon"
+                      variant="ghost"
+                      className="h-12 w-12 overflow-hidden rounded-full p-0 text-primary transition-all duration-500 hover:bg-primary/5 md:h-14 md:w-14 shrink-0"
+                      aria-label="Profile"
+                    >
+                      {user?.profileImage ? (
+                        /* eslint-disable-next-line @next/next/no-img-element */
+                        <img src={user.profileImage} alt="Profile" className="h-full w-full object-cover" />
+                      ) : (
+                        <User className="h-7 w-7 md:h-8 md:w-8" />
+                      )}
+                    </Button>
+                  </Link>
+                ) : (
+                  <div className="hidden md:flex items-center gap-2">
+                    <Link href="/login">
+                      <Button variant="ghost" className="rounded-full text-primary hover:bg-primary/5 px-5 font-black uppercase tracking-widest text-[11px] h-10">
+                        Login
+                      </Button>
+                    </Link>
+                    <Link href="/register">
+                      <Button className="rounded-full bg-primary text-background hover:bg-primary/90 px-6 font-black uppercase tracking-widest text-[11px] h-10 shadow-sm border border-primary/20">
+                        Sign up
+                      </Button>
+                    </Link>
+                  </div>
+                )
+              )}
               <Button
                 size="icon"
                 variant="ghost"

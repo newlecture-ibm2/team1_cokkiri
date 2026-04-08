@@ -19,7 +19,7 @@ public interface AdminSpaceUseCase {
 
     void deleteSpace(Long spaceId);
 
-    void uploadImage(Long spaceId, org.springframework.web.multipart.MultipartFile file, com.coliving.user.room.model.ImageType imageType, Boolean isThumbnail);
+    void uploadImage(Long spaceId, org.springframework.web.multipart.MultipartFile file, com.coliving.admin.space.model.ImageType imageType, Boolean isThumbnail);
 
     java.nio.file.Path loadImage(Long spaceId, String fileName);
 }

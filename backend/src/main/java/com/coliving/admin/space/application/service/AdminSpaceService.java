@@ -8,8 +8,8 @@ import com.coliving.admin.space.application.result.AdminSpaceResult;
 import com.coliving.admin.space.model.AdminSpace;
 import com.coliving.global.error.BusinessException;
 import com.coliving.global.error.ErrorCode;
-import com.coliving.user.room.model.SpaceStatus;
-import com.coliving.user.room.model.SpaceType;
+import com.coliving.admin.space.model.SpaceStatus;
+import com.coliving.admin.space.model.SpaceType;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -142,7 +142,7 @@ public class AdminSpaceService implements AdminSpaceUseCase {
     }
 
     @Override
-    public void uploadImage(Long spaceId, org.springframework.web.multipart.MultipartFile file, com.coliving.user.room.model.ImageType imageType, Boolean isThumbnail) {
+    public void uploadImage(Long spaceId, org.springframework.web.multipart.MultipartFile file, com.coliving.admin.space.model.ImageType imageType, Boolean isThumbnail) {
         AdminSpace existing = adminSpaceRepositoryPort.findById(spaceId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.SPACE_NOT_FOUND));
 

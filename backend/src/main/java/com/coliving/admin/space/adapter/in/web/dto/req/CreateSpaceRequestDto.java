@@ -1,7 +1,7 @@
 package com.coliving.admin.space.adapter.in.web.dto.req;
 
-import com.coliving.user.room.model.SpaceStatus;
-import com.coliving.user.room.model.SpaceType;
+import com.coliving.admin.space.model.SpaceStatus;
+import com.coliving.admin.space.model.SpaceType;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;

@@ -3,7 +3,7 @@ package com.coliving.reservation.adapter.out.jpa;
 import com.coliving.common.auth.adapter.out.jpa.UserEntity;
 import com.coliving.global.entity.BaseEntity;
 import com.coliving.reservation.model.ReservationStatus;
-import com.coliving.user.room.adapter.out.jpa.SpaceEntity;
+import com.coliving.admin.space.adapter.out.jpa.SpaceEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;

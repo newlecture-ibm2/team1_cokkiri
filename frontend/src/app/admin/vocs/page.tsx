@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { LayoutList } from "lucide-react";
 import { adminBffGet } from "./_api/admin-bff-server";
 import type { AdminVocListData, ApiResponse } from "./_types/admin-vocs";
@@ -6,8 +7,15 @@ import { MotionEnter } from "./_components/MotionEnter";
 import { AdminVocStatusFilter } from "./_components/AdminVocStatusFilter";
 import { AdminVocListCard } from "./_components/AdminVocListCard";
 import { AdminVocPaginationBar } from "./_components/AdminVocPaginationBar";
+import {
+  adminVocListNeedsDefaultRedirect,
+  buildAdminVocListApiQuery,
+  buildAdminVocListBaseQuery,
+  parseAdminVocListScope,
+  redirectToDefaultAdminVocList,
+} from "./_lib/admin-voc-list-query";
 
-type SearchParams = Promise<{ status?: string; p?: string; s?: string }>;
+type SearchParams = Promise<Record<string, string | string[] | undefined>>;
 
 export const metadata = {
   title: "민원 관리 | Admin",
@@ -15,17 +23,14 @@ export const metadata = {
 
 export default async function AdminVocListPage({ searchParams }: { searchParams: SearchParams }) {
   const sp = await searchParams;
-  const status = sp.status?.trim() ?? "";
-  const page = Math.max(0, parseInt(sp.p ?? "0", 10) || 0);
-  const size = Math.min(50, Math.max(1, parseInt(sp.s ?? "20", 10) || 20));
 
-  const qs = new URLSearchParams();
-  if (status) qs.set("status", status);
-  qs.set("p", String(page));
-  qs.set("s", String(size));
-  qs.set("sort", "createdAt,desc");
+  if (adminVocListNeedsDefaultRedirect(sp)) {
+    redirect(redirectToDefaultAdminVocList(sp));
+  }
 
-  const res = await adminBffGet(`admin/vocs?${qs.toString()}`);
+  const { pending, all, status } = parseAdminVocListScope(sp);
+
+  const res = await adminBffGet(`admin/vocs?${buildAdminVocListApiQuery(sp)}`);
   let list: AdminVocListData | null = null;
   let error: string | null = null;
 
@@ -39,7 +44,7 @@ export default async function AdminVocListPage({ searchParams }: { searchParams:
     else error = body.message ?? "목록을 불러오지 못했습니다.";
   }
 
-  const baseQuery = status ? `status=${encodeURIComponent(status)}` : "";
+  const baseQuery = buildAdminVocListBaseQuery(sp);
 
   return (
     <MotionEnter>
@@ -52,7 +57,7 @@ export default async function AdminVocListPage({ searchParams }: { searchParams:
               <span className="underline decoration-secondary decoration-2 underline-offset-[0.18em]">관리</span>
             </h1>
             <p className="max-w-xl font-medium tracking-tight text-balance text-foreground/85 md:text-lg">
-              전체 입주민 민원을 조회합니다. 답변 등록과 처리 완료는 각 건 상세에서 진행합니다.
+              기본 화면은 미처리(접수·처리 중) 안건입니다. 답변 등록 시 해당 건은 처리 완료로 반영됩니다.
             </p>
           </div>
           <Link
@@ -64,8 +69,7 @@ export default async function AdminVocListPage({ searchParams }: { searchParams:
         </header>
 
         <section className="mt-12 space-y-4">
-          <p className="font-black text-[10px] uppercase tracking-[0.3em] text-muted-foreground"></p>
-          <AdminVocStatusFilter activeStatus={status} />
+          <AdminVocStatusFilter pending={pending} all={all} status={status} />
         </section>
 
         {error && (
@@ -99,7 +103,7 @@ export default async function AdminVocListPage({ searchParams }: { searchParams:
               page={list.page}
               totalPages={list.totalPages}
               baseQuery={baseQuery}
-              pageSize={size}
+              pageSize={list.size}
             />
           </>
         )}

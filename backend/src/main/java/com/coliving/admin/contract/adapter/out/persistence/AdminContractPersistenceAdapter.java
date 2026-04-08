@@ -7,8 +7,8 @@ import com.coliving.common.auth.adapter.out.jpa.UserJpaRepository;
 import com.coliving.user.contract.adapter.out.jpa.ContractEntity;
 import com.coliving.user.contract.adapter.out.jpa.ContractJpaRepository;
 import com.coliving.user.contract.model.ContractStatus;
-import com.coliving.user.room.adapter.out.jpa.SpaceEntity;
-import com.coliving.user.room.adapter.out.jpa.SpaceJpaRepository;
+import com.coliving.admin.space.adapter.out.jpa.SpaceEntity;
+import com.coliving.admin.space.adapter.out.jpa.SpaceJpaRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 

@@ -7,6 +7,7 @@ import type { ApiResponse, VocDetail } from "@/app/(common)/vocs/_types/vocs";
 import { VocShell } from "@/app/(common)/vocs/_components/VocShell";
 import { MotionEnter } from "@/app/(common)/community/_components/MotionEnter";
 import { VocEditForm } from "@/app/(common)/vocs/_components/VocEditForm";
+import { VocAccessDeniedState } from "../../_components/VocAccessDeniedState";
 
 type Params = Promise<{ vocId: string }>;
 
@@ -21,7 +22,8 @@ export default async function ProfileVocEditPage({ params }: { params: Params })
   if (Number.isNaN(id)) notFound();
 
   const res = await bffGet(`vocs/${id}`);
-  if (res.status === 401 || res.status === 403) {
+  if (res.status === 404) notFound();
+  if (res.status === 401) {
     return (
       <VocShell>
         <MotionEnter>
@@ -33,7 +35,22 @@ export default async function ProfileVocEditPage({ params }: { params: Params })
       </VocShell>
     );
   }
-  if (!res.ok) notFound();
+  if (res.status === 403) {
+    return <VocAccessDeniedState />;
+  }
+  if (!res.ok) {
+    return (
+      <VocShell>
+        <MotionEnter>
+          <div className="mx-auto max-w-3xl text-center">
+            <p className="font-medium text-destructive" role="alert">
+              민원 정보를 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.
+            </p>
+          </div>
+        </MotionEnter>
+      </VocShell>
+    );
+  }
 
   const body = (await res.json()) as ApiResponse<VocDetail>;
   if (!body.success || !body.data) notFound();
