@@ -24,6 +24,7 @@ export default function RootLayout({
         <AuthProvider>
           {children}
         </AuthProvider>
+        <script src="https://cdn.portone.io/v2/browser-sdk.js" defer></script>
       </body>
     </html>
   );
