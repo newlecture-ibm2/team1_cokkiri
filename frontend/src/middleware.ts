@@ -31,8 +31,11 @@ const secretKey = new TextEncoder().encode(JWT_SECRET);
 
 export async function middleware(req: NextRequest) {
   if (req.nextUrl.pathname.startsWith('/api/')) {
-    // [MOCK] /api/bff/admin/contracts 관련 모든 요청(목록, 승인, 반려)은 프록시하지 않고 통과시킵니다.
-    if (req.nextUrl.pathname.includes('/admin/contracts')) {
+    // [MOCK] /api/admin/contracts 관련 요청 및 세션 관리 API는 프록시하지 않고 통과시킵니다.
+    if (
+      req.nextUrl.pathname.includes('/admin/contracts') ||
+      req.nextUrl.pathname.startsWith('/api/session')
+    ) {
       return NextResponse.next();
     }
 
@@ -41,10 +44,26 @@ export async function middleware(req: NextRequest) {
       const backendPath = req.nextUrl.pathname.replace(/^\/api\/bff/, '/api');
       const url = `${BACKEND_URL}${backendPath}${req.nextUrl.search}`;
 
-      // Extract JWT from httpOnly cookie
-      const accessToken = req.cookies.get('access_token')?.value;
+      // Extract session ID from httpOnly cookie
+      const sessionId = req.cookies.get('session_id')?.value;
+      const origin = req.nextUrl.origin;
 
+      let accessToken: string | null = null;
       let jwtPayload: any = null;
+
+      if (sessionId) {
+        try {
+          const sessionRes = await fetch(`${origin}/api/session?id=${sessionId}`);
+          if (sessionRes.ok) {
+            const sessionData = await sessionRes.json();
+            if (sessionData.success) {
+              accessToken = sessionData.accessToken;
+            }
+          }
+        } catch (err) {
+          console.error('[Middleware BFF] Failed to retrieve session from Redis', err);
+        }
+      }
 
       if (accessToken) {
         try {
@@ -101,6 +120,54 @@ export async function middleware(req: NextRequest) {
       });
       if (!forwardedHeaders.has('Content-Type')) {
         forwardedHeaders.set('Content-Type', 'application/json');
+      }
+
+      if (req.nextUrl.pathname === '/api/auth/login' && response.status === 200) {
+        const result = await response.json();
+        if (result.success && result.data) {
+          const { accessToken, refreshToken, user } = result.data;
+          
+          // Save tokens in Redis
+          let newSessionId: string | null = null;
+          try {
+            const redisRes = await fetch(`${origin}/api/session`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ accessToken, refreshToken })
+            });
+            const redisData = await redisRes.json();
+            if (redisData.success) {
+              newSessionId = redisData.sessionId;
+            }
+          } catch (err) {
+             console.error('[Middleware BFF] Failed to create redis session', err);
+          }
+
+          if (newSessionId) {
+            const newResponseBody = JSON.stringify({ ...result, data: { user } });
+            const newResponse = new NextResponse(newResponseBody, {
+              status: response.status,
+              headers: forwardedHeaders,
+            });
+            
+            newResponse.cookies.set('session_id', newSessionId, {
+              httpOnly: true,
+              secure: process.env.NODE_ENV === 'production',
+              sameSite: 'lax',
+              path: '/',
+              maxAge: 7 * 24 * 60 * 60 // 7 days (length of refresh token)
+            });
+            
+            return newResponse;
+          } else {
+            return NextResponse.json({ success: false, message: '세션 생성 실패', errorCode: 'INTERNAL_SERVER_ERROR' }, { status: 500 });
+          }
+        } else {
+          return new NextResponse(JSON.stringify(result), {
+            status: response.status,
+            headers: forwardedHeaders,
+          });
+        }
       }
 
       return new NextResponse(response.body, {
