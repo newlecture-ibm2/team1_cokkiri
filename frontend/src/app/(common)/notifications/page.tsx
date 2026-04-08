@@ -1,11 +1,10 @@
 import Link from "next/link";
-import { Bell } from "lucide-react";
+import { Bell, FileText, Layout, ArrowRight } from "lucide-react";
 import { LOGIN_REQUIRED_MESSAGE } from "@/lib/auth-messages";
 import { LoginRequiredGate } from "@/components/shared/LoginRequiredGate";
-import { Header } from "@/components/shared/Header";
-import { Footer } from "@/components/shared/Footer";
 import { PaginationBar } from "@/app/(common)/community/_components/PaginationBar";
 import { bffGet } from "./_api/bff-server";
+import { MotionEnter } from "@/app/(common)/community/_components/MotionEnter";
 
 type ApiResponse<T> = {
   success: boolean;
@@ -36,7 +35,7 @@ type NotificationListData = {
 type SearchParams = Promise<{ p?: string; s?: string; is_read?: string }>;
 
 export const metadata = {
-  title: "알림 | CoKkiri",
+  title: "알림 센터 | CoKkiri",
 };
 
 export default async function NotificationsPage({ searchParams }: { searchParams: SearchParams }) {
@@ -58,8 +57,6 @@ export default async function NotificationsPage({ searchParams }: { searchParams
   if (res.status === 401) {
     error = LOGIN_REQUIRED_MESSAGE;
   } else if (res.status === 403) {
-    // 일부 환경에서 notifications 조회가 403으로 오탐되는 케이스가 있어
-    // 실제 로그인 여부를 /users/me로 재확인 후 안내 메시지를 결정한다.
     const meRes = await bffGet("users/me");
     if (meRes.status === 401 || meRes.status === 403) {
       error = LOGIN_REQUIRED_MESSAGE;
@@ -79,105 +76,135 @@ export default async function NotificationsPage({ searchParams }: { searchParams
   const unreadCount = list ? list.content.filter((item) => !item.isRead).length : 0;
 
   return (
-    <div className="min-h-screen bg-background">
-      <Header />
-      <main className="mx-auto w-full max-w-[1400px] px-6 pb-24 pt-20 md:px-12 md:pt-24 md:pb-32 lg:px-24">
-        <div className="mx-auto max-w-5xl">
-          <header className="border-b border-primary/10 pb-10">
-            <div className="flex flex-col gap-8 md:flex-row md:items-end md:justify-between">
-              <div className="space-y-5">
-                <p className="font-black text-[10px] uppercase tracking-[0.35em] text-accent">MY / NOTIFICATIONS</p>
-                <h1 className="text-balance text-[11vw] font-black uppercase leading-[0.85] tracking-tighter text-foreground sm:text-[9vw] md:text-[6vw] lg:text-[4.25rem]">
-                  알림
-                  <span className="underline decoration-secondary decoration-2 underline-offset-[0.18em]"> 센터</span>
-                </h1>
-                <p className="max-w-xl font-medium tracking-tight text-foreground/80 md:text-lg">
-                  서비스 상태 변동과 주요 이벤트를 시간순으로 확인할 수 있습니다.
+    <div className="mx-auto w-full max-w-[1400px]">
+      <MotionEnter>
+        {/* Editorial Header */}
+        <header className="mb-20">
+          <div className="flex flex-col gap-6">
+            <span className="text-[10px] font-black uppercase tracking-[0.4em] text-accent">
+              INBOX / 01
+            </span>
+            <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-12">
+              <h1 className="text-[12vw] md:text-[10vw] lg:text-[8vw] font-black leading-[0.85] tracking-tighter uppercase whitespace-nowrap">
+                NOTIFI<br />CATIONS
+              </h1>
+              <div className="max-w-md pb-4">
+                <p className="text-xl font-medium tracking-tight text-balance border-l-2 border-accent pl-8 opacity-60">
+                  중요한 일정과 시스템 안내, 그리고 커뮤니티의 소식을 누구보다 빠르게 전달합니다.
                 </p>
+                <div className="mt-10">
+                  <Link
+                    href="/profile"
+                    className="inline-flex h-16 px-10 bg-primary/5 text-primary rounded-2xl items-center gap-3 text-[10px] font-black uppercase tracking-[0.2em] transition-all hover:bg-primary hover:text-white"
+                  >
+                    Go to Profile
+                  </Link>
+                </div>
               </div>
-              <Link
-                href="/profile"
-                className="inline-flex h-12 items-center justify-center rounded-full bg-primary px-7 text-xs font-black uppercase tracking-[0.22em] text-primary-foreground transition-colors hover:bg-accent"
-              >
-                프로필 이동
-              </Link>
             </div>
-          </header>
+          </div>
+        </header>
 
-          <section className="mt-10 grid grid-cols-1 gap-5 md:grid-cols-2">
-            <article className="rounded-[2rem] border border-primary/10 bg-primary/5 px-7 py-7">
-              <p className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground">TOTAL</p>
-              <p className="mt-3 text-5xl font-black tracking-tight text-foreground">{String(totalCount).padStart(2, "0")}</p>
-            </article>
-            <article className="rounded-[2rem] border border-secondary/30 bg-secondary/10 px-7 py-7">
-              <p className="text-[10px] font-black uppercase tracking-[0.3em] text-secondary">UNREAD IN PAGE</p>
-              <p className="mt-3 text-5xl font-black tracking-tight text-foreground">{String(unreadCount).padStart(2, "0")}</p>
-            </article>
-          </section>
-
-          <section className="mt-10 flex flex-wrap items-center gap-3 border-y border-primary/10 py-5">
-            <Link
-              href="/notifications"
-              className={`rounded-full px-5 py-2 text-[10px] font-black uppercase tracking-[0.24em] transition-colors ${!isRead ? "bg-primary text-primary-foreground" : "border border-border text-foreground/70 hover:text-foreground"}`}
-            >
-              전체
-            </Link>
-            <Link
-              href="/notifications?is_read=false"
-              className={`rounded-full px-5 py-2 text-[10px] font-black uppercase tracking-[0.24em] transition-colors ${isRead === "false" ? "bg-primary text-primary-foreground" : "border border-border text-foreground/70 hover:text-foreground"}`}
-            >
-              읽지 않음
-            </Link>
-            <Link
-              href="/notifications?is_read=true"
-              className={`rounded-full px-5 py-2 text-[10px] font-black uppercase tracking-[0.24em] transition-colors ${isRead === "true" ? "bg-primary text-primary-foreground" : "border border-border text-foreground/70 hover:text-foreground"}`}
-            >
-              읽음
-            </Link>
-          </section>
-
-          {error && (
-            <>
-              {error === LOGIN_REQUIRED_MESSAGE ? <LoginRequiredGate /> : null}
-              <div
-                className="mt-8 rounded-xl border border-destructive/40 bg-destructive/10 px-4 py-3 text-sm font-medium text-destructive"
-                role="alert"
-              >
-                <p>{error}</p>
-                {error === LOGIN_REQUIRED_MESSAGE ? (
-                  <p className="mt-2 text-sm">
-                    <Link href="/login" className="font-black text-secondary underline underline-offset-4">
-                      로그인 페이지로 이동
-                    </Link>
-                  </p>
-                ) : null}
+        {/* Stats Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-20">
+            {[
+              { label: "TOTAL MESSAGES", value: totalCount.toString().padStart(2, '0'), icon: FileText, desc: "전체 수신 알림" },
+              { label: "UNREAD IN PAGE", value: unreadCount.toString().padStart(2, '0'), icon: Bell, desc: "현재 페이지 미확인" }
+            ].map((stat, i) => (
+              <div key={i} className="group bg-white p-10 rounded-[2.5rem] border border-primary/5 shadow-2xl shadow-primary/5 hover:border-accent/30 transition-all">
+                <div className="flex items-start justify-between mb-8">
+                  <div className="w-12 h-12 rounded-2xl bg-primary/5 flex items-center justify-center text-accent group-hover:bg-accent group-hover:text-white transition-all">
+                    <stat.icon className="w-6 h-6" />
+                  </div>
+                  <span className="text-[10px] font-black tracking-widest opacity-20 group-hover:opacity-100 transition-opacity">0{i+1}</span>
+                </div>
+                <div className="space-y-1">
+                  <p className="text-[9px] font-black uppercase tracking-[0.3em] text-muted-foreground opacity-60">{stat.label}</p>
+                  <p className="text-5xl font-black tracking-tighter italic">{stat.value}</p>
+                  <p className="pt-4 text-[10px] font-bold uppercase tracking-wider text-muted-foreground opacity-40">{stat.desc}</p>
+                </div>
               </div>
-            </>
-          )}
+            ))}
+        </div>
 
-          {list && (
-            <>
-              <ul className="mt-8 space-y-5">
-                {list.content.length === 0 ? (
-                  <li className="flex flex-col items-center justify-center gap-4 rounded-[2rem] border border-dashed border-border bg-muted/25 px-6 py-16 text-center">
-                    <Bell className="size-10 text-muted-foreground" strokeWidth={1.25} aria-hidden />
-                    <p className="font-medium tracking-tight text-muted-foreground">표시할 알림이 없습니다.</p>
+        {/* Filters */}
+        <div className="flex items-center gap-10 overflow-x-auto border-b border-primary/10 pb-8 mb-12">
+            {[
+              { label: "ALL", href: "/notifications", active: !isRead },
+              { label: "UNREAD", href: "/notifications?is_read=false", active: isRead === "false" },
+              { label: "READ", href: "/notifications?is_read=true", active: isRead === "true" }
+            ].map((tab) => (
+              <Link
+                key={tab.label}
+                href={tab.href}
+                className={`shrink-0 pb-2 text-[10px] font-black uppercase tracking-[0.3em] transition-all border-b-2 ${tab.active ? "text-accent border-accent" : "text-muted-foreground opacity-40 hover:opacity-100 border-transparent"}`}
+              >
+                {tab.label}
+              </Link>
+            ))}
+        </div>
+
+        {error && (
+            <div className="rounded-[2rem] bg-destructive/5 border border-destructive/10 p-10 text-center">
+              <p className="text-destructive font-black uppercase tracking-widest text-[10px] mb-4">Error Detected</p>
+              <p className="text-xl font-bold tracking-tight text-primary underline decoration-destructive/30 underline-offset-8">
+                {error}
+              </p>
+              {error === LOGIN_REQUIRED_MESSAGE && (
+                <div className="mt-8 flex justify-center">
+                   <LoginRequiredGate />
+                   <Link href="/login" className="inline-flex h-12 bg-primary text-white px-8 rounded-xl items-center gap-2 text-[9px] font-black uppercase tracking-[0.2em] hover:bg-accent transition-all animate-pulse ml-4">
+                     Go to Login <ArrowRight className="size-3" />
+                   </Link>
+                </div>
+              )}
+            </div>
+        )}
+
+        {list && (
+          <div className="space-y-12">
+            <ul className="grid grid-cols-1 gap-8">
+              {list.content.length === 0 ? (
+                <li className="flex flex-col items-center justify-center gap-6 rounded-[3rem] border-2 border-dashed border-primary/10 bg-primary/2 px-6 py-32 text-center">
+                  <div className="w-20 h-20 rounded-[2rem] bg-background border border-primary/5 flex items-center justify-center text-primary/20">
+                    <Bell className="size-8" strokeWidth={1.5} />
+                  </div>
+                  <div className="space-y-2">
+                    <p className="text-xl font-bold tracking-tight text-primary">도착한 알림이 없습니다</p>
+                    <p className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground opacity-60">
+                      You're all caught up!
+                    </p>
+                  </div>
+                </li>
+              ) : (
+                list.content.map((item) => (
+                  <li
+                    key={item.notificationId}
+                    className={`group bg-white rounded-[2.5rem] p-10 md:p-14 border transition-all relative overflow-hidden ${item.isRead ? "border-primary/5 opacity-60" : "border-accent/20 shadow-2xl shadow-accent/5"}`}
+                  >
+                    <div className="flex flex-col md:flex-row md:items-start justify-between gap-8 relative z-10">
+                       <div className="space-y-6 max-w-2xl">
+                          <div className="flex items-center gap-4">
+                             <span className="text-[10px] font-black tracking-[0.3em] uppercase opacity-30">MSG-00{item.notificationId}</span>
+                             <span className={`text-[10px] font-black tracking-[0.2em] uppercase px-4 py-1.5 rounded-full ${item.isRead ? "bg-muted/10 text-muted-foreground" : "bg-accent/10 text-accent"}`}>
+                                {item.type ?? "NOTICE"}
+                             </span>
+                          </div>
+                          <div>
+                            <h2 className="text-3xl font-black tracking-tighter leading-tight uppercase italic">{item.title}</h2>
+                            <p className="mt-4 text-lg font-medium tracking-tight text-primary opacity-60">{item.message}</p>
+                          </div>
+                       </div>
+                       <div className="shrink-0 flex flex-col items-end gap-2">
+                          <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">{new Date(item.createdAt).toLocaleDateString()}</span>
+                          <span className="text-[10px] font-black uppercase tracking-widest opacity-20">{new Date(item.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
+                       </div>
+                    </div>
                   </li>
-                ) : (
-                  list.content.map((item) => (
-                    <li
-                      key={item.notificationId}
-                      className={`rounded-[2rem] border px-7 py-6 shadow-2xl shadow-primary/5 ${item.isRead ? "border-primary/10 bg-background" : "border-secondary/30 bg-secondary/10"}`}
-                    >
-                      <p className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground">
-                        {item.type ?? "NOTICE"}
-                      </p>
-                      <p className="mt-2 text-xl font-black tracking-tight text-foreground md:text-2xl">{item.title}</p>
-                      <p className="mt-2 text-sm font-medium tracking-tight text-foreground/80 md:text-base">{item.message}</p>
-                    </li>
-                  ))
-                )}
-              </ul>
+                ))
+              )}
+            </ul>
+            <div className="pt-10 flex justify-center">
               <PaginationBar
                 page={list.page}
                 totalPages={list.totalPages}
@@ -185,11 +212,10 @@ export default async function NotificationsPage({ searchParams }: { searchParams
                 pageSize={size}
                 hrefBase="/notifications"
               />
-            </>
-          )}
-        </div>
-      </main>
-      <Footer />
+            </div>
+          </div>
+        )}
+      </MotionEnter>
     </div>
   );
 }

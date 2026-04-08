@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { MessageCircle, Eye, Heart } from "lucide-react";
+import { MessageCircle, Eye, Heart, ChevronRight } from "lucide-react";
 import type { PostListItem } from "../_types/community";
 import { POST_CATEGORIES } from "../_types/community";
 import { formatDateTimeKo } from "@/lib/format-date";
@@ -13,38 +13,62 @@ function categoryLabel(code: string) {
 
 export function PostCard({ post }: { post: PostListItem }) {
   return (
-    <Link href={`/community/${post.postId}`} className="block rounded-[2rem] outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background">
-      <motion.div
-        whileHover={{ y: -8, scale: 1.01 }}
-        transition={{ type: "spring", stiffness: 420, damping: 26 }}
-        className="rounded-[2.25rem] border border-primary/10 bg-background p-7 shadow-2xl shadow-primary/5 md:p-9"
-      >
-        <div className="flex flex-wrap items-center gap-3">
-          <span className="rounded-full bg-secondary/15 px-3 py-1 font-black text-[10px] uppercase tracking-[0.24em] text-secondary">
-            {categoryLabel(post.category)}
-          </span>
-          <span className="font-black text-[10px] uppercase tracking-[0.24em] text-muted-foreground">
-            {formatDateTimeKo(post.createdAt)}
-          </span>
+    <Link 
+      href={`/community/${post.postId}`} 
+      className="group bg-white rounded-[2.5rem] p-10 md:p-14 border border-primary/5 shadow-2xl shadow-primary/5 transition-all relative overflow-hidden block"
+    >
+      <div className="flex flex-col lg:flex-row lg:items-start justify-between gap-12 relative z-10 text-primary">
+        <div className="flex flex-col gap-8 max-w-2xl w-full">
+          <div className="flex items-center gap-4">
+            <span className="text-[10px] font-black tracking-[0.3em] uppercase opacity-30">
+              POST-00{post.postId}
+            </span>
+            <span className={`text-[10px] font-black tracking-[0.2em] uppercase px-4 py-1.5 rounded-full ${
+              post.category === 'NOTICE' ? 'bg-orange-100 text-orange-600' :
+              post.category === 'QUESTION' ? 'bg-blue-100 text-blue-600' :
+              post.category === 'MEETUP' ? 'bg-accent/20 text-accent' :
+              'bg-muted/10 text-muted-foreground'
+            }`}>
+              {categoryLabel(post.category)}
+            </span>
+          </div>
+
+          <div>
+            <h2 className="text-5xl font-black tracking-tighter leading-tight group-hover:text-accent transition-colors uppercase italic line-clamp-2">
+              {post.title}
+            </h2>
+            <p className="mt-4 text-[10px] font-black tracking-widest text-muted-foreground uppercase">
+              By {post.authorUserId} — {formatDateTimeKo(post.createdAt)}
+            </p>
+          </div>
+
+          <div className="flex flex-wrap gap-3 pt-6 border-t border-primary/5">
+            <span className="inline-flex items-center gap-1.5 text-[10px] font-black uppercase tracking-[0.2em] opacity-40">
+              <Eye className="size-4 shrink-0" aria-hidden />
+              {post.viewCount} views
+            </span>
+            <span className="inline-flex items-center gap-1.5 text-[10px] font-black uppercase tracking-[0.2em] opacity-40">
+              <Heart className="size-4 shrink-0" aria-hidden />
+              {post.likeCount} likes
+            </span>
+            <span className="inline-flex items-center gap-1.5 text-[10px] font-black uppercase tracking-[0.2em] opacity-40">
+              <MessageCircle className="size-4 shrink-0" aria-hidden />
+              {post.commentCount} comments
+            </span>
+          </div>
         </div>
-        <h2 className="mt-4 line-clamp-2 text-xl font-black uppercase leading-tight tracking-tighter text-foreground md:text-2xl">
-          {post.title}
-        </h2>
-        <div className="mt-7 flex flex-wrap gap-3 text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">
-          <span className="inline-flex items-center gap-1.5 rounded-full border border-border px-3 py-1.5">
-            <Eye className="size-4 shrink-0 opacity-80" aria-hidden />
-            {post.viewCount}
-          </span>
-          <span className="inline-flex items-center gap-1.5 rounded-full border border-border px-3 py-1.5">
-            <Heart className="size-4 shrink-0 opacity-80" aria-hidden />
-            {post.likeCount}
-          </span>
-          <span className="inline-flex items-center gap-1.5 rounded-full border border-border px-3 py-1.5">
-            <MessageCircle className="size-4 shrink-0 opacity-80" aria-hidden />
-            {post.commentCount}
-          </span>
+
+        <div className="flex h-full items-center pt-4 lg:pt-0">
+           <div className="h-16 w-16 rounded-full border border-primary/10 flex items-center justify-center group-hover:bg-accent group-hover:border-accent transition-all">
+             <ChevronRight className="w-6 h-6 group-hover:text-white transition-colors" />
+           </div>
         </div>
-      </motion.div>
+      </div>
+
+      {/* Editorial background number */}
+      <span className="absolute -right-10 -bottom-20 text-[25vw] font-black opacity-[0.02] select-none pointer-events-none group-hover:opacity-[0.04] transition-opacity italic">
+        {String(post.postId % 100).padStart(2, '0')}
+      </span>
     </Link>
   );
 }

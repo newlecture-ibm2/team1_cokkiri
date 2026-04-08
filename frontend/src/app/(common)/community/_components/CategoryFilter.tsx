@@ -8,20 +8,20 @@ type Props = {
 
 export function CategoryFilter({ active }: Props) {
   const base =
-    "shrink-0 rounded-full border px-5 py-2.5 text-[10px] font-black uppercase tracking-[0.24em] transition-colors";
+    "shrink-0 text-[10px] font-black uppercase tracking-[0.3em] transition-all whitespace-nowrap pb-2 border-b-2 border-transparent";
 
   return (
-    <div className="flex gap-3 overflow-x-auto pb-2 md:flex-wrap md:overflow-visible">
+    <div className="flex items-center gap-10 overflow-x-auto">
       <Link
         href="/community"
         className={cn(
           base,
           !active
-            ? "border-primary bg-primary text-primary-foreground shadow-sm"
-            : "border-border bg-background text-foreground/75 hover:border-secondary/60 hover:text-foreground",
+            ? "text-accent border-accent"
+            : "text-muted-foreground opacity-40 hover:opacity-100",
         )}
       >
-        전체
+        ALL
       </Link>
       {POST_CATEGORIES.map((c) => (
         <Link
@@ -30,11 +30,11 @@ export function CategoryFilter({ active }: Props) {
           className={cn(
             base,
             active === c.value
-              ? "border-primary bg-primary text-primary-foreground shadow-sm"
-              : "border-border bg-background text-foreground/75 hover:border-secondary/60 hover:text-foreground",
+              ? "text-accent border-accent"
+              : "text-muted-foreground opacity-40 hover:opacity-100",
           )}
         >
-          {c.label}
+          {c.value}
         </Link>
       ))}
     </div>

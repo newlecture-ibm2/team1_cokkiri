@@ -35,12 +35,15 @@ export function ContractSignModal({
   const [privacyAgreed, setPrivacyAgreed] = useState(false);
   const [step, setStep] = useState<"terms" | "sign">("terms");
 
+  const [isLocalSubmitting, setIsLocalSubmitting] = useState(false);
+
   useEffect(() => {
     if (isOpen) {
       setStep("terms");
       setTermsAgreed(false);
       setPrivacyAgreed(false);
       setHasSignature(false);
+      setIsLocalSubmitting(false);
     }
   }, [isOpen]);
 
@@ -117,10 +120,19 @@ export function ContractSignModal({
   }, []);
 
   const handleSubmit = async () => {
-    if (!canvasRef.current || !hasSignature) return;
-    const signatureData = canvasRef.current.toDataURL("image/png");
-    await onSign(signatureData);
+    if (!canvasRef.current || !hasSignature || isLocalSubmitting || isSubmitting) return;
+    
+    setIsLocalSubmitting(true);
+    try {
+      const signatureData = canvasRef.current.toDataURL("image/png");
+      await onSign(signatureData);
+    } catch (error) {
+      console.error("Signature submission failed:", error);
+      setIsLocalSubmitting(false);
+    }
   };
+
+  const isAnySubmitting = isSubmitting || isLocalSubmitting;
 
   if (!isOpen) return null;
 
@@ -135,7 +147,7 @@ export function ContractSignModal({
         {/* Backdrop */}
         <div
           className="absolute inset-0 bg-primary/60 backdrop-blur-md"
-          onClick={!isSubmitting ? onClose : undefined}
+          onClick={!isAnySubmitting ? onClose : undefined}
         />
 
         {/* Modal */}
@@ -163,12 +175,13 @@ export function ContractSignModal({
               </div>
               <button
                 onClick={onClose}
-                disabled={isSubmitting}
+                disabled={isAnySubmitting}
                 className="p-3 hover:bg-primary/5 rounded-xl transition-colors disabled:opacity-30"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
+
 
             {/* Step Indicator */}
             <div className="flex gap-2 mt-5">
@@ -379,17 +392,17 @@ export function ContractSignModal({
               <>
                 <button
                   onClick={() => setStep("terms")}
-                  disabled={isSubmitting}
+                  disabled={isAnySubmitting}
                   className="h-14 px-8 bg-primary/5 hover:bg-primary/10 rounded-2xl text-[10px] font-black tracking-[0.2em] uppercase transition-colors disabled:opacity-30"
                 >
                   Back
                 </button>
                 <button
                   onClick={handleSubmit}
-                  disabled={!hasSignature || isSubmitting}
+                  disabled={!hasSignature || isAnySubmitting}
                   className="h-14 px-10 bg-accent text-white rounded-2xl text-[10px] font-black tracking-[0.2em] uppercase transition-all hover:bg-primary disabled:opacity-30 disabled:cursor-not-allowed flex items-center gap-3 shadow-xl shadow-accent/20"
                 >
-                  {isSubmitting ? (
+                  {isAnySubmitting ? (
                     <>
                       <Loader2 className="w-4 h-4 animate-spin" />
                       Processing...

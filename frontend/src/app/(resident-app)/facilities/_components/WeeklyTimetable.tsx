@@ -19,6 +19,8 @@ const DAYS_KO = ["월", "화", "수", "목", "금", "토", "일"];
 const SLOT_MINUTES = 30; // 30분 단위
 const DAY_START = 6;     // 06:00
 const DAY_END = 23;      // 23:00
+const MAX_RESERVATION_MINUTES = 120;
+const MAX_SLOT_COUNT = MAX_RESERVATION_MINUTES / SLOT_MINUTES;
 
 interface SlotData {
   status: "AVAILABLE" | "MY_RESERVATION" | "OCCUPIED";
@@ -113,7 +115,7 @@ function SlotCell({ slotData, isSelected, isPast, onPointerDown, onPointerEnter 
     : status === "MY_RESERVATION"
     ? "border-accent/60 bg-accent/20 cursor-not-allowed"
     : status === "OCCUPIED"
-    ? "border-muted bg-muted/40 cursor-not-allowed opacity-70"
+    ? "border-red-400/70 bg-red-500/20 cursor-not-allowed"
     : "border-border/50 bg-surface hover:border-primary/40 hover:bg-primary/10";
 
   return (
@@ -126,7 +128,7 @@ function SlotCell({ slotData, isSelected, isPast, onPointerDown, onPointerEnter 
       title={
         isPast ? "지난 시간" :
         status === "MY_RESERVATION" ? "내 예약" :
-        status === "OCCUPIED" ? "예약 불가" :
+        status === "OCCUPIED" ? "이미 예약된 시간" :
         isSelected ? "선택 취소" : "클릭하여 선택"
       }
     />
@@ -239,7 +241,9 @@ export function WeeklyTimetable({ facility, onReserved }: WeeklyTimetableProps) 
 
       const startValue = Math.min(getTimeValue(currentDrag.anchorTime), getTimeValue(targetTime));
       const endValue = Math.max(getTimeValue(currentDrag.anchorTime), getTimeValue(targetTime));
+      const direction = getTimeValue(targetTime) >= getTimeValue(currentDrag.anchorTime) ? 1 : -1;
       const nextSelection: { date: string; time: string }[] = [];
+      let exceededMaxDuration = false;
 
       for (const time of TIME_SLOTS) {
         const timeValue = getTimeValue(time);
@@ -259,7 +263,43 @@ export function WeeklyTimetable({ facility, onReserved }: WeeklyTimetableProps) 
         nextSelection.push({ date, time });
       }
 
-      setSelectedSlots(nextSelection);
+      const anchorIndex = TIME_SLOTS.indexOf(currentDrag.anchorTime);
+      const targetIndex = TIME_SLOTS.indexOf(targetTime);
+      const requestedSlotCount = Math.abs(targetIndex - anchorIndex) + 1;
+
+      if (requestedSlotCount > MAX_SLOT_COUNT) {
+        exceededMaxDuration = true;
+        const limitedSelection: { date: string; time: string }[] = [];
+        for (let step = 0; step < MAX_SLOT_COUNT; step += 1) {
+          const slotIndex = anchorIndex + step * direction;
+          const time = TIME_SLOTS[slotIndex];
+          if (!time) break;
+
+          const slotData = timetable[date]?.[time];
+          const isPastSlot = date < today || (date === today && time < nowTime);
+
+          if (!isSelectableSlot(slotData, isPastSlot)) {
+            setFeedback({
+              type: "error",
+              msg: "예약 불가 영역은 드래그해서 선택할 수 없습니다.",
+            });
+            return currentDrag;
+          }
+
+          limitedSelection.push({ date, time });
+        }
+        setSelectedSlots(direction === -1 ? limitedSelection.reverse() : limitedSelection);
+      } else {
+        setSelectedSlots(nextSelection);
+      }
+
+      if (exceededMaxDuration) {
+        setFeedback({
+          type: "error",
+          msg: "최대 2시간까지만 선택할 수 있습니다.",
+        });
+      }
+
       return currentDrag;
     });
   }, [nowTime, timetable, today]);
@@ -364,7 +404,7 @@ export function WeeklyTimetable({ facility, onReserved }: WeeklyTimetableProps) 
         {[
           { color: "bg-primary", label: "선택됨" },
           { color: "bg-accent/30 border border-accent/60", label: "내 예약" },
-          { color: "bg-muted/40 border border-muted", label: "예약 불가" },
+          { color: "bg-red-500/20 border border-red-400/70", label: "이미 예약됨" },
           { color: "bg-surface border border-border/50", label: "예약 가능" },
         ].map(({ color, label }) => (
           <div key={label} className="flex items-center gap-1.5">
@@ -486,7 +526,7 @@ export function WeeklyTimetable({ facility, onReserved }: WeeklyTimetableProps) 
                 {selectedDate} &nbsp;{selectedStart} – {selectedEnd}
               </p>
               <p className="text-xs text-muted-foreground">
-                {facility.name} · {selectedSlots.length * SLOT_MINUTES}분
+                {facility.name} · {selectedSlots.length * SLOT_MINUTES}분 / 최대 {MAX_RESERVATION_MINUTES}분
               </p>
               {reservationWindow ? (
                 <p className="text-[11px] font-medium text-muted-foreground/80">

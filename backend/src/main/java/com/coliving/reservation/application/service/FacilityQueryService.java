@@ -155,7 +155,7 @@ public class FacilityQueryService implements FacilityQueryUseCase {
             return "MY_RESERVATION";
         }
 
-        if (reservation.status() == ReservationStatus.APPROVED) {
+        if (reservation.status() == ReservationStatus.PENDING || reservation.status() == ReservationStatus.APPROVED) {
             return "OCCUPIED";
         }
 
