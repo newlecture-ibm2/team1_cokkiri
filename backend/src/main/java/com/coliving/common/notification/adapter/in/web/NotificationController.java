@@ -5,6 +5,7 @@ import com.coliving.common.notification.adapter.in.web.dto.res.NotificationListR
 import com.coliving.common.notification.adapter.in.web.dto.res.NotificationReadResponseDto;
 import com.coliving.common.notification.application.command.ListNotificationsCommand;
 import com.coliving.common.notification.application.command.MarkNotificationReadCommand;
+import com.coliving.common.notification.application.service.NotificationSseService;
 import com.coliving.common.notification.application.port.in.NotificationUseCase;
 import com.coliving.common.notification.application.result.MarkNotificationReadResult;
 import com.coliving.common.notification.application.result.NotificationItemResult;
@@ -12,6 +13,7 @@ import com.coliving.common.notification.application.result.NotificationListResul
 import com.coliving.global.dto.ApiResponse;
 import com.coliving.global.error.BusinessException;
 import com.coliving.global.error.ErrorCode;
+import org.springframework.http.MediaType;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -19,14 +21,18 @@ import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 @RestController
 public class NotificationController {
 
     private final NotificationUseCase notificationUseCase;
+    private final NotificationSseService notificationSseService;
 
-    public NotificationController(NotificationUseCase notificationUseCase) {
+    public NotificationController(NotificationUseCase notificationUseCase,
+                                  NotificationSseService notificationSseService) {
         this.notificationUseCase = notificationUseCase;
+        this.notificationSseService = notificationSseService;
     }
 
     @GetMapping("/api/notifications")
@@ -78,6 +84,12 @@ public class NotificationController {
                 .build();
 
         return ApiResponse.ok(response);
+    }
+
+    @GetMapping(path = "/api/notifications/stream", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    public SseEmitter streamNotifications() {
+        Long userId = getAuthenticatedUserId();
+        return notificationSseService.connect(userId);
     }
 
     private NotificationItemResponseDto toItemDto(NotificationItemResult item) {

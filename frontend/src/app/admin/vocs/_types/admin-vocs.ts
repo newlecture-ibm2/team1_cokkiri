@@ -43,15 +43,6 @@ export type ApiResponse<T> = {
   errorCode?: string | null;
 };
 
-/** 백엔드 VocStatus */
-export const ADMIN_VOC_STATUS_FILTERS: { value: string; label: string }[] = [
-  { value: "", label: "전체" },
-  { value: "OPEN", label: "접수" },
-  { value: "IN_PROGRESS", label: "처리 중" },
-  { value: "RESOLVED", label: "처리 완료" },
-  { value: "CANCELLED", label: "취소" },
-];
-
 export function adminVocCategoryLabel(code: string): string {
   switch (code) {
     case "FACILITY":

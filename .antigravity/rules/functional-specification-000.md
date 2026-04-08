@@ -1,0 +1,159 @@
+---
+trigger: always_on
+---
+
+# 기능 명세서 000
+
+## 역할(Role) 정의
+
+| 역할 | DB값 | 설명 | 전환 조건 |
+|---|---|---|---|
+| 일반 유저 | `USER` | 기본 역할. 방 조회, 계약 신청, 커뮤니티 이용 | 회원가입 시 자동 부여 |
+| 입주자 | `RESIDENT` | 계약 체결 완료. IoT 기기 제어, 공용 시설 예약 가능 | 계약 체결(ACTIVE) 시 자동 승격 |
+| 관리자 | `ADMIN` | 시스템 전체 관리. 모든 기능 접근 | 시스템 직접 부여 |
+
+**승격 흐름:** `USER` →(계약 체결)→ `RESIDENT` →(계약 만료/해지)→ `USER`
+계약 만료·해지 시 자동으로 USER 복귀, IoT 접근 권한 회수.
+
+**JWT Payload:** `sub`, `role`, `exp`, `iat` + RESIDENT만 `contract_id`, `space_id` 포함 → IoT 접근범위 토큰레벨 제한
+
+## 공용 공간 (MVP 4종)
+| 공간 | 예약정책 | IoT |
+|---|---|---|
+| 세탁실 | 자유이용 | 세탁기,건조기,조명,CCTV |
+| 라운지 | 자유이용 | 조명,에어컨,CCTV |
+| 회의실 | **예약제** | 조명,에어컨,CCTV |
+| 헬스장 | 자유이용 | 조명,에어컨,CCTV |
+
+
+
+## IoT 디바이스 (MVP 7종)
+| 디바이스 | 공간 | 명령 | UI |
+|---|---|---|---|
+| 도어락 | 개인 | LOCK,UNLOCK | 토글 |
+| 세탁기 | 공용 | START,STOP | 버튼+코스 |
+| 건조기 | 공용 | START,STOP | 버튼+코스 |
+| 조명 | 개인/공용 | ON,OFF,SET_BRIGHTNESS | 토글+밝기슬라이더 |
+| 에어컨 | 개인/공용 | ON,OFF,SET_TEMP,SET_MODE | 토글+온도+모드(냉방/난방/제습/송풍) |
+| 난방 | 개인/공용 | ON,OFF,SET_TEMP | 토글+온도(16~30℃) |
+| CCTV | 공용 | ON,OFF | 토글(**관리자전용**) |
+
+- CCTV: **ADMIN만 제어**, 입주자 조회/제어 불가
+- 도어락: **개인공간만** 설치, 해당 호실 입주자만 제어
+
+---
+
+## 1. 공통 기능
+
+### 1.1 회원가입 | CMN-AUTH-00 | Must
+입력: loginId(4~50,영숫자,중복불가), password(8+,영숫자특수), passwordConfirm, name(2~50), birthDate(YYMMDD 6자리), gender(M/F), nationality, phone(000-0000-0000/11자리), email
+흐름: 폼→BFF→POST /api/auth/register→검증(ID중복,PW정책,형식)→USERS INSERT(role=USER)→로그인화면
+
+### 1.2 로그인 | CMN-AUTH-01 | Must
+입력: loginId(4~50), password(8+)
+흐름: POST /api/auth/login→PW해시검증→성공:RESIDENT→CONTRACT조회→JWT(contract_id,space_id포함)/USER·ADMIN→기본JWT
+실패: 401 "아이디 또는 비밀번호를 확인하세요"
+BFF: httpOnly쿠키저장→라우팅(ADMIN→/admin/dashboard, RESIDENT→/my-room, USER→/rooms)
+
+### 1.3 아이디찾기 | CMN-AUTH-04 | Should
+입력: name(2~50)+email→POST /api/auth/find-id
+USERS에서 일치조회(DEACTIVATED도 404통일→보안)→마스킹(앞2자리+*)+가입일 표시
+에러: 404(계정없음), 400(형식오류)
+
+### 1.4 비밀번호찾기 | CMN-AUTH-05 | Should
+입력: loginId+email→POST /api/auth/reset-password
+임시PW생성(12자,영대소+숫자+특수)→해시DB업데이트→이메일발송("[CoLiving] 임시 비밀번호 안내")→RefreshToken무효화
+에러: 404, 400, 500(이메일실패), 429(5분내5회초과)
+
+### 1.5 로그아웃 | CMN-AUTH-02 | Must — JWT무효화→로그인화면
+### 1.6 토큰갱신 | CMN-AUTH-03 | Must — RefreshToken→새 Access/Refresh 발급. **RESIDENT**는 갱신 시점에 계약 **ACTIVE** 재확인(만료·해지·TERMINATED면 **role=USER** 클레임으로 갱신, `contract_id`·`space_id` 제거)
+
+### 1.7 내정보조회 | CMN-PRF-01 | Must
+표시: loginId(수정불가),name,phone,email,birthDate,gender,nationality,role,createdAt,계약요약(RESIDENT:호실+상태/USER:"없음"),예약요약
+
+### 1.8 내정보수정 | CMN-PRF-02 | Must — 수정가능: name(2~50),phone,email. loginId/role 변경불가(시스템자동)
+### 1.8.1 연락처 인증 | CMN-PRF-02-1 | Should — `POST /api/users/me/verify/phone/send|confirm`, `.../email/send|confirm` 로 SMS·이메일 검증. 계약 신청(§2.3)의 phone/email 필수 인증과 동일 정책으로 맞출 것
+### 1.9 비밀번호변경 | CMN-PRF-03 | Must — 현재PW검증→새PW(8+,영숫자특수)해시→DB업데이트→RefreshToken무효화→로그인화면
+
+### 1.9.1 회원탈퇴 | CMN-PRF-04 | Should
+PW재입력→검증: ACTIVE계약없음+미납금없음→확인모달→개인정보익명화+DEACTIVATED+게시글작성자→"탈퇴한 사용자"+JWT무효화
+에러: 409(활성계약/미납금), 401(PW불일치). 탈퇴후 CONTROL_LOG등 감사로그 보존
+**탈퇴 유저 감사이력 조회 지침**: Soft Delete로 유저 데이터는 DB에 보존되나, `@SQLRestriction("deleted_at IS NULL")`에 의해 JPA 자동 조인 시 탈퇴 유저가 필터링됨. 관리자 감사이력 조회 등 탈퇴 유저 정보가 필요한 쿼리에서는 `LEFT JOIN` + Native Query(`nativeQuery=true`)로 `@SQLRestriction`을 우회하여 조회하고, 탈퇴 유저는 프론트에서 "탈퇴한 사용자"로 표시
+
+### 1.10 커뮤니티 | 목록·상세 🔓 / 쓰기 🔑(USER+)
+1.10.1 게시글목록/상세 | CMN-CMT-01 | Should — **비회원 열람 가능**(`GET /api/posts`, `GET /api/posts/{id}`). 표시: 유형(공지/질문/제안/모임/자유),프사,제목,작성자,작성일,댓글수,좋아요,조회수. 최신순+페이지네이션
+1.10.2 게시글CRUD | CMN-CMT-02 | Should — 입력: 유형(공지=ADMIN만),제목(100자),본문,첨부(5개,10MB),URL(3개). 본인만 수정/삭제
+1.10.3 댓글 | CMN-CMT-03 | Should — 본인만 삭제. **줄바꿈보존 필수**: 저장시 `\n` 보존, 렌더링시 `\n`→`<br>` 변환
+
+### 1.11 알림 | CMN-NTF-01 | Should
+목록·읽음처리: `GET /api/notifications`, `PATCH /api/notifications/{id}/read`, Query `is_read`, `p`, `s`. 계약·예약·VoC 답변 등 참조 타입은 `api-specification.md` §10과 ERD NOTIFICATION 정의에 맞출 것.
+
+### 1.12 민원(VoC) 열람 정책 | CMN-VOC-00 | Should
+공개 목록·상세(`GET /vocs`, `GET /vocs/{id}`)는 🔓 또는 🔑 **팀 정책으로 선택**. 등록·내목록·수정·취소는 🔑.
+
+---
+
+## 2. USER 기능
+
+### 2.1 방목록 | USR-ROM-01 | Must | 🔓Public
+표시: 이미지,호실명,유형(1인실/2인실),층,면적(㎡),방수,보증금,월임대료,상태(AVAILABLE/OCCUPIED)
+
+### 2.2 방상세 | USR-ROM-02 | Must | 🔓Public
+표시: 이미지(갤러리),평면도,호실명,유형,층,면적,방/욕실수,수용인원,방향,보증금,월세,관리비,계약가능여부,주차,생활시설아이콘,상세설명
+
+### 2.3 계약신청 | USR-CTR-00 | Must | 👤USER+
+입력: spaceId(AVAILABLE PRIVATE만), name, birthDate, gender, phone(**SMS인증필수**), nationality, address, email(**이메일인증필수**), bankAccount, desiredStartDate(오늘이후), desiredDuration(1개월+), contractLanguage(한국어/영어), privacyConsent, requestNotes(500자), **phoneVerified**, **emailVerified**(또는 인증 세션 플래그), **`status`**: DRAFT(임시저장) / PENDING(제출)
+버튼: 임시저장(→**status=DRAFT**, 재진입 시 복원) / 신청(→인증완료 확인→**status=PENDING**). **`isDraft` 단일 불리언으로 구분하지 않음**(API·ERD는 `CONTRACT.status`만 사용)
+검증: 호실 AVAILABLE + 진행 중 신청 없음 + 인증 완료 → CONTRACT INSERT/UPDATE → 관리자 알림
+승인 후 유저가 계약 체결 화면에서 최종 동의 필요
+
+### 2.4 신청현황 | USR-CTR-00-1 | Must — PENDING/APPROVED/REJECTED 조회, PENDING취소가능, APPROVED→"계약체결"버튼
+
+### 2.5 계약체결 | USR-CTR-01 | Must
+표시: 호실, 층/면적, 시작일, 종료일, 월임대료, 보증금, 특약
+동의체크(필수): 계약조건 동의 + 이용약관 동의
+검증: APPROVED 상태 + 호실 AVAILABLE
+통과 시: CONTRACT→ACTIVE, Space→OCCUPIED, role→RESIDENT (자동 승격)
+체결 성공 응답에 **갱신된 accessToken·refreshToken** 포함 권장(즉시 RESIDENT UI 전환). 다음 요청부터 JWT에 contract_id, space_id 포함
+에러: 409 "계약 체결 불가" (비APPROVED) | 409 "호실 이미 계약완료" (OCCUPIED) | 409 "이미 활성계약 보유"
+
+### 2.6 내계약조회 | USR-CTR-02 | Should — 상태,호실,기간,임대료,보증금,체결일. 활성계약없으면 "계약없음"+방둘러보기안내
+### 2.7 활동이력 | USR-HST-01 | Should — 탭: 신청이력/계약이력/게시글이력/댓글이력. 각 최신순 정렬. 백엔드 집계 시 **`GET /api/users/me/history`**(Query: `type`, `p`, `s`) 등 단일·분할 API로 제공 가능 — `api-specification.md` §2.6, `03-backend-architecture.md` §5-1 참조
+
+---
+
+## 3. RESIDENT 기능
+접근: RESIDENT역할 필수, JWT `space_id` 기반 IoT접근범위 결정
+
+### 3.1.1 기기목록 | RES-DEV-01 | Must
+개인(PRIVATE): space_id기기(is_active=true) / 공용(COMMON): 전체공용기기+예약여부표시
+조회로직: JWT role=RESIDENT→space_id추출→CONTRACT ACTIVE+space_id이중검증→개인/공용기기조회→RESERVATION확인
+**CCTV 제외**: 백엔드 API에서 CCTV(device_type.code='CCTV') 기기는 입주자 응답에서 선제적으로 필터링하여 제외. CCTV는 ADMIN 전용 조회/제어만 허용
+표시: 공간구분(개인/공용),기기명,종류(아이콘),상태(ONLINE초록/OFFLINE회색/ERROR빨강),공간명,제어가능여부
+**공용IoT정책**: 조회=자유, 제어=APPROVED예약시간대만, 예약없으면 "예약 후 이용 가능" 표시
+
+### 3.1.2 기기제어 | RES-DEV-02 | Must
+권한검증:
+- role=RESIDENT 확인
+- PRIVATE 기기: JWT space_id와 기기 설치 space_id 일치 확인
+- COMMON 기기: RESERVATION에서 현재시각 APPROVED 예약 보유 확인
+- CONTRACT ACTIVE + 기기 ONLINE 확인
+통과→목업IoT명령전송→CONTROL_LOG(actor_type=RESIDENT)→결과반환
+에러: 403 "입주자만 가능" | 403 "접근 권한 없음" | 403 "예약시간 아님" | 403 "계약 만료" | 409 "기기 오프라인" | 502 "IoT 통신 실패"
+
+### 3.2 공용시설예약 (RESIDENT한정)
+3.2.1 시설조회 | RES-RSV-01 | Must | 🔓Public — is_reservable=true인 COMMON공간. 표시: 공간명,운영시간,수용인원,상태. (목록 조회는 비입주 유저도 가능, 예약은 RESIDENT만)
+3.2.2 타임슬롯 | RES-RSV-02 | Must — **주단위 타임테이블**(가로:요일,세로:시간). 색상: 회색(타인예약)/초록(가능)/파란(내예약). 주이동+셀클릭예약
+3.2.3 예약신청 | RES-RSV-03 | Must — 입력: spaceId,date(오늘이후),startTime,endTime(운영시간내). 검증: ACTIVE계약+시간대중복→RESERVATION(PENDING)→자동/관리자승인
+3.2.4 내예약 | RES-RSV-04 | Must — 조회+PENDING/APPROVED 취소가능
+
+### 3.3 계약정보
+3.3.1 계약상세 | RES-CTR-01 | Should — 호실,기간,상태,임대료,보증금
+3.3.2 계약이력 | RES-CTR-02 | Should — 전체이력(과거포함)
+
+### 3.5 기기사용기록 | RES-LOG-01 | Should
+CONTROL_LOG에서 user_id=본인,actor_type=RESIDENT 조회 (개인+공용기기 모두)
+표시: 일시,공간구분,공간명,기기명,종류,명령,결과(SUCCESS/FAILURE),상세
+필터: 기간(월/주간/직접입력),공간구분,기기종류,기기명,결과
+
+### 3.6 예약이력 | RES-LOG-02 | Should — 예약ID,시설명,날짜,시간대,상태(PENDING/APPROVED/CANCELLED/COMPLETED),신청일

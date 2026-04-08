@@ -48,10 +48,11 @@ public class AdminVocService implements AdminVocUseCase {
     public AdminVocListResult listVocs(ListAdminVocsCommand command) {
         int safePage = Math.max(0, command.getPage());
         int safeSize = normalizeSize(command.getSize());
-        Sort sort = parseSort(command.getSort());
-        PageRequest pageRequest = PageRequest.of(safePage, safeSize, sort);
+        PageRequest pageRequest = command.isPendingOnly()
+                ? PageRequest.of(safePage, safeSize)
+                : PageRequest.of(safePage, safeSize, parseSort(command.getSort()));
 
-        Page<Voc> page = vocRepositoryPort.findPageForAdmin(command.getStatus(), pageRequest);
+        Page<Voc> page = vocRepositoryPort.findPageForAdmin(command.getStatus(), command.isPendingOnly(), pageRequest);
 
         List<AdminVocListItemResult> content = page.getContent().stream()
                 .map(v -> AdminVocListItemResult.builder()

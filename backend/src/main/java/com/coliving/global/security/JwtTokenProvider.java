@@ -27,6 +27,10 @@ public class JwtTokenProvider {
 
     @Value("${jwt.refresh-expiration}")
     private long refreshExpiration;
+    
+    public long getRefreshExpiration() {
+        return refreshExpiration;
+    }
 
     private SecretKey key;
 

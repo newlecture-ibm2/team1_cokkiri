@@ -26,20 +26,20 @@ trigger: always_on
 
 ### 3. Data Fetching (BFF Pattern)
 
-#### 3-1. 프록시 경로 규칙 (`middleware.ts` 기반)
+#### 3-1. 프록시 경로 규칙 (`app/api/[...path]/route.ts` 기반)
 | 호출 주체 | URL 패턴 | 설명 |
 |-----------|----------|------|
 | **브라우저** | `/api/{...}` | 클라이언트·`apiFetch`는 백엔드와 동일하게 `/api/` 리소스 경로를 직접 호출한다. |
-| **Spring (백엔드)** | `/api/{...}` | Next Middleware가 **`/api/...` → 백엔드 `INTERNAL_BACKEND_URL` + `/api/...`** 로 원본 경로 그대로 넘긴다. |
+| **Spring (백엔드)** | `/api/{...}` | Node.js 런타임의 Next Route Handler(범용 프록시)가 **`/api/...` → 백엔드 `INTERNAL_BACKEND_URL` + `/api/...`** 로 원본 경로 그대로 넘긴다. |
 
-- **변환 규칙:** 브라우저가 호출한 `/api/` 하위 경로를 Next Middleware가 가로채어 백엔드로 바로 포워딩(동일 경로)한다. 
-- **예시:** `GET /api/admin/reservations` 호출 시 → 프록시 → **`GET /api/admin/reservations`** (관리자 API도 동일 규칙).
+- **변환 규칙:** 브라우저가 호출한 `/api/` 하위 경로를 Next Route Handler(`app/api/[...path]/route.ts`)가 가로채어 Redis 세션(JWT)을 확인하고 원본 경로 그대로 백엔드에 포워딩한다. Edge 제약으로 인해 `middleware.ts`는 외부에서 `/api/session`을 악용하지 못하도록 차단하는 최소 방어 역할만 수행한다.
+- **예시:** `GET /api/admin/reservations` 호출 시 → Route Handler 프록시 → **`GET /api/admin/reservations`** (관리자 API도 동일 규칙).
 - **수정사항 공고:** 프론트엔드 코드 내에 수동으로 `/bff` 세그먼트를 덧붙이는 행위는 더 이상 사용하지 않으며, 백엔드 라우팅명세와 100% 동일하게 호출한다.
 
 #### 3-2. 명세·구현과의 대응
 - 브라우저 클라이언트(`"use client"`)에서 Spring Boot 백엔드 호스트로 호스트 주소를 명시하여 직접 `fetch`하는 것을 금지한다. 클라이언트는 앞단의 프로토콜/호스트를 생략한 `/api/...` 경로를 찔러야 한다.
 - **`api-specification.md`:** 백엔드 계약과 프론트엔드 요청 경로는 1:1로 완벽히 동일하다.
-- `lib/api.ts` 의 `apiFetch` 등: `BASE_URL`(예: `/api`) + 프록시 리소스 세그먼트(예: `/rooms`, `/admin/reservations`), `credentials: 'include'` 로 httpOnly 쿠키 전달. 이후 미들웨어가 JWT를 분석하여 백엔드로 분배한다.
+- `lib/api.ts` 의 `apiFetch` 등: `BASE_URL`(예: `/api`) + 프록시 리소스 세그먼트(예: `/rooms`, `/admin/reservations`), `credentials: 'include'` 로 session_id 기반 httpOnly 쿠키 전달. 이후 Route Handler가 Redis에서 JWT를 꺼내 헤더에 주입 후 백엔드로 분배한다.
 - Server Component에서는 `INTERNAL_BACKEND_URL` 로 서버 전용 호출 가능하되, 브라우저에 백엔드 URL이 노출되면 안 된다. 상세는 `initial-project-setup.md` §6 · `01-general-convention.md` §1-1.
 
 ### 4. 기타 공통
