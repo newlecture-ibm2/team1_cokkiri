@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Bell } from "lucide-react";
-import { ACCESS_DENIED_MESSAGE, LOGIN_REQUIRED_MESSAGE } from "@/lib/auth-messages";
+import { LOGIN_REQUIRED_MESSAGE } from "@/lib/auth-messages";
 import { LoginRequiredGate } from "@/components/shared/LoginRequiredGate";
 import { Header } from "@/components/shared/Header";
 import { Footer } from "@/components/shared/Footer";
@@ -58,7 +58,14 @@ export default async function NotificationsPage({ searchParams }: { searchParams
   if (res.status === 401) {
     error = LOGIN_REQUIRED_MESSAGE;
   } else if (res.status === 403) {
-    error = ACCESS_DENIED_MESSAGE;
+    // 일부 환경에서 notifications 조회가 403으로 오탐되는 케이스가 있어
+    // 실제 로그인 여부를 /users/me로 재확인 후 안내 메시지를 결정한다.
+    const meRes = await bffGet("users/me");
+    if (meRes.status === 401 || meRes.status === 403) {
+      error = LOGIN_REQUIRED_MESSAGE;
+    } else {
+      error = "알림을 불러오지 못했습니다.";
+    }
   } else if (!res.ok) {
     error = "알림을 불러오지 못했습니다.";
   } else {
@@ -97,14 +104,14 @@ export default async function NotificationsPage({ searchParams }: { searchParams
             </div>
           </header>
 
-          <section className="mt-10 grid grid-cols-1 gap-4 md:grid-cols-2">
-            <article className="rounded-[2rem] border border-primary/10 bg-primary/5 px-6 py-6">
+          <section className="mt-10 grid grid-cols-1 gap-5 md:grid-cols-2">
+            <article className="rounded-[2rem] border border-primary/10 bg-primary/5 px-7 py-7">
               <p className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground">TOTAL</p>
-              <p className="mt-3 text-4xl font-black tracking-tight text-foreground">{String(totalCount).padStart(2, "0")}</p>
+              <p className="mt-3 text-5xl font-black tracking-tight text-foreground">{String(totalCount).padStart(2, "0")}</p>
             </article>
-            <article className="rounded-[2rem] border border-secondary/30 bg-secondary/10 px-6 py-6">
+            <article className="rounded-[2rem] border border-secondary/30 bg-secondary/10 px-7 py-7">
               <p className="text-[10px] font-black uppercase tracking-[0.3em] text-secondary">UNREAD IN PAGE</p>
-              <p className="mt-3 text-4xl font-black tracking-tight text-foreground">{String(unreadCount).padStart(2, "0")}</p>
+              <p className="mt-3 text-5xl font-black tracking-tight text-foreground">{String(unreadCount).padStart(2, "0")}</p>
             </article>
           </section>
 
@@ -160,13 +167,13 @@ export default async function NotificationsPage({ searchParams }: { searchParams
                   list.content.map((item) => (
                     <li
                       key={item.notificationId}
-                      className={`rounded-[2rem] border px-6 py-5 shadow-sm ${item.isRead ? "border-border bg-background" : "border-secondary/30 bg-secondary/10"}`}
+                      className={`rounded-[2rem] border px-7 py-6 shadow-2xl shadow-primary/5 ${item.isRead ? "border-primary/10 bg-background" : "border-secondary/30 bg-secondary/10"}`}
                     >
                       <p className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground">
                         {item.type ?? "NOTICE"}
                       </p>
-                      <p className="mt-2 text-lg font-black tracking-tight text-foreground">{item.title}</p>
-                      <p className="mt-2 text-sm font-medium text-foreground/80">{item.message}</p>
+                      <p className="mt-2 text-xl font-black tracking-tight text-foreground md:text-2xl">{item.title}</p>
+                      <p className="mt-2 text-sm font-medium tracking-tight text-foreground/80 md:text-base">{item.message}</p>
                     </li>
                   ))
                 )}

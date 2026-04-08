@@ -117,7 +117,7 @@ export function CommentItem({
   }
 
   return (
-    <li className="rounded-[2rem] border border-border bg-background/80 p-6 backdrop-blur-sm md:p-8">
+    <li className="rounded-[2rem] border border-primary/10 bg-background p-6 shadow-2xl shadow-primary/5 md:p-8">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <span className="font-black text-[10px] uppercase tracking-[0.2em] text-foreground">
           {authorName}
@@ -132,7 +132,7 @@ export function CommentItem({
 
       {!editing ? (
         <>
-          <p className="mt-3 whitespace-pre-wrap font-medium tracking-tight text-balance text-foreground">
+          <p className="mt-3 whitespace-pre-wrap text-sm font-medium tracking-tight text-balance text-foreground md:text-base">
             {content}
           </p>
           {error ? (
