@@ -8,22 +8,22 @@ type Tab = "register" | "list";
 export function MyVocTabLinks({ active }: { active: Tab }) {
   const btn = (on: boolean) =>
     cn(
-      "inline-flex min-h-[44px] items-center justify-center rounded-full px-6 py-2.5 text-xs font-black uppercase tracking-[0.24em] transition-colors md:px-7 md:text-sm",
+      "shrink-0 pb-2 text-[10px] font-black uppercase tracking-[0.3em] transition-all border-b-2 whitespace-nowrap",
       on
-        ? "bg-primary text-primary-foreground shadow-sm"
-        : "border border-border bg-background text-primary/70 hover:border-secondary/40 hover:text-primary",
+        ? "text-accent border-accent"
+        : "text-muted-foreground opacity-40 hover:opacity-100 border-transparent",
     );
 
   return (
     <nav
-      className="mb-10 flex flex-wrap gap-3 border-y border-primary/10 py-5"
-      aria-label="민원 메뉴"
+      className="flex items-center gap-10 overflow-x-auto border-b border-primary/10 pb-8"
+      aria-label="VoC Tabs"
     >
       <Link href="/profile/vocs" className={btn(active === "register")} scroll={false}>
-        민원 등록
+        REGISTER
       </Link>
       <Link href="/profile/vocs?tab=list" className={btn(active === "list")} scroll={false}>
-        나의 민원 내역
+        HISTORY
       </Link>
     </nav>
   );

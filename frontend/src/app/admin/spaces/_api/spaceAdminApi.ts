@@ -44,7 +44,15 @@ export interface SpaceDTO {
 }
 
 export const fetchSpaces = async () => {
-  return await apiFetch<any>('/admin/spaces');
+  const res = await apiFetch<any>('/admin/spaces');
+  if (res.data?.content) {
+    res.data.content = res.data.content.map((s: any) => ({
+      ...s,
+      ...(s.privateDetail || {}),
+      ...(s.commonDetail || {})
+    }));
+  }
+  return res;
 };
 
 export const createSpace = async (data: SpaceDTO) => {
@@ -70,7 +78,15 @@ export const uploadSpaceImage = async (spaceId: number, file: File, isThumbnail:
 };
 
 export const fetchSpace = async (spaceId: number) => {
-  return await apiFetch<SpaceDTO>(`/admin/spaces/${spaceId}`);
+  const res = await apiFetch<any>(`/admin/spaces/${spaceId}`);
+  if (res.data) {
+    res.data = {
+      ...res.data,
+      ...(res.data.privateDetail || {}),
+      ...(res.data.commonDetail || {})
+    };
+  }
+  return res as ApiResponse<SpaceDTO>;
 };
 
 export const updateSpace = async (spaceId: number, data: Partial<SpaceDTO>) => {

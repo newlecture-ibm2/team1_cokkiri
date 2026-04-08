@@ -63,7 +63,7 @@ public class ReservationEntity extends BaseEntity {
     @Column(name = "end_time", nullable = false)
     private LocalTime endTime;
 
-    // 승인자 (관리자) 참조 — nullable (PENDING 상태에서는 null)
+    // 승인자 (관리자) 참조 — 직접 승인 정책에서는 null일 수 있음
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "approved_by")
     private UserEntity approvedBy;
@@ -76,7 +76,7 @@ public class ReservationEntity extends BaseEntity {
         this.reservationDate = reservationDate;
         this.startTime = startTime;
         this.endTime = endTime;
-        this.status = ReservationStatus.PENDING;
+        this.status = ReservationStatus.APPROVED;
     }
 
     /** 예약자 ID 편의 getter */

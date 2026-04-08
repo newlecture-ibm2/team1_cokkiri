@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ClipboardList } from "lucide-react";
+import { ClipboardList, Plus, FileText, ArrowRight } from "lucide-react";
 import { LOGIN_REQUIRED_MESSAGE } from "@/lib/auth-messages";
 import { LoginRequiredGate } from "@/components/shared/LoginRequiredGate";
 import { bffGet } from "@/app/(common)/vocs/_api/bff-server";
@@ -32,13 +32,10 @@ export default async function ProfileVocsPage({ searchParams }: { searchParams: 
   let listError: string | null = null;
   let authError: string | null = null;
 
-  // 기본 탭(민원 등록) 진입에서도 즉시 로그인 필요 모달을 띄우기 위해 인증 체크를 항상 수행한다.
   const res = await bffGet(`vocs/my?${qs.toString()}`);
   if (res.status === 401) {
     authError = LOGIN_REQUIRED_MESSAGE;
   } else if (res.status === 403) {
-    // 일부 환경에서 /vocs/my 권한 판정이 과도하게 403을 반환하는 케이스가 있어
-    // 실제 로그인 여부를 /users/me로 한 번 더 확인한 뒤 차단 여부를 결정한다.
     const meRes = await bffGet("users/me");
     if (meRes.status === 401 || meRes.status === 403) {
       authError = LOGIN_REQUIRED_MESSAGE;
@@ -56,87 +53,89 @@ export default async function ProfileVocsPage({ searchParams }: { searchParams: 
   const listBaseQuery = "tab=list";
 
   return (
-    <VocShell>
+    <div className="mx-auto w-full max-w-[1400px]">
       <MotionEnter>
-        <div className="mx-auto max-w-5xl">
-          <header className="mb-10 space-y-4 border-b border-primary/10 pb-10">
-            <p className="font-black text-[10px] uppercase tracking-[0.35em] text-muted-foreground">
-              My · Profile
-            </p>
-            <h1 className="whitespace-nowrap text-balance text-[11vw] font-black uppercase leading-[0.85] tracking-tighter text-foreground sm:text-[9vw] md:text-[5.5vw] lg:text-[3.25rem]">
-              나의{" "}
-              <span className="underline decoration-secondary decoration-2 underline-offset-[0.18em]">
-                민원
-              </span>
-            </h1>
-            <p className="max-w-xl font-medium tracking-tight text-balance text-foreground/85 md:text-lg">
-              로그인한 회원만 이용할 수 있으며, 본인이 등록한 민원만 조회·수정할 수 있습니다.
-            </p>
-          </header>
-
-          <MyVocTabLinks active={showList ? "list" : "register"} />
-
-          {authError === LOGIN_REQUIRED_MESSAGE ? <LoginRequiredGate /> : null}
-
-          {!showList ? (
-            <div className="mx-auto max-w-4xl">
-              <p className="mb-8 max-w-xl font-medium tracking-tight text-balance text-muted-foreground md:text-base">
-                시설·소음·기기 관련 문의를 남기면 운영팀이 확인합니다.
-              </p>
-              <NewVocForm />
+        {/* Editorial Header */}
+        <header className="mb-20">
+          <div className="flex flex-col gap-6">
+            <span className="text-[10px] font-black uppercase tracking-[0.4em] text-accent">
+              FEEDBACK / 01
+            </span>
+            <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-12">
+              <h1 className="text-[12vw] md:text-[10vw] lg:text-[8vw] font-black leading-[0.85] tracking-tighter uppercase whitespace-nowrap">
+                VOICE OF<br />RESIDENT
+              </h1>
+              <div className="max-w-md pb-4">
+                <p className="text-xl font-medium tracking-tight text-balance border-l-2 border-accent pl-8 opacity-60">
+                  더 나은 주거 환경을 위해 입주민 여러분의 소중한 의견을 들려주세요. 모든 민원은 시간순으로 정성껏 검토됩니다.
+                </p>
+                <div className="mt-10">
+                   <MyVocTabLinks active={showList ? "list" : "register"} />
+                </div>
+              </div>
             </div>
-          ) : (
-            <>
-              {listError && (
-                <>
-                  {listError === LOGIN_REQUIRED_MESSAGE ? <LoginRequiredGate /> : null}
-                  <div
-                    className="rounded-xl border border-destructive/40 bg-destructive/10 px-4 py-3 text-sm font-medium text-destructive"
-                    role="alert"
-                  >
-                    <p>{listError}</p>
-                    {listError === LOGIN_REQUIRED_MESSAGE ? (
-                      <p className="mt-2 text-sm">
-                        <Link
-                          href="/login"
-                          className="font-black text-secondary underline underline-offset-4"
-                        >
-                          로그인 페이지로 이동
-                        </Link>
-                      </p>
-                    ) : null}
-                  </div>
-                </>
-              )}
+          </div>
+        </header>
 
-              {list && (
-                <>
-                  <ul className="mt-6 space-y-6">
-                    {list.content.length === 0 ? (
-                      <li className="flex flex-col items-center justify-center gap-4 rounded-[2rem] border border-dashed border-border bg-muted/25 px-6 py-16 text-center">
-                        <ClipboardList
-                          className="size-10 text-muted-foreground"
-                          strokeWidth={1.25}
-                          aria-hidden
-                        />
-                        <p className="max-w-sm font-medium tracking-tight text-balance text-muted-foreground">
-                          등록된 민원이 없습니다. 민원 등록 탭에서 새 민원을 남겨 주세요.
+        {authError === LOGIN_REQUIRED_MESSAGE ? <LoginRequiredGate /> : null}
+
+        {!showList ? (
+          <div className="mx-auto max-w-4xl space-y-12">
+            <div className="bg-white p-12 rounded-[3rem] border border-primary/5 shadow-2xl shadow-primary/5">
+               <div className="mb-12 space-y-2">
+                 <span className="text-[9px] font-black uppercase tracking-[0.4em] text-accent">New Inquiry</span>
+                 <h2 className="text-4xl font-black tracking-tighter uppercase">새 민원 등록</h2>
+               </div>
+               <NewVocForm />
+            </div>
+          </div>
+        ) : (
+          <div className="space-y-12">
+            {listError && (
+              <div className="rounded-[2rem] bg-destructive/5 border border-destructive/10 p-10 text-center">
+                <p className="text-destructive font-black uppercase tracking-widest text-[10px] mb-4">Error Detected</p>
+                <p className="text-xl font-bold tracking-tight text-primary underline decoration-destructive/30 underline-offset-8">
+                  {listError}
+                </p>
+                {listError === LOGIN_REQUIRED_MESSAGE && (
+                   <Link href="/login" className="mt-8 inline-flex h-12 bg-primary text-white px-8 rounded-xl items-center gap-2 text-[9px] font-black uppercase tracking-[0.2em] hover:bg-accent transition-all animate-pulse underline decoration-transparent">
+                     Go to Login <ArrowRight className="size-3" />
+                   </Link>
+                )}
+              </div>
+            )}
+
+            {list && (
+              <>
+                <ul className="grid grid-cols-1 gap-8">
+                  {list.content.length === 0 ? (
+                    <li className="flex flex-col items-center justify-center gap-6 rounded-[3rem] border-2 border-dashed border-primary/10 bg-primary/2 px-6 py-32 text-center">
+                      <div className="w-20 h-20 rounded-[2rem] bg-background border border-primary/5 flex items-center justify-center text-primary/20">
+                        <ClipboardList className="size-8" strokeWidth={1.5} />
+                      </div>
+                      <div className="space-y-2">
+                        <p className="text-xl font-bold tracking-tight text-primary">등록된 민원이 없습니다</p>
+                        <p className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground opacity-60">
+                          Your voice matters! Share your feedback with us.
                         </p>
-                        <Link
-                          href="/profile/vocs"
-                          className="rounded-full bg-primary px-6 py-3 text-xs font-black uppercase tracking-[0.24em] text-primary-foreground"
-                        >
-                          민원 등록하기
-                        </Link>
+                      </div>
+                      <Link
+                        href="/profile/vocs"
+                        className="mt-6 inline-flex h-14 px-8 bg-primary text-white rounded-2xl items-center gap-3 text-[10px] font-black uppercase tracking-[0.2em] hover:bg-accent transition-all"
+                      >
+                        <Plus className="w-4 h-4" />
+                        File New VOC
+                      </Link>
+                    </li>
+                  ) : (
+                    list.content.map((item) => (
+                      <li key={item.vocId}>
+                        <VocCard item={item} />
                       </li>
-                    ) : (
-                      list.content.map((item) => (
-                        <li key={item.vocId}>
-                          <VocCard item={item} />
-                        </li>
-                      ))
-                    )}
-                  </ul>
+                    ))
+                  )}
+                </ul>
+                <div className="pt-10 flex justify-center">
                   <PaginationBar
                     page={list.page}
                     totalPages={list.totalPages}
@@ -144,12 +143,12 @@ export default async function ProfileVocsPage({ searchParams }: { searchParams: 
                     pageSize={size}
                     hrefBase="/profile/vocs"
                   />
-                </>
-              )}
-            </>
-          )}
-        </div>
+                </div>
+              </>
+            )}
+          </div>
+        )}
       </MotionEnter>
-    </VocShell>
+    </div>
   );
 }

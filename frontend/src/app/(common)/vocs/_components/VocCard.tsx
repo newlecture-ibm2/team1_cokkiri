@@ -1,61 +1,68 @@
 import Link from "next/link";
-import { MessageSquareText } from "lucide-react";
+import { MessageSquareText, ChevronRight } from "lucide-react";
 import { vocCategoryLabel, vocStatusLabel, type VocListItem } from "../_types/vocs";
 import { formatDateTimeKo } from "@/lib/format-date";
 import { cn } from "@/lib/utils";
 
-function statusPillClass(status: string) {
+function statusStyles(status: string) {
   switch (status) {
     case "OPEN":
-      return "border-secondary/50 bg-secondary/10 text-secondary";
+      return "bg-accent/10 text-accent";
     case "IN_PROGRESS":
-      return "border-primary/30 bg-primary/10 text-primary";
+      return "bg-primary text-white";
     case "RESOLVED":
-      return "border-border bg-muted/40 text-muted-foreground";
+      return "bg-muted/10 text-muted-foreground line-through";
     case "CANCELLED":
-      return "border-muted text-muted-foreground opacity-80";
+      return "bg-destructive/10 text-destructive opacity-50";
     default:
-      return "border-border bg-muted/30 text-foreground";
+      return "bg-muted/20 text-foreground";
   }
 }
 
 export function VocCard({ item }: { item: VocListItem }) {
   return (
-    <Link
-      href={`/profile/vocs/${item.vocId}`}
-      className="group block rounded-[2.25rem] border border-primary/10 bg-background p-7 shadow-2xl shadow-primary/5 transition-transform duration-200 hover:-translate-y-0.5 hover:border-secondary/50 md:p-9"
+    <Link 
+      href={`/profile/vocs/${item.vocId}`} 
+      className="group bg-white rounded-[2.5rem] p-10 md:p-14 border border-primary/5 shadow-2xl shadow-primary/5 transition-all relative overflow-hidden block"
     >
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div className="flex min-w-0 flex-1 items-start gap-3">
-          <MessageSquareText
-            className="mt-0.5 size-5 shrink-0 text-secondary opacity-80 group-hover:opacity-100"
-            strokeWidth={1.5}
-            aria-hidden
-          />
-          <div className="min-w-0 space-y-2">
-            <p className="font-black text-[10px] uppercase tracking-[0.25em] text-muted-foreground">
+      <div className="flex flex-col lg:flex-row lg:items-start justify-between gap-12 relative z-10 text-primary">
+        <div className="flex flex-col gap-8 max-w-2xl w-full">
+          <div className="flex items-center gap-4">
+            <span className="text-[10px] font-black tracking-[0.3em] uppercase opacity-30">
+              VOC-00{item.vocId}
+            </span>
+            <span className={cn(
+               "text-[10px] font-black tracking-[0.2em] uppercase px-4 py-1.5 rounded-full",
+               statusStyles(item.status)
+            )}>
+              {vocStatusLabel(item.status)}
+            </span>
+          </div>
+
+          <div>
+            <span className="text-[10px] font-black tracking-[0.4em] uppercase text-accent mb-2 block">
               {vocCategoryLabel(item.category)}
-            </p>
-            <h2 className="font-black text-xl tracking-tight text-balance text-foreground group-hover:text-secondary md:text-2xl">
+            </span>
+            <h2 className="text-4xl font-black tracking-tighter leading-tight group-hover:text-accent transition-colors uppercase italic line-clamp-2">
               {item.title}
             </h2>
-            <time
-              dateTime={item.createdAt}
-              className="block font-black text-[10px] uppercase tracking-[0.2em] text-muted-foreground"
-            >
-              {formatDateTimeKo(item.createdAt)}
-            </time>
+            <p className="mt-4 text-[10px] font-black tracking-widest text-muted-foreground uppercase leading-loose">
+              Filed on — {formatDateTimeKo(item.createdAt)}
+            </p>
           </div>
         </div>
-        <span
-          className={cn(
-            "shrink-0 rounded-full border px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.2em]",
-            statusPillClass(item.status),
-          )}
-        >
-          {vocStatusLabel(item.status)}
-        </span>
+
+        <div className="flex h-full items-center pt-4 lg:pt-0">
+           <div className="h-16 w-16 rounded-full border border-primary/10 flex items-center justify-center group-hover:bg-accent group-hover:border-accent transition-all">
+             <ChevronRight className="w-6 h-6 group-hover:text-white transition-colors" />
+           </div>
+        </div>
       </div>
+
+      {/* Editorial background number */}
+      <span className="absolute -right-10 -bottom-20 text-[25vw] font-black opacity-[0.02] select-none pointer-events-none group-hover:opacity-[0.04] transition-opacity italic">
+        {String(item.vocId % 100).padStart(2, '0')}
+      </span>
     </Link>
   );
 }
