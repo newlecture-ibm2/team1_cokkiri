@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowLeft, Eye, MessageCircle } from "lucide-react";
+import { ArrowLeft, ArrowRight, Eye, MessageCircle } from "lucide-react";
 import type { PostDetail } from "../_types/community";
 import { POST_CATEGORIES } from "../_types/community";
 import { LikeToggle } from "./LikeToggle";
@@ -50,44 +50,44 @@ export function PostDetailSection({
         <header className="space-y-12">
           <div className="flex flex-col gap-6">
             <div className="flex items-center gap-4">
-               <span className="px-4 py-1.5 bg-accent/10 rounded-full text-[10px] font-black uppercase tracking-[0.2em] text-accent">
-                 {categoryLabel(detail.category)}
-               </span>
-               <span className="text-[10px] font-black tracking-[0.3em] uppercase opacity-30">
-                 POST-00{detail.postId}
-               </span>
+              <span className="px-4 py-1.5 bg-accent/10 rounded-full text-[10px] font-black uppercase tracking-[0.2em] text-accent">
+                {categoryLabel(detail.category)}
+              </span>
+              <span className="text-[10px] font-black tracking-[0.3em] uppercase opacity-30">
+                POST-00{detail.postId}
+              </span>
             </div>
-            
+
             <h1 className="text-5xl md:text-7xl font-black tracking-tighter leading-[0.95] text-primary uppercase italic text-balance">
               {detail.title}
             </h1>
 
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-8 pt-8 border-t border-primary/10">
-               <div className="flex items-center gap-6">
-                  <div className="flex flex-col gap-1">
-                     <span className="text-[9px] font-black uppercase tracking-[0.4em] text-accent">Published by</span>
-                     <span className="text-sm font-black uppercase tracking-tighter text-primary">{detail.author?.name ?? "Unknown Resident"}</span>
-                  </div>
-                  <div className="h-8 w-px bg-primary/10 hidden md:block" />
-                  <div className="flex flex-col gap-1">
-                     <span className="text-[9px] font-black uppercase tracking-[0.4em] text-muted-foreground opacity-40">Posted on</span>
-                     <time className="text-xs font-black uppercase tracking-widest text-muted-foreground">
-                        {new Date(detail.createdAt).toLocaleDateString()}
-                     </time>
-                  </div>
-               </div>
+              <div className="flex items-center gap-6">
+                <div className="flex flex-col gap-1">
+                  <span className="text-[9px] font-black uppercase tracking-[0.4em] text-accent">Published by</span>
+                  <span className="text-sm font-black uppercase tracking-tighter text-primary">{detail.author?.name ?? "Unknown Resident"}</span>
+                </div>
+                <div className="h-8 w-px bg-primary/10 hidden md:block" />
+                <div className="flex flex-col gap-1">
+                  <span className="text-[9px] font-black uppercase tracking-[0.4em] text-muted-foreground opacity-40">Posted on</span>
+                  <time className="text-xs font-black uppercase tracking-widest text-muted-foreground">
+                    {new Date(detail.createdAt).toLocaleDateString()}
+                  </time>
+                </div>
+              </div>
 
-               <div className="flex items-center gap-4">
-                  <div className="flex items-center gap-2 px-6 h-12 bg-primary/5 rounded-2xl">
-                     <Eye className="size-3 text-accent" strokeWidth={3} />
-                     <span className="text-[10px] font-black tracking-tighter text-primary">{detail.viewCount.toLocaleString()} VIEWS</span>
-                  </div>
-                  <LikeToggle
-                    postId={detail.postId}
-                    initialLiked={liked}
-                    initialCount={detail.likeCount}
-                  />
-               </div>
+              <div className="flex items-center gap-4">
+                <div className="flex items-center gap-2 px-6 h-12 bg-primary/5 rounded-2xl">
+                  <Eye className="size-3 text-accent" strokeWidth={3} />
+                  <span className="text-[10px] font-black tracking-tighter text-primary">{detail.viewCount.toLocaleString()} VIEWS</span>
+                </div>
+                <LikeToggle
+                  postId={detail.postId}
+                  initialLiked={liked}
+                  initialCount={detail.likeCount}
+                />
+              </div>
             </div>
           </div>
         </header>
@@ -114,7 +114,7 @@ export function PostDetailSection({
               <div className="whitespace-pre-wrap">{detail.content}</div>
             )}
           </div>
-          
+
           {/* Editorial Watermark */}
           <span className="absolute -right-20 -bottom-20 text-[35vw] font-black opacity-[0.01] pointer-events-none select-none italic text-primary">
             BODY
@@ -172,15 +172,15 @@ export function PostDetailSection({
         )}
 
         <div className="pt-20 border-t border-primary/10">
-           <div className="mb-12 flex flex-col gap-2">
-              <span className="text-[10px] font-black uppercase tracking-[0.5em] text-accent">Join the conversation</span>
-              <h3 className="text-5xl font-black tracking-tighter text-primary uppercase italic">REPLIES ({detail.commentCount})</h3>
-           </div>
-           <CommentThreadSection
-             postId={detail.postId}
-             initialComments={comments}
-             currentUser={currentUser}
-           />
+          <div className="mb-12 flex flex-col gap-2">
+            <span className="text-[10px] font-black uppercase tracking-[0.5em] text-accent">Join the conversation</span>
+            <h3 className="text-5xl font-black tracking-tighter text-primary uppercase italic">REPLIES ({detail.commentCount})</h3>
+          </div>
+          <CommentThreadSection
+            postId={detail.postId}
+            initialComments={comments}
+            currentUser={currentUser}
+          />
         </div>
       </article>
     </div>
