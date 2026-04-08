@@ -103,10 +103,10 @@ export default function MyContractsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-background text-primary selection:bg-primary selection:text-background pb-32">
+    <div className="text-primary selection:bg-primary selection:text-background pb-32">
       {/* Editorial Header Section */}
-      <section className="px-6 pt-24 pb-12 md:px-12 md:pt-32 lg:px-24">
-        <div className="max-w-[1400px] mx-auto border-b-2 border-primary pb-12">
+      <section className="pb-12">
+        <div className="border-b-2 border-primary pb-12">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
@@ -140,7 +140,7 @@ export default function MyContractsPage() {
         </div>
       </section>
 
-      <main className="max-w-[1400px] mx-auto px-6 md:px-12 lg:px-24 pt-12 md:pt-20">
+      <main className="pt-12 md:pt-20">
         {/* Editorial Stats Grid */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-20">
           {[
