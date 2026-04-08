@@ -41,14 +41,17 @@ public class AdminVocController {
     @GetMapping("/api/admin/vocs")
     public ApiResponse<AdminVocListResponseDto> listVocs(
             @RequestParam(required = false) String status,
+            @RequestParam(required = false) Boolean pending,
             @RequestParam(value = "p", defaultValue = "0") int page,
             @RequestParam(value = "s", defaultValue = "20") int size,
             @RequestParam(required = false, defaultValue = "createdAt,desc") String sort
     ) {
-        VocStatus statusFilter = parseStatusOrNull(status);
+        boolean pendingOnly = Boolean.TRUE.equals(pending);
+        VocStatus statusFilter = pendingOnly ? null : parseStatusOrNull(status);
 
         ListAdminVocsCommand command = ListAdminVocsCommand.builder()
                 .status(statusFilter)
+                .pendingOnly(pendingOnly)
                 .page(page)
                 .size(size)
                 .sort(sort)
