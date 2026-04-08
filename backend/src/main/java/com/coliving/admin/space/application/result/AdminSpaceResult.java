@@ -25,6 +25,7 @@ public class AdminSpaceResult {
     private String description;
     private Integer positionX;
     private Integer positionY;
+    private Boolean hasDeviceError;
 
     private PrivateDetail privateDetail;
     private CommonDetail commonDetail;
@@ -74,7 +75,8 @@ public class AdminSpaceResult {
                 .amenities(model.getAmenities())
                 .description(model.getDescription())
                 .positionX(model.getPositionX())
-                .positionY(model.getPositionY());
+                .positionY(model.getPositionY())
+                .hasDeviceError(model.getHasDeviceError());
 
         if (model.getPrivateDetail() != null) {
             builder.privateDetail(PrivateDetail.builder()

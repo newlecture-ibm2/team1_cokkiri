@@ -13,6 +13,8 @@ export interface FloorPlanBlock {
   gridW: number;
   /** 격자 높이 (칸 수) — 기본 2 */
   gridH: number;
+  /** 해당 공간에 ERROR 상태 디바이스 존재 여부 */
+  hasDeviceError: boolean;
 }
 
 /** 격자 설정 */

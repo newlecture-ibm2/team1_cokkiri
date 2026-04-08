@@ -2,7 +2,7 @@
 
 import { useDraggable } from '@dnd-kit/core';
 import { CSS } from '@dnd-kit/utilities';
-import { Home, Users } from 'lucide-react';
+import { Home, Users, AlertTriangle } from 'lucide-react';
 import type { FloorPlanBlock } from '../../_types/layout';
 import { STATUS_COLORS, DEFAULT_LAYOUT } from '../../_types/layout';
 import { BlockTooltip } from './BlockTooltip';
@@ -40,7 +40,9 @@ export function SpaceBlock({ block, cellSize }: SpaceBlockProps) {
     backdropFilter: 'blur(4px)',
     boxShadow: isDragging
       ? '0 20px 40px rgba(0,0,0,0.15), 0 0 0 2px var(--foreground)'
-      : '0 2px 8px rgba(0,0,0,0.06)',
+      : block.hasDeviceError
+        ? '0 2px 12px color-mix(in srgb, var(--color-destructive) 40%, transparent), 0 0 0 1px color-mix(in srgb, var(--color-destructive) 50%, transparent)'
+        : '0 2px 8px rgba(0,0,0,0.06)',
     opacity: isDragging ? 0.92 : 1,
   };
 
@@ -53,15 +55,31 @@ export function SpaceBlock({ block, cellSize }: SpaceBlockProps) {
           {/* 상단: 아이콘 + 상태 */}
           <div className="flex items-start justify-between">
             <TypeIcon size={14} className="opacity-50 shrink-0" />
-            <span
-              className="text-[8px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded-full"
-              style={{
-                backgroundColor: statusInfo.border,
-                color: 'var(--background)',
-              }}
-            >
-              {statusInfo.label}
-            </span>
+            <div className="flex items-center gap-1">
+              {/* 디바이스 에러 마커 */}
+              {block.hasDeviceError && (
+                <span
+                  className="flex items-center justify-center rounded-full animate-pulse"
+                  style={{
+                    width: 18,
+                    height: 18,
+                    backgroundColor: 'var(--color-destructive)',
+                  }}
+                  title="기기 장애 감지"
+                >
+                  <AlertTriangle size={10} color="#fff" strokeWidth={3} />
+                </span>
+              )}
+              <span
+                className="text-[8px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded-full"
+                style={{
+                  backgroundColor: statusInfo.border,
+                  color: 'var(--background)',
+                }}
+              >
+                {statusInfo.label}
+              </span>
+            </div>
           </div>
 
           {/* 하단: 이름 */}

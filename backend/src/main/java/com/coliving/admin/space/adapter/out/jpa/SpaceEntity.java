@@ -10,6 +10,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.SQLRestriction;
+import org.hibernate.annotations.Formula;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -55,6 +56,9 @@ public class SpaceEntity extends BaseEntity {
 
     @Column(name = "position_y")
     private Integer positionY;
+
+    @Formula("(EXISTS (SELECT 1 FROM devices d WHERE d.space_id = space_id AND d.status = 'ERROR' AND d.deleted_at IS NULL))")
+    private Boolean hasDeviceError;
 
     @OneToOne(mappedBy = "space", cascade = CascadeType.ALL, orphanRemoval = true)
     private PrivateSpaceDetailEntity privateDetail;
@@ -106,5 +110,10 @@ public class SpaceEntity extends BaseEntity {
 
     public void assignCommonDetail(CommonSpaceDetailEntity detail) {
         this.commonDetail = detail;
+    }
+
+    public Boolean getHasDeviceError() {
+        if (hasDeviceError == null) return false;
+        return hasDeviceError;
     }
 }

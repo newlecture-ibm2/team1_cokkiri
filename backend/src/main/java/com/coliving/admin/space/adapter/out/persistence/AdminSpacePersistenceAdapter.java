@@ -183,7 +183,8 @@ public class AdminSpacePersistenceAdapter implements AdminSpaceRepositoryPort {
                 .amenities(parseAmenities(entity.getAmenities()))
                 .description(entity.getDescription())
                 .positionX(entity.getPositionX())
-                .positionY(entity.getPositionY());
+                .positionY(entity.getPositionY())
+                .hasDeviceError(entity.getHasDeviceError());
 
         if (entity.getPrivateDetail() != null) {
             builder.privateDetail(AdminSpace.PrivateSpaceDetail.builder()

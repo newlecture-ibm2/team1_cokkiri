@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { AlertTriangle } from 'lucide-react';
 import type { FloorPlanBlock } from '../../_types/layout';
 import { STATUS_COLORS } from '../../_types/layout';
 
@@ -24,7 +25,7 @@ export function BlockTooltip({ block, children }: BlockTooltipProps) {
       {show && (
         <div
           className="absolute z-50 left-1/2 -translate-x-1/2 bottom-full mb-2 pointer-events-none"
-          style={{ minWidth: 160 }}
+          style={{ minWidth: 180 }}
         >
           <div className="bg-[var(--foreground)] text-[var(--background)] rounded-xl px-4 py-3 shadow-2xl">
             <p className="text-xs font-black tracking-tight mb-1">{block.name}</p>
@@ -41,9 +42,17 @@ export function BlockTooltip({ block, children }: BlockTooltipProps) {
                 </>
               )}
             </div>
-            <span className="text-[9px] font-black uppercase tracking-wider" style={{ opacity: 0.8 }}>
-              {statusInfo.label}
-            </span>
+            <div className="flex items-center gap-2">
+              <span className="text-[9px] font-black uppercase tracking-wider" style={{ opacity: 0.8 }}>
+                {statusInfo.label}
+              </span>
+              {block.hasDeviceError && (
+                <span className="flex items-center gap-1 text-[9px] font-black uppercase tracking-wider" style={{ color: 'var(--color-destructive-foreground)' }}>
+                  <AlertTriangle size={10} strokeWidth={3} />
+                  기기 장애
+                </span>
+              )}
+            </div>
           </div>
           {/* 말풍선 꼬리 */}
           <div className="flex justify-center">

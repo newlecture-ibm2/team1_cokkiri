@@ -150,7 +150,22 @@ export function FloorPlanEditor() {
             </div>
           );
         })}
+        {/* 디바이스 에러 범례 */}
+        <div className="flex items-center gap-2">
+          <span
+            className="w-3 h-3 rounded-sm"
+            style={{ backgroundColor: 'var(--color-destructive)' }}
+          />
+          <span className="text-[10px] font-bold tracking-tight opacity-50">
+            기기장애
+          </span>
+        </div>
         <span className="text-[10px] font-bold tracking-tight opacity-30 ml-auto">
+          {blocks.filter((b) => b.hasDeviceError).length > 0 && (
+            <span className="opacity-80 mr-2" style={{ color: 'var(--color-destructive)' }}>
+              ⚠ {blocks.filter((b) => b.hasDeviceError).length}개 장애
+            </span>
+          )}
           {blocks.length}개 공간
         </span>
       </div>

@@ -38,6 +38,9 @@ export interface SpaceDTO {
   positionX?: number;
   positionY?: number;
 
+  // Device Error (모니터링 오버레이용)
+  hasDeviceError?: boolean;
+
   // Images
   images?: {
     imageUrl: string;

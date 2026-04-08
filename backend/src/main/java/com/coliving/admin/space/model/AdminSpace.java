@@ -27,6 +27,7 @@ public class AdminSpace {
     private String description;
     private Integer positionX;
     private Integer positionY;
+    private Boolean hasDeviceError;
 
     private PrivateSpaceDetail privateDetail;
     private CommonSpaceDetail commonDetail;

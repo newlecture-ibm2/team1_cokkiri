@@ -16,6 +16,7 @@ function spaceToBlock(space: SpaceDTO): FloorPlanBlock {
     gridY: space.positionY ?? 0,
     gridW: space.type === 'COMMON' ? 4 : 3,
     gridH: 2,
+    hasDeviceError: space.hasDeviceError ?? false,
   };
 }
 
