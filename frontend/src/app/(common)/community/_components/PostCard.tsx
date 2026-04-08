@@ -17,7 +17,7 @@ export function PostCard({ post }: { post: PostListItem }) {
       <motion.div
         whileHover={{ y: -8, scale: 1.01 }}
         transition={{ type: "spring", stiffness: 420, damping: 26 }}
-        className="rounded-[2.25rem] border border-primary/10 bg-background p-7 shadow-2xl shadow-primary/5 md:p-9"
+        className="rounded-[2.5rem] border border-primary/5 bg-white p-8 shadow-2xl shadow-primary/5 md:p-10"
       >
         <div className="flex flex-wrap items-center gap-3">
           <span className="rounded-full bg-secondary/15 px-3 py-1 font-black text-[10px] uppercase tracking-[0.24em] text-secondary">
@@ -27,10 +27,10 @@ export function PostCard({ post }: { post: PostListItem }) {
             {formatDateTimeKo(post.createdAt)}
           </span>
         </div>
-        <h2 className="mt-4 line-clamp-2 text-xl font-black uppercase leading-tight tracking-tighter text-foreground md:text-2xl">
+        <h2 className="mt-5 line-clamp-2 text-[clamp(1.5rem,3vw,2.35rem)] font-black leading-[0.95] tracking-tighter text-foreground transition-colors group-hover:text-accent">
           {post.title}
         </h2>
-        <div className="mt-7 flex flex-wrap gap-3 text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">
+        <div className="mt-8 flex flex-wrap gap-3 text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">
           <span className="inline-flex items-center gap-1.5 rounded-full border border-border px-3 py-1.5">
             <Eye className="size-4 shrink-0 opacity-80" aria-hidden />
             {post.viewCount}

@@ -58,7 +58,7 @@ export default async function CommunityPage({ searchParams }: { searchParams: Se
                   니티
                 </span>
               </h1>
-              <p className="max-w-xl font-medium tracking-tight text-balance text-foreground/85 md:text-lg">
+              <p className="mt-8 max-w-xl border-l-2 border-accent pl-6 text-lg font-medium tracking-tight text-balance text-foreground/75">
                 공지·질문·모임 — 입주자들이 모이는{" "}
                 <span className="text-secondary">함께</span>의 공간입니다.
               </p>
