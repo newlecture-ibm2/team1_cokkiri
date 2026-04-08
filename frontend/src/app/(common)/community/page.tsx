@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Search } from "lucide-react";
-import { LOGIN_REQUIRED_MESSAGE } from "@/lib/auth-messages";
+import { ACCESS_DENIED_MESSAGE, LOGIN_REQUIRED_MESSAGE } from "@/lib/auth-messages";
 import { LoginRequiredGate } from "@/components/shared/LoginRequiredGate";
 import { bffGet } from "./_api/bff-server";
 import type { ApiResponse, PostListData } from "./_types/community";
@@ -32,8 +32,10 @@ export default async function CommunityPage({ searchParams }: { searchParams: Se
   let list: PostListData | null = null;
   let error: string | null = null;
 
-  if (res.status === 401 || res.status === 403) {
+  if (res.status === 401) {
     error = LOGIN_REQUIRED_MESSAGE;
+  } else if (res.status === 403) {
+    error = ACCESS_DENIED_MESSAGE;
   } else if (!res.ok) {
     error = "목록을 불러오지 못했습니다.";
   } else {
@@ -48,7 +50,7 @@ export default async function CommunityPage({ searchParams }: { searchParams: Se
     <CommunityShell>
       <MotionEnter>
         <div className="mx-auto max-w-5xl">
-          <header className="flex flex-col gap-12 md:flex-row md:items-end md:justify-between">
+          <header className="flex flex-col gap-12 border-b border-primary/10 pb-10 md:flex-row md:items-end md:justify-between">
             <div className="space-y-6">
               <h1 className="whitespace-nowrap text-balance text-[12vw] font-black uppercase leading-[0.85] tracking-tighter text-foreground sm:text-[10vw] md:text-[7vw] lg:text-[4.5rem]">
                 커뮤
@@ -63,13 +65,13 @@ export default async function CommunityPage({ searchParams }: { searchParams: Se
             </div>
             <Link
               href="/community/new"
-              className="shrink-0 rounded-xl bg-primary px-6 py-3 text-center text-sm font-black uppercase tracking-wider text-primary-foreground transition-transform duration-200 hover:scale-[1.02] md:self-start"
+              className="inline-flex h-12 shrink-0 items-center justify-center rounded-full bg-primary px-7 text-center text-xs font-black uppercase tracking-[0.22em] text-primary-foreground transition-colors hover:bg-accent md:self-start"
             >
               글쓰기
             </Link>
           </header>
 
-          <section className="mt-12 space-y-6">
+          <section className="mt-10 space-y-6">
             <p className="font-black text-[10px] uppercase tracking-[0.3em] text-muted-foreground">
               카테고리
             </p>

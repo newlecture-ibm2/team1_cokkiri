@@ -124,7 +124,7 @@ export function PostEditDeleteActions({
         method: "DELETE",
         credentials: "include",
       });
-      if (res.status === 401 || res.status === 403) {
+      if (res.status === 401) {
         setSubmitError(LOGIN_REQUIRED_MESSAGE);
         setShowLoginModal(true);
         return;
@@ -189,7 +189,7 @@ export function PostEditDeleteActions({
           credentials: "include",
           body: formData,
         });
-        if (res.status === 401 || res.status === 403) {
+        if (res.status === 401) {
           setSubmitError(LOGIN_REQUIRED_MESSAGE);
           setShowLoginModal(true);
           return;
@@ -218,7 +218,7 @@ export function PostEditDeleteActions({
   if (!canMutate) return null;
 
   return (
-    <section className="mt-8 rounded-[2rem] border border-border bg-background/80 p-4 backdrop-blur-sm md:p-6">
+    <section className="mt-8 rounded-[2rem] border border-primary/10 bg-background p-4 shadow-2xl shadow-primary/5 md:p-6">
       <LoginRequiredModal isOpen={showLoginModal} onClose={() => setShowLoginModal(false)} />
       {!editing ? (
         <div className="flex flex-wrap items-center gap-3">
@@ -237,7 +237,7 @@ export function PostEditDeleteActions({
               setEditSession((s) => s + 1);
               setEditing(true);
             }}
-            className="inline-flex items-center gap-2 rounded-xl border border-secondary bg-secondary/15 px-5 py-2.5 text-xs font-black uppercase tracking-wider text-secondary"
+            className="inline-flex items-center gap-2 rounded-full border border-secondary bg-secondary/15 px-5 py-2.5 text-xs font-black uppercase tracking-[0.24em] text-secondary"
           >
             <Edit3 className="size-4" aria-hidden />
             수정
@@ -248,7 +248,7 @@ export function PostEditDeleteActions({
             whileTap={{ scale: 0.98 }}
             onClick={deletePost}
             disabled={pending}
-            className="inline-flex items-center gap-2 rounded-xl border border-destructive/30 bg-destructive/10 px-5 py-2.5 text-xs font-black uppercase tracking-wider text-destructive disabled:opacity-60"
+            className="inline-flex items-center gap-2 rounded-full border border-destructive/30 bg-destructive/10 px-5 py-2.5 text-xs font-black uppercase tracking-[0.24em] text-destructive disabled:opacity-60"
           >
             <Trash2 className="size-4" aria-hidden />
             삭제
@@ -362,7 +362,7 @@ export function PostEditDeleteActions({
                     <button
                       type="button"
                       onClick={() => removeAttachment(i)}
-                      className="shrink-0 text-[11px] font-black uppercase tracking-wider text-destructive"
+                      className="shrink-0 text-[11px] font-black uppercase tracking-[0.24em] text-destructive"
                     >
                       제거
                     </button>
@@ -383,7 +383,7 @@ export function PostEditDeleteActions({
               onChange={(e) => setNewFiles(e.target.files)}
               className={cn(
                 "mt-2 w-full rounded-xl border border-input bg-surface px-4 py-3 font-medium tracking-tight text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-                "cursor-pointer file:mr-4 file:rounded-lg file:border-0 file:bg-primary file:px-4 file:py-2 file:text-xs file:font-black file:uppercase file:tracking-wider file:text-primary-foreground",
+                "cursor-pointer file:mr-4 file:rounded-full file:border-0 file:bg-primary file:px-4 file:py-2 file:text-xs file:font-black file:uppercase file:tracking-[0.24em] file:text-primary-foreground",
               )}
             />
             <p className="mt-1 text-xs font-medium text-muted-foreground">
@@ -398,7 +398,7 @@ export function PostEditDeleteActions({
                 setSubmitError(null);
                 setEditing(false);
               }}
-              className="rounded-xl border border-border px-6 py-3 text-xs font-black uppercase tracking-wider text-foreground transition-transform duration-200 hover:-translate-y-0.5"
+              className="rounded-full border border-border px-6 py-3 text-xs font-black uppercase tracking-[0.24em] text-foreground transition-transform duration-200 hover:-translate-y-0.5"
             >
               취소
             </button>
@@ -407,7 +407,7 @@ export function PostEditDeleteActions({
               whileTap={{ scale: 0.98 }}
               type="submit"
               disabled={pending}
-              className="inline-flex items-center gap-2 rounded-xl bg-primary px-6 py-3 text-xs font-black uppercase tracking-wider text-primary-foreground disabled:opacity-60"
+              className="inline-flex items-center gap-2 rounded-full bg-primary px-6 py-3 text-xs font-black uppercase tracking-[0.24em] text-primary-foreground disabled:opacity-60"
             >
               {pending && <Loader2 className="size-4 animate-spin" aria-hidden />}
               저장

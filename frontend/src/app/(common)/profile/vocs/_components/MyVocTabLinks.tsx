@@ -8,7 +8,7 @@ type Tab = "register" | "list";
 export function MyVocTabLinks({ active }: { active: Tab }) {
   const btn = (on: boolean) =>
     cn(
-      "inline-flex min-h-[44px] items-center justify-center rounded-xl px-5 py-2.5 text-xs font-black uppercase tracking-[0.2em] transition-colors md:px-6 md:text-sm",
+      "inline-flex min-h-[44px] items-center justify-center rounded-full px-6 py-2.5 text-xs font-black uppercase tracking-[0.24em] transition-colors md:px-7 md:text-sm",
       on
         ? "bg-primary text-primary-foreground shadow-sm"
         : "border border-border bg-background text-primary/70 hover:border-secondary/40 hover:text-primary",
@@ -16,7 +16,7 @@ export function MyVocTabLinks({ active }: { active: Tab }) {
 
   return (
     <nav
-      className="mb-10 flex flex-wrap gap-2 border-b border-border pb-6"
+      className="mb-10 flex flex-wrap gap-3 border-y border-primary/10 py-5"
       aria-label="민원 메뉴"
     >
       <Link href="/profile/vocs" className={btn(active === "register")} scroll={false}>

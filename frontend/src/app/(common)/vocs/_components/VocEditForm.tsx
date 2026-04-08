@@ -147,7 +147,7 @@ export function VocEditForm({ initial }: Props) {
       <LoginRequiredModal isOpen={showLoginModal} onClose={() => setShowLoginModal(false)} />
       <Link
         href={`/profile/vocs/${initial.vocId}`}
-        className="group inline-flex items-center gap-2 font-black text-xs uppercase tracking-[0.3em] text-secondary transition-colors hover:text-foreground"
+        className="group inline-flex h-11 items-center gap-2 rounded-full border border-secondary/40 bg-secondary/10 px-5 font-black text-[10px] uppercase tracking-[0.24em] text-secondary transition-colors hover:border-secondary/70"
       >
         <ArrowLeft className="size-4 transition-transform group-hover:-translate-x-0.5" aria-hidden />
         상세로
@@ -231,7 +231,7 @@ export function VocEditForm({ initial }: Props) {
                 <button
                   type="button"
                   onClick={() => removeAttachment(i)}
-                  className="shrink-0 text-[11px] font-black uppercase tracking-wider text-destructive"
+                  className="shrink-0 text-[11px] font-black uppercase tracking-[0.24em] text-destructive"
                 >
                   제거
                 </button>
@@ -249,7 +249,7 @@ export function VocEditForm({ initial }: Props) {
           onChange={(e) => setNewFiles(e.target.files)}
           className={cn(
             fieldClass,
-            "cursor-pointer py-3 file:mr-4 file:rounded-lg file:border-0 file:bg-primary file:px-4 file:py-2 file:text-xs file:font-black file:uppercase file:tracking-wider file:text-primary-foreground",
+            "cursor-pointer py-3 file:mr-4 file:rounded-full file:border-0 file:bg-primary file:px-4 file:py-2 file:text-xs file:font-black file:uppercase file:tracking-[0.24em] file:text-primary-foreground",
           )}
         />
         <p className="mt-2 text-sm font-medium tracking-tight text-muted-foreground">
@@ -261,7 +261,7 @@ export function VocEditForm({ initial }: Props) {
         <button
           type="button"
           onClick={() => setShowCancelModal(true)}
-          className="rounded-xl border border-border px-6 py-3 text-sm font-black uppercase tracking-wider text-foreground transition-transform duration-200 hover:-translate-y-0.5"
+          className="rounded-full border border-border px-6 py-3 text-xs font-black uppercase tracking-[0.24em] text-foreground transition-transform duration-200 hover:-translate-y-0.5"
         >
           취소
         </button>
@@ -271,7 +271,7 @@ export function VocEditForm({ initial }: Props) {
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
           className={cn(
-            "inline-flex items-center gap-2 rounded-xl bg-primary px-6 py-3 text-sm font-black uppercase tracking-wider text-primary-foreground",
+            "inline-flex items-center gap-2 rounded-full bg-primary px-6 py-3 text-xs font-black uppercase tracking-[0.24em] text-primary-foreground",
             pending && "opacity-60",
           )}
         >

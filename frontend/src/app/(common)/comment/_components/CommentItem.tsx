@@ -74,7 +74,7 @@ export function CommentItem({
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ content: text }),
         });
-        if (res.status === 401 || res.status === 403) {
+        if (res.status === 401) {
           setShowLoginModal(true);
           return;
         }
@@ -101,7 +101,7 @@ export function CommentItem({
           method: "DELETE",
           credentials: "include",
         });
-        if (res.status === 401 || res.status === 403) {
+        if (res.status === 401) {
           setShowLoginModal(true);
           return;
         }
@@ -117,7 +117,7 @@ export function CommentItem({
   }
 
   return (
-    <li className="rounded-[2rem] border border-border bg-background/80 p-6 backdrop-blur-sm md:p-8">
+    <li className="rounded-[2rem] border border-primary/10 bg-background p-6 shadow-2xl shadow-primary/5 md:p-8">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <span className="font-black text-[10px] uppercase tracking-[0.2em] text-foreground">
           {authorName}
@@ -132,7 +132,7 @@ export function CommentItem({
 
       {!editing ? (
         <>
-          <p className="mt-3 whitespace-pre-wrap font-medium tracking-tight text-balance text-foreground">
+          <p className="mt-3 whitespace-pre-wrap text-sm font-medium tracking-tight text-balance text-foreground md:text-base">
             {content}
           </p>
           {error ? (
@@ -150,7 +150,7 @@ export function CommentItem({
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
                 onClick={startEdit}
-                className="inline-flex items-center gap-2 rounded-xl border border-secondary bg-secondary/15 px-4 py-2 text-[11px] font-black uppercase tracking-wider text-secondary"
+                className="inline-flex items-center gap-2 rounded-full border border-secondary bg-secondary/15 px-5 py-2 text-[11px] font-black uppercase tracking-[0.24em] text-secondary"
               >
                 <Edit3 className="size-4" aria-hidden />
                 수정
@@ -161,7 +161,7 @@ export function CommentItem({
                 whileTap={{ scale: 0.98 }}
                 onClick={deleteComment}
                 disabled={pending}
-                className="inline-flex items-center gap-2 rounded-xl border border-destructive/30 bg-destructive/10 px-4 py-2 text-[11px] font-black uppercase tracking-wider text-destructive disabled:opacity-60"
+                className="inline-flex items-center gap-2 rounded-full border border-destructive/30 bg-destructive/10 px-5 py-2 text-[11px] font-black uppercase tracking-[0.24em] text-destructive disabled:opacity-60"
               >
                 <Trash2 className="size-4" aria-hidden />
                 삭제
@@ -198,7 +198,7 @@ export function CommentItem({
             <button
               type="button"
               onClick={() => setShowCancelModal(true)}
-              className="rounded-xl border border-border px-5 py-2.5 text-[11px] font-black uppercase tracking-wider text-foreground transition-transform duration-200 hover:-translate-y-0.5"
+              className="rounded-full border border-border px-5 py-2.5 text-[11px] font-black uppercase tracking-[0.24em] text-foreground transition-transform duration-200 hover:-translate-y-0.5"
             >
               취소
             </button>
@@ -207,7 +207,7 @@ export function CommentItem({
               disabled={pending || !draft.trim()}
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
-              className="inline-flex items-center gap-2 rounded-xl bg-primary px-5 py-2.5 text-[11px] font-black uppercase tracking-wider text-primary-foreground disabled:opacity-60"
+              className="inline-flex items-center gap-2 rounded-full bg-primary px-5 py-2.5 text-[11px] font-black uppercase tracking-[0.24em] text-primary-foreground disabled:opacity-60"
             >
               저장
             </motion.button>

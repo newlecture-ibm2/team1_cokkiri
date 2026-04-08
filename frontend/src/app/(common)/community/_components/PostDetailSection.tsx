@@ -38,13 +38,13 @@ export function PostDetailSection({
     <article className="mx-auto max-w-3xl">
       <Link
         href="/community"
-        className="group mb-10 inline-flex items-center gap-2 font-black text-[10px] uppercase tracking-[0.3em] text-secondary transition-colors hover:text-foreground"
+        className="group mb-10 inline-flex h-11 items-center gap-2 rounded-full border border-secondary/40 bg-secondary/10 px-5 font-black text-[10px] uppercase tracking-[0.24em] text-secondary transition-colors hover:border-secondary/70"
       >
         <ArrowLeft className="size-4 transition-transform group-hover:-translate-x-0.5" aria-hidden />
         목록으로
       </Link>
 
-      <header className="border-b border-border pb-8">
+      <header className="border-b border-primary/10 pb-8">
         <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
           <span className="font-black text-[10px] uppercase tracking-[0.28em] text-secondary">
             {categoryLabel(detail.category)}
@@ -65,11 +65,11 @@ export function PostDetailSection({
             initialLiked={liked}
             initialCount={detail.likeCount}
           />
-          <span className="inline-flex items-center gap-1.5 font-medium text-sm text-muted-foreground">
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-border px-3 py-1.5 font-black text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
             <MessageCircle className="size-4" aria-hidden />
             댓글 {detail.commentCount}
           </span>
-          <span className="inline-flex items-center gap-1.5 font-medium text-sm text-muted-foreground">
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-border px-3 py-1.5 font-black text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
             <Eye className="size-4" aria-hidden />
             {detail.viewCount}
           </span>

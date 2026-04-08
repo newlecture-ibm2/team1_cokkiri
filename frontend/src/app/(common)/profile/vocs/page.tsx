@@ -34,8 +34,17 @@ export default async function ProfileVocsPage({ searchParams }: { searchParams: 
 
   // 기본 탭(민원 등록) 진입에서도 즉시 로그인 필요 모달을 띄우기 위해 인증 체크를 항상 수행한다.
   const res = await bffGet(`vocs/my?${qs.toString()}`);
-  if (res.status === 401 || res.status === 403) {
+  if (res.status === 401) {
     authError = LOGIN_REQUIRED_MESSAGE;
+  } else if (res.status === 403) {
+    // 일부 환경에서 /vocs/my 권한 판정이 과도하게 403을 반환하는 케이스가 있어
+    // 실제 로그인 여부를 /users/me로 한 번 더 확인한 뒤 차단 여부를 결정한다.
+    const meRes = await bffGet("users/me");
+    if (meRes.status === 401 || meRes.status === 403) {
+      authError = LOGIN_REQUIRED_MESSAGE;
+    } else if (showList) {
+      listError = "목록을 불러오지 못했습니다.";
+    }
   } else if (showList && !res.ok) {
     listError = "목록을 불러오지 못했습니다.";
   } else if (showList) {
@@ -50,7 +59,7 @@ export default async function ProfileVocsPage({ searchParams }: { searchParams: 
     <VocShell>
       <MotionEnter>
         <div className="mx-auto max-w-5xl">
-          <header className="mb-10 space-y-4">
+          <header className="mb-10 space-y-4 border-b border-primary/10 pb-10">
             <p className="font-black text-[10px] uppercase tracking-[0.35em] text-muted-foreground">
               My · Profile
             </p>
@@ -102,7 +111,7 @@ export default async function ProfileVocsPage({ searchParams }: { searchParams: 
 
               {list && (
                 <>
-                  <ul className="mt-4 space-y-6">
+                  <ul className="mt-6 space-y-6">
                     {list.content.length === 0 ? (
                       <li className="flex flex-col items-center justify-center gap-4 rounded-[2rem] border border-dashed border-border bg-muted/25 px-6 py-16 text-center">
                         <ClipboardList
@@ -115,7 +124,7 @@ export default async function ProfileVocsPage({ searchParams }: { searchParams: 
                         </p>
                         <Link
                           href="/profile/vocs"
-                          className="rounded-xl bg-primary px-6 py-3 text-sm font-black uppercase tracking-wider text-primary-foreground"
+                          className="rounded-full bg-primary px-6 py-3 text-xs font-black uppercase tracking-[0.24em] text-primary-foreground"
                         >
                           민원 등록하기
                         </Link>
