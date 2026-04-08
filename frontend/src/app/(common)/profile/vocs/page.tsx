@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { ClipboardList } from "lucide-react";
-import { LOGIN_REQUIRED_MESSAGE } from "@/lib/auth-messages";
+import { ACCESS_DENIED_MESSAGE, LOGIN_REQUIRED_MESSAGE } from "@/lib/auth-messages";
 import { LoginRequiredGate } from "@/components/shared/LoginRequiredGate";
 import { bffGet } from "@/app/(common)/vocs/_api/bff-server";
 import type { ApiResponse, VocListData } from "@/app/(common)/vocs/_types/vocs";
@@ -34,8 +34,10 @@ export default async function ProfileVocsPage({ searchParams }: { searchParams: 
 
   // 기본 탭(민원 등록) 진입에서도 즉시 로그인 필요 모달을 띄우기 위해 인증 체크를 항상 수행한다.
   const res = await bffGet(`vocs/my?${qs.toString()}`);
-  if (res.status === 401 || res.status === 403) {
+  if (res.status === 401) {
     authError = LOGIN_REQUIRED_MESSAGE;
+  } else if (res.status === 403) {
+    authError = ACCESS_DENIED_MESSAGE;
   } else if (showList && !res.ok) {
     listError = "목록을 불러오지 못했습니다.";
   } else if (showList) {
@@ -68,6 +70,14 @@ export default async function ProfileVocsPage({ searchParams }: { searchParams: 
           <MyVocTabLinks active={showList ? "list" : "register"} />
 
           {authError === LOGIN_REQUIRED_MESSAGE ? <LoginRequiredGate /> : null}
+          {authError && authError !== LOGIN_REQUIRED_MESSAGE ? (
+            <div
+              className="mb-6 rounded-xl border border-destructive/40 bg-destructive/10 px-4 py-3 text-sm font-medium text-destructive"
+              role="alert"
+            >
+              {authError}
+            </div>
+          ) : null}
 
           {!showList ? (
             <div className="mx-auto max-w-4xl">

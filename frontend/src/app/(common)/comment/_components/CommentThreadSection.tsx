@@ -104,7 +104,7 @@ export function CommentThreadSection({
           body: JSON.stringify({ content: text, parentCommentId }),
         });
 
-        if (res.status === 401 || res.status === 403) {
+        if (res.status === 401) {
           setShowLoginModal(true);
           setComments((prev) => prev.filter((c) => c.commentId !== tempId));
           return;
