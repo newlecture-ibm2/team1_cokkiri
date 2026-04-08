@@ -30,19 +30,19 @@ import com.coliving.user.contract.adapter.out.jpa.ContractJpaRepository;
 import com.coliving.user.contract.model.ContractLanguage;
 import com.coliving.user.contract.model.ContractOrigin;
 import com.coliving.user.contract.model.ContractStatus;
-import com.coliving.user.room.adapter.out.jpa.CommonSpaceDetailEntity;
-import com.coliving.user.room.adapter.out.jpa.CommonSpaceDetailJpaRepository;
-import com.coliving.user.room.adapter.out.jpa.PrivateSpaceDetailEntity;
-import com.coliving.user.room.adapter.out.jpa.PrivateSpaceDetailJpaRepository;
-import com.coliving.user.room.adapter.out.jpa.SpaceEntity;
-import com.coliving.user.room.adapter.out.jpa.SpaceImageEntity;
-import com.coliving.user.room.adapter.out.jpa.SpaceImageJpaRepository;
-import com.coliving.user.room.adapter.out.jpa.SpaceJpaRepository;
-import com.coliving.user.room.model.ImageType;
-import com.coliving.user.room.adapter.out.jpa.RoomTypeEntity;
-import com.coliving.user.room.adapter.out.jpa.RoomTypeJpaRepository;
-import com.coliving.user.room.model.SpaceStatus;
-import com.coliving.user.room.model.SpaceType;
+import com.coliving.admin.space.adapter.out.jpa.CommonSpaceDetailEntity;
+import com.coliving.admin.space.adapter.out.jpa.CommonSpaceDetailJpaRepository;
+import com.coliving.admin.space.adapter.out.jpa.PrivateSpaceDetailEntity;
+import com.coliving.admin.space.adapter.out.jpa.PrivateSpaceDetailJpaRepository;
+import com.coliving.admin.space.adapter.out.jpa.SpaceEntity;
+import com.coliving.admin.space.adapter.out.jpa.SpaceImageEntity;
+import com.coliving.admin.space.adapter.out.jpa.SpaceImageJpaRepository;
+import com.coliving.admin.space.adapter.out.jpa.SpaceJpaRepository;
+import com.coliving.admin.space.model.ImageType;
+import com.coliving.admin.space.adapter.out.jpa.RoomTypeEntity;
+import com.coliving.admin.space.adapter.out.jpa.RoomTypeJpaRepository;
+import com.coliving.admin.space.model.SpaceStatus;
+import com.coliving.admin.space.model.SpaceType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -74,7 +74,7 @@ import java.util.Optional;
  */
 @Slf4j
 @Component
-@Profile({"local", "dev", "prod"})
+@Profile({"local", "dev"})
 @ConditionalOnProperty(name = "app.demo-data.enabled", havingValue = "true")
 @Order(100)
 @RequiredArgsConstructor
@@ -498,10 +498,10 @@ public class DataInitializer implements ApplicationRunner {
 
     /** {@code data-dev.sql} 과 동일한 공간·상세·이미지 시드. IoT 데모 기기 부착용으로 301호를 반환합니다. */
     private SpaceEntity seedSpacesFromDevDataset() {
-        RoomTypeEntity singleType = roomTypeJpaRepository.save(RoomTypeEntity.builder().code("SINGLE").name("싱글룸").isSystemDefault(true).build());
-        RoomTypeEntity doubleType = roomTypeJpaRepository.save(RoomTypeEntity.builder().code("DOUBLE").name("더블룸").isSystemDefault(true).build());
-        RoomTypeEntity studioType = roomTypeJpaRepository.save(RoomTypeEntity.builder().code("STUDIO").name("스튜디오").isSystemDefault(true).build());
-        RoomTypeEntity suiteType = roomTypeJpaRepository.save(RoomTypeEntity.builder().code("SUITE").name("스위트").isSystemDefault(true).build());
+        RoomTypeEntity singleType = getOrCreateRoomType("SINGLE", "싱글룸");
+        RoomTypeEntity doubleType = getOrCreateRoomType("DOUBLE", "더블룸");
+        RoomTypeEntity studioType = getOrCreateRoomType("STUDIO", "스튜디오");
+        RoomTypeEntity suiteType = getOrCreateRoomType("SUITE", "스위트");
 
         SpaceEntity s301 = savePrivateSpace(
                 "301호", 3, new BigDecimal("25.00"), "[\"에어컨\",\"냉장고\"]", "남향 채광 좋은 싱글룸",
@@ -655,5 +655,15 @@ public class DataInitializer implements ApplicationRunner {
                 .sortOrder(sortOrder)
                 .isThumbnail(thumbnail)
                 .build());
+    }
+
+    private RoomTypeEntity getOrCreateRoomType(String code, String name) {
+        return roomTypeJpaRepository.findByCode(code)
+                .orElseGet(() -> roomTypeJpaRepository.save(
+                        RoomTypeEntity.builder()
+                                .code(code)
+                                .name(name)
+                                .isSystemDefault(true)
+                                .build()));
     }
 }

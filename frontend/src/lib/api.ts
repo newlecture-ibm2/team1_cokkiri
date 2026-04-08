@@ -32,7 +32,7 @@ export async function apiFetch<T>(
   if (!response.ok) {
     if (response.status === 403) {
       throw new ApiError(
-        '이 작업을 수행할 권한이 없습니다. DB에 role이 ADMIN인 계정으로 로그인했는지 확인해 주세요.',
+        '이 작업을 수행할 권한이 없습니다.',
         'FORBIDDEN',
       );
     }

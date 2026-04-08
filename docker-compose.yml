@@ -23,10 +23,17 @@ services:
       - DB_URL=${DB_URL:-jdbc:postgresql://db:5432/coliving}
       - DB_USERNAME=${DB_USERNAME:-coliving}
       - DB_PASSWORD=${DB_PASSWORD}
+      - REDIS_HOST=${REDIS_HOST:-redis}
+      - REDIS_PORT=${REDIS_PORT:-6379}
       - JWT_SECRET=${JWT_SECRET}
       - MOCK_IOT_URL=${MOCK_IOT_URL:-http://mock-iot:8000}
+      - APP_UPLOAD_DIR=${APP_UPLOAD_DIR:-/var/lib/cokkiri/uploads}
+      - APP_DEMO_DATA_ENABLED=${APP_DEMO_DATA_ENABLED:-false}
+    volumes:
+      - uploads-data:/var/lib/cokkiri/uploads
     depends_on:
       db: { condition: service_healthy }
+      redis: { condition: service_healthy }
 
   db:
     container_name: team1-cokkiri-db
@@ -54,6 +61,21 @@ services:
     volumes:
       - ./mock-iot/mappings:/home/wiremock/mappings
 
+  redis:
+    container_name: team1-cokkiri-redis
+    image: redis:7-alpine
+    restart: unless-stopped
+    command: [ "redis-server", "--appendonly", "yes" ]
+    expose:
+      - "6379"
+    healthcheck:
+      test: [ "CMD", "redis-cli", "ping" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
 volumes:
   postgres-data:
     name: team1-cokkiri-pg-data
+  uploads-data:
+    name: team1-cokkiri-uploads-data

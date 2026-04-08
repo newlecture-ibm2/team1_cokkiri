@@ -8,6 +8,7 @@ import {
   CalendarDays,
   CreditCard,
   MessageSquareText,
+  MessagesSquare,
   ArrowRight,
 } from "lucide-react";
 
@@ -27,6 +28,7 @@ const shortcuts: { href: string; label: string; description: string; icon: typeo
   { href: "/admin/devices", label: "기기", description: "IoT 등록·제어", icon: Cpu },
   { href: "/admin/reservations", label: "예약", description: "공용 시설 예약", icon: CalendarDays },
   { href: "/admin/billing", label: "결제·청구", description: "청구·승인", icon: CreditCard },
+  { href: "/admin/community", label: "커뮤니티 관리", description: "게시글·댓글 운영", icon: MessagesSquare },
   { href: "/admin/vocs", label: "민원", description: "전체 민원·답변", icon: MessageSquareText },
 ];
 

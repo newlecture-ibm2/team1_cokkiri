@@ -1,9 +1,9 @@
 package com.coliving.admin.space.application.result;
 
 import com.coliving.admin.space.model.AdminSpace;
-import com.coliving.user.room.model.ImageType;
-import com.coliving.user.room.model.SpaceStatus;
-import com.coliving.user.room.model.SpaceType;
+import com.coliving.admin.space.model.ImageType;
+import com.coliving.admin.space.model.SpaceStatus;
+import com.coliving.admin.space.model.SpaceType;
 
 import lombok.Builder;
 import lombok.Getter;

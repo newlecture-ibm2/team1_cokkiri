@@ -124,7 +124,7 @@ public class AdminSpaceController {
     public ApiResponse<Void> uploadSpaceImage(
             @PathVariable Long spaceId,
             @RequestParam("file") org.springframework.web.multipart.MultipartFile file,
-            @RequestParam(value = "imageType", required = false, defaultValue = "PHOTO") com.coliving.user.room.model.ImageType imageType,
+            @RequestParam(value = "imageType", required = false, defaultValue = "PHOTO") com.coliving.admin.space.model.ImageType imageType,
             @RequestParam(value = "isThumbnail", required = false, defaultValue = "false") Boolean isThumbnail) {
         adminSpaceUseCase.uploadImage(spaceId, file, imageType, isThumbnail);
         return ApiResponse.ok(null);

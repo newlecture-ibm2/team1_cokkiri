@@ -1,6 +1,6 @@
 package com.coliving.admin.space.application.command;
 
-import com.coliving.user.room.model.SpaceStatus;
+import com.coliving.admin.space.model.SpaceStatus;
 
 import lombok.Builder;
 import lombok.Getter;

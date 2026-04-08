@@ -1,10 +1,12 @@
 package com.coliving.user.room.adapter.out.persistence;
 
-import com.coliving.user.room.adapter.out.jpa.SpaceEntity;
-import com.coliving.user.room.adapter.out.jpa.SpaceImageEntity;
-import com.coliving.user.room.adapter.out.jpa.SpaceJpaRepository;
+import com.coliving.admin.space.adapter.out.jpa.SpaceEntity;
+import com.coliving.admin.space.adapter.out.jpa.SpaceImageEntity;
+import com.coliving.admin.space.adapter.out.jpa.SpaceJpaRepository;
 import com.coliving.user.room.application.port.out.RoomRepositoryPort;
-import com.coliving.user.room.model.*;
+import com.coliving.user.room.model.Room;
+import com.coliving.admin.space.model.SpaceStatus;
+import com.coliving.admin.space.model.SpaceType;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;

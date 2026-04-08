@@ -20,7 +20,7 @@ import com.coliving.user.contract.application.result.ContractSignResult;
 import com.coliving.user.contract.model.Contract;
 import com.coliving.user.contract.model.ContractOrigin;
 import com.coliving.user.contract.model.ContractStatus;
-import com.coliving.user.room.model.SpaceStatus;
+import com.coliving.admin.space.model.SpaceStatus;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

@@ -2,7 +2,7 @@ package com.coliving.admin.space.adapter.out.persistence;
 
 import com.coliving.admin.space.application.port.out.AdminSpaceRepositoryPort;
 import com.coliving.admin.space.model.AdminSpace;
-import com.coliving.user.room.adapter.out.jpa.*;
+import com.coliving.admin.space.adapter.out.jpa.*;
 import com.coliving.global.error.BusinessException;
 import com.coliving.global.error.ErrorCode;
 
@@ -107,7 +107,7 @@ public class AdminSpacePersistenceAdapter implements AdminSpaceRepositoryPort {
     // === Detail 생성/수정 ===
 
     private void createDetail(SpaceEntity savedSpace, AdminSpace adminSpace) {
-        if (adminSpace.getType() == com.coliving.user.room.model.SpaceType.PRIVATE && adminSpace.getPrivateDetail() != null) {
+        if (adminSpace.getType() == com.coliving.admin.space.model.SpaceType.PRIVATE && adminSpace.getPrivateDetail() != null) {
             RoomTypeEntity roomTypeEntity = roomTypeJpaRepository.findById(adminSpace.getPrivateDetail().getRoomTypeId())
                     .orElseThrow(() -> new BusinessException(ErrorCode.ROOM_TYPE_NOT_FOUND));
 
@@ -122,7 +122,7 @@ public class AdminSpacePersistenceAdapter implements AdminSpaceRepositoryPort {
                     .maintenanceFee(adminSpace.getPrivateDetail().getMaintenanceFee())
                     .parkingAvailable(adminSpace.getPrivateDetail().getParkingAvailable())
                     .build());
-        } else if (adminSpace.getType() == com.coliving.user.room.model.SpaceType.COMMON && adminSpace.getCommonDetail() != null) {
+        } else if (adminSpace.getType() == com.coliving.admin.space.model.SpaceType.COMMON && adminSpace.getCommonDetail() != null) {
             commonSpaceDetailJpaRepository.save(CommonSpaceDetailEntity.builder()
                     .space(savedSpace)
                     .maxCapacity(adminSpace.getCommonDetail().getMaxCapacity())
@@ -134,7 +134,7 @@ public class AdminSpacePersistenceAdapter implements AdminSpaceRepositoryPort {
     }
 
     private void updateDetail(SpaceEntity savedSpace, AdminSpace adminSpace) {
-        if (adminSpace.getType() == com.coliving.user.room.model.SpaceType.PRIVATE && adminSpace.getPrivateDetail() != null) {
+        if (adminSpace.getType() == com.coliving.admin.space.model.SpaceType.PRIVATE && adminSpace.getPrivateDetail() != null) {
             if (savedSpace.getPrivateDetail() != null) {
                 RoomTypeEntity roomTypeEntity = roomTypeJpaRepository.findById(adminSpace.getPrivateDetail().getRoomTypeId())
                         .orElseThrow(() -> new BusinessException(ErrorCode.ROOM_TYPE_NOT_FOUND));
@@ -153,7 +153,7 @@ public class AdminSpacePersistenceAdapter implements AdminSpaceRepositoryPort {
             } else {
                 createDetail(savedSpace, adminSpace);
             }
-        } else if (adminSpace.getType() == com.coliving.user.room.model.SpaceType.COMMON && adminSpace.getCommonDetail() != null) {
+        } else if (adminSpace.getType() == com.coliving.admin.space.model.SpaceType.COMMON && adminSpace.getCommonDetail() != null) {
             if (savedSpace.getCommonDetail() != null) {
                 savedSpace.getCommonDetail().update(
                         adminSpace.getCommonDetail().getMaxCapacity(),
@@ -251,7 +251,7 @@ public class AdminSpacePersistenceAdapter implements AdminSpaceRepositoryPort {
         SpaceImageEntity imageEntity = SpaceImageEntity.builder()
                 .space(entity)
                 .imageUrl(image.getImageUrl())
-                .imageType(com.coliving.user.room.model.ImageType.valueOf(image.getImageType().name()))
+                .imageType(com.coliving.admin.space.model.ImageType.valueOf(image.getImageType().name()))
                 .sortOrder(image.getSortOrder() != null ? image.getSortOrder() : 0)
                 .isThumbnail(image.getIsThumbnail() != null ? image.getIsThumbnail() : false)
                 .build();

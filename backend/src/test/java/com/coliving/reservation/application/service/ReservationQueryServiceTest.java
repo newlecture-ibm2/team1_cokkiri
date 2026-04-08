@@ -8,9 +8,9 @@ import com.coliving.reservation.adapter.in.web.dto.res.UserReservationResponseDt
 import com.coliving.reservation.adapter.out.jpa.ReservationEntity;
 import com.coliving.reservation.adapter.out.jpa.ReservationJpaRepository;
 import com.coliving.reservation.model.ReservationStatus;
-import com.coliving.user.room.adapter.out.jpa.SpaceEntity;
-import com.coliving.user.room.model.SpaceStatus;
-import com.coliving.user.room.model.SpaceType;
+import com.coliving.admin.space.adapter.out.jpa.SpaceEntity;
+import com.coliving.admin.space.model.SpaceStatus;
+import com.coliving.admin.space.model.SpaceType;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
