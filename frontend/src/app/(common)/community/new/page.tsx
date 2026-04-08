@@ -11,7 +11,7 @@ export default function CommunityNewPage() {
     <CommunityShell>
       <MotionEnter>
         <div className="mx-auto max-w-4xl">
-          <header className="space-y-6">
+          <header className="space-y-6 border-b border-primary/10 pb-10">
             <h1 className="text-[10vw] font-black uppercase leading-[0.85] tracking-tighter text-foreground sm:text-[8vw] md:text-[5vw] lg:text-[3.25rem]">
               새 글{" "}
               <span className="underline decoration-secondary decoration-2 underline-offset-[0.18em]">

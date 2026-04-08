@@ -50,7 +50,7 @@ export default async function ProfileVocsPage({ searchParams }: { searchParams: 
     <VocShell>
       <MotionEnter>
         <div className="mx-auto max-w-5xl">
-          <header className="mb-10 space-y-4">
+          <header className="mb-10 space-y-4 border-b border-primary/10 pb-10">
             <p className="font-black text-[10px] uppercase tracking-[0.35em] text-muted-foreground">
               My · Profile
             </p>
@@ -102,7 +102,7 @@ export default async function ProfileVocsPage({ searchParams }: { searchParams: 
 
               {list && (
                 <>
-                  <ul className="mt-4 space-y-6">
+                  <ul className="mt-6 space-y-6">
                     {list.content.length === 0 ? (
                       <li className="flex flex-col items-center justify-center gap-4 rounded-[2rem] border border-dashed border-border bg-muted/25 px-6 py-16 text-center">
                         <ClipboardList
@@ -115,7 +115,7 @@ export default async function ProfileVocsPage({ searchParams }: { searchParams: 
                         </p>
                         <Link
                           href="/profile/vocs"
-                          className="rounded-xl bg-primary px-6 py-3 text-sm font-black uppercase tracking-wider text-primary-foreground"
+                          className="rounded-full bg-primary px-6 py-3 text-xs font-black uppercase tracking-[0.24em] text-primary-foreground"
                         >
                           민원 등록하기
                         </Link>
