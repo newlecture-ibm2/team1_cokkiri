@@ -37,10 +37,10 @@ const VocRichTextEditor = dynamic(
 );
 
 const labelClass =
-  "block font-black text-sm uppercase tracking-[0.3em] text-muted-foreground";
+  "block text-[10px] font-black uppercase tracking-[0.5em] text-accent mb-4";
 
 const fieldClass =
-  "mt-3 w-full rounded-xl border border-input bg-surface px-4 py-4 font-medium tracking-tight text-lg text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring";
+  "w-full rounded-[2rem] border border-primary/5 bg-white/40 backdrop-blur-sm p-8 font-medium tracking-tight text-xl text-primary focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-accent/10 transition-all placeholder:text-muted-foreground/30";
 
 type Props = {
   initial: VocDetail;
@@ -143,140 +143,142 @@ export function VocEditForm({ initial }: Props) {
   }
 
   return (
-    <form onSubmit={submit} className="mx-auto max-w-2xl space-y-10">
+    <form onSubmit={submit} className="mx-auto max-w-4xl space-y-16 py-12">
       <LoginRequiredModal isOpen={showLoginModal} onClose={() => setShowLoginModal(false)} />
       <Link
         href={`/profile/vocs/${initial.vocId}`}
-        className="group inline-flex h-11 items-center gap-2 rounded-full border border-secondary/40 bg-secondary/10 px-5 font-black text-[10px] uppercase tracking-[0.24em] text-secondary transition-colors hover:border-secondary/70"
+        className="group inline-flex items-center gap-3 text-[10px] font-black uppercase tracking-[0.4em] text-accent hover:text-primary transition-all"
       >
-        <ArrowLeft className="size-4 transition-transform group-hover:-translate-x-0.5" aria-hidden />
-        상세로
+        ← Back to Inquiry
       </Link>
 
       {error ? (
         <p
           role="alert"
-          className="rounded-xl border border-destructive/40 bg-destructive/10 px-4 py-3 text-sm font-medium text-destructive"
+          className="rounded-3xl border border-destructive/20 bg-destructive/5 px-8 py-4 text-sm font-black uppercase tracking-wider text-destructive"
         >
           {error}
         </p>
       ) : null}
 
-      <div>
-        <label htmlFor="edit-voc-category" className={labelClass}>
-          유형
-        </label>
-        <div className="relative">
-          <select
-            id="edit-voc-category"
-            value={category}
-            onChange={(e) => setCategory(e.target.value as VocCategoryCode)}
-            className={cn(fieldClass, "appearance-none pr-10 leading-none py-0 h-14")}
-          >
-            {VOC_CATEGORIES.map((c) => (
-              <option key={c.value} value={c.value}>
-                {c.label}
-              </option>
-            ))}
-          </select>
-          <ChevronDown
-            className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 size-4 text-muted-foreground"
-            aria-hidden
+      <div className="space-y-16">
+        <section className="space-y-4">
+          <label htmlFor="edit-voc-category" className={labelClass}>
+            01 | CATEGORY
+          </label>
+          <div className="relative">
+            <select
+              id="edit-voc-category"
+              value={category}
+              onChange={(e) => setCategory(e.target.value as VocCategoryCode)}
+              className={cn(fieldClass, "appearance-none pr-12 leading-none py-0 h-24 cursor-pointer")}
+            >
+              {VOC_CATEGORIES.map((c) => (
+                <option key={c.value} value={c.value}>
+                  {c.label}
+                </option>
+              ))}
+            </select>
+            <ChevronDown
+              className="pointer-events-none absolute right-8 top-1/2 -translate-y-1/2 size-5 text-accent"
+              aria-hidden
+            />
+          </div>
+        </section>
+
+        <section className="space-y-4">
+          <label htmlFor="edit-voc-title" className={labelClass}>
+            02 | VOC TITLE
+          </label>
+          <input
+            id="edit-voc-title"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            maxLength={VOC_TITLE_MAX_LENGTH}
+            required
+            className={fieldClass}
           />
-        </div>
+        </section>
+
+        <section className="space-y-4">
+          <label htmlFor="edit-voc-content" className={labelClass}>
+            03 | INQUIRY NARRATIVE
+          </label>
+          <div className="rounded-[2.5rem] border border-primary/5 bg-white/40 backdrop-blur-sm p-4">
+            <VocRichTextEditor
+              key={initial.vocId}
+              id="edit-voc-content"
+              value={content}
+              onChange={setContent}
+              placeholder="Revise your inquiry message..."
+            />
+          </div>
+        </section>
+
+        <section className="space-y-8">
+          <div className="space-y-4">
+            <p className={labelClass}>04 | EXISTING ASSETS</p>
+            {attachments.length === 0 ? (
+              <p className="px-8 text-xs font-black uppercase tracking-[0.2em] text-muted-foreground/40">No existing assets</p>
+            ) : (
+              <ul className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {attachments.map((a, i) => (
+                  <li
+                    key={`${a.fileUrl}-${i}`}
+                    className="group flex items-center justify-between p-6 bg-white rounded-2xl border border-primary/5 shadow-sm"
+                  >
+                    <span className="truncate text-xs font-black tracking-tighter text-primary">{a.fileName}</span>
+                    <button
+                      type="button"
+                      onClick={() => removeAttachment(i)}
+                      className="shrink-0 px-4 py-2 text-[10px] font-black uppercase tracking-[0.2em] text-destructive hover:bg-destructive/10 rounded-full transition-colors"
+                    >
+                      REMOVE
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+          
+          <div className="space-y-4">
+            <label htmlFor="edit-voc-new-files" className={labelClass}>
+              ADD NEW EVIDENCE
+            </label>
+            <input
+              id="edit-voc-new-files"
+              type="file"
+              multiple
+              onChange={(e) => setNewFiles(e.target.files)}
+              className={cn(
+                fieldClass,
+                "cursor-pointer py-8 file:mr-8 file:rounded-xl file:border-0 file:bg-accent file:px-6 file:py-3 file:text-[10px] file:font-black file:uppercase file:tracking-[0.2em] file:text-white hover:file:bg-primary transition-all",
+              )}
+            />
+          </div>
+        </section>
       </div>
 
-      <div>
-        <label htmlFor="edit-voc-title" className={labelClass}>
-          제목
-        </label>
-        <input
-          id="edit-voc-title"
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          maxLength={VOC_TITLE_MAX_LENGTH}
-          required
-          className={fieldClass}
-        />
-        <p className="mt-2 text-xs text-muted-foreground">
-          제목 최대 {VOC_TITLE_MAX_LENGTH}자(이모지 등은 2자로 셀 수 있음)
-        </p>
-      </div>
-
-      <div>
-        <label htmlFor="edit-voc-content" className={labelClass}>
-          내용
-        </label>
-        <VocRichTextEditor
-          key={initial.vocId}
-          id="edit-voc-content"
-          value={content}
-          onChange={setContent}
-          placeholder="민원 내용을 수정하세요. 이미지는 툴바에서 추가할 수 있습니다."
-        />
-      </div>
-
-      <div>
-        <p className={labelClass}>첨부</p>
-        {attachments.length === 0 ? (
-          <p className="mt-3 text-sm font-medium text-muted-foreground">기존 첨부 없음</p>
-        ) : (
-          <ul className="mt-3 space-y-2">
-            {attachments.map((a, i) => (
-              <li
-                key={`${a.fileUrl}-${i}`}
-                className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-border bg-muted/20 px-4 py-3"
-              >
-                <span className="truncate text-sm font-medium text-foreground">{a.fileName}</span>
-                <button
-                  type="button"
-                  onClick={() => removeAttachment(i)}
-                  className="shrink-0 text-[11px] font-black uppercase tracking-[0.24em] text-destructive"
-                >
-                  제거
-                </button>
-              </li>
-            ))}
-          </ul>
-        )}
-        <label htmlFor="edit-voc-new-files" className={cn(labelClass, "mt-8")}>
-          새 파일 추가 (선택)
-        </label>
-        <input
-          id="edit-voc-new-files"
-          type="file"
-          multiple
-          onChange={(e) => setNewFiles(e.target.files)}
-          className={cn(
-            fieldClass,
-            "cursor-pointer py-3 file:mr-4 file:rounded-full file:border-0 file:bg-primary file:px-4 file:py-2 file:text-xs file:font-black file:uppercase file:tracking-[0.24em] file:text-primary-foreground",
-          )}
-        />
-        <p className="mt-2 text-sm font-medium tracking-tight text-muted-foreground">
-          저장 시 위에서 선택한 파일이 기존 첨부 뒤에 추가됩니다. 본문 이미지는 에디터의 이미지 버튼으로도 넣을 수 있습니다.
-        </p>
-      </div>
-
-      <div className="flex justify-end gap-4">
+      <div className="pt-20 flex flex-col md:flex-row justify-end gap-6 items-center">
         <button
           type="button"
           onClick={() => setShowCancelModal(true)}
-          className="rounded-full border border-border px-6 py-3 text-xs font-black uppercase tracking-[0.24em] text-foreground transition-transform duration-200 hover:-translate-y-0.5"
+          className="w-full md:w-auto px-12 py-6 text-[10px] font-black uppercase tracking-[0.4em] text-muted-foreground hover:text-primary transition-colors"
         >
-          취소
+          Discard Changes
         </button>
         <motion.button
           type="submit"
           disabled={pending}
-          whileHover={{ scale: 1.02 }}
-          whileTap={{ scale: 0.98 }}
+          whileHover={{ scale: 1.05, y: -4 }}
+          whileTap={{ scale: 0.95 }}
           className={cn(
-            "inline-flex items-center gap-2 rounded-full bg-primary px-6 py-3 text-xs font-black uppercase tracking-[0.24em] text-primary-foreground",
+            "w-full md:w-auto inline-flex items-center justify-center gap-4 rounded-full bg-primary px-24 py-8 text-xs font-black uppercase tracking-[0.5em] text-white shadow-2xl shadow-primary/20",
             pending && "opacity-60",
           )}
         >
           {pending && <Loader2 className="size-4 animate-spin" aria-hidden />}
-          저장
+          SAVE REVISIONS
         </motion.button>
       </div>
       <CancelModal
