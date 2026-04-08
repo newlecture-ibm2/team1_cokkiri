@@ -1,48 +1,49 @@
 import type { RoomDTO } from '../../_types';
 
-interface SpecTableProps {
+interface SpecGridProps {
   room: RoomDTO;
 }
 
-const formatKRW = (value?: number) => {
-  if (value === undefined || value === null) return '-';
-  if (value >= 10000) {
-    const man = Math.floor(value / 10000);
-    const remainder = value % 10000;
-    return remainder > 0
-      ? `${man.toLocaleString()}만 ${remainder.toLocaleString()}원`
-      : `${man.toLocaleString()}만원`;
-  }
-  return `${value.toLocaleString()}원`;
-};
-
-export function SpecTable({ room }: SpecTableProps) {
+export function SpecGrid({ room }: SpecGridProps) {
   const specs = [
-    { label: '방 타입', value: room.roomTypeName || '-' },
-    { label: '면적', value: room.area ? `${room.area}㎡` : '-' },
+    { label: '호실명', value: room.name, wide: true },
+    { label: '방 유형', value: room.roomTypeName || '-' },
     { label: '층', value: room.floor ? `${room.floor}층` : '-' },
+    { label: '면적', value: room.area ? `${room.area}㎡` : '-' },
+    { label: '방 수 / 욕실 수', value: `${room.roomCount || '-'}개 / ${room.bathroomCount || '-'}개` },
     { label: '방향', value: room.direction || '-' },
-    { label: '방 수', value: room.roomCount ? `${room.roomCount}개` : '-' },
-    { label: '욕실 수', value: room.bathroomCount ? `${room.bathroomCount}개` : '-' },
-    { label: '보증금', value: formatKRW(room.deposit) },
-    { label: '월세', value: formatKRW(room.monthlyRent) },
-    { label: '관리비', value: formatKRW(room.maintenanceFee) },
-    { label: '주차', value: room.parkingAvailable === true ? '가능' : room.parkingAvailable === false ? '불가' : '-' },
+    { label: '주차 가능 여부', value: room.parkingAvailable === true ? '가능' : room.parkingAvailable === false ? '불가능' : '-' },
+    {
+      label: '계약 상태',
+      value: room.status === 'AVAILABLE' ? '가능' : room.status === 'OCCUPIED' ? '불가' : '점검 중',
+    },
   ];
 
   return (
-    <div className="rounded-[2rem] bg-muted/30 border border-border overflow-hidden">
-      <div className="px-6 py-4 border-b border-border">
-        <h2 className="font-black tracking-tighter text-lg uppercase">상세 정보</h2>
-      </div>
-      <div className="divide-y divide-border">
-        {specs.map((spec) => (
-          <div key={spec.label} className="flex items-center justify-between px-6 py-3.5">
-            <span className="text-sm font-bold opacity-50 tracking-tight">{spec.label}</span>
-            <span className="text-sm font-black tracking-tight">{spec.value}</span>
+    <div className="space-y-12">
+      <h3 className="text-sm md:text-base font-black tracking-[0.3em] uppercase opacity-30">
+        Space Information
+      </h3>
+      <div className="grid grid-cols-2 gap-3 md:gap-4 lg:grid-cols-3">
+        {specs.map((item) => (
+          <div
+            key={item.label}
+            className={`p-4 md:p-6 rounded-2xl bg-foreground/[0.02] border border-foreground/[0.05] space-y-1 md:space-y-2 ${
+              item.wide ? 'col-span-2 lg:col-span-1' : 'col-span-1'
+            }`}
+          >
+            <span className="text-[10px] md:text-xs font-black tracking-[0.2em] uppercase opacity-20 block">
+              {item.label}
+            </span>
+            <span className="text-sm md:text-base font-bold text-foreground block leading-tight">
+              {item.value}
+            </span>
           </div>
         ))}
       </div>
     </div>
   );
 }
+
+// 이전 named export 호환
+export { SpecGrid as SpecTable };

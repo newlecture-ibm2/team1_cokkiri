@@ -3,22 +3,34 @@
 import { motion } from 'framer-motion';
 import { Search } from 'lucide-react';
 
-export function EmptyState() {
+interface EmptyStateProps {
+  onReset?: () => void;
+}
+
+export function EmptyState({ onReset }: EmptyStateProps) {
   return (
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      className="flex flex-col items-center justify-center py-24"
+      className="space-y-8 py-48 text-center"
     >
-      <div className="w-20 h-20 rounded-full bg-[var(--color-muted)] flex items-center justify-center mb-6">
-        <Search size={32} className="opacity-30" />
+      <div className="mx-auto w-20 h-20 rounded-full bg-foreground/5 flex items-center justify-center mb-6">
+        <Search size={32} className="opacity-20" />
       </div>
-      <p className="text-lg font-bold opacity-40 tracking-tight mb-2">
-        조건에 맞는 방이 없습니다
-      </p>
-      <p className="text-sm opacity-30">
+      <h3 className="text-4xl font-bold tracking-tight opacity-20 uppercase">
+        No Spaces Found
+      </h3>
+      <p className="text-sm font-medium opacity-30">
         다른 필터 조건으로 검색해 보세요
       </p>
+      {onReset && (
+        <button
+          onClick={onReset}
+          className="text-sm font-black tracking-widest uppercase opacity-60 hover:opacity-100 transition-opacity cursor-pointer"
+        >
+          Reset Filter
+        </button>
+      )}
     </motion.div>
   );
 }
