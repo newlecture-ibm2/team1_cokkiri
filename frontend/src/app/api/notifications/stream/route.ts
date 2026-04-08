@@ -1,13 +1,24 @@
 import { cookies } from "next/headers";
+import Redis from "ioredis";
 
 const BACKEND_URL = process.env.INTERNAL_BACKEND_URL || "http://localhost:8080";
+const redis = new Redis(process.env.REDIS_URL || "redis://localhost:6379/0");
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 export async function GET() {
   const cookieStore = await cookies();
-  const accessToken = cookieStore.get("access_token")?.value;
+  const sessionId = cookieStore.get("session_id")?.value;
+  let accessToken: string | null = null;
+
+  if (sessionId) {
+    try {
+      accessToken = await redis.get(`session:${sessionId}:access`);
+    } catch (err) {
+      console.error("[SSE Stream] Redis read failed:", err);
+    }
+  }
 
   if (!accessToken) {
     return new Response(
