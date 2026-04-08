@@ -10,6 +10,7 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.Authentication;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -21,13 +22,6 @@ import java.util.Map;
  *
  * #80 예약 동시성 차단 신청 로직
  * #81 예약 조회 및 취소 롤백
- *
- * ┌──────────────────────────────────────────────────────────────────┐
- * │ [TODO - Auth 연동 시 수정 필요]                                   │
- * │ 현재 헤더(X-User-Id)로 사용자 ID를 받고 있으나,                   │
- * │ 추후 Spring Security의 @AuthenticationPrincipal 등으로 인증        │
- * │ 객체에서 userId를 추출하도록 변경해야 합니다.                     │
- * └──────────────────────────────────────────────────────────────────┘
  *
  * api-specification.md §6:
  *   GET  /api/reservations/my          → 내 예약 목록 조회 (🏠)
@@ -51,8 +45,9 @@ public class ReservationController {
     @Operation(summary = "내 예약 목록 조회", description = "로그인한 사용자의 모든 예약 내역을 최신순으로 조회합니다.")
     @GetMapping("/my")
     public ResponseEntity<ApiResponse<List<UserReservationResponseDto>>> getMyReservations(
-            @Parameter(description = "사용자 ID (임시)", example = "1")
-            @RequestHeader("X-User-Id") Long userId) {
+            Authentication authentication) {
+
+        Long userId = Long.parseLong(authentication.getName());
 
         List<UserReservationResponseDto> responses = reservationQueryUseCase.getUserReservations(userId);
         return ResponseEntity.ok(ApiResponse.ok(responses));
@@ -72,9 +67,10 @@ public class ReservationController {
     )
     @PostMapping
     public ResponseEntity<ApiResponse<Map<String, Long>>> createReservation(
-            @Parameter(description = "사용자 ID (임시)", example = "1")
-            @RequestHeader("X-User-Id") Long userId,
+            Authentication authentication,
             @Valid @RequestBody ReservationCreateRequestDto request) {
+
+        Long userId = Long.parseLong(authentication.getName());
 
         Long reservationId = reservationCommandUseCase.reserveFacility(userId, request);
         return ResponseEntity.ok(ApiResponse.ok(Map.of("reservationId", reservationId)));
@@ -90,10 +86,11 @@ public class ReservationController {
     @Operation(summary = "공용시설 예약 취소", description = "본인의 승인 또는 대기 중인 예약을 취소합니다. COMPLETED/CANCELLED 상태에서는 취소 불가.")
     @PostMapping("/{id}/cancel")
     public ResponseEntity<ApiResponse<Void>> cancelReservation(
-            @Parameter(description = "사용자 ID (임시)", example = "1")
-            @RequestHeader("X-User-Id") Long userId,
+            Authentication authentication,
             @Parameter(description = "취소할 예약 ID", example = "999")
             @PathVariable("id") Long reservationId) {
+
+        Long userId = Long.parseLong(authentication.getName());
 
         reservationCommandUseCase.cancelReservation(userId, reservationId);
         return ResponseEntity.ok(ApiResponse.ok(null));

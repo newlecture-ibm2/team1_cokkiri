@@ -2,8 +2,11 @@ package com.coliving.reservation.application.port.in;
 
 import com.coliving.reservation.adapter.out.dto.FacilityDetailResponse;
 import com.coliving.reservation.adapter.out.dto.ReservableFacilityResponse;
+import com.coliving.reservation.application.result.FacilityTimeSlotResult;
 
+import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 
 /**
  * 예약 가능 시설 조회 유스케이스 (Inbound Port)
@@ -30,4 +33,14 @@ public interface FacilityQueryUseCase {
      * @throws com.coliving.global.error.BusinessException 시설 미존재 시 NOT_FOUND
      */
     FacilityDetailResponse getFacilityDetail(Long spaceId);
+
+    /**
+     * 특정 공용시설의 주간 예약 타임슬롯을 조회한다.
+     *
+     * @param userId 요청 사용자 ID (내 예약 표시용, null 허용)
+     * @param spaceId 시설 ID
+     * @param weekStart 조회 기준일
+     * @return 날짜별 타임슬롯 맵
+     */
+    Map<String, List<FacilityTimeSlotResult>> getWeeklyTimeSlots(Long userId, Long spaceId, LocalDate weekStart);
 }
