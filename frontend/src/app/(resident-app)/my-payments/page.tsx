@@ -1,10 +1,11 @@
 import { getMyPayments } from './_api';
 import MyPaymentHistory from './_components/MyPaymentHistory';
+import { Payment } from '@/app/admin/billing/_types';
 
 export const dynamic = 'force-dynamic';
 
 export default async function MyPaymentsPage() {
-  let payments = [];
+  let payments: Payment[] = [];
 
   try {
     const result = await getMyPayments();
