@@ -52,8 +52,8 @@ frontend/src/
 │   ├── layout.tsx, page.tsx   # 루트
 │   ├── (auth)/                # 🔓 login,register,find-id,reset-password
 │   ├── (public)/rooms/        # 🌐 방목록,[id]상세
-│   ├── (resident-app)/        # 📱 모바일지향: my-devices,facilities,my-contract,device-history,reservation-history
-│   ├── (user)/                # 👤 contract-apply,my-contracts,my-contract-info,my-history
+│   ├── (resident-app)/        # 📱 모바일지향: my-devices,facilities,my-contract
+│   ├── (user)/                # 👤 contract-apply,my-contracts,my-contract-info,my-history(device,reservation)
 │   ├── (admin)/               # 🏢 dashboard,spaces,devices,contracts,reservations,billing,vocs
 │   └── (common)/              # 💬 community,profile,vocs
 ├── middleware.ts               # 프록시 및 JWT 인가 미들웨어
