@@ -1,7 +1,7 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { Home } from 'lucide-react';
+import { ArrowUpRight } from 'lucide-react';
 import Link from 'next/link';
 import type { RoomDTO } from '../_types';
 
@@ -17,61 +17,81 @@ const formatKRW = (value?: number) => {
 
 export function RoomCard({ room, index }: RoomCardProps) {
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: 0.04 * index, duration: 0.4 }}
-    >
-      <Link href={`/rooms/${room.spaceId}`} className="group block">
-        {/* Thumbnail */}
-        <div className="h-48 rounded-[2rem] bg-[var(--color-muted)] overflow-hidden mb-4 relative">
-          {room.thumbnailUrl ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={room.thumbnailUrl}
-              alt={room.name}
-              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-            />
-          ) : (
-            <div className="w-full h-full flex items-center justify-center">
-              <Home size={32} className="opacity-20" />
+    <Link href={`/rooms/${room.spaceId}`} className="group block">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true }}
+        transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+        className="relative"
+      >
+        {/* Image — editorial 4:5 portrait */}
+        <div className="relative aspect-[4/5] overflow-hidden rounded-[2rem] bg-surface">
+          <motion.div
+            whileHover={{ scale: 1.05 }}
+            transition={{ duration: 1, ease: [0.22, 1, 0.36, 1] }}
+            className="h-full w-full"
+          >
+            {room.thumbnailUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={room.thumbnailUrl}
+                alt={room.name}
+                className="h-full w-full object-cover transition-all duration-1000"
+              />
+            ) : (
+              <div className="h-full w-full bg-muted flex items-center justify-center">
+                <span className="text-4xl font-black opacity-10 tracking-tighter uppercase">
+                  {room.name}
+                </span>
+              </div>
+            )}
+          </motion.div>
+
+          {/* Hover arrow icon */}
+          <div className="pointer-events-none absolute top-6 right-6">
+            <div className="flex h-10 w-10 translate-y-4 -rotate-45 items-center justify-center rounded-full bg-primary text-primary-foreground opacity-0 shadow-xl transition-all duration-500 group-hover:translate-y-0 group-hover:rotate-0 group-hover:opacity-100">
+              <ArrowUpRight className="h-5 w-5" />
             </div>
-          )}
-          {/* Status Badge */}
-          <span className="absolute top-4 left-4 px-3 py-1 bg-[var(--foreground)]/80 backdrop-blur-sm text-[var(--background)] text-[10px] font-bold rounded-full uppercase tracking-wider">
-            {room.status === 'AVAILABLE' ? '공실' : room.status === 'OCCUPIED' ? '사용중' : '점검중'}
-          </span>
+          </div>
+
+          {/* Hover bottom info */}
+          <div className="pointer-events-none absolute right-6 bottom-6 left-6">
+            <div className="flex translate-y-4 items-center justify-center rounded-2xl bg-white/90 p-4 opacity-0 shadow-lg backdrop-blur-md transition-all duration-500 group-hover:translate-y-0 group-hover:opacity-100">
+              <span className="text-xs font-black tracking-widest text-foreground uppercase">
+                {room.status === 'AVAILABLE'
+                  ? '계약 가능'
+                  : room.status === 'OCCUPIED'
+                    ? '입주 중'
+                    : '점검 중'}
+              </span>
+            </div>
+          </div>
         </div>
 
-        {/* Info */}
-        <div className="px-1">
-          <div className="flex items-center justify-between mb-1">
-            <h3 className="text-xl font-black tracking-tighter group-hover:text-[var(--color-secondary)] transition-colors">
+        {/* Card info — editorial */}
+        <div className="mt-8 space-y-3 px-2">
+          <div className="flex items-baseline justify-between">
+            <h3 className="text-2xl font-black tracking-tighter text-foreground transition-colors duration-500 group-hover:text-secondary">
               {room.name}
             </h3>
-            {room.roomTypeName && (
-              <span className="px-2.5 py-0.5 bg-[var(--color-accent)] text-[var(--color-accent-foreground)] text-[10px] font-bold rounded-full">
-                {room.roomTypeName}
-              </span>
+            <span className="text-base font-black text-foreground opacity-10 whitespace-nowrap">
+              / {String(room.spaceId).padStart(2, '0')}
+            </span>
+          </div>
+          <div className="flex items-center justify-between border-t border-foreground/10 pt-4">
+            <p className="text-sm font-black tracking-[0.3em] text-secondary uppercase">
+              {room.roomTypeName || '—'}
+            </p>
+            {room.monthlyRent !== undefined && (
+              <p className="text-lg font-black text-foreground">
+                ₩{room.monthlyRent.toLocaleString()}
+                <span className="ml-1 text-xs opacity-30">/월</span>
+              </p>
             )}
           </div>
-          <p className="text-sm font-bold opacity-60 mb-1">
-            {room.floor ? `${room.floor}층` : ''}
-            {room.area ? ` · ${room.area}㎡` : ''}
-            {room.direction ? ` · ${room.direction}` : ''}
-          </p>
-          {room.monthlyRent !== undefined && (
-            <p className="text-lg font-black tracking-tighter">
-              월 {formatKRW(room.monthlyRent)}
-              {room.deposit ? (
-                <span className="text-xs font-bold opacity-50 ml-2">
-                  보증금 {formatKRW(room.deposit)}
-                </span>
-              ) : null}
-            </p>
-          )}
         </div>
-      </Link>
-    </motion.div>
+      </motion.div>
+    </Link>
   );
 }

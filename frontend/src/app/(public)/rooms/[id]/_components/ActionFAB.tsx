@@ -12,17 +12,16 @@ interface ActionFABProps {
 }
 
 export function ActionFAB({ spaceId, status, isPrivate }: ActionFABProps) {
-  // AVAILABLE이 아니면 비활성
   const isAvailable = status === 'AVAILABLE';
 
   const label = isPrivate ? '계약 시작하기' : '이 시설 예약하기';
-  const href = isPrivate ? `/contracts?spaceId=${spaceId}` : `/reservations?spaceId=${spaceId}`;
+  const href = isPrivate ? `/contract-apply?spaceId=${spaceId}` : `/facilities?spaceId=${spaceId}`;
   const Icon = isPrivate ? FileText : CalendarCheck;
 
   if (!isAvailable) {
     return (
       <div className="fixed bottom-8 right-8 z-50">
-        <div className="px-6 py-4 rounded-full bg-muted text-muted-foreground font-bold tracking-tight text-sm shadow-lg flex items-center gap-2 cursor-not-allowed">
+        <div className="px-6 py-4 rounded-full bg-foreground/10 backdrop-blur-sm text-foreground/50 font-black tracking-tight text-sm shadow-lg flex items-center gap-2 cursor-not-allowed border border-foreground/10">
           <Icon size={18} />
           {status === 'OCCUPIED' ? '현재 사용 중' : '점검 중'}
         </div>
@@ -35,7 +34,7 @@ export function ActionFAB({ spaceId, status, isPrivate }: ActionFABProps) {
       <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
         <Link
           href={href}
-          className="inline-flex items-center gap-2 px-6 py-4 rounded-full bg-primary text-primary-foreground font-black tracking-tight text-sm shadow-xl hover:shadow-2xl transition-shadow"
+          className="inline-flex items-center gap-2 px-6 py-4 rounded-full bg-primary text-primary-foreground font-black tracking-tight text-sm shadow-xl hover:shadow-2xl transition-shadow border border-primary"
         >
           <Icon size={18} />
           {label}
