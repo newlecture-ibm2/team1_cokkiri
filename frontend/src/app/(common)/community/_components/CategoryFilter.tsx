@@ -8,17 +8,17 @@ type Props = {
 
 export function CategoryFilter({ active }: Props) {
   const base =
-    "shrink-0 rounded-xl border px-4 py-2.5 text-xs font-black uppercase tracking-wider transition-transform duration-200 hover:scale-[1.02]";
+    "shrink-0 rounded-full border px-5 py-2.5 text-[10px] font-black uppercase tracking-[0.24em] transition-colors";
 
   return (
-    <div className="flex gap-4 overflow-x-auto pb-2 md:flex-wrap md:overflow-visible md:gap-3">
+    <div className="flex gap-3 overflow-x-auto pb-2 md:flex-wrap md:overflow-visible">
       <Link
         href="/community"
         className={cn(
           base,
           !active
-            ? "border-secondary bg-primary text-primary-foreground shadow-sm"
-            : "border-border bg-background text-foreground hover:border-secondary/60",
+            ? "border-primary bg-primary text-primary-foreground shadow-sm"
+            : "border-border bg-background text-foreground/75 hover:border-secondary/60 hover:text-foreground",
         )}
       >
         전체
@@ -30,8 +30,8 @@ export function CategoryFilter({ active }: Props) {
           className={cn(
             base,
             active === c.value
-              ? "border-secondary bg-primary text-primary-foreground shadow-sm"
-              : "border-border bg-background text-foreground hover:border-secondary/60",
+              ? "border-primary bg-primary text-primary-foreground shadow-sm"
+              : "border-border bg-background text-foreground/75 hover:border-secondary/60 hover:text-foreground",
           )}
         >
           {c.label}

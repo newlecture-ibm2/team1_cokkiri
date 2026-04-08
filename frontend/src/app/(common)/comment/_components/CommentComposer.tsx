@@ -80,7 +80,7 @@ export function CommentComposer({ postId }: { postId: number }) {
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
           className={cn(
-            "inline-flex items-center gap-2 rounded-xl bg-primary px-5 py-2.5 text-xs font-black uppercase tracking-wider text-primary-foreground",
+            "inline-flex items-center gap-2 rounded-full bg-primary px-5 py-2.5 text-xs font-black uppercase tracking-[0.24em] text-primary-foreground",
             "disabled:opacity-50",
           )}
         >
