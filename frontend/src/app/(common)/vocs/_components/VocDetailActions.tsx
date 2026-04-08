@@ -8,6 +8,7 @@ import { Loader2, Pencil, Ban } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { bffErrorMessageFromResponse } from "@/lib/bff-error-message";
 import { LoginRequiredModal } from "@/components/shared/LoginRequiredModal";
+import { VOC_MY_VOC_FORBIDDEN_MESSAGE } from "@/lib/auth-messages";
 
 export function VocDetailActions({ vocId, status }: { vocId: number; status: string }) {
   const router = useRouter();
@@ -25,8 +26,12 @@ export function VocDetailActions({ vocId, status }: { vocId: number; status: str
           method: "POST",
           credentials: "include",
         });
-        if (res.status === 401 || res.status === 403) {
+        if (res.status === 401) {
           setShowLoginModal(true);
+          return;
+        }
+        if (res.status === 403) {
+          alert(await bffErrorMessageFromResponse(res, VOC_MY_VOC_FORBIDDEN_MESSAGE));
           return;
         }
         if (res.ok) {

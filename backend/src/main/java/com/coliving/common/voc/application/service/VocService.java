@@ -30,6 +30,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 @Service
@@ -92,16 +93,13 @@ public class VocService implements VocUseCase {
     @Override
     @Transactional(readOnly = true)
     public VocResult getMyVoc(GetMyVocCommand command) {
-        Voc voc = vocRepositoryPort.findByVocIdAndUserId(command.getVocId(), command.getUserId())
-                .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND));
-        return toVocResult(voc);
+        return toVocResult(requireMyVoc(command.getVocId(), command.getUserId()));
     }
 
     @Override
     @Transactional
     public VocResult updateVoc(UpdateVocCommand command) {
-        Voc existing = vocRepositoryPort.findByVocIdAndUserId(command.getVocId(), command.getUserId())
-                .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND));
+        Voc existing = requireMyVoc(command.getVocId(), command.getUserId());
 
         if (existing.getStatus() != VocStatus.OPEN) {
             throw new BusinessException(ErrorCode.INVALID_STATUS);
@@ -137,8 +135,7 @@ public class VocService implements VocUseCase {
     @Override
     @Transactional
     public VocResult cancelVoc(CancelVocCommand command) {
-        Voc existing = vocRepositoryPort.findByVocIdAndUserId(command.getVocId(), command.getUserId())
-                .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND));
+        Voc existing = requireMyVoc(command.getVocId(), command.getUserId());
 
         if (existing.getStatus() != VocStatus.OPEN) {
             throw new BusinessException(ErrorCode.INVALID_STATUS);
@@ -150,6 +147,18 @@ public class VocService implements VocUseCase {
         Voc cancelled = vocRepositoryPort.findByVocIdAndUserId(command.getVocId(), command.getUserId())
                 .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND));
         return toVocResult(cancelled);
+    }
+
+    /**
+     * 존재하지 않는 민원은 404, 타인 소유 민원은 403으로 구분합니다(강제 URL 접근 시에도 상태 코드가 명확히 구분됨).
+     */
+    private Voc requireMyVoc(Long vocId, Long userId) {
+        Voc voc = vocRepositoryPort.findByVocId(vocId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND));
+        if (!Objects.equals(voc.getUserId(), userId)) {
+            throw new BusinessException(ErrorCode.FORBIDDEN);
+        }
+        return voc;
     }
 
     private VocResult toVocResult(Voc v) {
