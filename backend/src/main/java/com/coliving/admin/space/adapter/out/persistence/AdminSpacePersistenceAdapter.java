@@ -89,8 +89,7 @@ public class AdminSpacePersistenceAdapter implements AdminSpaceRepositoryPort {
     public void softDelete(Long spaceId) {
         SpaceEntity entity = spaceJpaRepository.findById(spaceId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.SPACE_NOT_FOUND));
-        entity.softDelete();
-        spaceJpaRepository.save(entity);
+        spaceJpaRepository.delete(entity);
     }
 
     @Override
