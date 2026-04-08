@@ -1,24 +1,38 @@
 package com.coliving.common.auth.application.service;
 
+import com.coliving.common.auth.adapter.out.jpa.RefreshTokenEntity;
 import com.coliving.common.auth.adapter.out.jpa.UserEntity;
+import com.coliving.common.auth.application.command.LoginCommand;
 import com.coliving.common.auth.application.command.RegisterCommand;
+import com.coliving.common.auth.application.port.in.LoginUseCase;
 import com.coliving.common.auth.application.port.in.RegisterUseCase;
 import com.coliving.common.auth.application.port.out.AuthRepositoryPort;
+import com.coliving.common.auth.application.result.LoginResult;
 import com.coliving.common.auth.model.UserRole;
 import com.coliving.common.auth.model.UserStatus;
 import com.coliving.global.error.BusinessException;
 import com.coliving.global.error.ErrorCode;
+import com.coliving.global.security.JwtTokenProvider;
+import com.coliving.user.contract.adapter.out.jpa.ContractEntity;
+import com.coliving.user.contract.adapter.out.jpa.ContractJpaRepository;
+import com.coliving.user.contract.model.ContractStatus;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.OffsetDateTime;
+import java.time.temporal.ChronoUnit;
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
-public class AuthService implements RegisterUseCase {
+public class AuthService implements RegisterUseCase, LoginUseCase {
 
     private final AuthRepositoryPort authRepositoryPort;
+    private final ContractJpaRepository contractJpaRepository;
     private final PasswordEncoder passwordEncoder;
+    private final JwtTokenProvider jwtTokenProvider;
 
     @Override
     @Transactional
@@ -49,5 +63,62 @@ public class AuthService implements RegisterUseCase {
                 .build();
                 
         authRepositoryPort.save(newUser);
+    }
+
+    @Override
+    @Transactional
+    public LoginResult login(LoginCommand command) {
+        UserEntity user = authRepositoryPort.findByLoginId(command.getLoginId())
+                .orElseThrow(() -> new BusinessException(ErrorCode.INVALID_CREDENTIALS));
+        
+        if (!passwordEncoder.matches(command.getPassword(), user.getPasswordHash())) {
+            throw new BusinessException(ErrorCode.INVALID_CREDENTIALS);
+        }
+
+        if (user.getStatus() == UserStatus.DEACTIVATED) {
+            throw new BusinessException(ErrorCode.ACCOUNT_DEACTIVATED, "정지된 계정입니다.");
+        }
+
+        Long contractId = null;
+        Long spaceId = null;
+
+        if (user.getRole() == UserRole.RESIDENT) {
+            List<ContractEntity> contracts = contractJpaRepository.findByUserIdAndStatus(user.getUserId(), ContractStatus.ACTIVE);
+            if (!contracts.isEmpty()) {
+                ContractEntity activeContract = contracts.get(0);
+                contractId = activeContract.getContractId();
+                if (activeContract.getSpaceId() != null) {
+                    spaceId = activeContract.getSpaceId();
+                }
+            } else {
+                user.changeRole(UserRole.USER); // Degrading role since active contract doesn't exist
+                authRepositoryPort.save(user);
+            }
+        }
+
+        String accessToken = jwtTokenProvider.createAccessToken(user.getUserId(), user.getRole().name(), contractId, spaceId);
+        String refreshToken = jwtTokenProvider.createRefreshToken(user.getUserId());
+
+        // Revoke active refresh tokens
+        authRepositoryPort.revokeAllRefreshTokensByUserId(user.getUserId());
+        
+        // Save new refresh token
+        OffsetDateTime expiresAt = OffsetDateTime.now().plus(jwtTokenProvider.getRefreshExpiration(), ChronoUnit.MILLIS);
+        RefreshTokenEntity refreshTokenEntity = RefreshTokenEntity.builder()
+                .user(user)
+                .token(refreshToken)
+                .expiresAt(expiresAt)
+                .isRevoked(false)
+                .build();
+        authRepositoryPort.saveRefreshToken(refreshTokenEntity);
+
+        return LoginResult.builder()
+                .accessToken(accessToken)
+                .refreshToken(refreshToken)
+                .userId(user.getUserId())
+                .loginId(user.getLoginId())
+                .name(user.getName())
+                .role(user.getRole().name())
+                .build();
     }
 }
