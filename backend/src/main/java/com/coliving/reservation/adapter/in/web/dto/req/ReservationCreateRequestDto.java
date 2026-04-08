@@ -9,6 +9,7 @@ import lombok.Setter;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.time.temporal.ChronoUnit;
 
 /**
  * 예약 신청 요청 DTO
@@ -43,5 +44,11 @@ public class ReservationCreateRequestDto {
     public boolean isValidTimeRange() {
         if (startTime == null || endTime == null) return false;
         return endTime.isAfter(startTime);
+    }
+
+    public boolean isWithinMaxUsageMinutes(long maxMinutes) {
+        if (startTime == null || endTime == null) return false;
+        long durationMinutes = ChronoUnit.MINUTES.between(startTime, endTime);
+        return durationMinutes > 0 && durationMinutes <= maxMinutes;
     }
 }

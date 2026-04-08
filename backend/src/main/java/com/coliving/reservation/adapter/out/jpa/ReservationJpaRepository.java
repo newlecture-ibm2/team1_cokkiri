@@ -61,7 +61,7 @@ public interface ReservationJpaRepository extends JpaRepository<ReservationEntit
     /**
      * 예약 시간대 중복 체크 (비즈니스 규칙 #10)
      *
-     * 동일 시설, 동일 날짜에 APPROVED 상태인 예약 중 시간이 겹치는 건이 있는지 확인한다.
+     * 동일 시설, 동일 날짜에 PENDING 또는 APPROVED 상태인 예약 중 시간이 겹치는 건이 있는지 확인한다.
      * 중복 판정 조건: 새 예약의 시작 < 기존 종료 AND 새 예약의 종료 > 기존 시작
      *
      * @param spaceId   시설 ID
@@ -73,7 +73,10 @@ public interface ReservationJpaRepository extends JpaRepository<ReservationEntit
     @Query("SELECT COUNT(r) > 0 FROM ReservationEntity r " +
            "WHERE r.space.spaceId = :spaceId " +
            "AND r.reservationDate = :date " +
-           "AND r.status = com.coliving.reservation.model.ReservationStatus.APPROVED " +
+           "AND r.status IN (" +
+           "com.coliving.reservation.model.ReservationStatus.PENDING, " +
+           "com.coliving.reservation.model.ReservationStatus.APPROVED" +
+           ") " +
            "AND r.startTime < :endTime " +
            "AND r.endTime > :startTime")
     boolean existsOverlappingReservation(
