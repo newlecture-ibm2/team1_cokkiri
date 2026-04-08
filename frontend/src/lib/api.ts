@@ -37,6 +37,11 @@ export async function apiFetch<T>(
       );
     }
     if (response.status === 401) {
+      // 백엔드가 JSON 에러 메시지를 보낸 경우(예: 로그인 실패) 그것을 우선 사용
+      if (looksJson && trimmed.length > 0) {
+        const data = parseApiJson<T>(trimmed);
+        throw new ApiError(data.message || LOGIN_REQUIRED_MESSAGE, data.error_code || 'UNAUTHORIZED');
+      }
       throw new ApiError(LOGIN_REQUIRED_MESSAGE, 'UNAUTHORIZED');
     }
     if (looksJson && trimmed.length > 0) {
