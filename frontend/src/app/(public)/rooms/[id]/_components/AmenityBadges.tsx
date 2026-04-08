@@ -21,31 +21,28 @@ const AMENITY_ICONS: Record<string, JSX.Element> = {
 };
 
 export function AmenityBadges({ amenities }: AmenityBadgesProps) {
-  if (!amenities || amenities.length === 0) {
-    return (
-      <div>
-        <h2 className="font-black tracking-tighter text-lg uppercase mb-4">편의시설</h2>
+  return (
+    <div className="space-y-12">
+      <h3 className="text-sm md:text-base font-black tracking-[0.3em] uppercase opacity-30">
+        Amenities &amp; Atmosphere
+      </h3>
+      {(!amenities || amenities.length === 0) ? (
         <p className="text-sm font-bold opacity-40 tracking-tight">
           등록된 편의시설이 없습니다
         </p>
-      </div>
-    );
-  }
-
-  return (
-    <div>
-      <h2 className="font-black tracking-tighter text-lg uppercase mb-4">편의시설</h2>
-      <div className="flex flex-wrap gap-2">
-        {amenities.map((amenity) => (
-          <span
-            key={amenity}
-            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-accent/15 text-accent-foreground text-sm font-bold tracking-tight border border-accent/20"
-          >
-            {AMENITY_ICONS[amenity] || <Package size={14} />}
-            {amenity}
-          </span>
-        ))}
-      </div>
+      ) : (
+        <div className="flex flex-wrap gap-3">
+          {amenities.map((amenity) => (
+            <span
+              key={amenity}
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full border border-foreground/10 bg-background/50 text-foreground font-bold text-xs tracking-tight"
+            >
+              {AMENITY_ICONS[amenity] || <Package size={14} />}
+              {amenity}
+            </span>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

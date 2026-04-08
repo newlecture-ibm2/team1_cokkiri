@@ -9,7 +9,9 @@ services:
     environment:
       - NEXT_PUBLIC_API_URL=/api
       - INTERNAL_BACKEND_URL=http://backend:8080
+      - INTERNAL_FRONTEND_URL=http://frontend:3000
       - JWT_SECRET=${JWT_SECRET}
+      - REDIS_URL=redis://redis:6379/0
     depends_on:
       - backend
 
