@@ -60,7 +60,12 @@ public class VocPersistenceAdapter implements VocRepositoryPort {
     }
 
     @Override
-    public Page<Voc> findPageForAdmin(VocStatus status, Pageable pageable) {
+    public Page<Voc> findPageForAdmin(VocStatus status, boolean pendingOnly, Pageable pageable) {
+        if (pendingOnly) {
+            return vocJpaRepository
+                    .findPageByStatusInPendingOrder(List.of(VocStatus.OPEN, VocStatus.IN_PROGRESS), pageable)
+                    .map(this::toModel);
+        }
         return vocJpaRepository.findPageByOptionalStatus(status, pageable).map(this::toModel);
     }
 
@@ -99,9 +104,7 @@ public class VocPersistenceAdapter implements VocRepositoryPort {
         entity.setAdminReply(reply);
         entity.setReplyUserId(adminUserId);
         entity.setRepliedAt(OffsetDateTime.now());
-        if (entity.getStatus() == VocStatus.OPEN) {
-            entity.setStatus(VocStatus.IN_PROGRESS);
-        }
+        entity.setStatus(VocStatus.RESOLVED);
 
         entity = vocJpaRepository.save(entity);
         return toModel(entity);
