@@ -18,11 +18,8 @@ public interface AdminDeviceRepositoryPort {
 
     List<AdminDevice> findAll();
 
-    /** 필터+페이징 기기 목록 조회 */
+    /** 필터+정렬 기기 목록 조회 (페이징은 Controller에서 처리) */
     List<AdminDevice> findAll(AdminDeviceListCommand command);
-
-    /** 필터 조건에 맞는 전체 건수 */
-    long count(AdminDeviceListCommand command);
 
     boolean existsByMacAddress(String macAddress);
 

@@ -79,12 +79,6 @@ public class AdminDeviceService implements CreateAdminDeviceUseCase, AdminDevice
         return adminDeviceRepositoryPort.findAll(command);
     }
 
-    @Override
-    @Transactional(readOnly = true)
-    public long getDeviceCount(AdminDeviceListCommand command) {
-        return adminDeviceRepositoryPort.count(command);
-    }
-
     // ── 기기 수정 (ADM-DEV-05) ──
 
     @Override

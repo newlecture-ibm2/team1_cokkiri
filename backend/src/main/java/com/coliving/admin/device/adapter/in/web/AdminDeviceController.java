@@ -57,11 +57,13 @@ public class AdminDeviceController {
         AdminDeviceListCommand command = new AdminDeviceListCommand(
                 spaceId, deviceTypeId, status, isActive, p, s
         );
-        List<AdminDevice> devices = adminDeviceUseCase.getDeviceList(command);
-        long totalElements = adminDeviceUseCase.getDeviceCount(command);
+        List<AdminDevice> allFiltered = adminDeviceUseCase.getDeviceList(command);
+        long totalElements = allFiltered.size();
         int totalPages = (int) Math.ceil((double) totalElements / s);
 
-        List<AdminDeviceResponseDto> content = devices.stream()
+        List<AdminDeviceResponseDto> content = allFiltered.stream()
+                .skip((long) p * s)
+                .limit(s)
                 .map(AdminDeviceResponseDto::from)
                 .toList();
 
