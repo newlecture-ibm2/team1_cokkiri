@@ -13,6 +13,7 @@ import { apiFileUrlToBffPath } from "@/lib/bff-file-url";
 import { isRichTextBodyHtml } from "@/lib/post-html";
 import { prepareVocBodyForDisplay, VOC_RICH_BODY_CLASSNAME } from "@/lib/vocs-html";
 import { cn } from "@/lib/utils";
+import { VocAccessDeniedState } from "../_components/VocAccessDeniedState";
 
 type Params = Promise<{ vocId: string }>;
 
@@ -44,7 +45,7 @@ export default async function ProfileVocDetailPage({ params }: { params: Params 
   const res = await bffGet(`vocs/${id}`);
 
   if (res.status === 404) notFound();
-  if (res.status === 401 || res.status === 403) {
+  if (res.status === 401) {
     return (
       <VocShell>
         <MotionEnter>
@@ -56,7 +57,22 @@ export default async function ProfileVocDetailPage({ params }: { params: Params 
       </VocShell>
     );
   }
-  if (!res.ok) notFound();
+  if (res.status === 403) {
+    return <VocAccessDeniedState />;
+  }
+  if (!res.ok) {
+    return (
+      <VocShell>
+        <MotionEnter>
+          <div className="mx-auto max-w-3xl text-center">
+            <p className="font-medium text-destructive" role="alert">
+              민원을 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.
+            </p>
+          </div>
+        </MotionEnter>
+      </VocShell>
+    );
+  }
 
   const body = (await res.json()) as ApiResponse<VocDetail>;
   if (!body.success || !body.data) notFound();

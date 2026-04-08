@@ -44,11 +44,49 @@ export default async function AdminVocDetailPage({ params }: { params: Params })
   if (res.status === 401) {
     return (
       <MotionEnter>
-        <p className="mx-auto max-w-3xl text-center font-medium text-destructive">관리자 로그인이 필요합니다.</p>
+        <div className="mx-auto max-w-3xl space-y-4 text-center">
+          <p className="font-medium text-destructive" role="alert">
+            관리자 로그인이 필요합니다.
+          </p>
+          <Link
+            href="/login"
+            className="inline-block font-black text-sm uppercase tracking-wider text-secondary underline underline-offset-4"
+          >
+            로그인으로 이동
+          </Link>
+        </div>
       </MotionEnter>
     );
   }
-  if (!res.ok) notFound();
+  if (res.status === 403) {
+    return (
+      <MotionEnter>
+        <div className="mx-auto max-w-3xl space-y-4 text-center">
+          <p className="font-medium text-destructive" role="alert">
+            관리자만 이 민원을 열람할 수 있습니다.
+          </p>
+          <p className="text-sm text-muted-foreground">
+            일반 회원 계정으로는 관리자 전용 경로에 접근할 수 없습니다.
+          </p>
+          <Link
+            href="/admin"
+            className="inline-block font-black text-sm uppercase tracking-wider text-secondary underline underline-offset-4"
+          >
+            관리자 홈
+          </Link>
+        </div>
+      </MotionEnter>
+    );
+  }
+  if (!res.ok) {
+    return (
+      <MotionEnter>
+        <p className="mx-auto max-w-3xl text-center font-medium text-destructive" role="alert">
+          민원을 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.
+        </p>
+      </MotionEnter>
+    );
+  }
 
   const body = (await res.json()) as ApiResponse<AdminVocDetail>;
   if (!body.success || !body.data) notFound();
