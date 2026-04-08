@@ -65,7 +65,7 @@ public class FacilityQueryAdapter implements FacilityQueryPort {
         String sql = """
                 SELECT s.space_id, s.name, s.status, s.floor, s.area,
                        s.amenities, s.description,
-                       csd.max_capacity, csd.operating_hours, csd.usage_fee,
+                       csd.max_capacity, csd.operating_hours, csd.is_reservable, csd.usage_fee,
                        si.space_image_id, si.image_url, si.image_type,
                        si.sort_order, si.is_thumbnail
                 FROM spaces s
@@ -160,6 +160,10 @@ public class FacilityQueryAdapter implements FacilityQueryPort {
             Long currentSpaceId = ((Number) row[0]).longValue();
 
             // 시설 기본 정보 (최초 1회만 세팅)
+            // SQL 컬럼 순서: [0]space_id [1]name [2]status [3]floor [4]area
+            //               [5]amenities [6]description [7]max_capacity [8]operating_hours
+            //               [9]is_reservable [10]usage_fee
+            //               [11]space_image_id [12]image_url [13]image_type [14]sort_order [15]is_thumbnail
             if (!builderMap.containsKey(currentSpaceId)) {
                 builderMap.put(currentSpaceId, ReservableFacilityResponse.builder()
                         .spaceId(currentSpaceId)
@@ -171,18 +175,19 @@ public class FacilityQueryAdapter implements FacilityQueryPort {
                         .description((String) row[6])
                         .maxCapacity(row[7] != null ? ((Number) row[7]).intValue() : null)
                         .operatingHours((String) row[8])
-                        .usageFee(row[9] != null ? toBigDecimal(row[9]) : null));
+                        .isReservable(row[9] != null ? (Boolean) row[9] : false)
+                        .usageFee(row[10] != null ? toBigDecimal(row[10]) : null));
                 imagesMap.put(currentSpaceId, new ArrayList<>());
             }
 
-            // 이미지 정보 (LEFT JOIN이므로 null일 수 있음)
-            if (row[10] != null) {
+            // 이미지 정보 (LEFT JOIN이므로 null일 수 있음) — index 11부터 시작
+            if (row[11] != null) {
                 ReservableFacilityResponse.ImageInfo imageInfo = ReservableFacilityResponse.ImageInfo.builder()
-                        .imageId(((Number) row[10]).longValue())
-                        .imageUrl((String) row[11])
-                        .imageType((String) row[12])
-                        .sortOrder(row[13] != null ? ((Number) row[13]).intValue() : null)
-                        .isThumbnail(row[14] != null ? (Boolean) row[14] : false)
+                        .imageId(((Number) row[11]).longValue())
+                        .imageUrl((String) row[12])
+                        .imageType((String) row[13])
+                        .sortOrder(row[14] != null ? ((Number) row[14]).intValue() : null)
+                        .isThumbnail(row[15] != null ? (Boolean) row[15] : false)
                         .build();
                 imagesMap.get(currentSpaceId).add(imageInfo);
 

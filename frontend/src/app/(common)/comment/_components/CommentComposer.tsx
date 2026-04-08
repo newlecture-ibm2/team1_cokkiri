@@ -29,7 +29,7 @@ export function CommentComposer({ postId }: { postId: number }) {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ content: text }),
         });
-        if (res.status === 401 || res.status === 403) {
+        if (res.status === 401) {
           setShowLoginModal(true);
           return;
         }
