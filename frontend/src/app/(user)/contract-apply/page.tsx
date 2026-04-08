@@ -11,10 +11,10 @@ import ContractApplyForm from "./_components/ContractApplyForm";
  */
 export default function ContractApplyPage() {
   return (
-    <div className="min-h-screen bg-background text-primary">
+    <div className="text-primary">
       {/* Editorial Header Section */}
-      <section className="px-6 pt-24 pb-12 md:px-12 md:pt-32 lg:px-24">
-        <div className="max-w-[1400px] mx-auto border-b-2 border-primary pb-12">
+      <section className="pb-12">
+        <div className="border-b-2 border-primary pb-12">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
@@ -38,7 +38,7 @@ export default function ContractApplyPage() {
       </section>
 
       {/* Main Form Section */}
-      <main className="max-w-[1400px] mx-auto px-6 md:px-12 lg:px-24 py-12 md:py-24">
+      <main className="py-12 md:py-24">
         <Suspense fallback={
           <div className="flex flex-col items-center justify-center py-40 gap-6">
             <Loader2 className="w-12 h-12 text-accent animate-spin" />

@@ -59,7 +59,7 @@ export async function POST(req: NextRequest) {
 
     safeResponse.cookies.set('session_id', sessionId, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
+      secure: false, // 데모 환경(HTTP) 배포를 위해 false로 수정 (실제 운영 시에는 HTTPS 전환 및 true 권장)
       sameSite: 'lax',
       path: '/',
       maxAge: 7 * 24 * 60 * 60,

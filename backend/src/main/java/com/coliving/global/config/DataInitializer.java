@@ -27,6 +27,11 @@ import com.coliving.common.voc.model.VocCategory;
 import com.coliving.common.voc.model.VocStatus;
 import com.coliving.user.contract.adapter.out.jpa.ContractEntity;
 import com.coliving.user.contract.adapter.out.jpa.ContractJpaRepository;
+import com.coliving.admin.payment.adapter.out.jpa.PaymentEntity;
+import com.coliving.admin.payment.adapter.out.jpa.PaymentJpaRepository;
+import com.coliving.admin.payment.model.PaymentMethod;
+import com.coliving.admin.payment.model.PaymentStatus;
+import com.coliving.admin.payment.model.PaymentType;
 import com.coliving.user.contract.model.ContractLanguage;
 import com.coliving.user.contract.model.ContractOrigin;
 import com.coliving.user.contract.model.ContractStatus;
@@ -97,6 +102,7 @@ public class DataInitializer implements ApplicationRunner {
     private final VocJpaRepository vocJpaRepository;
     private final NotificationJpaRepository notificationJpaRepository;
     private final ContractJpaRepository contractJpaRepository;
+    private final PaymentJpaRepository paymentJpaRepository;
     private final ObjectMapper objectMapper;
     @Value("${app.demo-data.seed-content-on-existing-users:true}")
     private boolean seedContentOnExistingUsers;
@@ -116,6 +122,7 @@ public class DataInitializer implements ApplicationRunner {
             seedDefaultDeviceTypesAndDevice(deviceHostSpace);
             seedCommunityVocNotification(admin, user);
             seedContracts(admin, user, user2, user3, user4);
+            seedPayments(admin, user, user2, user3, user4);
             log.info("[DataInitializer] 초기 전체 시드 완료 (로그인: admin / demo / user2~4, 비밀번호: {})", DEMO_PASSWORD);
             return;
         }
@@ -123,6 +130,7 @@ public class DataInitializer implements ApplicationRunner {
         if (seedContentOnExistingUsers) {
             seedCommunityVocNotification(admin, user);
             seedContracts(admin, user, user2, user3, user4);
+            seedPayments(admin, user, user2, user3, user4);
             log.info("[DataInitializer] 기존 USERS 존재: 콘텐츠 시드만 보강 완료");
         } else {
             log.info("[DataInitializer] 기존 USERS 존재 + seed-content-on-existing-users=false: 시드 생략");
@@ -665,5 +673,123 @@ public class DataInitializer implements ApplicationRunner {
                                 .name(name)
                                 .isSystemDefault(true)
                                 .build()));
+    }
+
+    private void seedPayments(UserEntity admin, UserEntity user, UserEntity user2, UserEntity user3, UserEntity user4) {
+        List<ContractEntity> activeContracts = contractJpaRepository.findAll().stream()
+                .filter(c -> c.getStatus() == ContractStatus.ACTIVE)
+                .toList();
+
+        if (activeContracts.isEmpty()) {
+            log.warn("[DataInitializer] ACTIVE 계약이 없어서 결제 시드 생략");
+            return;
+        }
+
+        ContractEntity activeContract = activeContracts.get(0); // user4의 402호 계약
+
+        // ───────── user4 (402호 입주자) — 월세 3개월분 ─────────
+
+        // 1) 월세 — 1월 (PAID, 계좌이체)
+        ensurePayment(activeContract, activeContract.getUserId(),
+                PaymentType.RENT, new BigDecimal("550000"), PaymentStatus.PAID,
+                PaymentMethod.TRANSFER, LocalDate.now().minusMonths(3), LocalDate.now().minusMonths(3).plusDays(1));
+
+        // 2) 월세 — 2월 (PAID, 카드)
+        ensurePayment(activeContract, activeContract.getUserId(),
+                PaymentType.RENT, new BigDecimal("550000"), PaymentStatus.PAID,
+                PaymentMethod.CARD, LocalDate.now().minusMonths(2), LocalDate.now().minusMonths(2).plusDays(2));
+
+        // 3) 월세 — 3월 (PAID, 계좌이체)
+        ensurePayment(activeContract, activeContract.getUserId(),
+                PaymentType.RENT, new BigDecimal("550000"), PaymentStatus.PAID,
+                PaymentMethod.TRANSFER, LocalDate.now().minusMonths(1), LocalDate.now().minusMonths(1));
+
+        // 4) 월세 — 이번달 (UNPAID, 미납)
+        ensurePayment(activeContract, activeContract.getUserId(),
+                PaymentType.RENT, new BigDecimal("550000"), PaymentStatus.UNPAID,
+                null, LocalDate.now(), null);
+
+        // ───────── user4 — 관리비 3개월분 ─────────
+
+        // 5) 관리비 — 1월 (PAID)
+        ensurePayment(activeContract, activeContract.getUserId(),
+                PaymentType.MAINTENANCE, new BigDecimal("55000"), PaymentStatus.PAID,
+                PaymentMethod.TRANSFER, LocalDate.now().minusMonths(3), LocalDate.now().minusMonths(3).plusDays(1));
+
+        // 6) 관리비 — 2월 (PAID)
+        ensurePayment(activeContract, activeContract.getUserId(),
+                PaymentType.MAINTENANCE, new BigDecimal("55000"), PaymentStatus.PAID,
+                PaymentMethod.TRANSFER, LocalDate.now().minusMonths(2), LocalDate.now().minusMonths(2).plusDays(2));
+
+        // 7) 관리비 — 3월 (PAID)
+        ensurePayment(activeContract, activeContract.getUserId(),
+                PaymentType.MAINTENANCE, new BigDecimal("55000"), PaymentStatus.PAID,
+                PaymentMethod.CARD, LocalDate.now().minusMonths(1), LocalDate.now().minusMonths(1).plusDays(1));
+
+        // 8) 관리비 — 이번달 (UNPAID, 미납)
+        ensurePayment(activeContract, activeContract.getUserId(),
+                PaymentType.MAINTENANCE, new BigDecimal("55000"), PaymentStatus.UNPAID,
+                null, LocalDate.now(), null);
+
+        // ───────── user4 — 시설이용료 (루프탑 예약) ─────────
+
+        // 9) 시설이용료 (PAID, 카드, 지난달)
+        ensurePayment(null, activeContract.getUserId(),
+                PaymentType.FACILITY, new BigDecimal("50000"), PaymentStatus.PAID,
+                PaymentMethod.CARD, LocalDate.now().minusDays(20), LocalDate.now().minusDays(20));
+
+        // 10) 시설이용료 (PENDING, 이번달)
+        ensurePayment(null, activeContract.getUserId(),
+                PaymentType.FACILITY, new BigDecimal("50000"), PaymentStatus.PENDING,
+                PaymentMethod.CARD, LocalDate.now().plusDays(3), null);
+
+        // ───────── user2 결제 (PENDING 상태의 계약에 대한 선불금 시뮬레이션) ─────────
+
+        contractJpaRepository.findAll().stream()
+                .filter(c -> c.getUserId().equals(user2.getUserId()))
+                .findFirst()
+                .ifPresent(c -> {
+                    // 11) user2 월세 — PENDING (승인 대기)
+                    ensurePayment(c, user2.getUserId(),
+                            PaymentType.RENT, new BigDecimal("700000"), PaymentStatus.PENDING,
+                            PaymentMethod.CARD, LocalDate.now().plusDays(10), null);
+                });
+
+        // ───────── user3 결제 (APPROVED 상태 계약, 보증금 선납) ─────────
+
+        contractJpaRepository.findAll().stream()
+                .filter(c -> c.getUserId().equals(user3.getUserId()) && c.getStatus() == ContractStatus.APPROVED)
+                .findFirst()
+                .ifPresent(c -> {
+                    // 12) user3 월세 — UNPAID (체결 전이라 미납 상태)
+                    ensurePayment(c, user3.getUserId(),
+                            PaymentType.RENT, new BigDecimal("400000"), PaymentStatus.UNPAID,
+                            null, LocalDate.now().plusDays(7), null);
+                });
+
+        log.info("[DataInitializer] 결제 시드 데이터 적재 완료 (user4: 월세4+관리비4+시설2, user2: 1, user3: 1 = 총 12건)");
+    }
+
+    private void ensurePayment(ContractEntity contract, Long userId, PaymentType type, BigDecimal amount,
+                               PaymentStatus status, PaymentMethod method, LocalDate billingDate, LocalDate paidDate) {
+        boolean exists = paymentJpaRepository.findAll().stream()
+                .anyMatch(p -> p.getUserId().equals(userId) && p.getType() == type && p.getBillingDate().equals(billingDate));
+
+        if (exists) return;
+
+        PaymentEntity.PaymentEntityBuilder builder = PaymentEntity.builder()
+                .userId(userId)
+                .type(type)
+                .amount(amount)
+                .status(status)
+                .paymentMethod(method)
+                .billingDate(billingDate)
+                .paidDate(paidDate);
+
+        if (contract != null) {
+            builder.contract(contract);
+        }
+
+        paymentJpaRepository.save(builder.build());
     }
 }

@@ -67,4 +67,10 @@ public class Payment {
 
     public OffsetDateTime getDeletedAt() { return deletedAt; }
     public void setDeletedAt(OffsetDateTime deletedAt) { this.deletedAt = deletedAt; }
+
+    public void markAsPaid(PaymentMethod paymentMethod) {
+        this.status = PaymentStatus.PAID;
+        this.paymentMethod = paymentMethod;
+        this.paidDate = LocalDate.now();
+    }
 }

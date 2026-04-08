@@ -18,6 +18,11 @@ public interface PaymentJpaRepository extends JpaRepository<PaymentEntity, Long>
     List<PaymentEntity> findByContract_ContractIdOrderByBillingDateDesc(Long contractId);
 
     /**
+     * 특정 유저의 결제 목록 조회
+     */
+    List<PaymentEntity> findByUserId(Long userId);
+
+    /**
      * 특정 유저의 결제 목록 조회 (최신순)
      */
     List<PaymentEntity> findByUserIdOrderByBillingDateDesc(Long userId);
