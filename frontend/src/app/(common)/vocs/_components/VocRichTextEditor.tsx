@@ -72,7 +72,7 @@ export function VocRichTextEditor({ value, onChange, placeholder, id }: Props) {
             body: fd,
             credentials: "include",
           });
-          if (res.status === 401 || res.status === 403) {
+          if (res.status === 401) {
             setUploadError(LOGIN_REQUIRED_MESSAGE);
             setShowLoginModal(true);
             return;

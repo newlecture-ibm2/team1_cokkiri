@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Bell } from "lucide-react";
-import { LOGIN_REQUIRED_MESSAGE } from "@/lib/auth-messages";
+import { ACCESS_DENIED_MESSAGE, LOGIN_REQUIRED_MESSAGE } from "@/lib/auth-messages";
 import { LoginRequiredGate } from "@/components/shared/LoginRequiredGate";
 import { Header } from "@/components/shared/Header";
 import { Footer } from "@/components/shared/Footer";
@@ -55,8 +55,10 @@ export default async function NotificationsPage({ searchParams }: { searchParams
   let list: NotificationListData | null = null;
   let error: string | null = null;
 
-  if (res.status === 401 || res.status === 403) {
+  if (res.status === 401) {
     error = LOGIN_REQUIRED_MESSAGE;
+  } else if (res.status === 403) {
+    error = ACCESS_DENIED_MESSAGE;
   } else if (!res.ok) {
     error = "알림을 불러오지 못했습니다.";
   } else {
