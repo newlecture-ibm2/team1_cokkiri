@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { apiFetch, ApiError } from '@/lib/api';
+import { useAuthStore } from '@/store/useAuthStore';
 
 export default function LoginForm() {
   const router = useRouter();
@@ -10,6 +11,7 @@ export default function LoginForm() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const login = useAuthStore((state) => state.login);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -24,6 +26,7 @@ export default function LoginForm() {
 
       if (response.success && response.data) {
         const { role } = response.data.user;
+        login(response.data.user);
         
         // Redirect based on role
         if (role === 'ADMIN') {
