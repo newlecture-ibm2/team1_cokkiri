@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { ClipboardList } from "lucide-react";
-import { ACCESS_DENIED_MESSAGE, LOGIN_REQUIRED_MESSAGE } from "@/lib/auth-messages";
+import { LOGIN_REQUIRED_MESSAGE } from "@/lib/auth-messages";
 import { LoginRequiredGate } from "@/components/shared/LoginRequiredGate";
 import { bffGet } from "@/app/(common)/vocs/_api/bff-server";
 import type { ApiResponse, VocListData } from "@/app/(common)/vocs/_types/vocs";
@@ -37,7 +37,14 @@ export default async function ProfileVocsPage({ searchParams }: { searchParams: 
   if (res.status === 401) {
     authError = LOGIN_REQUIRED_MESSAGE;
   } else if (res.status === 403) {
-    authError = ACCESS_DENIED_MESSAGE;
+    // 일부 환경에서 /vocs/my 권한 판정이 과도하게 403을 반환하는 케이스가 있어
+    // 실제 로그인 여부를 /users/me로 한 번 더 확인한 뒤 차단 여부를 결정한다.
+    const meRes = await bffGet("users/me");
+    if (meRes.status === 401 || meRes.status === 403) {
+      authError = LOGIN_REQUIRED_MESSAGE;
+    } else if (showList) {
+      listError = "목록을 불러오지 못했습니다.";
+    }
   } else if (showList && !res.ok) {
     listError = "목록을 불러오지 못했습니다.";
   } else if (showList) {
@@ -70,14 +77,6 @@ export default async function ProfileVocsPage({ searchParams }: { searchParams: 
           <MyVocTabLinks active={showList ? "list" : "register"} />
 
           {authError === LOGIN_REQUIRED_MESSAGE ? <LoginRequiredGate /> : null}
-          {authError && authError !== LOGIN_REQUIRED_MESSAGE ? (
-            <div
-              className="mb-6 rounded-xl border border-destructive/40 bg-destructive/10 px-4 py-3 text-sm font-medium text-destructive"
-              role="alert"
-            >
-              {authError}
-            </div>
-          ) : null}
 
           {!showList ? (
             <div className="mx-auto max-w-4xl">
