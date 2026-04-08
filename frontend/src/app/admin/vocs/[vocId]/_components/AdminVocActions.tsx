@@ -103,7 +103,7 @@ export function AdminVocActions({ vocId, status }: Props) {
               className={fieldClass}
             />
             <p className="mt-2 text-sm font-medium tracking-tight text-muted-foreground">
-              등록 시 입주민에게 알림이 발송됩니다. (OPEN → 처리 중으로 전환될 수 있습니다.)
+              등록 시 입주민에게 알림이 발송되며, 해당 민원은 처리 완료(RESOLVED)로 반영됩니다.
             </p>
           </div>
           {error ? (
