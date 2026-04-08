@@ -25,25 +25,17 @@ export default async function CommunityPostDetailPage({ params }: { params: Para
   if (res.status === 404) notFound();
   if (res.status === 401) {
     return (
-      <CommunityShell>
-        <MotionEnter>
-          <div className="mx-auto max-w-3xl text-center">
-            <LoginRequiredGate />
-            <p className="font-medium text-destructive">{LOGIN_REQUIRED_MESSAGE}</p>
-          </div>
-        </MotionEnter>
-      </CommunityShell>
+      <div className="mx-auto max-w-3xl text-center">
+        <LoginRequiredGate />
+        <p className="font-medium text-destructive">{LOGIN_REQUIRED_MESSAGE}</p>
+      </div>
     );
   }
   if (res.status === 403) {
     return (
-      <CommunityShell>
-        <MotionEnter>
-          <div className="mx-auto max-w-3xl text-center">
-            <p className="font-medium text-destructive">{ACCESS_DENIED_MESSAGE}</p>
-          </div>
-        </MotionEnter>
-      </CommunityShell>
+      <div className="mx-auto max-w-3xl text-center">
+        <p className="font-medium text-destructive">{ACCESS_DENIED_MESSAGE}</p>
+      </div>
     );
   }
   if (!res.ok) notFound();
@@ -64,10 +56,7 @@ export default async function CommunityPostDetailPage({ params }: { params: Para
   }
 
   return (
-    <CommunityShell>
-      <MotionEnter>
-        <PostDetailSection detail={body.data} currentUser={currentUser} />
-      </MotionEnter>
-    </CommunityShell>
+    <PostDetailSection detail={body.data} currentUser={currentUser} />
   );
+
 }
