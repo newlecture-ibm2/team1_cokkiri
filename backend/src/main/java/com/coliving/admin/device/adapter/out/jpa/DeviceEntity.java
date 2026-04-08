@@ -8,6 +8,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.SQLRestriction;
 import org.hibernate.type.SqlTypes;
 
@@ -23,6 +24,7 @@ import java.time.OffsetDateTime;
  */
 @Entity
 @Table(name = "devices")
+@SQLDelete(sql = "UPDATE devices SET deleted_at = CURRENT_TIMESTAMP WHERE device_id = ?")
 @SQLRestriction("deleted_at IS NULL")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -46,7 +48,7 @@ public class DeviceEntity extends BaseEntity {
     @Column(name = "model_name", length = 100)
     private String modelName;
 
-    @Column(name = "mac_address", length = 50)
+    @Column(name = "mac_address", length = 50, unique = true)
     private String macAddress;
 
     @Column(name = "mock_endpoint", length = 255)

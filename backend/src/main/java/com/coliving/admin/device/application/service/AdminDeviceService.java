@@ -1,5 +1,6 @@
 package com.coliving.admin.device.application.service;
 
+import com.coliving.admin.device.application.command.AdminDeviceListCommand;
 import com.coliving.admin.device.application.command.ControlAdminDeviceCommand;
 import com.coliving.admin.device.application.command.CreateAdminDeviceCommand;
 import com.coliving.admin.device.application.command.DeleteAdminDeviceCommand;
@@ -15,7 +16,7 @@ import com.coliving.admin.device.model.AdminDevice;
 import com.coliving.admin.device.model.DeviceStatus;
 import com.coliving.global.error.BusinessException;
 import com.coliving.global.error.ErrorCode;
-import com.coliving.infra.iot.MockIotClient;
+import com.coliving.infra.iot.IotClient;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -29,7 +30,7 @@ import java.util.List;
 public class AdminDeviceService implements CreateAdminDeviceUseCase, AdminDeviceUseCase {
 
     private final AdminDeviceRepositoryPort adminDeviceRepositoryPort;
-    private final MockIotClient mockIotClient;
+    private final IotClient iotClient;
 
     // ── 기기 등록 (Create) ──
 
@@ -70,6 +71,18 @@ public class AdminDeviceService implements CreateAdminDeviceUseCase, AdminDevice
     @Transactional(readOnly = true)
     public List<AdminDevice> getDeviceList() {
         return adminDeviceRepositoryPort.findAll();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<AdminDevice> getDeviceList(AdminDeviceListCommand command) {
+        return adminDeviceRepositoryPort.findAll(command);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public long getDeviceCount(AdminDeviceListCommand command) {
+        return adminDeviceRepositoryPort.count(command);
     }
 
     // ── 기기 수정 (ADM-DEV-05) ──
@@ -179,7 +192,7 @@ public class AdminDeviceService implements CreateAdminDeviceUseCase, AdminDevice
         }
 
         // 4. MockIoT 제어 명령 전송
-        boolean success = mockIotClient.sendCommand(
+        boolean success = iotClient.sendCommand(
                 command.deviceId(), command.command(), command.params());
 
         // 5. CONTROL_LOG 감사 이력 기록 (성공/실패 모두 기록)

@@ -2,7 +2,7 @@ package com.coliving.resident.device_control.application.service;
 
 import com.coliving.global.error.BusinessException;
 import com.coliving.global.error.ErrorCode;
-import com.coliving.infra.iot.MockIotClient;
+import com.coliving.infra.iot.IotClient;
 import com.coliving.resident.device_control.application.command.ControlDeviceCommand;
 import com.coliving.resident.device_control.application.port.in.ResidentDeviceUseCase;
 import com.coliving.resident.device_control.application.port.out.ResidentDeviceRepositoryPort;
@@ -22,7 +22,7 @@ import java.util.List;
 public class ResidentDeviceService implements ResidentDeviceUseCase {
 
     private final ResidentDeviceRepositoryPort residentDeviceRepositoryPort;
-    private final MockIotClient mockIotClient;
+    private final IotClient iotClient;
 
     /**
      * 내 기기 목록 조회 (RES-DEV-01)
@@ -114,7 +114,7 @@ public class ResidentDeviceService implements ResidentDeviceUseCase {
         }
 
         // 8. MockIoT 제어 명령 전송
-        boolean success = mockIotClient.sendCommand(
+        boolean success = iotClient.sendCommand(
                 command.deviceId(), command.command(), command.params());
 
         // 9. CONTROL_LOG 감사 이력 기록 (성공/실패 모두 기록, RES-DEV-02 필수)

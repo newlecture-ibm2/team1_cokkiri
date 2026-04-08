@@ -1,5 +1,7 @@
 package com.coliving.admin.monitoring.application.port.out;
 
+import com.coliving.admin.monitoring.application.command.AdminControlLogListCommand;
+
 import java.util.List;
 
 public interface AdminMonitoringRepositoryPort {
@@ -15,4 +17,10 @@ public interface AdminMonitoringRepositoryPort {
 
     /** 일별 제어 빈도 (최근 30일) */
     List<Object[]> countDailyControl();
+
+    /** 관리자 제어 이력 목록 (페이징) */
+    List<Object[]> findControlLogs(AdminControlLogListCommand command);
+
+    /** 관리자 제어 이력 전체 건수 */
+    long countControlLogs(AdminControlLogListCommand command);
 }

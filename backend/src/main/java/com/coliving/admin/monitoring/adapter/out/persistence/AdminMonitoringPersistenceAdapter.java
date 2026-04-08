@@ -1,10 +1,13 @@
 package com.coliving.admin.monitoring.adapter.out.persistence;
 
+import com.coliving.admin.monitoring.application.command.AdminControlLogListCommand;
 import com.coliving.admin.monitoring.application.port.out.AdminMonitoringRepositoryPort;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.Query;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @Component
@@ -78,4 +81,88 @@ public class AdminMonitoringPersistenceAdapter implements AdminMonitoringReposit
                 """)
                 .getResultList();
     }
+
+    @Override
+    public List<Object[]> findControlLogs(AdminControlLogListCommand command) {
+        StringBuilder sql = new StringBuilder("""
+                SELECT cl.control_log_id, cl.device_id, d.name AS device_name,
+                       dt.name AS device_type_name, s.name AS space_name,
+                       cl.user_id, u.name AS user_name,
+                       cl.actor_type, cl.command, cl.command_params,
+                       cl.result, cl.error_message, cl.correlation_id, cl.created_at
+                FROM control_logs cl
+                JOIN devices d ON cl.device_id = d.device_id
+                JOIN device_types dt ON d.device_type_id = dt.device_type_id
+                JOIN spaces s ON d.space_id = s.space_id
+                LEFT JOIN users u ON cl.user_id = u.user_id
+                WHERE cl.deleted_at IS NULL
+                """);
+
+        appendFilters(sql, command);
+        sql.append(" ORDER BY cl.created_at DESC");
+        sql.append(" LIMIT :limit OFFSET :offset");
+
+        Query query = em.createNativeQuery(sql.toString());
+        bindFilterParams(query, command);
+        query.setParameter("limit", command.size());
+        query.setParameter("offset", command.page() * command.size());
+
+        return query.getResultList();
+    }
+
+    @Override
+    public long countControlLogs(AdminControlLogListCommand command) {
+        StringBuilder sql = new StringBuilder("""
+                SELECT COUNT(*)
+                FROM control_logs cl
+                WHERE cl.deleted_at IS NULL
+                """);
+
+        appendFilters(sql, command);
+
+        Query query = em.createNativeQuery(sql.toString());
+        bindFilterParams(query, command);
+
+        return ((Number) query.getSingleResult()).longValue();
+    }
+
+    // ── 동적 필터 공통 메서드 ──
+
+    private void appendFilters(StringBuilder sql, AdminControlLogListCommand command) {
+        if (command.deviceId() != null) {
+            sql.append(" AND cl.device_id = :deviceId");
+        }
+        if (command.userId() != null) {
+            sql.append(" AND cl.user_id = :userId");
+        }
+        if (command.result() != null) {
+            sql.append(" AND cl.result = :result");
+        }
+        if (command.startDate() != null) {
+            sql.append(" AND cl.created_at >= :startDate");
+        }
+        if (command.endDate() != null) {
+            sql.append(" AND cl.created_at < :endDate");
+        }
+    }
+
+    private void bindFilterParams(Query query, AdminControlLogListCommand command) {
+        if (command.deviceId() != null) {
+            query.setParameter("deviceId", command.deviceId());
+        }
+        if (command.userId() != null) {
+            query.setParameter("userId", command.userId());
+        }
+        if (command.result() != null) {
+            query.setParameter("result", command.result());
+        }
+        if (command.startDate() != null) {
+            query.setParameter("startDate", command.startDate().atStartOfDay());
+        }
+        if (command.endDate() != null) {
+            // endDate 다음날 00:00까지 포함 (exclusive)
+            query.setParameter("endDate", command.endDate().plusDays(1).atStartOfDay());
+        }
+    }
 }
+

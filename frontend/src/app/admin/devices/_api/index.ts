@@ -9,12 +9,29 @@ import type {
   Space,
   ControlAdminDeviceRequest,
   ControlAdminDeviceResponse,
+  DevicePageResponse,
 } from "../_types";
 
 // ── Device CRUD ──
 
-export async function fetchDevices() {
-  return apiFetch<AdminDevice[]>("/admin/devices");
+export interface DeviceListParams {
+  spaceId?: number;
+  deviceTypeId?: number;
+  status?: string;
+  isActive?: boolean;
+  p?: number;
+  s?: number;
+}
+
+export async function fetchDevices(params?: DeviceListParams) {
+  const query = new URLSearchParams();
+  if (params?.spaceId != null) query.set("spaceId", String(params.spaceId));
+  if (params?.deviceTypeId != null) query.set("deviceTypeId", String(params.deviceTypeId));
+  if (params?.status) query.set("status", params.status);
+  if (params?.isActive != null) query.set("isActive", String(params.isActive));
+  query.set("p", String(params?.p ?? 0));
+  query.set("s", String(params?.s ?? 100));
+  return apiFetch<DevicePageResponse>(`/admin/devices?${query.toString()}`);
 }
 
 export async function createDevice(data: CreateDeviceRequest) {

@@ -1,5 +1,6 @@
 package com.coliving.admin.device.application.port.out;
 
+import com.coliving.admin.device.application.command.AdminDeviceListCommand;
 import com.coliving.admin.device.model.AdminDevice;
 
 import java.util.List;
@@ -16,6 +17,12 @@ public interface AdminDeviceRepositoryPort {
     Optional<AdminDevice> findById(Long deviceId);
 
     List<AdminDevice> findAll();
+
+    /** 필터+페이징 기기 목록 조회 */
+    List<AdminDevice> findAll(AdminDeviceListCommand command);
+
+    /** 필터 조건에 맞는 전체 건수 */
+    long count(AdminDeviceListCommand command);
 
     boolean existsByMacAddress(String macAddress);
 

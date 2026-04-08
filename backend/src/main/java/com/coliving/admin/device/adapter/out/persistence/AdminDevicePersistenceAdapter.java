@@ -1,6 +1,7 @@
 package com.coliving.admin.device.adapter.out.persistence;
 
 import com.coliving.admin.device.adapter.out.jpa.*;
+import com.coliving.admin.device.application.command.AdminDeviceListCommand;
 import com.coliving.admin.device.application.port.out.AdminDeviceRepositoryPort;
 import com.coliving.admin.device.model.AdminDevice;
 import com.coliving.admin.device.model.DeviceStatus;
@@ -89,6 +90,48 @@ public class AdminDevicePersistenceAdapter implements AdminDeviceRepositoryPort 
         return deviceJpaRepository.findAll().stream()
                 .map(this::toModel)
                 .toList();
+    }
+
+    @Override
+    public List<AdminDevice> findAll(AdminDeviceListCommand command) {
+        StringBuilder sql = new StringBuilder("""
+                SELECT d.device_id, d.space_id, dt.device_type_id, dt.code, dt.name AS dt_name,
+                       d.name, d.model_name, d.mac_address, d.mock_endpoint,
+                       d.status, d.current_state, d.is_active, d.installed_at,
+                       d.last_online_at, d.created_at, d.updated_at
+                FROM devices d
+                JOIN device_types dt ON d.device_type_id = dt.device_type_id
+                WHERE d.deleted_at IS NULL
+                """);
+
+        appendDeviceFilters(sql, command);
+        sql.append(" ORDER BY d.created_at DESC");
+        sql.append(" LIMIT :limit OFFSET :offset");
+
+        var query = entityManager.createNativeQuery(sql.toString());
+        bindDeviceFilterParams(query, command);
+        query.setParameter("limit", command.size());
+        query.setParameter("offset", command.page() * command.size());
+
+        @SuppressWarnings("unchecked")
+        List<Object[]> rows = query.getResultList();
+        return rows.stream().map(this::toModelFromRow).toList();
+    }
+
+    @Override
+    public long count(AdminDeviceListCommand command) {
+        StringBuilder sql = new StringBuilder("""
+                SELECT COUNT(*)
+                FROM devices d
+                WHERE d.deleted_at IS NULL
+                """);
+
+        appendDeviceFilters(sql, command);
+
+        var query = entityManager.createNativeQuery(sql.toString());
+        bindDeviceFilterParams(query, command);
+
+        return ((Number) query.getSingleResult()).longValue();
     }
 
     @Override
@@ -204,5 +247,56 @@ public class AdminDevicePersistenceAdapter implements AdminDeviceRepositoryPort 
                 entity.getCreatedAt(),
                 entity.getUpdatedAt()
         );
+    }
+
+    private AdminDevice toModelFromRow(Object[] row) {
+        return new AdminDevice(
+                ((Number) row[0]).longValue(),                               // deviceId
+                ((Number) row[1]).longValue(),                               // spaceId
+                ((Number) row[2]).longValue(),                               // deviceTypeId
+                (String) row[3],                                             // deviceTypeCode
+                (String) row[4],                                             // deviceTypeName
+                (String) row[5],                                             // name
+                (String) row[6],                                             // modelName
+                (String) row[7],                                             // macAddress
+                (String) row[8],                                             // mockEndpoint
+                (String) row[9],                                             // status
+                row[10] != null ? row[10].toString() : "{}",                 // currentState
+                row[11] != null && (Boolean) row[11],                        // isActive
+                row[12] != null ? ((java.sql.Timestamp) row[12]).toInstant().atOffset(java.time.ZoneOffset.of("+09:00")) : null,  // installedAt
+                row[13] != null ? ((java.sql.Timestamp) row[13]).toInstant().atOffset(java.time.ZoneOffset.of("+09:00")) : null,  // lastOnlineAt
+                row[14] != null ? ((java.sql.Timestamp) row[14]).toInstant().atOffset(java.time.ZoneOffset.of("+09:00")) : null,  // createdAt
+                row[15] != null ? ((java.sql.Timestamp) row[15]).toInstant().atOffset(java.time.ZoneOffset.of("+09:00")) : null   // updatedAt
+        );
+    }
+
+    private void appendDeviceFilters(StringBuilder sql, AdminDeviceListCommand command) {
+        if (command.spaceId() != null) {
+            sql.append(" AND d.space_id = :spaceId");
+        }
+        if (command.deviceTypeId() != null) {
+            sql.append(" AND d.device_type_id = :deviceTypeId");
+        }
+        if (command.status() != null) {
+            sql.append(" AND d.status = :status");
+        }
+        if (command.isActive() != null) {
+            sql.append(" AND d.is_active = :isActive");
+        }
+    }
+
+    private void bindDeviceFilterParams(jakarta.persistence.Query query, AdminDeviceListCommand command) {
+        if (command.spaceId() != null) {
+            query.setParameter("spaceId", command.spaceId());
+        }
+        if (command.deviceTypeId() != null) {
+            query.setParameter("deviceTypeId", command.deviceTypeId());
+        }
+        if (command.status() != null) {
+            query.setParameter("status", command.status());
+        }
+        if (command.isActive() != null) {
+            query.setParameter("isActive", command.isActive());
+        }
     }
 }

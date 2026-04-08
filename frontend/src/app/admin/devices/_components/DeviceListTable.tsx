@@ -54,7 +54,7 @@ export function DeviceListTable() {
     try {
       setLoading(true);
       const res = await fetchDevices();
-      setDevices(res.data ?? []);
+      setDevices(res.data?.content ?? []);
     } catch (err) {
       if (err instanceof ApiError) setError(err.message);
       else setError("기기 목록을 불러오지 못했습니다");

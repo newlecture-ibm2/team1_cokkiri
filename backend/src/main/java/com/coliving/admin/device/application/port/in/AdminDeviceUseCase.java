@@ -1,5 +1,6 @@
 package com.coliving.admin.device.application.port.in;
 
+import com.coliving.admin.device.application.command.AdminDeviceListCommand;
 import com.coliving.admin.device.application.command.ControlAdminDeviceCommand;
 import com.coliving.admin.device.application.command.UpdateAdminDeviceActiveCommand;
 import com.coliving.admin.device.application.command.UpdateAdminDeviceCommand;
@@ -16,6 +17,12 @@ import java.util.List;
 public interface AdminDeviceUseCase {
 
     List<AdminDevice> getDeviceList();
+
+    /** 필터+페이징 기기 목록 조회 (ADM-DEV-01) */
+    List<AdminDevice> getDeviceList(AdminDeviceListCommand command);
+
+    /** 필터 조건에 맞는 전체 건수 */
+    long getDeviceCount(AdminDeviceListCommand command);
 
     /** 기기 수정 (ADM-DEV-05) — deviceType 변경 불가 */
     AdminDevice updateDevice(UpdateAdminDeviceCommand command);

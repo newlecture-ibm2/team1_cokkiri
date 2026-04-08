@@ -90,3 +90,10 @@ export interface ControlAdminDeviceResponse {
   message: string;
 }
 
+export interface DevicePageResponse {
+  content: AdminDevice[];
+  page: number;
+  size: number;
+  totalElements: number;
+  totalPages: number;
+}
