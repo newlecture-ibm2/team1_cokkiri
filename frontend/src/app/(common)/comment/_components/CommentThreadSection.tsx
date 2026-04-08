@@ -146,7 +146,7 @@ export function CommentThreadSection({
                   <button
                     type="button"
                     onClick={() => setOpenReplyForId(openReply ? null : node.commentId)}
-                    className="inline-flex w-fit items-center gap-1.5 text-[11px] font-black uppercase tracking-wider text-muted-foreground hover:text-foreground"
+                    className="inline-flex w-fit items-center gap-1.5 text-[11px] font-black uppercase tracking-[0.24em] text-muted-foreground hover:text-foreground"
                   >
                     <CornerDownRight className="size-3.5" aria-hidden />
                     답글
@@ -170,7 +170,7 @@ export function CommentThreadSection({
                         <button
                           type="button"
                           onClick={() => setOpenReplyForId(null)}
-                          className="rounded-lg border border-border px-3 py-1.5 text-[11px] font-black uppercase tracking-wider text-foreground"
+                          className="rounded-full border border-border px-4 py-1.5 text-[11px] font-black uppercase tracking-[0.24em] text-foreground"
                         >
                           취소
                         </button>
@@ -179,7 +179,7 @@ export function CommentThreadSection({
                           disabled={pending || !replyDraft.trim()}
                           whileHover={{ scale: 1.02 }}
                           whileTap={{ scale: 0.98 }}
-                          className="rounded-lg bg-primary px-3 py-1.5 text-[11px] font-black uppercase tracking-wider text-primary-foreground disabled:opacity-50"
+                          className="rounded-full bg-primary px-4 py-1.5 text-[11px] font-black uppercase tracking-[0.24em] text-primary-foreground disabled:opacity-50"
                         >
                           등록
                         </motion.button>
@@ -248,7 +248,7 @@ export function CommentThreadSection({
             disabled={pending || !rootDraft.trim()}
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
-            className="rounded-xl bg-primary px-5 py-2.5 text-xs font-black uppercase tracking-wider text-primary-foreground disabled:opacity-50"
+            className="rounded-full bg-primary px-5 py-2.5 text-xs font-black uppercase tracking-[0.24em] text-primary-foreground disabled:opacity-50"
           >
             등록
           </motion.button>

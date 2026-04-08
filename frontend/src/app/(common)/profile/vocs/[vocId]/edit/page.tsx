@@ -63,10 +63,10 @@ export default async function ProfileVocEditPage({ params }: { params: Params })
     <VocShell>
       <MotionEnter>
         <div className="mx-auto max-w-4xl">
-          <header className="space-y-4">
+          <header className="space-y-4 border-b border-primary/10 pb-10">
             <Link
               href={`/profile/vocs/${id}`}
-              className="inline-flex font-black text-xs uppercase tracking-[0.3em] text-secondary hover:text-foreground"
+              className="inline-flex h-11 items-center rounded-full border border-secondary/40 bg-secondary/10 px-5 font-black text-[10px] uppercase tracking-[0.24em] text-secondary hover:border-secondary/70"
             >
               ← 상세
             </Link>
@@ -78,7 +78,7 @@ export default async function ProfileVocEditPage({ params }: { params: Params })
               접수 상태(OPEN)에서만 수정할 수 있습니다.
             </p>
           </header>
-          <div className="mt-12">
+          <div className="mt-10">
             <VocEditForm initial={body.data} />
           </div>
         </div>
