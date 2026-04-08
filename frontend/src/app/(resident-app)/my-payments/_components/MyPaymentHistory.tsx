@@ -1,6 +1,6 @@
 'use client';
 
-import { Payment } from '../../(admin)/billing/_types';
+import { Payment } from '../../admin/billing/_types';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -29,8 +29,8 @@ export default function MyPaymentHistory({ initialPayments }: MyPaymentHistoryPr
     try {
       // 1. Request Payment via PortOne SDK v2
       const response = await window.PortOne.requestPayment({
-        storeId: 'store-demo-id', // Placeholder
-        channelKey: 'channel-demo-key', // Placeholder
+        storeId: process.env.NEXT_PUBLIC_PORTONE_STORE_ID || 'store-demo-id',
+        channelKey: process.env.NEXT_PUBLIC_PORTONE_CHANNEL_KEY || 'channel-demo-key',
         paymentId: `payment-${payment.paymentId}-${Date.now()}`,
         orderName: `${payment.type} 납부`,
         totalAmount: payment.amount,
@@ -69,14 +69,18 @@ export default function MyPaymentHistory({ initialPayments }: MyPaymentHistoryPr
     <div className="grid gap-6">
       {initialPayments.map((payment) => (
         <Card key={payment.paymentId} className="border-secondary/20 hover:border-accent transition-all overflow-hidden relative">
-          <div className={`h-2 ${payment.status === 'PAID' ? 'bg-[#768064]' : 'bg-red-600'}`} />
+          <div className={cn(
+            "h-2",
+            payment.status === 'PAID' ? "bg-accent" : "bg-destructive"
+          )} />
           <CardHeader className="flex flex-row items-center justify-between">
             <div>
-              <CardTitle className="text-xl font-bold font-mono uppercase tracking-tight">#{payment.paymentId} {payment.type}</CardTitle>
-              <p className="text-sm text-muted-foreground">Billing Date: {payment.billingDate}</p>
+              <CardTitle className="text-xl font-black tracking-tight uppercase">#{payment.paymentId} {payment.type}</CardTitle>
+              <p className="text-sm text-muted-foreground font-medium">Billing Date: {payment.billingDate}</p>
             </div>
             <Badge 
-              className={payment.status === 'PAID' ? 'bg-[#768064]' : 'bg-red-600'}
+              variant={payment.status === 'PAID' ? "default" : "destructive"}
+              className={cn(payment.status === 'PAID' && "bg-accent hover:bg-accent/90")}
             >
               {payment.status}
             </Badge>
@@ -85,18 +89,26 @@ export default function MyPaymentHistory({ initialPayments }: MyPaymentHistoryPr
             <div className="flex justify-between items-end">
               <div>
                 <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-1">Total Amount</p>
-                <p className="text-3xl font-black">{payment.amount.toLocaleString()}원</p>
+                <p className="text-3xl font-black text-primary">{payment.amount.toLocaleString()}원</p>
               </div>
               <div className="text-right">
                 {payment.status === 'PAID' ? (
                   <>
                     <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-1">Paid via {payment.paymentMethod}</p>
-                    <p className="text-sm font-medium">{payment.paidDate}</p>
+                    <p className="text-sm font-bold text-primary">{payment.paidDate}</p>
                   </>
+                ) : payment.status === 'PENDING' ? (
+                  <Button 
+                    disabled
+                    variant="secondary" 
+                    className="font-black uppercase tracking-widest text-xs opacity-50"
+                  >
+                    Processing...
+                  </Button>
                 ) : (
                   <Button 
                     variant="default" 
-                    className="bg-moss text-white hover:bg-moss/90 font-black uppercase tracking-widest text-xs"
+                    className="bg-primary text-background hover:bg-primary/90 font-black uppercase tracking-widest text-xs px-6"
                     onClick={() => handlePayment(payment)}
                   >
                     Pay Now
@@ -109,4 +121,8 @@ export default function MyPaymentHistory({ initialPayments }: MyPaymentHistoryPr
       ))}
     </div>
   );
+}
+
+function cn(...inputs: any[]) {
+  return inputs.filter(Boolean).join(' ');
 }
