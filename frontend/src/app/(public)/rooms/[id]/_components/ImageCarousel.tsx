@@ -1,134 +1,129 @@
 'use client';
 
-import { useRef, useState, useEffect, useCallback } from 'react';
-import { Home, ChevronLeft, ChevronRight } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
+import { Home, ArrowLeft } from 'lucide-react';
+import Link from 'next/link';
 import type { SpaceImageDTO } from '../../_types';
 
-interface ImageCarouselProps {
+interface HeroImageProps {
   images?: SpaceImageDTO[];
   roomName: string;
+  selectedImage: number;
+  onSelectImage: (index: number) => void;
 }
 
-export function ImageCarousel({ images, roomName }: ImageCarouselProps) {
-  const scrollRef = useRef<HTMLDivElement>(null);
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const totalImages = images?.length || 0;
+export function HeroImage({ images, roomName, selectedImage, onSelectImage }: HeroImageProps) {
+  const hasImages = images && images.length > 0;
+  const currentSrc = hasImages ? images[selectedImage]?.imageUrl : null;
 
-  // IntersectionObserver로 현재 보이는 이미지 인덱스 추적
-  useEffect(() => {
-    const container = scrollRef.current;
-    if (!container || totalImages === 0) return;
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            const index = Number(entry.target.getAttribute('data-index'));
-            if (!isNaN(index)) setCurrentIndex(index);
-          }
-        });
-      },
-      { root: container, threshold: 0.6 }
-    );
-
-    const slides = container.querySelectorAll('[data-index]');
-    slides.forEach((slide) => observer.observe(slide));
-
-    return () => observer.disconnect();
-  }, [totalImages]);
-
-  const scrollTo = useCallback(
-    (index: number) => {
-      const container = scrollRef.current;
-      if (!container) return;
-      const target = container.children[index] as HTMLElement;
-      if (target) {
-        target.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'start' });
-      }
-    },
-    []
-  );
-
-  const handlePrev = () => {
-    const next = currentIndex > 0 ? currentIndex - 1 : totalImages - 1;
-    scrollTo(next);
-  };
-
-  const handleNext = () => {
-    const next = currentIndex < totalImages - 1 ? currentIndex + 1 : 0;
-    scrollTo(next);
-  };
-
-  // 이미지가 없을 때 플레이스홀더
-  if (!images || images.length === 0) {
+  if (!hasImages) {
     return (
-      <div className="relative h-64 md:h-96 rounded-[2rem] bg-muted flex items-center justify-center">
-        <Home size={48} className="opacity-20" />
-      </div>
+      <section className="relative h-[80vh] w-full overflow-hidden bg-foreground/5 flex items-center justify-center">
+        <Home size={64} className="opacity-10" />
+        {/* Back button */}
+        <div className="absolute right-0 bottom-0 left-0 p-6 md:p-12 lg:p-24">
+          <div className="mx-auto max-w-[1400px]">
+            <Link
+              href="/rooms"
+              className="group mb-8 inline-flex items-center gap-2 text-foreground/60 transition-all hover:text-foreground"
+            >
+              <ArrowLeft className="h-6 w-6 transition-transform group-hover:-translate-x-1" />
+              <span className="text-sm font-medium tracking-[0.1em] uppercase">
+                Return to Spaces
+              </span>
+            </Link>
+            <h1 className="text-4xl sm:text-5xl md:text-7xl lg:text-8xl xl:text-9xl font-black text-foreground tracking-tighter mb-4 leading-[0.85] max-w-[95%] md:max-w-[80%]">
+              {roomName}
+            </h1>
+          </div>
+        </div>
+      </section>
     );
   }
 
   return (
-    <div className="relative">
-      {/* 스크롤 컨테이너 */}
-      <div
-        ref={scrollRef}
-        className="flex overflow-x-auto snap-x snap-mandatory scrollbar-hide rounded-[2rem]"
-        style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+    <section className="relative h-[80vh] w-full overflow-hidden bg-black">
+      {/* Main image */}
+      <motion.div
+        className="absolute inset-0"
+        key={selectedImage}
+        initial={{ scale: 1.1, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        transition={{ duration: 1.5, ease: [0.22, 1, 0.36, 1] }}
       >
-        {images.map((img, idx) => (
-          <div
-            key={img.spaceImageId}
-            data-index={idx}
-            className="min-w-full snap-start"
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={currentSrc!}
+          alt={roomName}
+          className="h-full w-full object-cover opacity-80"
+        />
+      </motion.div>
+
+      {/* Gradient overlay */}
+      <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+
+      {/* Title overlay */}
+      <div className="absolute right-0 bottom-0 left-0 p-6 md:p-12 lg:p-24">
+        <div className="mx-auto max-w-[1400px]">
+          <motion.div
+            initial={{ opacity: 0, y: 40 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.5, duration: 1 }}
           >
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={img.imageUrl}
-              alt={`${roomName} - ${idx + 1}`}
-              className="w-full h-64 md:h-96 object-cover"
-            />
-          </div>
-        ))}
+            <Link
+              href="/rooms"
+              className="group mb-8 inline-flex items-center gap-2 text-white/90 drop-shadow-lg transition-all hover:text-white"
+            >
+              <ArrowLeft className="h-6 w-6 transition-transform group-hover:-translate-x-1" />
+              <span className="text-sm font-medium tracking-[0.1em] uppercase">
+                Return to Spaces
+              </span>
+            </Link>
+            <h1 className="text-4xl sm:text-5xl md:text-7xl lg:text-8xl xl:text-9xl font-black text-white tracking-tighter mb-4 leading-[0.85] max-w-[95%] md:max-w-[80%]">
+              {roomName}
+            </h1>
+          </motion.div>
+        </div>
       </div>
 
-      {/* 좌우 화살표 버튼 */}
-      {totalImages > 1 && (
-        <>
-          <button
-            onClick={handlePrev}
-            className="absolute left-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-primary/60 backdrop-blur-sm text-primary-foreground flex items-center justify-center hover:bg-primary/80 transition-colors"
-            aria-label="이전 이미지"
-          >
-            <ChevronLeft size={20} />
-          </button>
-          <button
-            onClick={handleNext}
-            className="absolute right-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-primary/60 backdrop-blur-sm text-primary-foreground flex items-center justify-center hover:bg-primary/80 transition-colors"
-            aria-label="다음 이미지"
-          >
-            <ChevronRight size={20} />
-          </button>
-        </>
+      {/* Desktop Image Navigation — right side thumbnails */}
+      {images.length > 1 && (
+        <div className="hidden md:flex absolute right-6 bottom-12 flex-col gap-4">
+          {images.map((img, i) => (
+            <button
+              key={img.spaceImageId}
+              onClick={() => onSelectImage(i)}
+              className={`h-16 w-16 overflow-hidden rounded-lg border-2 transition-all cursor-pointer ${
+                selectedImage === i
+                  ? 'scale-110 border-white'
+                  : 'border-transparent opacity-50 hover:opacity-100'
+              }`}
+            >
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={img.imageUrl} alt="" className="h-full w-full object-cover" />
+            </button>
+          ))}
+        </div>
       )}
 
-      {/* 인디케이터 닷 + 카운터 */}
-      {totalImages > 1 && (
-        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-2 bg-primary/50 backdrop-blur-sm rounded-full px-4 py-2">
-          {images.map((_, idx) => (
+      {/* Mobile Image Navigation */}
+      {images.length > 1 && (
+        <div className="flex md:hidden absolute bottom-4 left-1/2 -translate-x-1/2 items-center gap-2 bg-black/40 backdrop-blur-sm rounded-full px-4 py-2">
+          {images.map((_, i) => (
             <button
-              key={idx}
-              onClick={() => scrollTo(idx)}
-              className={`w-2 h-2 rounded-full transition-all duration-300 ${
-                idx === currentIndex
-                  ? 'bg-primary-foreground w-4'
-                  : 'bg-primary-foreground/50'
+              key={i}
+              onClick={() => onSelectImage(i)}
+              className={`w-2 h-2 rounded-full transition-all duration-300 cursor-pointer ${
+                i === selectedImage
+                  ? 'bg-white w-4'
+                  : 'bg-white/50'
               }`}
-              aria-label={`이미지 ${idx + 1}`}
+              aria-label={`이미지 ${i + 1}`}
             />
           ))}
         </div>
       )}
-    </div>
+    </section>
   );
 }
