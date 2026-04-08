@@ -1,3 +1,6 @@
+import { apiFetch } from '@/lib/api';
+import { ApiResponse } from '@/types/api';
+
 export interface RoomTypeDTO {
   roomTypeId: number;
   code: string;
@@ -14,7 +17,7 @@ export interface SpaceDTO {
   area?: number;
   description?: string;
   amenities: string[];
-  
+
   // Private Detail
   roomTypeId?: number;
   roomTypeName?: string;
@@ -25,13 +28,13 @@ export interface SpaceDTO {
   monthlyRent?: number;
   maintenanceFee?: number;
   parkingAvailable?: boolean;
-  
+
   // Common Detail
   maxCapacity?: number;
   operatingHours?: string;
   isReservable?: boolean;
   usageFee?: number;
-  
+
   // Images
   images?: {
     imageUrl: string;
@@ -41,19 +44,14 @@ export interface SpaceDTO {
 }
 
 export const fetchSpaces = async () => {
-  const res = await fetch('/api/admin/spaces');
-  if (!res.ok) throw new Error('Failed to fetch spaces');
-  return res.json();
+  return await apiFetch<any>('/admin/spaces');
 };
 
 export const createSpace = async (data: SpaceDTO) => {
-  const res = await fetch('/api/admin/spaces', {
+  return await apiFetch<any>('/admin/spaces', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(data),
   });
-  if (!res.ok) throw new Error('Failed to create space');
-  return res.json();
 };
 
 export const uploadSpaceImage = async (spaceId: number, file: File, isThumbnail: boolean = false) => {
@@ -65,70 +63,51 @@ export const uploadSpaceImage = async (spaceId: number, file: File, isThumbnail:
   const res = await fetch(`/api/admin/spaces/${spaceId}/images`, {
     method: 'POST',
     body: formData,
+    credentials: 'include',
   });
   if (!res.ok) throw new Error('Failed to upload image');
   return res.json();
 };
 
 export const fetchSpace = async (spaceId: number) => {
-  const res = await fetch(`/api/admin/spaces/${spaceId}`);
-  if (!res.ok) throw new Error('Failed to fetch space');
-  return res.json();
+  return await apiFetch<SpaceDTO>(`/admin/spaces/${spaceId}`);
 };
 
 export const updateSpace = async (spaceId: number, data: Partial<SpaceDTO>) => {
-  const res = await fetch(`/api/admin/spaces/${spaceId}`, {
+  return await apiFetch<any>(`/admin/spaces/${spaceId}`, {
     method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(data),
   });
-  if (!res.ok) throw new Error('Failed to update space');
-  return res.json();
 };
 
 export const deleteSpace = async (spaceId: number) => {
-  const res = await fetch(`/api/admin/spaces/${spaceId}`, {
+  return await apiFetch<any>(`/admin/spaces/${spaceId}`, {
     method: 'DELETE',
   });
-  if (!res.ok) throw new Error('Failed to delete space');
-  return res.json();
 };
 
 // ===== Room Type (방 유형) API =====
 
-export const fetchRoomTypes = async (): Promise<{ success: boolean; data: RoomTypeDTO[] }> => {
-  const res = await fetch('/api/admin/room-types');
-  if (!res.ok) throw new Error('Failed to fetch room types');
-  return res.json();
+export const fetchRoomTypes = async (): Promise<ApiResponse<RoomTypeDTO[]>> => {
+  return await apiFetch<RoomTypeDTO[]>('/admin/room-types');
 };
 
 export const createRoomType = async (data: { code: string; name: string }) => {
-  const res = await fetch('/api/admin/room-types', {
+  return await apiFetch<any>('/admin/room-types', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(data),
   });
-  if (!res.ok) throw new Error('Failed to create room type');
-  return res.json();
 };
 
 export const updateRoomType = async (roomTypeId: number, data: { name: string }) => {
-  const res = await fetch(`/api/admin/room-types/${roomTypeId}`, {
+  return await apiFetch<any>(`/admin/room-types/${roomTypeId}`, {
     method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(data),
   });
-  if (!res.ok) throw new Error('Failed to update room type');
-  return res.json();
 };
 
 export const deleteRoomType = async (roomTypeId: number) => {
-  const res = await fetch(`/api/admin/room-types/${roomTypeId}`, {
+  return await apiFetch<any>(`/admin/room-types/${roomTypeId}`, {
     method: 'DELETE',
   });
-  if (!res.ok) {
-    const errorData = await res.json().catch(() => null);
-    throw new Error(errorData?.message || 'Failed to delete room type');
-  }
-  return res.json();
 };
