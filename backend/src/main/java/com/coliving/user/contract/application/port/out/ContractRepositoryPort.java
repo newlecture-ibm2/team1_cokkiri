@@ -9,5 +9,6 @@ public interface ContractRepositoryPort {
     Contract save(Contract contract);
     Optional<Contract> findById(Long id);
     Optional<Contract> findByUserIdAndSpaceId(Long userId, Long spaceId);
+    Optional<Contract> findDraftByUserIdAndSpaceId(Long userId, Long spaceId);
     List<Contract> findAllByUserId(Long userId);
 }
