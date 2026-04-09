@@ -39,6 +39,13 @@ export function FacilityCard({ space, index }: { space: CommonSpaceDto; index: n
             {space.floor > 0 ? `${space.floor}F` : `B${Math.abs(space.floor)}`}
           </span>
         )}
+        {space.status === 'MAINTENANCE' && (
+          <div className="absolute inset-0 bg-black/20 flex items-center justify-center backdrop-blur-[2px]">
+            <span className="px-5 py-2.5 rounded-full text-xs font-black uppercase tracking-widest bg-destructive/90 text-white shadow-xl">
+              점검 중
+            </span>
+          </div>
+        )}
       </div>
 
       {/* 콘텐츠 */}

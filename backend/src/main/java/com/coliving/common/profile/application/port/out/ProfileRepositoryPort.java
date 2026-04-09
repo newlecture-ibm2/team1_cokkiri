@@ -5,4 +5,7 @@ import java.util.Optional;
 
 public interface ProfileRepositoryPort {
     Optional<ProfileResponseDto> findByUserId(Long userId);
+    
+    String getPasswordHash(Long userId);
+    void updatePassword(Long userId, String newPasswordHash);
 }
