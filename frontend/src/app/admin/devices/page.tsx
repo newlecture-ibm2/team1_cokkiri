@@ -18,7 +18,7 @@ export default function DevicesPage() {
             기기 관리
           </h1>
           <p className="text-sm font-medium tracking-tight text-muted-foreground text-balance">
-            등록된 기기의 상태 변경, 활성화/비활성화, 삭제를 관리합니다.
+            등록된 기기의 활성화/비활성화, 제어, 수정, 삭제를 관리합니다.
           </p>
         </div>
         <div className="flex gap-3">

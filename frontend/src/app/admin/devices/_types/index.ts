@@ -60,6 +60,8 @@ export interface Space {
 export interface AdminDevice {
   deviceId: number;
   spaceId: number;
+  spaceName: string | null;
+  spaceFloor: number | null;
   deviceTypeId: number;
   deviceTypeCode: string;
   deviceTypeName: string;

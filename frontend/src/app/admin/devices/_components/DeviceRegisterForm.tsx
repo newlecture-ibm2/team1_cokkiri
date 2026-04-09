@@ -57,9 +57,15 @@ export function DeviceRegisterForm() {
   const [success, setSuccess] = useState(false);
   const [apiError, setApiError] = useState<string | null>(null);
 
-  // 공간 분류
-  const privateSpaces = spaces.filter((s) => s.type === "PRIVATE");
-  const commonSpaces = spaces.filter((s) => s.type === "COMMON");
+  // 공간 분류 및 정렬 (층 → 이름순)
+  const sortSpaces = (list: Space[]) =>
+    [...list].sort((a, b) => {
+      const floorDiff = (a.floor ?? 0) - (b.floor ?? 0);
+      if (floorDiff !== 0) return floorDiff;
+      return (a.name ?? "").localeCompare(b.name ?? "", "ko", { numeric: true });
+    });
+  const privateSpaces = sortSpaces(spaces.filter((s) => s.type === "PRIVATE"));
+  const commonSpaces = sortSpaces(spaces.filter((s) => s.type === "COMMON"));
 
   const validate = (): boolean => {
     const newErrors: FieldError = {};

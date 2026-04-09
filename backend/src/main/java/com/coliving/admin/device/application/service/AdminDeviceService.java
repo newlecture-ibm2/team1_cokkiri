@@ -50,6 +50,7 @@ public class AdminDeviceService implements CreateAdminDeviceUseCase, AdminDevice
         AdminDevice device = new AdminDevice(
                 null,
                 command.spaceId(),
+                null, null,   // spaceName, spaceFloor — PersistenceAdapter에서 채움
                 command.deviceTypeId(),
                 null, null,
                 command.name(),
@@ -104,6 +105,7 @@ public class AdminDeviceService implements CreateAdminDeviceUseCase, AdminDevice
     }
 
     // ── 활성/비활성 토글 (ADM-DEV-03) ──
+    // 비활성화 → status=OFFLINE 자동 설정 / 재활성화 → status=ONLINE 복원
 
     @Override
     @Transactional
@@ -112,6 +114,10 @@ public class AdminDeviceService implements CreateAdminDeviceUseCase, AdminDevice
                 .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND, "기기를 찾을 수 없습니다"));
 
         adminDeviceRepositoryPort.updateActive(command.deviceId(), command.isActive());
+
+        // 비활성화 시 OFFLINE, 재활성화 시 ONLINE으로 자동 전환
+        String newStatus = command.isActive() ? "ONLINE" : "OFFLINE";
+        adminDeviceRepositoryPort.updateStatus(command.deviceId(), newStatus);
 
         return adminDeviceRepositoryPort.findById(command.deviceId())
                 .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND));
