@@ -403,7 +403,7 @@ public class DataInitializer implements ApplicationRunner {
         SpaceEntity s402 = privateSpaces.stream().filter(s -> s.getName().contains("402")).findFirst().orElse(privateSpaces.get(3));
         ensureContract(user4.getUserId(), s402.getSpaceId(), ContractStatus.ACTIVE, ContractOrigin.ADMIN_INITIATED,
                 null, null, null, null, null, null,
-                admin.getUserId(), LocalDate.now().minusMonths(3), LocalDate.now().plusMonths(9),
+                admin.getUserId(), LocalDate.of(2026, 4, 8), LocalDate.of(2026, 5, 1),
                 new BigDecimal("550000"), new BigDecimal("6000000"), null, OffsetDateTime.now().minusMonths(3));
 
         // 5) REJECTED — demo 유저가 501호에 신청했다가 거절됨
