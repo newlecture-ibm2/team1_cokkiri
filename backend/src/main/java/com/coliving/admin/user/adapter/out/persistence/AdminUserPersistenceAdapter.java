@@ -20,10 +20,13 @@ public class AdminUserPersistenceAdapter implements AdminUserRepositoryPort {
     private final UserJpaRepository userJpaRepository;
 
     @Override
-    public Page<AdminUserResult> findUsers(UserRole role, String status, String name, String loginId, Pageable pageable) {
-        // JPA Specification or QueryDSL should ideally be used for multi-filter. 
-        // For MVP, we fetch all and slice, or we can use custom queries. Since this is an MVP scaffold, we'll return all mapped.
-        // To do this properly, a custom query method in UserJpaRepository is needed. For now, doing a basic findAll.
+    public Page<AdminUserResult> findUsers(UserRole role, String status, String name, String loginId,
+            Pageable pageable) {
+        // JPA Specification or QueryDSL should ideally be used for multi-filter.
+        // For MVP, we fetch all and slice, or we can use custom queries. Since this is
+        // an MVP scaffold, we'll return all mapped.
+        // To do this properly, a custom query method in UserJpaRepository is needed.
+        // For now, doing a basic findAll.
         return userJpaRepository.findAll(pageable).map(this::toResult);
     }
 

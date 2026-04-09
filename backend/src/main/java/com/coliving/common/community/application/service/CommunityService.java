@@ -37,8 +37,7 @@ import java.util.List;
 @Service
 public class CommunityService implements CommunityUseCase {
     private static final Set<String> ALLOWED_SORT_PROPERTIES = Set.of(
-            "createdAt", "updatedAt", "viewCount", "likeCount", "commentCount"
-    );
+            "createdAt", "updatedAt", "viewCount", "likeCount", "commentCount");
 
     private final CommunityRepositoryPort repositoryPort;
     private final CommunityLikeActionGuard likeActionGuard;
@@ -46,9 +45,9 @@ public class CommunityService implements CommunityUseCase {
     private final AdminUserRepositoryPort adminUserRepositoryPort;
 
     public CommunityService(CommunityRepositoryPort repositoryPort,
-                            CommunityLikeActionGuard likeActionGuard,
-                            CreateNotificationUseCase createNotificationUseCase,
-                            AdminUserRepositoryPort adminUserRepositoryPort) {
+            CommunityLikeActionGuard likeActionGuard,
+            CreateNotificationUseCase createNotificationUseCase,
+            AdminUserRepositoryPort adminUserRepositoryPort) {
         this.repositoryPort = repositoryPort;
         this.likeActionGuard = likeActionGuard;
         this.createNotificationUseCase = createNotificationUseCase;
@@ -133,8 +132,7 @@ public class CommunityService implements CommunityUseCase {
                 PlainTextFieldValidation.requireNonBlankTitleForSave(command.getTitle()),
                 PostBodyHtmlSanitizer.sanitize(command.getContent()),
                 command.getAttachments(),
-                command.getLinks()
-        );
+                command.getLinks());
 
         CreatePostResult result = CreatePostResult.builder()
                 .postId(post.getPostId())
@@ -203,8 +201,7 @@ public class CommunityService implements CommunityUseCase {
                 PlainTextFieldValidation.requireNonBlankTitleForSave(command.getTitle()),
                 PostBodyHtmlSanitizer.sanitize(command.getContent()),
                 base,
-                command.getLinks()
-        );
+                command.getLinks());
 
         UpdatePostResult result = UpdatePostResult.builder()
                 .postId(updated.getPostId())
@@ -238,8 +235,8 @@ public class CommunityService implements CommunityUseCase {
     @Override
     @Transactional
     public ToggleLikeResult toggleLike(TogglePostLikeCommand command) {
-        try (CommunityLikeActionGuard.LockHandle ignored =
-                     likeActionGuard.acquire(command.getPostId(), command.getActorId())) {
+        try (CommunityLikeActionGuard.LockHandle ignored = likeActionGuard.acquire(command.getPostId(),
+                command.getActorId())) {
             Post after = repositoryPort.toggleLike(command.getPostId(), command.getActorId());
             boolean likedByMe = repositoryPort.isLikedByMe(command.getPostId(), command.getActorId());
 
@@ -258,8 +255,7 @@ public class CommunityService implements CommunityUseCase {
                 command.getPostId(),
                 command.getActorId(),
                 command.getParentCommentId(),
-                command.getContent()
-        );
+                command.getContent());
 
         CommentResult result = CommentResult.builder()
                 .commentId(created.getCommentId())
@@ -351,4 +347,3 @@ public class CommunityService implements CommunityUseCase {
         return Math.min(size, 100);
     }
 }
-

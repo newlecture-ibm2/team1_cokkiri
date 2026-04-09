@@ -42,8 +42,7 @@ import java.util.Set;
 @Service
 public class VocService implements VocUseCase {
     private static final Set<String> ALLOWED_SORT_PROPERTIES = Set.of(
-            "createdAt", "updatedAt", "status"
-    );
+            "createdAt", "updatedAt", "status");
 
     private final VocRepositoryPort vocRepositoryPort;
     private final NotificationRepositoryPort notificationRepositoryPort;
@@ -51,9 +50,9 @@ public class VocService implements VocUseCase {
     private final AdminUserRepositoryPort adminUserRepositoryPort;
 
     public VocService(VocRepositoryPort vocRepositoryPort,
-                      NotificationRepositoryPort notificationRepositoryPort,
-                      CreateNotificationUseCase createNotificationUseCase,
-                      AdminUserRepositoryPort adminUserRepositoryPort) {
+            NotificationRepositoryPort notificationRepositoryPort,
+            CreateNotificationUseCase createNotificationUseCase,
+            AdminUserRepositoryPort adminUserRepositoryPort) {
         this.vocRepositoryPort = vocRepositoryPort;
         this.notificationRepositoryPort = notificationRepositoryPort;
         this.createNotificationUseCase = createNotificationUseCase;
@@ -68,8 +67,7 @@ public class VocService implements VocUseCase {
                 command.getCategory(),
                 PlainTextFieldValidation.requireNonBlankTitleForSave(command.getTitle()),
                 VocBodyHtmlSanitizer.sanitize(command.getContent()),
-                command.getAttachments()
-        );
+                command.getAttachments());
 
         notifyAdminsOfVoc(created, "새로운 민원이 등록되었습니다");
 
@@ -157,8 +155,7 @@ public class VocService implements VocUseCase {
                 command.getCategory(),
                 PlainTextFieldValidation.requireNonBlankTitleForSave(command.getTitle()),
                 VocBodyHtmlSanitizer.sanitize(command.getContent()),
-                base
-        );
+                base);
 
         notifyAdminsOfVoc(updated, "민원이 수정되었습니다");
 
