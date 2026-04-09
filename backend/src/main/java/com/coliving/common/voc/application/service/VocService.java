@@ -6,9 +6,15 @@ import com.coliving.common.voc.application.command.GetMyVocCommand;
 import com.coliving.common.voc.application.command.ListMyVocsCommand;
 import com.coliving.common.voc.application.command.UpdateVocCommand;
 import com.coliving.common.voc.application.port.in.VocUseCase;
+import com.coliving.common.notification.application.port.in.CreateNotificationUseCase;
+import com.coliving.common.notification.application.command.CreateNotificationCommand;
 import com.coliving.common.notification.application.port.out.NotificationRepositoryPort;
+import com.coliving.common.notification.model.NotificationType;
 import com.coliving.common.notification.model.ReferenceType;
 import com.coliving.common.voc.application.port.out.VocRepositoryPort;
+import com.coliving.admin.user.application.port.out.AdminUserRepositoryPort;
+import com.coliving.common.auth.model.UserRole;
+import org.springframework.data.domain.Pageable;
 import com.coliving.common.voc.application.result.VocListItemResult;
 import com.coliving.common.voc.application.result.VocListResult;
 import com.coliving.common.voc.application.result.VocResult;
@@ -41,11 +47,17 @@ public class VocService implements VocUseCase {
 
     private final VocRepositoryPort vocRepositoryPort;
     private final NotificationRepositoryPort notificationRepositoryPort;
+    private final CreateNotificationUseCase createNotificationUseCase;
+    private final AdminUserRepositoryPort adminUserRepositoryPort;
 
     public VocService(VocRepositoryPort vocRepositoryPort,
-                      NotificationRepositoryPort notificationRepositoryPort) {
+                      NotificationRepositoryPort notificationRepositoryPort,
+                      CreateNotificationUseCase createNotificationUseCase,
+                      AdminUserRepositoryPort adminUserRepositoryPort) {
         this.vocRepositoryPort = vocRepositoryPort;
         this.notificationRepositoryPort = notificationRepositoryPort;
+        this.createNotificationUseCase = createNotificationUseCase;
+        this.adminUserRepositoryPort = adminUserRepositoryPort;
     }
 
     @Override
@@ -58,7 +70,25 @@ public class VocService implements VocUseCase {
                 VocBodyHtmlSanitizer.sanitize(command.getContent()),
                 command.getAttachments()
         );
+
+        notifyAdminsOfVoc(created, "새로운 민원이 등록되었습니다");
+
         return toVocResult(created);
+    }
+
+    private void notifyAdminsOfVoc(Voc voc, String title) {
+        adminUserRepositoryPort.findUsers(UserRole.ADMIN, "ACTIVE", null, null, Pageable.unpaged())
+                .getContent()
+                .forEach(admin -> {
+                    createNotificationUseCase.create(CreateNotificationCommand.builder()
+                            .userId(admin.getId())
+                            .type(NotificationType.VOC_CREATED)
+                            .title(title)
+                            .message(String.format("「%s」 민원이 등록되었습니다.", voc.getTitle()))
+                            .referenceType(ReferenceType.VOC)
+                            .referenceId(voc.getVocId())
+                            .build());
+                });
     }
 
     @Override
@@ -129,6 +159,9 @@ public class VocService implements VocUseCase {
                 VocBodyHtmlSanitizer.sanitize(command.getContent()),
                 base
         );
+
+        notifyAdminsOfVoc(updated, "민원이 수정되었습니다");
+
         return toVocResult(updated);
     }
 

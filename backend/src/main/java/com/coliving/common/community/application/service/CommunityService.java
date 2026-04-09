@@ -10,6 +10,12 @@ import com.coliving.common.community.model.Post;
 import com.coliving.common.community.model.PostAttachment;
 import com.coliving.common.community.model.PostCategory;
 import com.coliving.common.community.model.Comment;
+import com.coliving.common.notification.application.command.CreateNotificationCommand;
+import com.coliving.common.notification.application.port.in.CreateNotificationUseCase;
+import com.coliving.common.notification.model.NotificationType;
+import com.coliving.common.notification.model.ReferenceType;
+import com.coliving.admin.user.application.port.out.AdminUserRepositoryPort;
+import com.coliving.common.auth.model.UserRole;
 import com.coliving.global.error.BusinessException;
 import com.coliving.global.error.ErrorCode;
 import com.coliving.global.attachment.RetainedAttachmentResolver;
@@ -19,6 +25,7 @@ import com.coliving.global.html.PostBodyHtmlSanitizer;
 import com.coliving.global.validation.PlainTextFieldValidation;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -35,11 +42,17 @@ public class CommunityService implements CommunityUseCase {
 
     private final CommunityRepositoryPort repositoryPort;
     private final CommunityLikeActionGuard likeActionGuard;
+    private final CreateNotificationUseCase createNotificationUseCase;
+    private final AdminUserRepositoryPort adminUserRepositoryPort;
 
     public CommunityService(CommunityRepositoryPort repositoryPort,
-                            CommunityLikeActionGuard likeActionGuard) {
+                            CommunityLikeActionGuard likeActionGuard,
+                            CreateNotificationUseCase createNotificationUseCase,
+                            AdminUserRepositoryPort adminUserRepositoryPort) {
         this.repositoryPort = repositoryPort;
         this.likeActionGuard = likeActionGuard;
+        this.createNotificationUseCase = createNotificationUseCase;
+        this.adminUserRepositoryPort = adminUserRepositoryPort;
     }
 
     @Override
@@ -123,10 +136,31 @@ public class CommunityService implements CommunityUseCase {
                 command.getLinks()
         );
 
-        return CreatePostResult.builder()
+        CreatePostResult result = CreatePostResult.builder()
                 .postId(post.getPostId())
                 .createdAt(post.getCreatedAt())
                 .build();
+
+        if (post.getCategory() == PostCategory.NOTICE) {
+            notifyAllResidentsOfNotice(post, "새로운 공지사항이 등록되었습니다");
+        }
+
+        return result;
+    }
+
+    private void notifyAllResidentsOfNotice(Post post, String title) {
+        adminUserRepositoryPort.findUsers(UserRole.USER, "ACTIVE", null, null, Pageable.unpaged())
+                .getContent()
+                .forEach(user -> {
+                    createNotificationUseCase.create(CreateNotificationCommand.builder()
+                            .userId(user.getId())
+                            .type(NotificationType.COMMUNITY_NOTICE)
+                            .title(title)
+                            .message(String.format("「%s」 공지사항이 등록되었습니다.", post.getTitle()))
+                            .referenceType(ReferenceType.COMMUNITY)
+                            .referenceId(post.getPostId())
+                            .build());
+                });
     }
 
     @Override
@@ -172,10 +206,16 @@ public class CommunityService implements CommunityUseCase {
                 command.getLinks()
         );
 
-        return UpdatePostResult.builder()
+        UpdatePostResult result = UpdatePostResult.builder()
                 .postId(updated.getPostId())
                 .updatedAt(updated.getUpdatedAt())
                 .build();
+
+        if (updated.getCategory() == PostCategory.NOTICE) {
+            notifyAllResidentsOfNotice(updated, "공지사항이 수정되었습니다");
+        }
+
+        return result;
     }
 
     @Override
@@ -221,11 +261,26 @@ public class CommunityService implements CommunityUseCase {
                 command.getContent()
         );
 
-        return CommentResult.builder()
+        CommentResult result = CommentResult.builder()
                 .commentId(created.getCommentId())
                 .postId(created.getPostId())
                 .createdAt(created.getCreatedAt())
                 .build();
+
+        // 게시글 작성자에게 알림 (내 댓글인 경우 제외)
+        Post post = repositoryPort.findPostById(created.getPostId()).orElse(null);
+        if (post != null && !post.getUserId().equals(created.getUserId())) {
+            createNotificationUseCase.create(CreateNotificationCommand.builder()
+                    .userId(post.getUserId())
+                    .type(NotificationType.COMMUNITY_COMMENT)
+                    .title("내 게시글에 새로운 댓글이 달렸습니다")
+                    .message(String.format("「%s」 글에 새로운 댓글이 등록되었습니다.", post.getTitle()))
+                    .referenceType(ReferenceType.COMMUNITY)
+                    .referenceId(post.getPostId())
+                    .build());
+        }
+
+        return result;
     }
 
     @Override
