@@ -1,9 +1,9 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Save, Trash2 } from 'lucide-react';
-import { updateSpace, deleteSpace, fetchRoomTypes, SpaceDTO, RoomTypeDTO } from '../_api/spaceAdminApi';
+import { X, Save, Trash2, UploadCloud } from 'lucide-react';
+import { updateSpace, deleteSpace, deleteSpaceImage, uploadSpaceImage, fetchRoomTypes, SpaceDTO, RoomTypeDTO } from '../_api/spaceAdminApi';
 
 interface SpaceEditModalProps {
   isOpen: boolean;
@@ -18,11 +18,16 @@ export default function SpaceEditModal({ isOpen, space, onClose, onUpdated }: Sp
   const [isDeleting, setIsDeleting] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [roomTypes, setRoomTypes] = useState<RoomTypeDTO[]>([]);
+  const [newFiles, setNewFiles] = useState<File[]>([]);
+  const [amenityInput, setAmenityInput] = useState('');
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (space) {
       setFormData({ ...space });
       setShowDeleteConfirm(false);
+      setNewFiles([]);
+      setAmenityInput('');
     }
   }, [space]);
 
@@ -41,6 +46,11 @@ export default function SpaceEditModal({ isOpen, space, onClose, onUpdated }: Sp
     setIsSubmitting(true);
     try {
       await updateSpace(space.spaceId, formData);
+      
+      for (const [idx, file] of newFiles.entries()) {
+        await uploadSpaceImage(space.spaceId, file, !formData.images?.length && idx === 0);
+      }
+
       onUpdated();
       onClose();
     } catch (e: unknown) {
@@ -52,6 +62,50 @@ export default function SpaceEditModal({ isOpen, space, onClose, onUpdated }: Sp
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const handleRemoveExistingImage = async (imageId?: number) => {
+    if (!space?.spaceId || !imageId) return;
+    if (confirm('이 이미지를 즉시 삭제하시겠습니까?')) {
+      try {
+        await deleteSpaceImage(space.spaceId, imageId);
+        setFormData(prev => ({
+          ...prev,
+          images: prev.images?.filter(img => img.spaceImageId !== imageId)
+        }));
+      } catch (e) {
+        alert('이미지 삭제에 실패했습니다.');
+      }
+    }
+  };
+
+  const addAmenity = () => {
+    if (amenityInput.trim()) {
+      setFormData({
+        ...formData,
+        amenities: [...(formData.amenities || []), amenityInput.trim()],
+      });
+      setAmenityInput('');
+    }
+  };
+
+  const removeAmenity = (index: number) => {
+    setFormData({
+      ...formData,
+      amenities: formData.amenities?.filter((_, i) => i !== index),
+    });
+  };
+
+  const handleDragOver = (e: React.DragEvent) => e.preventDefault();
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    if (e.dataTransfer.files) setNewFiles(prev => [...prev, ...Array.from(e.dataTransfer.files!)]);
+  };
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) setNewFiles(prev => [...prev, ...Array.from(e.target.files!)]);
+  };
+  const removeNewFile = (index: number) => {
+    setNewFiles(newFiles.filter((_, i) => i !== index));
   };
 
   const handleDelete = async () => {
@@ -111,6 +165,24 @@ export default function SpaceEditModal({ isOpen, space, onClose, onUpdated }: Sp
               </div>
             </div>
 
+            {/* 예약 가능 여부 (COMMON만) */}
+            {space.type === 'COMMON' && (
+              <div className="mb-4">
+                <label className="block text-sm font-bold mb-2">예약 가능 여부</label>
+                <button
+                  type="button"
+                  onClick={() => setFormData({ ...formData, isReservable: !formData.isReservable })}
+                  className={`w-full px-4 py-3 rounded-2xl font-bold tracking-tight transition-all duration-300 border ${
+                    formData.isReservable
+                      ? 'bg-[var(--color-accent)] text-white border-[var(--color-accent)]'
+                      : 'bg-[var(--color-muted)] text-[var(--foreground)]/60 border-transparent'
+                  }`}
+                >
+                  {formData.isReservable ? '✓ 예약제 (시설 예약 필요)' : '자유 이용 (예약 불필요)'}
+                </button>
+              </div>
+            )}
+
             {/* 공간명 */}
             <div className="mb-4">
               <label className="block text-sm font-bold mb-2">공간 이름</label>
@@ -168,6 +240,31 @@ export default function SpaceEditModal({ isOpen, space, onClose, onUpdated }: Sp
                 value={formData.description || ''}
                 onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setFormData({ ...formData, description: e.target.value })}
               />
+            </div>
+
+            {/* 옵션 / 부대시설 */}
+            <div className="mb-4">
+              <label className="block text-sm font-bold mb-2">옵션 / 부대시설 (어메니티)</label>
+              <div className="flex gap-2 mb-3">
+                <input
+                  type="text"
+                  value={amenityInput}
+                  onChange={(e) => setAmenityInput(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && addAmenity()}
+                  className="flex-1 px-4 py-3 rounded-2xl bg-[var(--color-muted)] text-[var(--foreground)] outline-none"
+                  placeholder="예: 에어컨 (입력 후 엔터)"
+                />
+                <button type="button" onClick={addAmenity} className="px-4 py-3 bg-[var(--color-accent)] text-white rounded-2xl font-bold">
+                  추가
+                </button>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {formData.amenities?.map((am, i) => (
+                  <span key={i} className="flex items-center gap-1 bg-black/10 px-3 py-1 rounded-full text-sm font-bold tracking-tight">
+                    {am} <button type="button" onClick={() => removeAmenity(i)}><X size={12} /></button>
+                  </span>
+                ))}
+              </div>
             </div>
 
             {/* PRIVATE 상세 */}
@@ -231,6 +328,59 @@ export default function SpaceEditModal({ isOpen, space, onClose, onUpdated }: Sp
                 </div>
               </div>
             )}
+
+            {/* 이미지 관리 */}
+            <div className="mt-6 border-t border-[var(--color-border)] pt-4">
+              <label className="block text-sm font-bold mb-2">이미지 관리</label>
+              
+              {/* 기존 이미지 */}
+              {formData.images && formData.images.length > 0 && (
+                <div className="mb-4">
+                  <p className="text-xs font-bold mb-2 opacity-60">기존 업로드된 이미지 (삭제 시 즉시 반영됩니다)</p>
+                  <div className="flex flex-wrap gap-3">
+                    {formData.images.map((img, i) => (
+                      <div key={i} className="relative w-20 h-20 rounded-2xl bg-black/10 flex items-center justify-center overflow-hidden group">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img src={img.imageUrl} alt="Space image" className="w-full h-full object-cover" />
+                        <button onClick={(e) => { e.stopPropagation(); handleRemoveExistingImage(img.spaceImageId); }} className="absolute bg-red-500 text-white p-1 rounded-full top-1 right-1 opacity-0 group-hover:opacity-100 transition cursor-pointer">
+                          <X size={12} />
+                        </button>
+                        {img.isThumbnail && (
+                          <span className="absolute bottom-1 left-1 bg-black/60 text-white text-[10px] px-1 py-0.5 rounded">대표</span>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* 새 이미지 드래그앤드롭 업로드 */}
+              <div 
+                onDragOver={handleDragOver}
+                onDrop={handleDrop}
+                onClick={() => fileInputRef.current?.click()}
+                className="w-full h-32 border-2 border-dashed border-[var(--color-border)] rounded-3xl flex flex-col items-center justify-center text-[var(--color-secondary)] hover:bg-black/5 transition cursor-pointer mb-4"
+              >
+                <UploadCloud size={32} className="mb-2" />
+                <p className="text-sm font-bold tracking-tighter cursor-pointer">여기를 클릭하거나 파일을 끌어다 놓아 새 이미지를 추가하세요</p>
+                <input type="file" multiple className="hidden" ref={fileInputRef} onChange={handleFileChange} />
+              </div>
+              
+              {/* 새 이미지 미리보기 */}
+              {newFiles.length > 0 && (
+                <div className="flex flex-wrap gap-3">
+                  {newFiles.map((f, i) => (
+                    <div key={i} className="relative w-20 h-20 rounded-2xl bg-black/10 flex items-center justify-center overflow-hidden group">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={URL.createObjectURL(f)} alt="Preview" className="w-full h-full object-cover" />
+                      <button onClick={(e) => { e.stopPropagation(); removeNewFile(i); }} className="absolute bg-red-500 text-white p-1 rounded-full top-1 right-1 opacity-0 group-hover:opacity-100 transition">
+                        <X size={12} />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
 
             {/* 버튼 영역 */}
             <div className="flex items-center justify-between mt-6 gap-3">

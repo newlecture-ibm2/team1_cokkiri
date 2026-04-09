@@ -8,25 +8,29 @@ export const metadata = {
 
 export default function CommunityNewPage() {
   return (
-    <CommunityShell>
-      <MotionEnter>
-        <div className="mx-auto max-w-4xl">
-          <header className="space-y-6">
-            <h1 className="text-[10vw] font-black uppercase leading-[0.85] tracking-tighter text-foreground sm:text-[8vw] md:text-[5vw] lg:text-[3.25rem]">
-              새 글{" "}
-              <span className="underline decoration-secondary decoration-2 underline-offset-[0.18em]">
-                작성
-              </span>
-            </h1>
-            <p className="max-w-xl font-medium tracking-tight text-balance text-foreground/85 md:text-lg">
-              입주자 커뮤니티에 남기는 이야기는 모두에게 열립니다.
-            </p>
-          </header>
-          <div className="mt-12">
-            <NewPostForm />
-          </div>
+    <div className="mx-auto max-w-4xl pt-10 pb-32">
+      <header className="mb-20 space-y-12">
+        <div className="flex flex-col gap-4">
+          <span className="text-[10px] font-black uppercase tracking-[0.5em] text-accent">New Story</span>
+          <h1 className="text-6xl md:text-8xl font-black tracking-tighter leading-[0.85] text-primary uppercase italic">
+            CREATE <br />
+            <span className="text-accent underline underline-offset-[0.1em] decoration-accent/30">NEW POST</span>
+          </h1>
         </div>
-      </MotionEnter>
-    </CommunityShell>
+        <p className="max-w-2xl text-xl font-medium tracking-tight text-balance text-muted-foreground leading-relaxed">
+          Share your thoughts, questions, or updates with the community. Every story builds our home.
+        </p>
+      </header>
+
+      <div className="relative">
+        <NewPostForm />
+        
+        {/* Background Decoration */}
+        <span className="absolute -left-20 -top-20 text-[20vw] font-black opacity-[0.02] pointer-events-none select-none italic text-primary">
+          COM-UN
+        </span>
+      </div>
+    </div>
   );
+
 }

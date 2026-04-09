@@ -25,6 +25,10 @@ interface PendingContract {
   status: string;
   desiredStartDate: string;
   desiredDurationMonths: number;
+  address: string;
+  bankAccount: string;
+  usagePurpose: string;
+  requestNote: string;
   createdAt: string;
 }
 
@@ -43,6 +47,25 @@ export default function AdminContractsPage() {
     specialTerms: ""
   });
   const [rejectReason, setRejectReason] = useState("");
+
+  const selectedContract = contracts.find(c => c.contractId === selectedId);
+
+  // Pre-fill form when modal opens
+  useEffect(() => {
+    if (modalType === "approve" && selectedContract) {
+      const start = new Date(selectedContract.desiredStartDate);
+      const end = new Date(start);
+      end.setMonth(start.getMonth() + selectedContract.desiredDurationMonths);
+      
+      setApproveForm({
+        startDate: selectedContract.desiredStartDate,
+        endDate: end.toISOString().split('T')[0],
+        monthlyRent: "",
+        deposit: "",
+        specialTerms: ""
+      });
+    }
+  }, [modalType, selectedContract]);
 
   const fetchApplications = async () => {
     setIsLoading(true);
@@ -109,7 +132,7 @@ export default function AdminContractsPage() {
     }
   };
 
-  const selectedContract = contracts.find(c => c.contractId === selectedId);
+
 
   return (
     <div className="flex flex-col gap-8 p-6 md:p-12 bg-background min-h-screen">
@@ -228,9 +251,9 @@ export default function AdminContractsPage() {
               initial={{ opacity: 0, scale: 0.9, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.9, y: 20 }}
-              className="bg-white w-full max-w-lg rounded-[2rem] shadow-2xl overflow-hidden"
+              className="bg-white w-full max-w-2xl max-h-[90vh] rounded-[3rem] shadow-2xl overflow-hidden flex flex-col"
             >
-              <div className="p-8 pb-4 border-b border-primary/10 flex items-center justify-between">
+              <div className="p-8 pb-4 border-b border-primary/10 flex items-center justify-between flex-shrink-0 bg-white z-10">
                 <div>
                   <p className="text-[10px] font-black tracking-widest uppercase text-accent mb-1">
                     {modalType === "approve" ? "Review Conditions" : "Rejection Details"}
@@ -247,10 +270,42 @@ export default function AdminContractsPage() {
                 </button>
               </div>
 
-              <div className="p-8 flex flex-col gap-6">
+              <div className="p-8 flex flex-col gap-8 overflow-y-auto flex-grow scrollbar-hide">
                 <div className="flex flex-col gap-1 p-4 bg-muted/20 rounded-xl">
                   <span className="text-[10px] font-black uppercase opacity-40">Target Applicant</span>
                   <p className="text-sm font-black uppercase">{selectedContract.userName} — {selectedContract.spaceName}</p>
+                </div>
+
+                {/* Submitted Details Review Section */}
+                <div className="grid grid-cols-2 gap-4 p-6 bg-primary/[0.02] rounded-2xl border border-primary/5">
+                  <div className="col-span-2 space-y-1">
+                    <p className="text-[9px] font-black tracking-widest text-accent uppercase">Submitted Details</p>
+                    <div className="h-px bg-accent/10 w-full" />
+                  </div>
+                  <div className="space-y-1">
+                    <p className="text-[9px] font-bold text-muted uppercase">Desired Schedule</p>
+                    <p className="text-xs font-black">{selectedContract.desiredStartDate} ({selectedContract.desiredDurationMonths}M)</p>
+                  </div>
+                  <div className="space-y-1">
+                    <p className="text-[9px] font-bold text-muted uppercase">Bank Account</p>
+                    <p className="text-xs font-black">{selectedContract.bankAccount}</p>
+                  </div>
+                  <div className="col-span-2 space-y-1">
+                    <p className="text-[9px] font-bold text-muted uppercase">Address</p>
+                    <p className="text-xs font-black leading-tight">{selectedContract.address}</p>
+                  </div>
+                  <div className="col-span-2 space-y-1">
+                    <p className="text-[9px] font-bold text-muted uppercase">Usage Purpose</p>
+                    <p className="text-xs font-bold italic opacity-70">"{selectedContract.usagePurpose || 'Not specified'}"</p>
+                  </div>
+                  {selectedContract.requestNote && (
+                    <div className="col-span-2 space-y-1 pt-2">
+                       <p className="text-[9px] font-bold text-muted uppercase">Applicant Notes</p>
+                       <div className="p-3 bg-white/50 rounded-lg border border-primary/5 text-xs font-medium italic leading-relaxed">
+                         {selectedContract.requestNote}
+                       </div>
+                    </div>
+                  )}
                 </div>
 
                 {modalType === "approve" ? (
@@ -316,7 +371,7 @@ export default function AdminContractsPage() {
                 )}
               </div>
 
-              <div className="p-8 pt-0 flex gap-4">
+              <div className="p-8 pt-4 border-t border-primary/10 flex gap-4 flex-shrink-0 bg-white z-10">
                 <button
                   onClick={() => setModalType(null)}
                   className="flex-1 px-8 py-4 bg-muted/30 text-[10px] font-black uppercase rounded-full hover:bg-muted transition-colors"

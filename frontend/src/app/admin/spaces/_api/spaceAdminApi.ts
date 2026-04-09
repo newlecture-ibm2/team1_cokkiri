@@ -43,6 +43,7 @@ export interface SpaceDTO {
 
   // Images
   images?: {
+    spaceImageId?: number;
     imageUrl: string;
     imageType: string;
     isThumbnail: boolean;
@@ -59,8 +60,21 @@ export function extractRoomTypeName(space: SpaceDTO): string | undefined {
   return space.roomTypeName || nested?.roomTypeName;
 }
 
-export const fetchSpaces = async () => {
-  return await apiFetch<any>('/admin/spaces');
+export const fetchSpaces = async (params?: { type?: string; status?: string }) => {
+  const query = new URLSearchParams();
+  if (params?.type && params.type !== 'ALL') query.append('type', params.type);
+  if (params?.status && params.status !== 'ALL') query.append('status', params.status);
+  
+  const queryString = query.toString() ? `?${query.toString()}` : '';
+  const res = await apiFetch<any>(`/admin/spaces${queryString}`);
+  if (res.data?.content) {
+    res.data.content = res.data.content.map((s: any) => ({
+      ...s,
+      ...(s.privateDetail || {}),
+      ...(s.commonDetail || {})
+    }));
+  }
+  return res;
 };
 
 export const updateSpaceLayout = async (
@@ -75,10 +89,15 @@ export const updateSpaceLayout = async (
   return res.json();
 };
 
-export const createSpace = async (data: SpaceDTO) => {
+export const createSpace = async (data: SpaceDTO & Record<string, any>) => {
+  const { 
+    spaceId, roomTypeName, images, 
+    privateDetail, commonDetail, positionX, positionY, 
+    ...payload 
+  } = data;
   return await apiFetch<any>('/admin/spaces', {
     method: 'POST',
-    body: JSON.stringify(data),
+    body: JSON.stringify(payload),
   });
 };
 
@@ -98,18 +117,37 @@ export const uploadSpaceImage = async (spaceId: number, file: File, isThumbnail:
 };
 
 export const fetchSpace = async (spaceId: number) => {
-  return await apiFetch<SpaceDTO>(`/admin/spaces/${spaceId}`);
+  const res = await apiFetch<any>(`/admin/spaces/${spaceId}`);
+  if (res.data) {
+    res.data = {
+      ...res.data,
+      ...(res.data.privateDetail || {}),
+      ...(res.data.commonDetail || {})
+    };
+  }
+  return res as ApiResponse<SpaceDTO>;
 };
 
-export const updateSpace = async (spaceId: number, data: Partial<SpaceDTO>) => {
+export const updateSpace = async (spaceId: number, data: Partial<SpaceDTO> & Record<string, any>) => {
+  const { 
+    spaceId: _id, type, roomTypeName, images, 
+    privateDetail, commonDetail, positionX, positionY, 
+    ...payload 
+  } = data;
   return await apiFetch<any>(`/admin/spaces/${spaceId}`, {
     method: 'PUT',
-    body: JSON.stringify(data),
+    body: JSON.stringify(payload),
   });
 };
 
 export const deleteSpace = async (spaceId: number) => {
   return await apiFetch<any>(`/admin/spaces/${spaceId}`, {
+    method: 'DELETE',
+  });
+};
+
+export const deleteSpaceImage = async (spaceId: number, imageId: number) => {
+  return await apiFetch<any>(`/admin/spaces/${spaceId}/images/${imageId}`, {
     method: 'DELETE',
   });
 };

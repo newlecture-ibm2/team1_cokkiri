@@ -76,8 +76,13 @@ public class AdminSpacePersistenceAdapter implements AdminSpaceRepositoryPort {
     }
 
     @Override
-    public Page<AdminSpace> findAll(Pageable pageable) {
-        return spaceJpaRepository.findAll(pageable).map(this::toAdminSpace);
+    public boolean existsById(Long spaceId) {
+        return spaceJpaRepository.existsById(spaceId);
+    }
+
+    @Override
+    public Page<AdminSpace> findSpaces(com.coliving.admin.space.model.SpaceType type, com.coliving.admin.space.model.SpaceStatus status, Pageable pageable) {
+        return spaceJpaRepository.findSpacesWithFilter(type, status, pageable).map(this::toAdminSpace);
     }
 
     @Override
@@ -89,8 +94,7 @@ public class AdminSpacePersistenceAdapter implements AdminSpaceRepositoryPort {
     public void softDelete(Long spaceId) {
         SpaceEntity entity = spaceJpaRepository.findById(spaceId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.SPACE_NOT_FOUND));
-        entity.softDelete();
-        spaceJpaRepository.save(entity);
+        spaceJpaRepository.delete(entity);
     }
 
     @Override
@@ -263,5 +267,10 @@ public class AdminSpacePersistenceAdapter implements AdminSpaceRepositoryPort {
                 .build();
 
         spaceImageJpaRepository.save(imageEntity);
+    }
+
+    @Override
+    public void deleteImage(Long imageId) {
+        spaceImageJpaRepository.deleteById(imageId);
     }
 }

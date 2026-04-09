@@ -124,7 +124,7 @@ export function PostEditDeleteActions({
         method: "DELETE",
         credentials: "include",
       });
-      if (res.status === 401 || res.status === 403) {
+      if (res.status === 401) {
         setSubmitError(LOGIN_REQUIRED_MESSAGE);
         setShowLoginModal(true);
         return;
@@ -189,7 +189,7 @@ export function PostEditDeleteActions({
           credentials: "include",
           body: formData,
         });
-        if (res.status === 401 || res.status === 403) {
+        if (res.status === 401) {
           setSubmitError(LOGIN_REQUIRED_MESSAGE);
           setShowLoginModal(true);
           return;
@@ -218,7 +218,7 @@ export function PostEditDeleteActions({
   if (!canMutate) return null;
 
   return (
-    <section className="mt-8 rounded-[2rem] border border-border bg-background/80 p-4 backdrop-blur-sm md:p-6">
+    <section className="mt-8 rounded-[2rem] border border-primary/10 bg-background p-4 shadow-2xl shadow-primary/5 md:p-6">
       <LoginRequiredModal isOpen={showLoginModal} onClose={() => setShowLoginModal(false)} />
       {!editing ? (
         <div className="flex flex-wrap items-center gap-3">
@@ -237,7 +237,7 @@ export function PostEditDeleteActions({
               setEditSession((s) => s + 1);
               setEditing(true);
             }}
-            className="inline-flex items-center gap-2 rounded-xl border border-secondary bg-secondary/15 px-5 py-2.5 text-xs font-black uppercase tracking-wider text-secondary"
+            className="inline-flex items-center gap-2 rounded-full border border-secondary bg-secondary/15 px-5 py-2.5 text-xs font-black uppercase tracking-[0.24em] text-secondary"
           >
             <Edit3 className="size-4" aria-hidden />
             수정
@@ -248,36 +248,37 @@ export function PostEditDeleteActions({
             whileTap={{ scale: 0.98 }}
             onClick={deletePost}
             disabled={pending}
-            className="inline-flex items-center gap-2 rounded-xl border border-destructive/30 bg-destructive/10 px-5 py-2.5 text-xs font-black uppercase tracking-wider text-destructive disabled:opacity-60"
+            className="inline-flex items-center gap-2 rounded-full border border-destructive/30 bg-destructive/10 px-5 py-2.5 text-xs font-black uppercase tracking-[0.24em] text-destructive disabled:opacity-60"
           >
             <Trash2 className="size-4" aria-hidden />
             삭제
           </motion.button>
         </div>
       ) : (
-        <form onSubmit={submit} className="space-y-6">
+        <form onSubmit={submit} className="space-y-12">
           {submitError ? (
             <p
-              className="rounded-xl border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm font-medium text-destructive"
+              className="rounded-3xl border border-destructive/20 bg-destructive/5 px-8 py-4 text-sm font-black uppercase tracking-wider text-destructive"
               role="alert"
             >
               {submitError}
             </p>
           ) : null}
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-            <div className="space-y-2">
+          
+          <div className="grid grid-cols-1 gap-12 md:grid-cols-2">
+            <div className="space-y-4">
               <label
                 htmlFor={`edit-category-${postId}`}
-                className="block text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground"
+                className="block text-[10px] font-black uppercase tracking-[0.5em] text-accent"
               >
-                카테고리
+                01 | CATEGORY
               </label>
               <div className="relative">
                 <select
                   id={`edit-category-${postId}`}
                   value={category}
                   onChange={(e) => setCategory(e.target.value)}
-                  className="mt-2 w-full appearance-none rounded-xl border border-input bg-surface px-4 py-0 pr-10 h-12 font-medium tracking-tight text-foreground text-base leading-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  className="w-full h-16 appearance-none rounded-3xl border border-primary/5 bg-white/40 backdrop-blur-sm px-8 font-medium tracking-tight text-primary focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-accent/10 transition-all cursor-pointer"
                 >
                   {POST_CATEGORIES.map((c) => (
                     <option key={c.value} value={c.value}>
@@ -286,18 +287,18 @@ export function PostEditDeleteActions({
                   ))}
                 </select>
                 <ChevronDown
-                  className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 size-4 text-muted-foreground"
+                  className="pointer-events-none absolute right-6 top-1/2 -translate-y-1/2 size-4 text-accent"
                   aria-hidden
                 />
               </div>
             </div>
 
-            <div className="space-y-2">
+            <div className="space-y-4">
               <label
                 htmlFor={`edit-title-${postId}`}
-                className="block text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground"
+                className="block text-[10px] font-black uppercase tracking-[0.5em] text-accent"
               >
-                제목
+                02 | DISCOURSE TITLE
               </label>
               <input
                 id={`edit-title-${postId}`}
@@ -305,112 +306,111 @@ export function PostEditDeleteActions({
                 onChange={(e) => setTitle(e.target.value)}
                 maxLength={POST_TITLE_MAX_LENGTH}
                 required
-                className="mt-2 w-full rounded-xl border border-input bg-surface px-4 py-3 font-medium tracking-tight text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                className="w-full h-16 rounded-3xl border border-primary/5 bg-white/40 backdrop-blur-sm px-8 font-medium tracking-tight text-primary focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-accent/10 transition-all"
               />
-              <p className="mt-1 text-[10px] font-medium text-muted-foreground">
-                제목 최대 {POST_TITLE_MAX_LENGTH}자(이모지 등은 2자로 셀 수 있음)
+              <p className="px-4 text-[9px] font-black tracking-widest text-muted-foreground/50 uppercase">
+                Max {POST_TITLE_MAX_LENGTH} characters.
               </p>
             </div>
           </div>
 
-          <div className="space-y-2">
+          <div className="space-y-4">
             <label
               htmlFor={`edit-content-${postId}`}
-              className="block text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground"
+              className="block text-[10px] font-black uppercase tracking-[0.5em] text-accent"
             >
-              내용
+              03 | NARRATIVE CONTENT
             </label>
-            <div className="mt-2">
+            <div className="rounded-[2.5rem] border border-primary/5 bg-white/40 backdrop-blur-sm p-4">
               <CommunityRichTextEditor
                 key={`edit-${postId}-${editSession}`}
                 id={`edit-content-${postId}`}
                 value={content}
                 onChange={setContent}
-                placeholder="본문을 수정하세요. 이미지는 툴바에서 추가할 수 있습니다."
+                placeholder="Revise your story..."
               />
             </div>
           </div>
 
-          <div className="space-y-2">
+          <div className="space-y-4">
             <label
               htmlFor={`edit-links-${postId}`}
-              className="block text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground"
+              className="block text-[10px] font-black uppercase tracking-[0.5em] text-accent"
             >
-              링크 (선택, 한 줄에 하나, 최대 3개)
+              04 | EXTERNAL REFERENCES
             </label>
             <textarea
               id={`edit-links-${postId}`}
               value={linksText}
               onChange={(e) => setLinksText(e.target.value)}
               rows={3}
-              className="mt-2 w-full resize-y rounded-xl border border-input bg-surface px-4 py-3 font-medium tracking-tight text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              className="w-full resize-none rounded-[2rem] border border-primary/5 bg-white/40 backdrop-blur-sm p-8 font-medium tracking-tight text-primary focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-accent/10 transition-all placeholder:text-muted-foreground/30"
             />
           </div>
 
-          <div className="space-y-2">
-            <p className="block text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground">첨부</p>
-            {attachments.length === 0 ? (
-              <p className="mt-2 text-sm font-medium text-muted-foreground">기존 첨부 없음</p>
-            ) : (
-              <ul className="mt-2 space-y-2">
-                {attachments.map((a, i) => (
-                  <li
-                    key={`${a.fileUrl}-${i}`}
-                    className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-border bg-muted/20 px-4 py-3"
-                  >
-                    <span className="truncate text-sm font-medium text-foreground">{a.fileName || a.fileUrl}</span>
-                    <button
-                      type="button"
-                      onClick={() => removeAttachment(i)}
-                      className="shrink-0 text-[11px] font-black uppercase tracking-wider text-destructive"
+          <div className="space-y-8">
+            <div className="space-y-4">
+              <label className="block text-[10px] font-black uppercase tracking-[0.5em] text-accent">05 | DOCUMENT ASSETS</label>
+              {attachments.length === 0 ? (
+                <p className="px-8 text-xs font-black uppercase tracking-[0.2em] text-muted-foreground/40">No existing assets</p>
+              ) : (
+                <ul className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {attachments.map((a, i) => (
+                    <li
+                      key={`${a.fileUrl}-${i}`}
+                      className="group flex items-center justify-between p-6 bg-white rounded-2xl border border-primary/5 shadow-sm"
                     >
-                      제거
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            )}
-            <label
-              htmlFor={`edit-post-new-files-${postId}`}
-              className="mt-4 block text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground"
-            >
-              새 파일 추가 (선택)
-            </label>
-            <input
-              id={`edit-post-new-files-${postId}`}
-              type="file"
-              multiple
-              onChange={(e) => setNewFiles(e.target.files)}
-              className={cn(
-                "mt-2 w-full rounded-xl border border-input bg-surface px-4 py-3 font-medium tracking-tight text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-                "cursor-pointer file:mr-4 file:rounded-lg file:border-0 file:bg-primary file:px-4 file:py-2 file:text-xs file:font-black file:uppercase file:tracking-wider file:text-primary-foreground",
+                      <span className="truncate text-xs font-black tracking-tighter text-primary">{a.fileName || a.fileUrl}</span>
+                      <button
+                        type="button"
+                        onClick={() => removeAttachment(i)}
+                        className="shrink-0 px-4 py-2 text-[10px] font-black uppercase tracking-[0.2em] text-destructive hover:bg-destructive/10 rounded-full transition-colors"
+                      >
+                        REMOVE
+                      </button>
+                    </li>
+                  ))}
+                </ul>
               )}
-            />
-            <p className="mt-1 text-xs font-medium text-muted-foreground">
-              저장 시 선택한 파일이 기존 첨부 뒤에 추가됩니다.
-            </p>
+            </div>
+            
+            <div className="space-y-4">
+              <label
+                htmlFor={`edit-post-new-files-${postId}`}
+                className="block text-[10px] font-black uppercase tracking-[0.5em] text-accent"
+              >
+                ADD NEW ASSETS
+              </label>
+              <input
+                id={`edit-post-new-files-${postId}`}
+                type="file"
+                multiple
+                onChange={(e) => setNewFiles(e.target.files)}
+                className="w-full rounded-[2rem] border border-primary/5 bg-white/40 backdrop-blur-sm p-6 font-medium tracking-tight text-primary focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-accent/10 transition-all cursor-pointer file:mr-6 file:rounded-xl file:border-0 file:bg-accent file:px-4 file:py-2 file:text-[10px] file:font-black file:uppercase file:tracking-widest file:text-white"
+              />
+            </div>
           </div>
 
-          <div className="flex flex-wrap items-center justify-end gap-3">
+          <div className="pt-12 flex flex-col md:flex-row items-center justify-end gap-6">
             <button
               type="button"
               onClick={() => {
                 setSubmitError(null);
                 setEditing(false);
               }}
-              className="rounded-xl border border-border px-6 py-3 text-xs font-black uppercase tracking-wider text-foreground transition-transform duration-200 hover:-translate-y-0.5"
+              className="w-full md:w-auto px-12 py-6 text-[10px] font-black uppercase tracking-[0.4em] text-muted-foreground hover:text-primary transition-colors"
             >
-              취소
+              Discard Changes
             </button>
             <motion.button
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
+              whileHover={{ scale: 1.05, y: -4 }}
+              whileTap={{ scale: 0.95 }}
               type="submit"
               disabled={pending}
-              className="inline-flex items-center gap-2 rounded-xl bg-primary px-6 py-3 text-xs font-black uppercase tracking-wider text-primary-foreground disabled:opacity-60"
+              className="w-full md:w-auto inline-flex items-center justify-center gap-4 rounded-full bg-primary px-16 py-8 text-xs font-black uppercase tracking-[0.5em] text-white shadow-2xl shadow-primary/20"
             >
               {pending && <Loader2 className="size-4 animate-spin" aria-hidden />}
-              저장
+              SAVE REVISIONS
             </motion.button>
           </div>
         </form>

@@ -9,11 +9,13 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.SQLRestriction;
+import org.hibernate.annotations.SQLDelete;
 
 @Entity
 @Table(name = "space_images")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@SQLDelete(sql = "UPDATE space_images SET deleted_at = CURRENT_TIMESTAMP WHERE space_image_id = ?")
 @SQLRestriction("deleted_at IS NULL")
 public class SpaceImageEntity extends BaseEntity {
 

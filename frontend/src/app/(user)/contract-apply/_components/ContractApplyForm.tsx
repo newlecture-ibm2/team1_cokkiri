@@ -23,6 +23,7 @@ import {
 import Link from "next/link";
 
 interface ContractFormData {
+  contractId?: number;
   desiredStartDate: string;
   desiredDurationMonths: number;
   usagePurpose: string;
@@ -31,6 +32,7 @@ interface ContractFormData {
   bankAccount: string;
   privacyAgreed: boolean;
   termsAgreed: boolean;
+  status?: string;
 }
 
 const INITIAL_DATA: ContractFormData = {
@@ -42,6 +44,7 @@ const INITIAL_DATA: ContractFormData = {
   bankAccount: "",
   privacyAgreed: false,
   termsAgreed: false,
+  status: "DRAFT",
 };
 
 export default function ContractApplyForm() {
@@ -57,33 +60,100 @@ export default function ContractApplyForm() {
   const [error, setError] = useState<string | null>(null);
   const [showToast, setShowToast] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [userProfile, setUserProfile] = useState<{
+    name?: string; phone?: string; email?: string;
+    gender?: string; nationality?: string; birthDate?: string;
+  } | null>(null);
+  const isReadOnly = formData.status === "ACTIVE" || formData.status === "EXPIRED" || formData.status === "TERMINATED" || formData.status === "APPROVED";
+
+  // Payment states
+  const [paymentMethod, setPaymentMethod] = useState<"card" | "transfer" | null>(null);
+  const [cardNumber, setCardNumber] = useState("");
+  const [cardExpiry, setCardExpiry] = useState("");
+  const [cardCvc, setCardCvc] = useState("");
+  const [isPaymentProcessing, setIsPaymentProcessing] = useState(false);
+  const [paymentComplete, setPaymentComplete] = useState(false);
+  const [virtualAccount, setVirtualAccount] = useState<{ bank: string; account: string; holder: string } | null>(null);
+
+  // Fetch user profile
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const res = await fetch('/api/users/me');
+        if (res.ok) {
+          const result = await res.json();
+          if (result.success && result.data) {
+            setUserProfile(result.data);
+          }
+        }
+      } catch (e) {
+        console.warn('Failed to fetch user profile', e);
+      }
+    };
+    fetchProfile();
+  }, []);
+
 
   // Load draft from API & LocalStorage
   useEffect(() => {
     const loadDraft = async () => {
       setIsLoading(true);
-      try {
-        // 1. Try LocalStorage first for instant hit
-        const savedDraft = localStorage.getItem(`contract_draft_${spaceId}`);
-        if (savedDraft) {
-          setFormData(prev => ({ ...prev, ...JSON.parse(savedDraft) }));
-        }
+      setFormData(INITIAL_DATA); // Reset to clean state first
 
-        // 2. Fetch from Server for latest truth
-        const response = await fetch(`/api/contracts/draft?spaceId=${spaceId}`);
+      const contractId = searchParams.get("id");
+      try {
+        // 1. Fetch from Server for latest truth (server is the authority)
+        const url = contractId 
+          ? `/api/contracts/${contractId}`
+          : `/api/contracts/draft?spaceId=${spaceId}`;
+
+        const response = await fetch(url);
+        let serverHasData = false;
+
         if (response.ok) {
           const result = await response.json();
           if (result.success && result.data) {
-            setFormData(prev => ({
-              ...prev,
-              desiredStartDate: result.data.desiredStartDate || prev.desiredStartDate,
-              desiredDurationMonths: result.data.desiredDurationMonths || prev.desiredDurationMonths,
-              address: result.data.address || prev.address,
-              bankAccount: result.data.bankAccount || prev.bankAccount,
-              usagePurpose: result.data.usagePurpose || prev.usagePurpose,
-              requestNote: result.data.requestNote || prev.requestNote,
-              privacyAgreed: result.data.privacyAgreed || prev.privacyAgreed,
-            }));
+            serverHasData = true;
+            setFormData({
+              ...INITIAL_DATA,
+              contractId: result.data.contractId,
+              desiredStartDate: result.data.desiredStartDate || INITIAL_DATA.desiredStartDate,
+              desiredDurationMonths: result.data.desiredDurationMonths || INITIAL_DATA.desiredDurationMonths,
+              address: result.data.address || INITIAL_DATA.address,
+              bankAccount: result.data.bankAccount || INITIAL_DATA.bankAccount,
+              usagePurpose: result.data.usagePurpose || INITIAL_DATA.usagePurpose,
+              requestNote: result.data.requestNote || INITIAL_DATA.requestNote,
+              privacyAgreed: result.data.privacyAgreed || INITIAL_DATA.privacyAgreed,
+              termsAgreed: result.data.status !== "DRAFT",
+              status: result.data.status || "DRAFT",
+            });
+          }
+        }
+
+        // 2. If server has no draft, try LocalStorage only for NEW drafts (no contractId)
+        if (!serverHasData && !contractId) {
+          const savedDraft = localStorage.getItem(`contract_draft_${spaceId}`);
+          if (savedDraft) {
+            const parsed = JSON.parse(savedDraft);
+            // Only restore localStorage data if it's genuinely a DRAFT (not leftover from a submitted contract)
+            if (!parsed.status || parsed.status === "DRAFT") {
+              setFormData(prev => ({ ...prev, ...parsed }));
+            } else {
+              // Stale localStorage from a previous submission — clear it
+              localStorage.removeItem(`contract_draft_${spaceId}`);
+            }
+          }
+        }
+
+        // 3. If server explicitly has no draft and no localStorage hit, ensure clean state
+        if (!serverHasData && !contractId) {
+          // Clear any stale localStorage for this space (previous contracts)
+          const savedDraft = localStorage.getItem(`contract_draft_${spaceId}`);
+          if (savedDraft) {
+            const parsed = JSON.parse(savedDraft);
+            if (parsed.status && parsed.status !== "DRAFT") {
+              localStorage.removeItem(`contract_draft_${spaceId}`);
+            }
           }
         }
       } catch (e) {
@@ -94,7 +164,7 @@ export default function ContractApplyForm() {
     };
 
     loadDraft();
-  }, [spaceId]);
+  }, [spaceId, searchParams]);
 
   // Throttled Draft Save API Call
   const saveDraft = useCallback(async (data: ContractFormData, isManual: boolean = false) => {
@@ -103,7 +173,7 @@ export default function ContractApplyForm() {
       await fetch('/api/contracts/draft', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...data, spaceId: Number(spaceId) })
+        body: JSON.stringify({ ...data, spaceId: Number(spaceId), contractId: data.contractId })
       }).catch(err => console.warn("API Draft save error, check backend."));
       
       localStorage.setItem(`contract_draft_${spaceId}`, JSON.stringify(data));
@@ -120,14 +190,14 @@ export default function ContractApplyForm() {
     }
   }, [spaceId]);
 
-  // Throttled Auto-save
+  // Throttled Auto-save (skip for read-only contracts or when viewing a specific submission)
   useEffect(() => {
-    if (step > 4 || isLoading) return;
+    if (step > 4 || isLoading || isReadOnly) return;
     const handler = setTimeout(() => {
       saveDraft(formData, false);
     }, 2000);
     return () => clearTimeout(handler);
-  }, [formData, saveDraft, step, isLoading]);
+  }, [formData, saveDraft, step, isLoading, isReadOnly]);
 
   const nextStep = () => setStep(s => Math.min(s + 1, 4));
   const prevStep = () => setStep(s => Math.max(s - 1, 1));
@@ -157,6 +227,7 @@ export default function ContractApplyForm() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
+          contractId: formData.contractId,
           spaceId: Number(spaceId),
           desiredStartDate: formData.desiredStartDate,
           desiredDurationMonths: Number(formData.desiredDurationMonths),
@@ -191,6 +262,14 @@ export default function ContractApplyForm() {
       {/* Editorial Step Tracker */}
       {step < 5 && (
         <div className="flex flex-col md:flex-row md:items-center justify-between mb-12 gap-8">
+          {formData.status !== "DRAFT" && (
+            <div className="flex items-center gap-4 px-6 py-3 bg-accent/10 border border-accent/20 rounded-full">
+              <ShieldCheck className="w-4 h-4 text-accent" />
+              <span className="text-[10px] font-black tracking-[0.2em] text-accent uppercase">
+                {isReadOnly ? "FINALIZED SUBMISSION" : "VIEWING/EDITING SUBMISSION"} - {formData.status}
+              </span>
+            </div>
+          )}
           <div className="flex items-center gap-10 overflow-x-auto pb-4 md:pb-0 scrollbar-hide">
             {steps.map((s, i) => (
               <div key={i} className="flex items-center gap-4 group">
@@ -216,21 +295,32 @@ export default function ContractApplyForm() {
       {/* Main Content Area */}
       <div className="relative">
         <div className="bg-white rounded-[3rem] border border-primary/5 shadow-2xl shadow-primary/5 p-10 md:p-20 relative overflow-hidden">
-          {/* Top Right Save Button */}
+          {/* Top Right Save & Exit Buttons */}
           {step < 5 && (
-            <button 
-              type="button"
-              onClick={() => saveDraft(formData, true)}
-              disabled={isSaving || isLoading}
-              className="absolute top-8 right-8 z-10 flex items-center gap-2 px-6 py-3 bg-primary/5 hover:bg-accent hover:text-white rounded-full text-[10px] font-black tracking-[0.2em] uppercase transition-all group disabled:opacity-50"
-            >
-              {(isSaving || isLoading) ? (
-                <Loader2 className="w-3 h-3 animate-spin"/>
-              ) : (
-                <Save className="w-3 h-3 transition-transform group-hover:scale-110" />
+            <div className="absolute top-8 right-8 z-10 flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => router.back()}
+                className="flex items-center gap-2 px-6 py-3 bg-primary/5 hover:bg-rose-500 hover:text-white rounded-full text-[10px] font-black tracking-[0.2em] uppercase transition-all"
+              >
+                CLOSE
+              </button>
+              {!isReadOnly && (
+                <button 
+                  type="button"
+                  onClick={() => saveDraft(formData, true)}
+                  disabled={isSaving || isLoading}
+                  className="flex items-center gap-2 px-6 py-3 bg-primary/5 hover:bg-accent hover:text-white rounded-full text-[10px] font-black tracking-[0.2em] uppercase transition-all group disabled:opacity-50"
+                >
+                  {(isSaving || isLoading) ? (
+                    <Loader2 className="w-3 h-3 animate-spin"/>
+                  ) : (
+                    <Save className="w-3 h-3 transition-transform group-hover:scale-110" />
+                  )}
+                  {isLoading ? "LOADING..." : "SAVE DRAFT"}
+                </button>
               )}
-              {isLoading ? "LOADING..." : "SAVE DRAFT"}
-            </button>
+            </div>
           )}
 
           {/* Editorial Background Element */}
@@ -273,7 +363,8 @@ export default function ContractApplyForm() {
                       value={formData.desiredStartDate}
                       onChange={handleInputChange}
                       required
-                      className="w-full bg-primary/5 border-none p-6 rounded-2xl text-lg font-bold focus:ring-2 focus:ring-accent transition-all"
+                      disabled={isReadOnly}
+                      className="w-full bg-primary/5 border-none p-6 rounded-2xl text-lg font-bold focus:ring-2 focus:ring-accent transition-all disabled:opacity-50"
                     />
                   </div>
 
@@ -285,7 +376,8 @@ export default function ContractApplyForm() {
                       name="desiredDurationMonths"
                       value={formData.desiredDurationMonths}
                       onChange={handleInputChange}
-                      className="w-full bg-primary/5 border-none p-6 rounded-2xl text-lg font-bold focus:ring-2 focus:ring-accent transition-all appearance-none"
+                      disabled={isReadOnly}
+                      className="w-full bg-primary/5 border-none p-6 rounded-2xl text-lg font-bold focus:ring-2 focus:ring-accent transition-all appearance-none disabled:opacity-50"
                     >
                       {[3, 6, 12, 24].map(m => (
                         <option key={m} value={m}>{m} MONTHS</option>
@@ -323,6 +415,31 @@ export default function ContractApplyForm() {
                   </p>
                 </div>
 
+                {/* User Profile Info Card */}
+                {userProfile && (
+                  <div className="p-8 bg-primary/[0.03] rounded-[2rem] border border-primary/10 space-y-6">
+                    <div className="flex items-center gap-3 mb-2">
+                      <User className="w-5 h-5 text-accent" />
+                      <span className="text-[10px] font-black tracking-[0.3em] uppercase text-accent">MY INFORMATION</span>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      {[
+                        { label: "NAME", value: userProfile.name },
+                        { label: "PHONE", value: userProfile.phone },
+                        { label: "EMAIL", value: userProfile.email },
+                        { label: "GENDER", value: userProfile.gender === "MALE" ? "남성" : userProfile.gender === "FEMALE" ? "여성" : userProfile.gender },
+                        { label: "NATIONALITY", value: userProfile.nationality },
+                        { label: "BIRTH DATE", value: userProfile.birthDate },
+                      ].filter(item => item.value).map((item) => (
+                        <div key={item.label} className="space-y-1">
+                          <span className="text-[9px] font-black tracking-[0.3em] uppercase text-primary/30 block">{item.label}</span>
+                          <p className="text-sm font-bold tracking-tight text-primary">{item.value}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
                 <div className="space-y-10 pt-4">
                   <div className="space-y-4">
                     <label className="text-[10px] font-black tracking-[0.3em] uppercase text-primary/40 block">
@@ -333,8 +450,9 @@ export default function ContractApplyForm() {
                       name="address"
                       value={formData.address}
                       onChange={handleInputChange}
+                      disabled={isReadOnly}
                       placeholder="심사용 서류에 기재될 현재 주소를 입력하세요."
-                      className="w-full bg-primary/5 border-none p-6 rounded-2xl text-lg font-bold focus:ring-2 focus:ring-accent transition-all"
+                      className="w-full bg-primary/5 border-none p-6 rounded-2xl text-lg font-bold focus:ring-2 focus:ring-accent transition-all disabled:opacity-50"
                     />
                   </div>
 
@@ -347,8 +465,9 @@ export default function ContractApplyForm() {
                       name="usagePurpose"
                       value={formData.usagePurpose}
                       onChange={handleInputChange}
+                      disabled={isReadOnly}
                       placeholder="입주 목적을 간단히 적어주세요."
-                      className="w-full bg-primary/5 border-none p-6 rounded-2xl text-lg font-bold focus:ring-2 focus:ring-accent transition-all"
+                      className="w-full bg-primary/5 border-none p-6 rounded-2xl text-lg font-bold focus:ring-2 focus:ring-accent transition-all disabled:opacity-50"
                     />
                   </div>
 
@@ -361,7 +480,8 @@ export default function ContractApplyForm() {
                       value={formData.requestNote}
                       onChange={handleInputChange}
                       rows={4}
-                      className="w-full bg-primary/5 border-none p-6 rounded-2xl text-lg font-bold focus:ring-2 focus:ring-accent transition-all resize-none"
+                      disabled={isReadOnly}
+                      className="w-full bg-primary/5 border-none p-6 rounded-2xl text-lg font-bold focus:ring-2 focus:ring-accent transition-all resize-none disabled:opacity-50"
                     />
                   </div>
                 </div>
@@ -401,17 +521,209 @@ export default function ContractApplyForm() {
 
                 <div className="space-y-4">
                   <label className="text-[10px] font-black tracking-[0.3em] uppercase text-primary/40 block">
-                    BANK ACCOUNT INFO
+                    BANK ACCOUNT INFO (보증금 반환 계좌)
                   </label>
                   <input
                     type="text"
                     name="bankAccount"
                     value={formData.bankAccount}
                     onChange={handleInputChange}
+                    disabled={isReadOnly}
                     placeholder="은행명 및 계좌번호를 입력하세요."
-                    className="w-full bg-primary/5 border-none p-6 rounded-2xl text-lg font-bold focus:ring-2 focus:ring-accent transition-all"
+                    className="w-full bg-primary/5 border-none p-6 rounded-2xl text-lg font-bold focus:ring-2 focus:ring-accent transition-all disabled:opacity-50"
                   />
                 </div>
+
+                {/* Payment Method Selection */}
+                <div className="space-y-6">
+                  <label className="text-[10px] font-black tracking-[0.3em] uppercase text-primary/40 block">
+                    PAYMENT METHOD (보증금 납부 방법)
+                  </label>
+                  <div className="grid grid-cols-2 gap-4">
+                    <button
+                      type="button"
+                      onClick={() => setPaymentMethod("card")}
+                      className={`p-6 rounded-2xl border-2 transition-all flex flex-col items-center gap-3 ${
+                        paymentMethod === "card"
+                          ? "border-accent bg-accent/10 shadow-lg shadow-accent/10"
+                          : "border-primary/10 hover:border-accent/40 bg-primary/[0.02]"
+                      }`}
+                    >
+                      <CreditCard className={`w-8 h-8 ${paymentMethod === "card" ? "text-accent" : "text-primary/40"}`} />
+                      <span className="text-[10px] font-black tracking-[0.2em] uppercase">CREDIT CARD</span>
+                      <span className="text-[9px] font-bold tracking-tight opacity-50">신용/체크카드 결제</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setPaymentMethod("transfer");
+                        // Generate virtual account
+                        const banks = ["국민은행", "신한은행", "하나은행", "우리은행", "농협은행"];
+                        const bank = banks[Math.floor(Math.random() * banks.length)];
+                        const acct = `${Math.floor(100 + Math.random() * 900)}-${Math.floor(100000 + Math.random() * 900000)}-${Math.floor(10000 + Math.random() * 90000)}`;
+                        setVirtualAccount({ bank, account: acct, holder: "㈜코끼리" });
+                      }}
+                      className={`p-6 rounded-2xl border-2 transition-all flex flex-col items-center gap-3 ${
+                        paymentMethod === "transfer"
+                          ? "border-accent bg-accent/10 shadow-lg shadow-accent/10"
+                          : "border-primary/10 hover:border-accent/40 bg-primary/[0.02]"
+                      }`}
+                    >
+                      <Building className={`w-8 h-8 ${paymentMethod === "transfer" ? "text-accent" : "text-primary/40"}`} />
+                      <span className="text-[10px] font-black tracking-[0.2em] uppercase">BANK TRANSFER</span>
+                      <span className="text-[9px] font-bold tracking-tight opacity-50">가상계좌 이체</span>
+                    </button>
+                  </div>
+                </div>
+
+                {/* Credit Card Form */}
+                <AnimatePresence mode="wait">
+                  {paymentMethod === "card" && !paymentComplete && (
+                    <motion.div
+                      key="card-form"
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: "auto" }}
+                      exit={{ opacity: 0, height: 0 }}
+                      className="overflow-hidden"
+                    >
+                      <div className="p-8 bg-white rounded-[2rem] border border-primary/10 shadow-xl space-y-6">
+                        <div className="flex items-center gap-3">
+                          <CreditCard className="w-5 h-5 text-accent" />
+                          <span className="text-[10px] font-black tracking-[0.3em] uppercase text-accent">CARD DETAILS</span>
+                        </div>
+
+                        <div className="space-y-5">
+                          <div className="space-y-2">
+                            <label className="text-[9px] font-black tracking-[0.3em] uppercase text-primary/30 block">
+                              CARD NUMBER
+                            </label>
+                            <input
+                              type="text"
+                              value={cardNumber}
+                              onChange={(e) => {
+                                const v = e.target.value.replace(/\D/g, "").slice(0, 16);
+                                setCardNumber(v.replace(/(.{4})/g, "$1 ").trim());
+                              }}
+                              placeholder="0000 0000 0000 0000"
+                              className="w-full bg-primary/5 border-none p-5 rounded-xl text-lg font-bold tracking-widest focus:ring-2 focus:ring-accent transition-all"
+                            />
+                          </div>
+                          <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                              <label className="text-[9px] font-black tracking-[0.3em] uppercase text-primary/30 block">
+                                EXPIRY DATE
+                              </label>
+                              <input
+                                type="text"
+                                value={cardExpiry}
+                                onChange={(e) => {
+                                  let v = e.target.value.replace(/\D/g, "").slice(0, 4);
+                                  if (v.length > 2) v = v.slice(0, 2) + "/" + v.slice(2);
+                                  setCardExpiry(v);
+                                }}
+                                placeholder="MM/YY"
+                                className="w-full bg-primary/5 border-none p-5 rounded-xl text-lg font-bold tracking-widest focus:ring-2 focus:ring-accent transition-all"
+                              />
+                            </div>
+                            <div className="space-y-2">
+                              <label className="text-[9px] font-black tracking-[0.3em] uppercase text-primary/30 block">
+                                CVC
+                              </label>
+                              <input
+                                type="password"
+                                value={cardCvc}
+                                onChange={(e) => setCardCvc(e.target.value.replace(/\D/g, "").slice(0, 3))}
+                                placeholder="•••"
+                                className="w-full bg-primary/5 border-none p-5 rounded-xl text-lg font-bold tracking-widest focus:ring-2 focus:ring-accent transition-all"
+                              />
+                            </div>
+                          </div>
+                        </div>
+
+                        <button
+                          type="button"
+                          disabled={cardNumber.replace(/\s/g, "").length < 16 || cardExpiry.length < 5 || cardCvc.length < 3 || isPaymentProcessing}
+                          onClick={async () => {
+                            setIsPaymentProcessing(true);
+                            await new Promise(r => setTimeout(r, 2000));
+                            setIsPaymentProcessing(false);
+                            setPaymentComplete(true);
+                          }}
+                          className="w-full py-5 bg-accent text-white rounded-2xl text-[10px] font-black tracking-[0.2em] uppercase transition-all hover:bg-primary disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center gap-3"
+                        >
+                          {isPaymentProcessing ? (
+                            <><Loader2 className="w-4 h-4 animate-spin" /> PROCESSING PAYMENT...</>
+                          ) : (
+                            <><ShieldCheck className="w-4 h-4" /> PAY DEPOSIT</>
+                          )}
+                        </button>
+                      </div>
+                    </motion.div>
+                  )}
+
+                  {/* Virtual Account Info */}
+                  {paymentMethod === "transfer" && virtualAccount && !paymentComplete && (
+                    <motion.div
+                      key="transfer-info"
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: "auto" }}
+                      exit={{ opacity: 0, height: 0 }}
+                      className="overflow-hidden"
+                    >
+                      <div className="p-8 bg-white rounded-[2rem] border border-primary/10 shadow-xl space-y-6">
+                        <div className="flex items-center gap-3">
+                          <Building className="w-5 h-5 text-accent" />
+                          <span className="text-[10px] font-black tracking-[0.3em] uppercase text-accent">VIRTUAL ACCOUNT</span>
+                        </div>
+
+                        <div className="bg-accent/5 p-6 rounded-2xl space-y-4">
+                          {[
+                            { label: "은행", value: virtualAccount.bank },
+                            { label: "계좌번호", value: virtualAccount.account },
+                            { label: "예금주", value: virtualAccount.holder },
+                            { label: "입금 기한", value: (() => { const d = new Date(); d.setDate(d.getDate() + 3); return d.toLocaleDateString("ko-KR", { year: "numeric", month: "long", day: "numeric" }) + " 23:59까지"; })() },
+                          ].map((item) => (
+                            <div key={item.label} className="flex items-center justify-between">
+                              <span className="text-[10px] font-black tracking-[0.2em] uppercase text-primary/40">{item.label}</span>
+                              <span className="text-sm font-black tracking-tight text-primary">{item.value}</span>
+                            </div>
+                          ))}
+                        </div>
+
+                        <div className="p-4 bg-orange-50 rounded-xl border border-orange-100">
+                          <p className="text-[10px] font-bold text-orange-700 tracking-tight leading-relaxed">
+                            ⚠️ 위 가상계좌로 보증금을 입금해주세요. 기한 내 미입금 시 계좌가 만료됩니다. 
+                            입금 확인 후 자동으로 결제 완료 처리됩니다.
+                          </p>
+                        </div>
+
+                        <button
+                          type="button"
+                          onClick={() => setPaymentComplete(true)}
+                          className="w-full py-5 bg-accent text-white rounded-2xl text-[10px] font-black tracking-[0.2em] uppercase transition-all hover:bg-primary flex items-center justify-center gap-3"
+                        >
+                          <CheckCircle2 className="w-4 h-4" /> CONFIRM TRANSFER COMPLETE
+                        </button>
+                      </div>
+                    </motion.div>
+                  )}
+
+                  {/* Payment Complete */}
+                  {paymentComplete && (
+                    <motion.div
+                      key="payment-done"
+                      initial={{ opacity: 0, scale: 0.95 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      className="p-8 bg-accent/10 rounded-[2rem] border border-accent/20 text-center space-y-4"
+                    >
+                      <CheckCircle2 className="w-12 h-12 text-accent mx-auto" />
+                      <h3 className="text-lg font-black tracking-tighter uppercase">Payment Confirmed</h3>
+                      <p className="text-sm font-bold tracking-tight opacity-60">
+                        {paymentMethod === "card" ? "카드 결제가 완료되었습니다." : "입금 확인이 완료되었습니다."}
+                      </p>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <button type="button" onClick={prevStep} className="py-8 border-2 border-primary/10 text-primary rounded-full font-black tracking-[0.2em] transition-all hover:bg-primary/5">
@@ -446,7 +758,8 @@ export default function ContractApplyForm() {
                       name="privacyAgreed" 
                       checked={formData.privacyAgreed}
                       onChange={handleInputChange}
-                      className="w-8 h-8 rounded-full border-primary/20 text-accent focus:ring-0" 
+                      disabled={isReadOnly}
+                      className="w-8 h-8 rounded-full border-primary/20 text-accent focus:ring-0 disabled:opacity-50" 
                     />
                     <span className="text-[10px] font-black tracking-[0.3em] uppercase">개인정보 수집 및 이용 동의 (필수)</span>
                   </label>
@@ -456,7 +769,8 @@ export default function ContractApplyForm() {
                       name="termsAgreed" 
                       checked={formData.termsAgreed}
                       onChange={handleInputChange}
-                      className="w-8 h-8 rounded-full border-primary/20 text-accent focus:ring-0" 
+                      disabled={isReadOnly}
+                      className="w-8 h-8 rounded-full border-primary/20 text-accent focus:ring-0 disabled:opacity-50" 
                     />
                     <span className="text-[10px] font-black tracking-[0.3em] uppercase">주의사항 확인 및 입주 서약 (필수)</span>
                   </label>
@@ -474,10 +788,12 @@ export default function ContractApplyForm() {
                   </button>
                   <button 
                     type="submit"
-                    disabled={isSubmitting || !formData.privacyAgreed || !formData.termsAgreed}
+                    disabled={isReadOnly || isSubmitting || !formData.privacyAgreed || !formData.termsAgreed}
                     className="py-8 bg-primary text-background rounded-full font-black tracking-[0.2em] flex justify-center items-center gap-4 hover:bg-accent transition-all disabled:opacity-20"
                   >
-                    {isSubmitting ? <Loader2 className="w-6 h-6 animate-spin" /> : <>SUBMIT APPLICATION <Send className="w-5 h-5" /></>}
+                    {isSubmitting ? <Loader2 className="w-6 h-6 animate-spin" /> : 
+                     isReadOnly ? <><ShieldCheck className="w-5 h-5" /> ALREADY SUBMITTED</> : 
+                     <>SUBMIT APPLICATION <Send className="w-5 h-5" /></>}
                   </button>
                 </div>
               </motion.div>

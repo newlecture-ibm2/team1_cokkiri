@@ -33,10 +33,10 @@ const CommunityRichTextEditor = dynamic(
 );
 
 const labelClass =
-  "block font-black text-sm uppercase tracking-[0.3em] text-muted-foreground";
+  "block text-[10px] font-black uppercase tracking-[0.5em] text-accent mb-4";
 
 const fieldClass =
-  "mt-3 w-full rounded-xl border border-input bg-surface px-4 py-4 font-medium tracking-tight text-lg text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring";
+  "w-full rounded-[2rem] border border-primary/5 bg-white/40 backdrop-blur-sm p-8 font-medium tracking-tight text-xl text-primary focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-accent/10 transition-all placeholder:text-muted-foreground/30";
 
 export function NewPostForm() {
   const router = useRouter();
@@ -96,7 +96,7 @@ export function NewPostForm() {
           credentials: "include",
           body: formData,
         });
-        if (res.status === 401 || res.status === 403) {
+        if (res.status === 401) {
           setSubmitError(LOGIN_REQUIRED_MESSAGE);
           setShowLoginModal(true);
           return;
@@ -138,121 +138,129 @@ export function NewPostForm() {
 
       {submitError ? (
         <p
-          className="rounded-xl border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm font-medium text-destructive"
+          className="rounded-3xl border border-destructive/20 bg-destructive/5 px-8 py-4 text-sm font-black uppercase tracking-wider text-destructive"
           role="alert"
         >
           {submitError}
         </p>
       ) : null}
 
-      <div>
-        <label htmlFor="category" className={labelClass}>
-          카테고리
-        </label>
-        <div className="relative">
-          <select
-            id="category"
-            value={category}
-            onChange={(e) => setCategory(e.target.value)}
-            className={cn(fieldClass, "appearance-none pr-10 leading-none py-0 h-14")}
-          >
-            {POST_CATEGORIES.map((c) => (
-              <option key={c.value} value={c.value}>
-                {c.label}
-              </option>
-            ))}
-          </select>
-          <ChevronDown
-            className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 size-4 text-muted-foreground"
-            aria-hidden
+      <div className="space-y-16">
+        <section className="space-y-4">
+          <label htmlFor="category" className={labelClass}>
+            01 | CATEGORY
+          </label>
+          <div className="relative">
+            <select
+              id="category"
+              value={category}
+              onChange={(e) => setCategory(e.target.value)}
+              className={cn(fieldClass, "appearance-none pr-12 leading-none py-0 h-24 cursor-pointer")}
+            >
+              {POST_CATEGORIES.map((c) => (
+                <option key={c.value} value={c.value}>
+                  {c.label}
+                </option>
+              ))}
+            </select>
+            <ChevronDown
+              className="pointer-events-none absolute right-8 top-1/2 -translate-y-1/2 size-5 text-accent"
+              aria-hidden
+            />
+          </div>
+          <p className="px-8 text-[10px] font-black tracking-widest text-muted-foreground/50 uppercase">
+            Notice is restricted to administrators.
+          </p>
+        </section>
+
+        <section className="space-y-4">
+          <label htmlFor="title" className={labelClass}>
+            02 | DISCOURSE TITLE
+          </label>
+          <input
+            id="title"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            placeholder="Type your headline here..."
+            maxLength={POST_TITLE_MAX_LENGTH}
+            required
+            className={fieldClass}
           />
-        </div>
-        <p className="mt-2 text-sm font-medium tracking-tight text-muted-foreground">
-          공지(NOTICE)는 관리자만 등록할 수 있습니다.
-        </p>
+          <p className="px-8 text-[10px] font-black tracking-widest text-muted-foreground/50 uppercase">
+            Max {POST_TITLE_MAX_LENGTH.toLocaleString()} characters.
+          </p>
+        </section>
+
+        <section className="space-y-4">
+          <label htmlFor="content" className={labelClass}>
+            03 | NARRATIVE CONTENT
+          </label>
+          <div className="rounded-[2.5rem] border border-primary/5 bg-white/40 backdrop-blur-sm p-4 h-full">
+            <CommunityRichTextEditor
+              id="content"
+              value={content}
+              onChange={setContent}
+              placeholder="Begin your story..."
+            />
+          </div>
+        </section>
+
+        <section className="space-y-4">
+          <label htmlFor="links" className={labelClass}>
+            04 | EXTERNAL REFERENCES
+          </label>
+          <textarea
+            id="links"
+            value={linksText}
+            onChange={(e) => setLinksText(e.target.value)}
+            placeholder="Enter URLs, one per line (max 3)..."
+            rows={3}
+            className={cn(fieldClass, "resize-none")}
+          />
+        </section>
+
+        <section className="space-y-4">
+          <label htmlFor="post-files" className={labelClass}>
+            05 | DOCUMENT ASSETS
+          </label>
+          <div className="relative group">
+            <input
+              id="post-files"
+              type="file"
+              multiple
+              onChange={(e) => setFiles(e.target.files)}
+              className={cn(
+                fieldClass,
+                "cursor-pointer py-8 file:mr-8 file:rounded-xl file:border-0 file:bg-accent file:px-6 file:py-3 file:text-[10px] file:font-black file:uppercase file:tracking-[0.2em] file:text-white hover:file:bg-primary transition-all",
+              )}
+            />
+          </div>
+          <p className="px-8 text-[10px] font-black tracking-widest text-muted-foreground/50 uppercase">
+            Multiple files supported. Images can also be added via the editor toolbar.
+          </p>
+        </section>
       </div>
 
-      <div>
-        <label htmlFor="title" className={labelClass}>
-          제목
-        </label>
-        <input
-          id="title"
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          maxLength={POST_TITLE_MAX_LENGTH}
-          required
-          className={fieldClass}
-        />
-        <p className="mt-2 text-xs text-muted-foreground">
-          제목 최대 {POST_TITLE_MAX_LENGTH.toLocaleString()}자(이모지 등은 2자로 셀 수 있음)
-        </p>
-      </div>
-
-      <div>
-        <label htmlFor="content" className={labelClass}>
-          내용
-        </label>
-        <CommunityRichTextEditor
-          id="content"
-          value={content}
-          onChange={setContent}
-          placeholder="본문을 입력하고 이미지는 툴바 이미지 버튼으로 넣을 수 있습니다."
-        />
-      </div>
-
-      <div>
-        <label htmlFor="links" className={labelClass}>
-          링크 (선택, 한 줄에 하나, 최대 3개)
-        </label>
-        <textarea
-          id="links"
-          value={linksText}
-          onChange={(e) => setLinksText(e.target.value)}
-          rows={3}
-          className={fieldClass}
-        />
-      </div>
-
-      <div>
-        <label htmlFor="post-files" className={labelClass}>
-          첨부 파일 (선택)
-        </label>
-        <input
-          id="post-files"
-          type="file"
-          multiple
-          onChange={(e) => setFiles(e.target.files)}
-          className={cn(
-            fieldClass,
-            "cursor-pointer py-3 file:mr-4 file:rounded-lg file:border-0 file:bg-primary file:px-4 file:py-2 file:text-xs file:font-black file:uppercase file:tracking-wider file:text-primary-foreground",
-          )}
-        />
-        <p className="mt-2 text-sm font-medium tracking-tight text-muted-foreground">
-          여러 파일을 선택할 수 있습니다. 본문 이미지는 에디터 툴바에서도 추가할 수 있습니다.
-        </p>
-      </div>
-
-      <div className="flex justify-end gap-4">
+      <div className="pt-20 flex flex-col md:flex-row justify-end gap-6 items-center">
         <button
           type="button"
           onClick={() => setShowCancelModal(true)}
-          className="rounded-xl border border-border px-6 py-3 text-sm font-black uppercase tracking-wider text-foreground transition-transform duration-200 hover:-translate-y-0.5"
+          className="w-full md:w-auto px-12 py-6 text-[10px] font-black uppercase tracking-[0.4em] text-muted-foreground hover:text-primary transition-colors"
         >
-          취소
+          Discard
         </button>
         <motion.button
           type="submit"
           disabled={pending}
-          whileHover={{ scale: 1.02 }}
-          whileTap={{ scale: 0.98 }}
+          whileHover={{ scale: 1.05, y: -4 }}
+          whileTap={{ scale: 0.95 }}
           className={cn(
-            "inline-flex items-center gap-2 rounded-xl bg-primary px-6 py-3 text-sm font-black uppercase tracking-wider text-primary-foreground",
+            "w-full md:w-auto inline-flex items-center justify-center gap-4 rounded-full bg-primary px-16 py-8 text-xs font-black uppercase tracking-[0.5em] text-white shadow-2xl shadow-primary/20",
             pending && "opacity-60",
           )}
         >
           {pending && <Loader2 className="size-4 animate-spin" aria-hidden />}
-          등록
+          PUBLISH STORY
         </motion.button>
       </div>
       <CancelModal

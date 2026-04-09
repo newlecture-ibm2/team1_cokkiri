@@ -2,8 +2,8 @@ import * as React from "react";
 import { cn } from "@/lib/utils";
 
 export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: "default" | "ghost" | "outline";
-  size?: "default" | "icon";
+  variant?: "default" | "ghost" | "outline" | "secondary" | "destructive";
+  size?: "default" | "icon" | "sm" | "lg";
 }
 
 export function Button({
@@ -22,7 +22,11 @@ export function Button({
         variant === "default" && "bg-primary text-primary-foreground hover:bg-primary/90",
         variant === "ghost" && "hover:bg-primary/5",
         variant === "outline" && "border border-border bg-background hover:bg-muted/50",
+        variant === "secondary" && "bg-secondary text-secondary-foreground hover:bg-secondary/80",
+        variant === "destructive" && "bg-destructive text-destructive-foreground hover:bg-destructive/90",
         size === "icon" && "size-9 rounded-md p-0 [&_svg:not([class*='size-'])]:size-4",
+        size === "sm" && "h-8 px-3 text-xs",
+        size === "lg" && "h-10 px-8",
         size === "default" && "h-9 px-4 py-2 has-[>svg]:px-3",
         className,
       )}

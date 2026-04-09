@@ -12,6 +12,8 @@ function parseApiJson<T>(text: string): ApiResponse<T> {
   }
 }
 
+let isRefreshing = false;
+
 export async function apiFetch<T>(
   path: string,
   options?: RequestInit
@@ -37,6 +39,43 @@ export async function apiFetch<T>(
       );
     }
     if (response.status === 401) {
+      let isTokenError = true;
+      let parsedData: ApiResponse<T> | null = null;
+      
+      if (looksJson && trimmed.length > 0) {
+        parsedData = parseApiJson<T>(trimmed);
+        const eCode = (parsedData as any).errorCode || (parsedData as any).error_code;
+        if (eCode && eCode !== 'UNAUTHORIZED' && eCode !== 'TOKEN_EXPIRED') {
+          isTokenError = false;
+        }
+      }
+
+      if (isTokenError && path !== '/auth/login' && path !== '/auth/refresh' && path !== '/auth/logout' && !isRefreshing) {
+        isRefreshing = true;
+        try {
+          const refreshRes = await fetch(`${BASE_URL}/auth/refresh`, { method: 'POST', credentials: 'include' });
+          if (refreshRes.ok) {
+            isRefreshing = false;
+            // 토큰 갱신 성공, 원래 요청 재시도
+            return await apiFetch<T>(path, options);
+          } else {
+            // 갱신 실패 시 전역 로그아웃 통지
+            if (typeof window !== 'undefined') {
+              window.dispatchEvent(new Event('auth:expired'));
+            }
+          }
+        } catch (e) {
+          console.error('[Auto Refresh] fail:', e);
+        } finally {
+          isRefreshing = false;
+        }
+      }
+
+      // 백엔드가 JSON 에러 메시지를 보낸 경우(예: 로그인 실패, 비밀번호 불일치 등) 그것을 우선 사용
+      if (parsedData) {
+        const eCode = (parsedData as any).errorCode || (parsedData as any).error_code;
+        throw new ApiError(parsedData.message || LOGIN_REQUIRED_MESSAGE, eCode || 'UNAUTHORIZED');
+      }
       throw new ApiError(LOGIN_REQUIRED_MESSAGE, 'UNAUTHORIZED');
     }
     if (looksJson && trimmed.length > 0) {
@@ -53,7 +92,8 @@ export async function apiFetch<T>(
   const data = parseApiJson<T>(trimmed);
 
   if (!data.success) {
-    throw new ApiError(data.message || '요청에 실패했습니다', data.error_code);
+    const eCode = (data as any).errorCode || (data as any).error_code;
+    throw new ApiError(data.message || '요청에 실패했습니다', eCode);
   }
 
   return data;

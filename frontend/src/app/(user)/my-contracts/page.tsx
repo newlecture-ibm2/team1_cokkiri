@@ -91,22 +91,25 @@ export default function MyContractsPage() {
       if (result.success && result.data) {
         setSigningContractId(null);
         alert(result.data.message || "계약이 체결되었습니다!");
-        router.push("/my-devices");
+        router.push("/my-contracts");
+        router.refresh();
       } else {
         alert(result.message || "계약 체결에 실패했습니다.");
+        setSigningContractId(null);
       }
     } catch (err: any) {
       alert(err.message || "네트워크 오류가 발생했습니다.");
+      setSigningContractId(null);
     } finally {
       setIsSubmitting(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-background text-primary selection:bg-primary selection:text-background pb-32">
+    <div className="text-primary selection:bg-primary selection:text-background pb-32">
       {/* Editorial Header Section */}
-      <section className="px-6 pt-24 pb-12 md:px-12 md:pt-32 lg:px-24">
-        <div className="max-w-[1400px] mx-auto border-b-2 border-primary pb-12">
+      <section className="pb-12">
+        <div className="border-b-2 border-primary pb-12">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
@@ -140,7 +143,7 @@ export default function MyContractsPage() {
         </div>
       </section>
 
-      <main className="max-w-[1400px] mx-auto px-6 md:px-12 lg:px-24 pt-12 md:pt-20">
+      <main className="pt-12 md:pt-20">
         {/* Editorial Stats Grid */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-20">
           {[
@@ -292,7 +295,7 @@ export default function MyContractsPage() {
                   </div>
 
                   <div className="flex items-center gap-4">
-                    <Link href={`/contract-apply?spaceId=${contract.spaceId}`}>
+                    <Link href={`/contract-apply?id=${contract.contractId}&spaceId=${contract.spaceId}`}>
                       <button className="h-16 px-8 bg-muted/10 hover:bg-muted/20 text-primary rounded-2xl text-[10px] font-black tracking-[0.2em] uppercase transition-all whitespace-nowrap">
                         VIEW SUBMISSION
                       </button>

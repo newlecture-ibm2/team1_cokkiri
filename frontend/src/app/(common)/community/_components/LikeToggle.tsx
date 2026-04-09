@@ -28,7 +28,7 @@ export function LikeToggle({ postId, initialLiked, initialCount }: Props) {
           credentials: "include",
           headers: { "Content-Type": "application/json" },
         });
-        if (res.status === 401 || res.status === 403) {
+        if (res.status === 401) {
           setShowLoginModal(true);
           return;
         }
@@ -54,7 +54,7 @@ export function LikeToggle({ postId, initialLiked, initialCount }: Props) {
         whileHover={{ scale: 1.02 }}
         whileTap={{ scale: 0.98 }}
         className={cn(
-          "inline-flex items-center gap-2 rounded-xl border px-5 py-2.5 text-xs font-black uppercase tracking-wider",
+          "inline-flex items-center gap-2 rounded-full border px-5 py-2.5 text-xs font-black uppercase tracking-[0.24em]",
           liked
             ? "border-secondary bg-secondary/15 text-secondary"
             : "border-border bg-background text-foreground hover:border-secondary/50",

@@ -4,30 +4,24 @@ app:
 
 spring:
   datasource:
-    url: jdbc:h2:mem:testdb
-    driver-class-name: org.h2.Driver
-    username: sa
-    password:
+    url: jdbc:postgresql://localhost:5432/coliving
+    driver-class-name: org.postgresql.Driver
+    username: coliving
+    password: coliving123
   jpa:
     hibernate:
-      ddl-auto: create-drop
+      ddl-auto: update
     show-sql: true
-    defer-datasource-initialization: true
     properties:
       hibernate:
         format_sql: true
-        dialect: org.hibernate.dialect.H2Dialect
-  h2:
-    console:
-      enabled: true
-      path: /h2-console
   data:
     redis:
       host: ${REDIS_HOST:localhost}
       port: ${REDIS_PORT:6379}
 
 jwt:
-  secret: dev-secret-key-minimum-32-characters-long!!
+  secret: 4de1f2a3c9b78e5d614088a2c5b7c8d9e0f12a3b4c5d6e7f8a9b0c1d2e3f4a5b
   access-expiration: 1800000
   refresh-expiration: 604800000
 

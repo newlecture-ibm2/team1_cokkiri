@@ -22,6 +22,7 @@ const navItems: NavItem[] = [
     name: "Space",
     children: [
       { name: "Living", path: "/rooms" },
+      { name: "Experience", path: "/experience" },
       { name: "Stay", path: "/facilities" },
     ],
   },
@@ -34,9 +35,10 @@ const navItems: NavItem[] = [
     children: [
       { name: "Notification", path: "/notifications" },
       { name: "Profile", path: "/profile" },
+      { name: "My Reservations", path: "/my-history/reservation" },
       { name: "My VOC", path: "/profile/vocs" },
       { name: "My Contracts", path: "/my-contracts" },
-      { name: "Logout", path: "/login" },
+      { name: "Logout", path: "#" },
     ],
   },
 ];
@@ -105,7 +107,7 @@ const dropdownPanelShellVariants = {
 
 export function Header() {
   const pathname = usePathname();
-  const { user, isLoggedIn, isLoading } = useAuthStore();
+  const { user, isLoggedIn, isLoading, logout } = useAuthStore();
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [openMobileSection, setOpenMobileSection] = useState<string | null>(null);
@@ -231,6 +233,15 @@ export function Header() {
                                 <motion.div key={child.path} variants={dropdownLinkVariants} className="w-full">
                                   <Link
                                     href={child.path}
+                                    onClick={
+                                      child.name === "Logout"
+                                        ? async (e) => {
+                                            e.preventDefault();
+                                            await logout();
+                                            setDesktopOpenMenu(null);
+                                          }
+                                        : undefined
+                                    }
                                     className={subLinkClass(
                                       pathActive(pathname, child.path),
                                       item.name === "My",
@@ -261,21 +272,28 @@ export function Header() {
             <div className="flex items-center gap-4 border-l border-primary/10 pl-4 md:gap-5 md:pl-5">
               {!isLoading && (
                 isLoggedIn ? (
-                  <Link href="/profile" className="hidden md:block">
-                    <Button
-                      size="icon"
-                      variant="ghost"
-                      className="h-12 w-12 overflow-hidden rounded-full p-0 text-primary transition-all duration-500 hover:bg-primary/5 md:h-14 md:w-14 shrink-0"
-                      aria-label="Profile"
-                    >
-                      {user?.profileImage ? (
-                        /* eslint-disable-next-line @next/next/no-img-element */
-                        <img src={user.profileImage} alt="Profile" className="h-full w-full object-cover" />
-                      ) : (
-                        <User className="h-7 w-7 md:h-8 md:w-8" />
-                      )}
-                    </Button>
-                  </Link>
+                  <div className="hidden md:flex items-center gap-3 group">
+                    <div className="flex flex-col items-end pt-1 mr-1.5 cursor-default">
+                      <span className="text-[9px] font-black uppercase tracking-[0.25em] text-primary/40 -mb-0.5">{user?.role === 'USER' ? 'GUEST' : user?.role || ''}</span>
+                      <span className="text-[15px] font-black tracking-tight text-primary transition-colors">{user?.name}님</span>
+                    </div>
+                    <Link href="/profile" className="shrink-0 relative">
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        className="h-11 w-11 overflow-hidden rounded-[1rem] border-2 border-primary/10 bg-primary/5 p-0 text-primary transition-all duration-500 group-hover:scale-105 group-hover:border-primary/30 group-hover:bg-primary/10 group-hover:shadow-sm md:h-12 md:w-12"
+                        aria-label="Profile"
+                      >
+                        {user?.profileImage ? (
+                          /* eslint-disable-next-line @next/next/no-img-element */
+                          <img src={user.profileImage} alt="Profile" className="h-full w-full object-cover" />
+                        ) : (
+                          <User className="h-5 w-5 md:h-6 md:w-6 opacity-70" />
+                        )}
+                      </Button>
+                      <span className="absolute -bottom-1 -right-1 h-4 w-4 rounded-full border-2 border-background bg-[#768064]" />
+                    </Link>
+                  </div>
                 ) : (
                   <div className="hidden md:flex items-center gap-2">
                     <Link href="/login">
@@ -394,7 +412,15 @@ export function Header() {
                                     <li key={child.path}>
                                       <Link
                                         href={child.path}
-                                        onClick={() => setIsMobileMenuOpen(false)}
+                                        onClick={
+                                          child.name === "Logout"
+                                            ? async (e) => {
+                                                e.preventDefault();
+                                                await logout();
+                                                setIsMobileMenuOpen(false);
+                                              }
+                                            : () => setIsMobileMenuOpen(false)
+                                        }
                                         className={cn(
                                           "block rounded-lg py-3 pl-5 font-black uppercase transition-colors",
                                           item.name === "My"

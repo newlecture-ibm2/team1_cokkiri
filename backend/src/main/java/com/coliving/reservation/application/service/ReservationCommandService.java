@@ -35,6 +35,8 @@ import java.util.Objects;
 @SuppressWarnings("null")
 public class ReservationCommandService implements ReservationCommandUseCase {
 
+    private static final long MAX_RESERVATION_MINUTES = 120;
+
     private final ReservationJpaRepository reservationRepository;
     private final UserJpaRepository userRepository;
     private final SpaceJpaRepository spaceRepository;
@@ -46,8 +48,9 @@ public class ReservationCommandService implements ReservationCommandUseCase {
      * 1. 시간 범위 유효성 검사 (종료 > 시작)
      * 2. 사용자 조회
      * 3. 시설 조회
-     * 4. 동시성 체크 — 동일 시설/날짜/시간대에 APPROVED 예약 존재 시 ReservationOverlapException
-     * 5. 엔티티 생성(PENDING) 및 저장
+     * 4. 최대 이용 시간(2시간) 검증
+     * 5. 동시성 체크 — 동일 시설/날짜/시간대에 APPROVED 예약 존재 시 ReservationOverlapException
+     * 6. 엔티티 생성(APPROVED) 및 저장
      */
     @Override
     @Transactional
@@ -55,6 +58,10 @@ public class ReservationCommandService implements ReservationCommandUseCase {
         // 1. 시간 범위 유효성 검사
         if (!request.isValidTimeRange()) {
             throw new BusinessException(ErrorCode.VALIDATION_ERROR, "종료 시간은 시작 시간보다 이후여야 합니다.");
+        }
+
+        if (!request.isWithinMaxUsageMinutes(MAX_RESERVATION_MINUTES)) {
+            throw new BusinessException(ErrorCode.VALIDATION_ERROR, "공용시설 예약은 최대 2시간까지만 가능합니다.");
         }
 
         // 2. 요청 사용자 조회
@@ -83,7 +90,7 @@ public class ReservationCommandService implements ReservationCommandUseCase {
             throw new ReservationOverlapException("선택한 시간에 이미 다른 확정된 예약이 존재합니다.");
         }
 
-        // 5. 예약 엔티티 생성 (초기 상태: PENDING) 및 저장
+        // 5. 예약 엔티티 생성 (초기 상태: APPROVED) 및 저장
         @SuppressWarnings("null")
         ReservationEntity savedReservation = reservationRepository.save(
                 ReservationEntity.builder()

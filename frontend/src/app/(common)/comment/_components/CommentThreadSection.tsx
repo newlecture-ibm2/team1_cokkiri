@@ -104,7 +104,7 @@ export function CommentThreadSection({
           body: JSON.stringify({ content: text, parentCommentId }),
         });
 
-        if (res.status === 401 || res.status === 403) {
+        if (res.status === 401) {
           setShowLoginModal(true);
           setComments((prev) => prev.filter((c) => c.commentId !== tempId));
           return;
@@ -146,7 +146,7 @@ export function CommentThreadSection({
                   <button
                     type="button"
                     onClick={() => setOpenReplyForId(openReply ? null : node.commentId)}
-                    className="inline-flex w-fit items-center gap-1.5 text-[11px] font-black uppercase tracking-wider text-muted-foreground hover:text-foreground"
+                    className="inline-flex w-fit items-center gap-1.5 text-[11px] font-black uppercase tracking-[0.24em] text-muted-foreground hover:text-foreground"
                   >
                     <CornerDownRight className="size-3.5" aria-hidden />
                     답글
@@ -157,20 +157,20 @@ export function CommentThreadSection({
                         e.preventDefault();
                         addComment(node.commentId, replyDraft);
                       }}
-                      className="rounded-xl border border-border bg-muted/20 p-3"
+                      className="rounded-2xl border border-primary/10 bg-background p-4 shadow-sm"
                     >
                       <textarea
                         value={replyDraft}
                         onChange={(e) => setReplyDraftById((prev) => ({ ...prev, [node.commentId]: e.target.value }))}
                         rows={2}
                         placeholder="답글을 입력하세요"
-                        className="w-full resize-y rounded-lg border border-input bg-surface px-3 py-2 text-sm font-medium tracking-tight text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                        className="w-full resize-y rounded-xl border border-input bg-surface px-3 py-2 text-sm font-medium tracking-tight text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                       />
                       <div className="mt-2 flex justify-end gap-2">
                         <button
                           type="button"
                           onClick={() => setOpenReplyForId(null)}
-                          className="rounded-lg border border-border px-3 py-1.5 text-[11px] font-black uppercase tracking-wider text-foreground"
+                          className="rounded-full border border-border px-4 py-1.5 text-[11px] font-black uppercase tracking-[0.24em] text-foreground"
                         >
                           취소
                         </button>
@@ -179,7 +179,7 @@ export function CommentThreadSection({
                           disabled={pending || !replyDraft.trim()}
                           whileHover={{ scale: 1.02 }}
                           whileTap={{ scale: 0.98 }}
-                          className="rounded-lg bg-primary px-3 py-1.5 text-[11px] font-black uppercase tracking-wider text-primary-foreground disabled:opacity-50"
+                          className="rounded-full bg-primary px-4 py-1.5 text-[11px] font-black uppercase tracking-[0.24em] text-primary-foreground disabled:opacity-50"
                         >
                           등록
                         </motion.button>
@@ -203,7 +203,7 @@ export function CommentThreadSection({
 
       {tree.length === 0 ? (
         <div
-          className="mt-8 flex flex-col items-center justify-center gap-4 rounded-[2rem] border border-dashed border-border bg-background/60 px-8 py-14 text-center backdrop-blur-sm md:px-12"
+          className="mt-8 flex flex-col items-center justify-center gap-4 rounded-[2rem] border border-dashed border-primary/20 bg-background px-8 py-14 text-center md:px-12"
           aria-live="polite"
         >
           <MessageCircle className="size-10 text-muted-foreground opacity-80" strokeWidth={1.25} aria-hidden />
@@ -229,7 +229,7 @@ export function CommentThreadSection({
           e.preventDefault();
           addComment(null, rootDraft);
         }}
-        className="mt-8 rounded-[2rem] border border-border bg-background/80 p-6 backdrop-blur-sm md:p-8"
+        className="mt-8 rounded-[2rem] border border-primary/10 bg-background p-6 shadow-2xl shadow-primary/5 md:p-8"
       >
         <label htmlFor={`comment-root-${postId}`} className="sr-only">
           댓글 작성
@@ -248,7 +248,7 @@ export function CommentThreadSection({
             disabled={pending || !rootDraft.trim()}
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
-            className="rounded-xl bg-primary px-5 py-2.5 text-xs font-black uppercase tracking-wider text-primary-foreground disabled:opacity-50"
+            className="rounded-full bg-primary px-5 py-2.5 text-xs font-black uppercase tracking-[0.24em] text-primary-foreground disabled:opacity-50"
           >
             등록
           </motion.button>

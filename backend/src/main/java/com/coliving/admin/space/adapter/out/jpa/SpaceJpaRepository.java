@@ -20,6 +20,16 @@ public interface SpaceJpaRepository extends JpaRepository<SpaceEntity, Long> {
     Optional<SpaceEntity> findByName(String name);
 
     @Query(value = "SELECT s FROM SpaceEntity s " +
+                   "WHERE (:type IS NULL OR s.type = :type) " +
+                   "AND (:status IS NULL OR s.status = :status)",
+           countQuery = "SELECT COUNT(s) FROM SpaceEntity s " +
+                        "WHERE (:type IS NULL OR s.type = :type) " +
+                        "AND (:status IS NULL OR s.status = :status)")
+    Page<SpaceEntity> findSpacesWithFilter(@Param("type") SpaceType type,
+                                           @Param("status") SpaceStatus status,
+                                           Pageable pageable);
+
+    @Query(value = "SELECT s FROM SpaceEntity s " +
                     "LEFT JOIN FETCH s.privateDetail " +
                     "WHERE s.type = :type AND s.status = :status",
             countQuery = "SELECT COUNT(s) FROM SpaceEntity s " +
@@ -28,9 +38,16 @@ public interface SpaceJpaRepository extends JpaRepository<SpaceEntity, Long> {
                                           @Param("status") SpaceStatus status,
                                           Pageable pageable);
 
+    @Query(value = "SELECT s FROM SpaceEntity s " +
+                    "LEFT JOIN FETCH s.privateDetail " +
+                    "WHERE s.type = :type",
+            countQuery = "SELECT COUNT(s) FROM SpaceEntity s " +
+                    "WHERE s.type = :type")
+    Page<SpaceEntity> findByType(@Param("type") SpaceType type, Pageable pageable);
+
     @Query(value = "SELECT s.* FROM spaces s " +
                     "LEFT JOIN private_space_details pd ON s.space_id = pd.space_id AND pd.deleted_at IS NULL " +
-                    "WHERE s.type = 'PRIVATE' AND s.status = 'AVAILABLE' " +
+                    "WHERE s.type = 'PRIVATE' " +
                     "AND s.deleted_at IS NULL " +
                     "AND (CAST(:roomTypeId AS BIGINT) IS NULL OR pd.room_type_id = CAST(:roomTypeId AS BIGINT)) " +
                     "AND (CAST(:minRent AS NUMERIC) IS NULL OR pd.monthly_rent >= CAST(:minRent AS NUMERIC)) " +
@@ -38,14 +55,14 @@ public interface SpaceJpaRepository extends JpaRepository<SpaceEntity, Long> {
                     "AND (CAST(:floor AS INTEGER) IS NULL OR s.floor = CAST(:floor AS INTEGER))",
             countQuery = "SELECT COUNT(*) FROM spaces s " +
                     "LEFT JOIN private_space_details pd ON s.space_id = pd.space_id AND pd.deleted_at IS NULL " +
-                    "WHERE s.type = 'PRIVATE' AND s.status = 'AVAILABLE' " +
+                    "WHERE s.type = 'PRIVATE' " +
                     "AND s.deleted_at IS NULL " +
                     "AND (CAST(:roomTypeId AS BIGINT) IS NULL OR pd.room_type_id = CAST(:roomTypeId AS BIGINT)) " +
                     "AND (CAST(:minRent AS NUMERIC) IS NULL OR pd.monthly_rent >= CAST(:minRent AS NUMERIC)) " +
                     "AND (CAST(:maxRent AS NUMERIC) IS NULL OR pd.monthly_rent <= CAST(:maxRent AS NUMERIC)) " +
                     "AND (CAST(:floor AS INTEGER) IS NULL OR s.floor = CAST(:floor AS INTEGER))",
             nativeQuery = true)
-    Page<SpaceEntity> findAvailableRoomsWithFilter(
+    Page<SpaceEntity> findRoomsWithFilter(
             @Param("roomTypeId") Long roomTypeId,
             @Param("minRent") BigDecimal minRent,
             @Param("maxRent") BigDecimal maxRent,
@@ -53,5 +70,12 @@ public interface SpaceJpaRepository extends JpaRepository<SpaceEntity, Long> {
             Pageable pageable);
 
     List<SpaceEntity> findByFloor(Integer floor);
+
+    @Query(value = "SELECT DISTINCT s FROM SpaceEntity s " +
+                    "LEFT JOIN FETCH s.commonDetail " +
+                    "LEFT JOIN FETCH s.images " +
+                    "WHERE s.type = :type " +
+                    "ORDER BY s.name")
+    List<SpaceEntity> findByTypeFetchAll(@Param("type") SpaceType type);
 }
 

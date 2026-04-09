@@ -23,6 +23,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 public class SecurityConfig {
 
     private final JwtTokenProvider jwtTokenProvider;
+    private final com.coliving.common.auth.application.port.out.AuthRepositoryPort authRepositoryPort;
 
     /** 일반 회원·입주자·관리자 공통 (JWT role 클레임과 동일) */
     private static final String[] MEMBER_ROLES = {"USER", "RESIDENT", "ADMIN"};
@@ -50,6 +51,7 @@ public class SecurityConfig {
 
                         // --- 공개: 공간·룸 조회 ---
                         .requestMatchers(HttpMethod.GET, "/api/rooms/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/experience/**").permitAll() // EXPERIENCE 공용시설 소개 🔓 Public
 
                         // --- 커뮤니티: 목록·상세만 비로그인 조회 (Controller에서 Optional Actor 처리) ---
                         .requestMatchers(HttpMethod.GET, "/api/posts", "/api/posts/*").permitAll()
@@ -83,7 +85,19 @@ public class SecurityConfig {
 
                         // --- 그 외 API ---
                         .anyRequest().authenticated())
-                .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider),
+                .exceptionHandling(exception -> exception
+                        .authenticationEntryPoint((request, response, authException) -> {
+                            response.setContentType("application/json;charset=UTF-8");
+                            response.setStatus(401);
+                            response.getWriter().write("{\"success\":false,\"message\":\"로그인이 필요하거나 토큰이 만료되었습니다.\",\"errorCode\":\"UNAUTHORIZED\"}");
+                        })
+                        .accessDeniedHandler((request, response, accessDeniedException) -> {
+                            response.setContentType("application/json;charset=UTF-8");
+                            response.setStatus(403);
+                            response.getWriter().write("{\"success\":false,\"message\":\"접근 권한이 없습니다.\",\"errorCode\":\"FORBIDDEN\"}");
+                        })
+                )
+                .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider, authRepositoryPort),
                         UsernamePasswordAuthenticationFilter.class);
 
         return http.build();

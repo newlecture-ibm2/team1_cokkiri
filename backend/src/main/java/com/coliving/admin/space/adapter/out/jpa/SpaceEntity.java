@@ -16,10 +16,13 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.hibernate.annotations.SQLDelete;
+
 @Entity
 @Table(name = "spaces")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@SQLDelete(sql = "UPDATE spaces SET deleted_at = CURRENT_TIMESTAMP WHERE space_id = ?")
 @SQLRestriction("deleted_at IS NULL")
 public class SpaceEntity extends BaseEntity {
 

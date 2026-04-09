@@ -4,6 +4,7 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import { Menu, ShieldCheck, LogOut, ExternalLink, Bell } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useAuthStore } from "@/store/useAuthStore";
 
 type Props = {
   onOpenMenu: () => void;
@@ -66,13 +67,17 @@ export function AdminLayoutHeader({ onOpenMenu }: Props) {
             </div>
           </div>
 
-          <Link
-            href="/login"
+          <button
+            type="button"
+            onClick={(e) => {
+              e.preventDefault();
+              useAuthStore.getState().logout();
+            }}
             className="inline-flex size-9 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-primary/5 hover:text-destructive"
             aria-label="로그아웃"
           >
             <LogOut className="size-5" />
-          </Link>
+          </button>
         </div>
       </div>
     </motion.header>

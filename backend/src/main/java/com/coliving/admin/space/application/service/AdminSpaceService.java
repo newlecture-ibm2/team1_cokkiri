@@ -77,8 +77,8 @@ public class AdminSpaceService implements AdminSpaceUseCase {
 
     @Override
     @Transactional(readOnly = true)
-    public Page<AdminSpaceResult> getSpaces(Pageable pageable) {
-        return adminSpaceRepositoryPort.findAll(pageable)
+    public Page<AdminSpaceResult> getSpaces(SpaceType type, SpaceStatus status, Pageable pageable) {
+        return adminSpaceRepositoryPort.findSpaces(type, status, pageable)
                 .map(AdminSpaceResult::from);
     }
 
@@ -165,7 +165,7 @@ public class AdminSpaceService implements AdminSpaceUseCase {
         String savedFileName = fileStoragePort.storeFile(spaceId, file);
 
         // 프론트엔드가 자체 프록시(/api/bff/...)를 통해 컨트롤러 엔드포인트를 타도록 경로 합성
-        String imageUrl = "/api/bff/admin/spaces/" + spaceId + "/images/serve/" + savedFileName;
+        String imageUrl = "/api/admin/spaces/" + spaceId + "/images/serve/" + savedFileName;
 
         AdminSpace.SpaceImage newImage = AdminSpace.SpaceImage.builder()
                 .imageUrl(imageUrl)
@@ -182,5 +182,16 @@ public class AdminSpaceService implements AdminSpaceUseCase {
     public java.nio.file.Path loadImage(Long spaceId, String fileName) {
         // 이미지가 실제로 존재하는지 여부 검증 (DB) 등 추가 가능
         return fileStoragePort.loadFile(spaceId, fileName);
+    }
+
+    @Override
+    public void deleteImage(Long spaceId, Long imageId) {
+        // 공간 존재 검증 시 엔티티 전체를 로드하면 JPA 양방향 연관관계(Cascade) 때문에 
+        // soft-delete 된 이미지가 트랜잭션 플러시 시점에 다시 살아남 (findById 대신 existsById 사용)
+        if (!adminSpaceRepositoryPort.existsById(spaceId)) {
+            throw new BusinessException(ErrorCode.SPACE_NOT_FOUND);
+        }
+
+        adminSpaceRepositoryPort.deleteImage(imageId);
     }
 }

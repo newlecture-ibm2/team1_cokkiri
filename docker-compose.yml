@@ -9,9 +9,24 @@ services:
     environment:
       - NEXT_PUBLIC_API_URL=/api
       - INTERNAL_BACKEND_URL=http://backend:8080
+      - INTERNAL_FRONTEND_URL=http://frontend:3000
       - JWT_SECRET=${JWT_SECRET}
+      - REDIS_URL=redis://redis:6379/0
     depends_on:
       - backend
+    # 👇 프론트엔드 Watch 설정 추가
+    develop:
+      watch:
+        # 소스 코드가 바뀌면 컨테이너 내부로 파일만 즉시 동기화 (Hot Reloading 적용)
+        - action: sync
+          path: ./frontend/src
+          target: /app/src  # ⚠️ 프론트엔드 Dockerfile의 WORKDIR 경로에 맞춰 수정하세요 (보통 /app)
+        - action: sync
+          path: ./frontend/public
+          target: /app/public
+        # 패키지가 변경되면 이미지를 다시 빌드
+        - action: rebuild
+          path: ./frontend/package.json
 
   backend:
     container_name: team1-cokkiri-backend
@@ -34,6 +49,16 @@ services:
     depends_on:
       db: { condition: service_healthy }
       redis: { condition: service_healthy }
+    # 👇 백엔드 Watch 설정 추가
+    develop:
+      watch:
+        # Java 코드가 바뀌면 파일을 동기화하고 컨테이너를 빠르게 재시작
+        - action: sync+restart
+          path: ./backend/src
+          target: /app/src  # ⚠️ 백엔드 Dockerfile의 WORKDIR 경로에 맞춰 수정하세요 (예: /app, /workspace)
+        # 의존성이 변경되면 이미지를 다시 빌드
+        - action: rebuild
+          path: ./backend/build.gradle # Maven을 사용한다면 pom.xml로 변경하세요
 
   db:
     container_name: team1-cokkiri-db
@@ -59,6 +84,7 @@ services:
     expose:
       - "8000"
     volumes:
+      # 이미 볼륨 마운트가 되어 있어 호스트에서 수정 시 즉시 반영됩니다.
       - ./mock-iot/mappings:/home/wiremock/mappings
 
   redis:
