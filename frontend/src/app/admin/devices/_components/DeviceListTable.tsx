@@ -193,24 +193,26 @@ export function DeviceListTable() {
 
   return (
     <div className="space-y-4">
-      {/* 알림 */}
+      {/* 알림 — fixed position으로 레이아웃 밀림 방지 */}
       <AnimatePresence>
         {success && (
           <motion.div
-            initial={{ opacity: 0, y: -8 }}
+            initial={{ opacity: 0, y: -12 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0 }}
-            className="rounded-xl border border-secondary/40 bg-surface px-4 py-3 text-sm font-medium text-primary"
+            exit={{ opacity: 0, y: -8 }}
+            className="fixed top-4 left-1/2 -translate-x-1/2 z-50 rounded-xl border border-secondary/40
+              bg-background px-5 py-3 text-sm font-medium text-primary shadow-lg"
           >
             ✅ {success}
           </motion.div>
         )}
         {error && (
           <motion.div
-            initial={{ opacity: 0, y: -8 }}
+            initial={{ opacity: 0, y: -12 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0 }}
-            className="rounded-xl border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm font-medium text-destructive"
+            exit={{ opacity: 0, y: -8 }}
+            className="fixed top-4 left-1/2 -translate-x-1/2 z-50 rounded-xl border border-destructive/30
+              bg-background px-5 py-3 text-sm font-medium text-destructive shadow-lg"
           >
             ⚠️ {error}
           </motion.div>

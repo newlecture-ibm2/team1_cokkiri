@@ -23,4 +23,13 @@ public interface AdminMonitoringRepositoryPort {
 
     /** 관리자 제어 이력 전체 건수 */
     long countControlLogs(AdminControlLogListCommand command);
+
+    /** 공간 타입별(PRIVATE/COMMON) 제어 빈도 */
+    List<Object[]> countControlBySpaceType();
+
+    /** 명령(command)별 제어 빈도 */
+    List<Object[]> countControlByCommand();
+
+    /** 일별 에러(FAILURE) 빈도 (최근 30일) */
+    List<Object[]> countDailyErrors();
 }

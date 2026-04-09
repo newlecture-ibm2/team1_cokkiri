@@ -24,4 +24,13 @@ public interface AdminMonitoringUseCase {
 
     /** 관리자 제어 이력 목록 (페이징) */
     AdminControlLogPageResult getControlLogs(AdminControlLogListCommand command);
+
+    /** 공간 타입별(PRIVATE/COMMON) 제어 빈도 */
+    List<ControlFrequencyResponseDto> getControlFrequencyBySpaceType();
+
+    /** 명령(command)별 제어 빈도 */
+    List<ControlFrequencyResponseDto> getControlFrequencyByCommand();
+
+    /** 일별 에러(FAILURE) 빈도 (최근 30일) */
+    List<ControlFrequencyResponseDto> getDailyErrorFrequency();
 }

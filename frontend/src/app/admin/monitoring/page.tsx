@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import DeviceStatusPieChart from "./_components/DeviceStatusPieChart";
 import ControlFrequencyBarChart from "./_components/ControlFrequencyBarChart";
 import DailyTrendChart from "./_components/DailyTrendChart";
+import ErrorTrendChart from "./_components/ErrorTrendChart";
 import ErrorDeviceTable from "./_components/ErrorDeviceTable";
 import { fetchDeviceErrors, fetchEnergyStats } from "./_api";
 import type { DeviceErrorStats, EnergyStatsResponse } from "./_types";
@@ -45,10 +46,10 @@ export default function MonitoringPage() {
       {/* 헤더 */}
       <div className="mb-10">
         <h1 className="text-4xl font-black tracking-tighter text-[var(--primary)]">
-          모니터링
+          기기 모니터링
         </h1>
         <p className="text-sm text-[var(--muted)] mt-1">
-          기기 장애 현황 및 제어 빈도를 한눈에 확인합니다
+          기기 상태, 제어 빈도, 에러 이력을 한눈에 확인합니다
         </p>
       </div>
 
@@ -59,7 +60,7 @@ export default function MonitoringPage() {
         </div>
       )}
 
-      {/* 상단: 기기 상태 요약 + 종류별 제어 빈도 */}
+      {/* ─── ROW 1: 기기 상태 요약 + 종류별 제어 빈도 ─── */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
         {/* 파이차트: 기기 상태 */}
         <motion.div
@@ -121,11 +122,60 @@ export default function MonitoringPage() {
         </motion.div>
       </div>
 
-      {/* 일별 제어 추이 */}
+      {/* ─── ROW 2: 공간별 제어 빈도 + 명령별 제어 빈도 ─── */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+        {/* 바차트: 공간 타입별 (개인/공용) 제어 빈도 */}
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.25 }}
+          className="bg-white rounded-2xl p-6 border border-[var(--secondary)]/30"
+        >
+          <h2 className="text-lg font-bold text-[var(--primary)] mb-4">
+            공간별 제어 빈도
+          </h2>
+          <p className="text-xs text-[var(--muted)] -mt-2 mb-4">
+            개인 공간과 공용 공간의 기기 제어 횟수 비교
+          </p>
+          {energyData ? (
+            <ControlFrequencyBarChart
+              data={energyData.frequencyBySpaceType}
+              title=""
+            />
+          ) : isLoading ? (
+            <div className="animate-pulse h-[300px] bg-[var(--secondary)]/20 rounded-xl" />
+          ) : null}
+        </motion.div>
+
+        {/* 바차트: 명령(동작)별 제어 빈도 */}
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3 }}
+          className="bg-white rounded-2xl p-6 border border-[var(--secondary)]/30"
+        >
+          <h2 className="text-lg font-bold text-[var(--primary)] mb-4">
+            명령별 제어 빈도
+          </h2>
+          <p className="text-xs text-[var(--muted)] -mt-2 mb-4">
+            ON, OFF, SET_TEMP 등 수행된 동작별 횟수
+          </p>
+          {energyData ? (
+            <ControlFrequencyBarChart
+              data={energyData.frequencyByCommand}
+              title=""
+            />
+          ) : isLoading ? (
+            <div className="animate-pulse h-[300px] bg-[var(--secondary)]/20 rounded-xl" />
+          ) : null}
+        </motion.div>
+      </div>
+
+      {/* ─── ROW 3: 일별 제어 추이 ─── */}
       <motion.div
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.3 }}
+        transition={{ delay: 0.35 }}
         className="bg-white rounded-2xl p-6 border border-[var(--secondary)]/30 mb-8"
       >
         <h2 className="text-lg font-bold text-[var(--primary)] mb-4">
@@ -138,11 +188,31 @@ export default function MonitoringPage() {
         ) : null}
       </motion.div>
 
-      {/* 장애 기기 테이블 */}
+      {/* ─── ROW 4: 에러 추이 ─── */}
       <motion.div
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.4 }}
+        className="bg-white rounded-2xl p-6 border border-[var(--secondary)]/30 mb-8"
+      >
+        <h2 className="text-lg font-bold text-[var(--primary)] mb-4">
+          에러 추이
+          <span className="ml-2 text-sm font-normal text-[var(--muted)]">
+            FAILURE 결과 일별 빈도
+          </span>
+        </h2>
+        {energyData ? (
+          <ErrorTrendChart data={energyData.dailyErrorFrequency} />
+        ) : isLoading ? (
+          <div className="animate-pulse h-[300px] bg-[var(--secondary)]/20 rounded-xl" />
+        ) : null}
+      </motion.div>
+
+      {/* ─── ROW 5: 장애 기기 테이블 ─── */}
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.45 }}
         className="bg-white rounded-2xl p-6 border border-[var(--secondary)]/30"
       >
         <h2 className="text-lg font-bold text-[var(--primary)] mb-4">

@@ -38,17 +38,23 @@ public class AdminMonitoringController {
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
-    @Operation(summary = "제어 빈도 통계", description = "기기 종류별 제어 횟수 + 일별 제어 추이 (최근 30일)")
+    @Operation(summary = "제어 빈도 통계", description = "기기 종류별·공간별·명령별 제어 횟수 + 일별 제어·에러 추이 (최근 30일)")
     @GetMapping("/monitoring/energy")
     public ResponseEntity<ApiResponse<Map<String, Object>>> getEnergyStats() {
         DeviceStatusSummaryResponseDto statusSummary = monitoringUseCase.getDeviceStatusSummary();
         List<ControlFrequencyResponseDto> byType = monitoringUseCase.getControlFrequencyByDeviceType();
         List<ControlFrequencyResponseDto> daily = monitoringUseCase.getDailyControlFrequency();
+        List<ControlFrequencyResponseDto> bySpaceType = monitoringUseCase.getControlFrequencyBySpaceType();
+        List<ControlFrequencyResponseDto> byCommand = monitoringUseCase.getControlFrequencyByCommand();
+        List<ControlFrequencyResponseDto> dailyErrors = monitoringUseCase.getDailyErrorFrequency();
 
         Map<String, Object> data = Map.of(
                 "statusSummary", statusSummary,
                 "frequencyByType", byType,
-                "dailyFrequency", daily
+                "dailyFrequency", daily,
+                "frequencyBySpaceType", bySpaceType,
+                "frequencyByCommand", byCommand,
+                "dailyErrorFrequency", dailyErrors
         );
         return ResponseEntity.ok(ApiResponse.ok(data));
     }

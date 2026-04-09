@@ -102,5 +102,36 @@ public class AdminMonitoringService implements AdminMonitoringUseCase {
 
         return new AdminControlLogPageResult(content, command.page(), command.size(), totalElements, totalPages);
     }
+
+    @Override
+    public List<ControlFrequencyResponseDto> getControlFrequencyBySpaceType() {
+        return monitoringRepositoryPort.countControlBySpaceType().stream()
+                .map(row -> {
+                    String type = (String) row[0];
+                    String label = "PRIVATE".equals(type) ? "개인 공간" : "공용 공간";
+                    return new ControlFrequencyResponseDto(label, ((Number) row[1]).longValue());
+                })
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<ControlFrequencyResponseDto> getControlFrequencyByCommand() {
+        return monitoringRepositoryPort.countControlByCommand().stream()
+                .map(row -> new ControlFrequencyResponseDto(
+                        (String) row[0],
+                        ((Number) row[1]).longValue()
+                ))
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<ControlFrequencyResponseDto> getDailyErrorFrequency() {
+        return monitoringRepositoryPort.countDailyErrors().stream()
+                .map(row -> new ControlFrequencyResponseDto(
+                        row[0].toString(),
+                        ((Number) row[1]).longValue()
+                ))
+                .collect(Collectors.toList());
+    }
 }
 

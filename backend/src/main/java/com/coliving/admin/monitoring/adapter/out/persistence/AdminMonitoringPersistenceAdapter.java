@@ -164,5 +164,47 @@ public class AdminMonitoringPersistenceAdapter implements AdminMonitoringReposit
             query.setParameter("endDate", command.endDate().plusDays(1).atStartOfDay());
         }
     }
+
+    // ── 추가 통계 쿼리 ──
+
+    @Override
+    public List<Object[]> countControlBySpaceType() {
+        return em.createNativeQuery("""
+                SELECT s.type, COUNT(cl.control_log_id)
+                FROM control_logs cl
+                JOIN devices d ON cl.device_id = d.device_id
+                JOIN spaces s ON d.space_id = s.space_id
+                WHERE cl.deleted_at IS NULL AND d.deleted_at IS NULL AND s.deleted_at IS NULL
+                GROUP BY s.type
+                ORDER BY COUNT(cl.control_log_id) DESC
+                """)
+                .getResultList();
+    }
+
+    @Override
+    public List<Object[]> countControlByCommand() {
+        return em.createNativeQuery("""
+                SELECT cl.command, COUNT(cl.control_log_id)
+                FROM control_logs cl
+                WHERE cl.deleted_at IS NULL
+                GROUP BY cl.command
+                ORDER BY COUNT(cl.control_log_id) DESC
+                """)
+                .getResultList();
+    }
+
+    @Override
+    public List<Object[]> countDailyErrors() {
+        return em.createNativeQuery("""
+                SELECT DATE(cl.created_at) AS error_date, COUNT(*)
+                FROM control_logs cl
+                WHERE cl.deleted_at IS NULL
+                  AND cl.result = 'FAILURE'
+                  AND cl.created_at >= CURRENT_DATE - INTERVAL '30 days'
+                GROUP BY DATE(cl.created_at)
+                ORDER BY error_date
+                """)
+                .getResultList();
+    }
 }
 

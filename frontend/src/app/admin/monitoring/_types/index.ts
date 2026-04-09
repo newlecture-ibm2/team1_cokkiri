@@ -25,4 +25,7 @@ export interface EnergyStatsResponse {
   statusSummary: DeviceStatusSummary;
   frequencyByType: ControlFrequency[];
   dailyFrequency: ControlFrequency[];
+  frequencyBySpaceType: ControlFrequency[];
+  frequencyByCommand: ControlFrequency[];
+  dailyErrorFrequency: ControlFrequency[];
 }

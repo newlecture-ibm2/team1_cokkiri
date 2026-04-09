@@ -182,10 +182,10 @@ export function DeviceGrid() {
             initial={{ opacity: 0, y: -12 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -8 }}
-            className={`fixed top-4 left-1/2 -translate-x-1/2 z-50 rounded-xl border px-5 py-3 text-sm font-medium shadow-lg backdrop-blur-sm ${
+            className={`fixed top-4 left-1/2 -translate-x-1/2 z-50 rounded-xl border px-5 py-3 text-sm font-medium shadow-lg ${
               feedbackType === "error"
-                ? "border-destructive/40 bg-destructive/10 text-destructive"
-                : "border-accent/40 bg-accent/10 text-primary"
+                ? "border-destructive/40 bg-background text-destructive"
+                : "border-secondary/40 bg-background text-primary"
             }`}
           >
             {feedbackType === "error" ? "⚠️ " : "✅ "}
