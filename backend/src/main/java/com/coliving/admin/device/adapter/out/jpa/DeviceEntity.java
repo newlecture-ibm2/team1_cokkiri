@@ -121,4 +121,8 @@ public class DeviceEntity extends BaseEntity {
     public void updateActive(boolean isActive) {
         this.isActive = isActive;
     }
+
+    public void updateCurrentState(String currentState) {
+        this.currentState = currentState;
+    }
 }

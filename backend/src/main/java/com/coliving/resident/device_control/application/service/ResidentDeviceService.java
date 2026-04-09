@@ -15,6 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 @Slf4j
 @Service
@@ -133,11 +134,54 @@ public class ResidentDeviceService implements ResidentDeviceUseCase {
             throw new BusinessException(ErrorCode.IOT_COMMUNICATION_FAIL);
         }
 
+        // 10. 제어 성공 시 기기 current_state 업데이트
+        String newState = buildCurrentState(command.command(), command.params());
+        residentDeviceRepositoryPort.updateCurrentState(command.deviceId(), newState);
+
         return new ControlDeviceResult(
                 command.deviceId(),
                 command.command(),
                 true,
                 "기기 제어가 완료되었습니다"
         );
+    }
+
+    /**
+     * 제어 명령에 따른 current_state JSON 생성
+     */
+    private String buildCurrentState(String command, Map<String, Object> params) {
+        Map<String, Object> state = new java.util.HashMap<>();
+        switch (command) {
+            case "ON" -> state.put("power", "ON");
+            case "OFF" -> state.put("power", "OFF");
+            case "LOCK" -> state.put("power", "ON");
+            case "UNLOCK" -> state.put("power", "OFF");
+            case "START" -> state.put("power", "ON");
+            case "STOP" -> state.put("power", "OFF");
+            case "SET_TEMP" -> {
+                state.put("power", "ON");
+                if (params != null && params.containsKey("temperature")) {
+                    state.put("temperature", params.get("temperature"));
+                }
+            }
+            case "SET_BRIGHTNESS" -> {
+                state.put("power", "ON");
+                if (params != null && params.containsKey("brightness")) {
+                    state.put("brightness", params.get("brightness"));
+                }
+            }
+            case "SET_MODE" -> {
+                state.put("power", "ON");
+                if (params != null && params.containsKey("mode")) {
+                    state.put("mode", params.get("mode"));
+                }
+            }
+            default -> state.put("power", "ON");
+        }
+        try {
+            return new com.fasterxml.jackson.databind.ObjectMapper().writeValueAsString(state);
+        } catch (Exception e) {
+            return "{\"power\":\"ON\"}";
+        }
     }
 }

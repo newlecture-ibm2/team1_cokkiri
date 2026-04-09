@@ -47,4 +47,7 @@ public interface AdminDeviceRepositoryPort {
     void saveControlLog(Long deviceId, Long userId, String actorType,
                         String command, Map<String, Object> commandParams,
                         String result, String errorMessage, String correlationId);
+
+    /** 기기 제어 성공 후 current_state(JSONB) 업데이트 */
+    void updateCurrentState(Long deviceId, String currentState);
 }

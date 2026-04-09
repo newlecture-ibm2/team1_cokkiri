@@ -166,6 +166,14 @@ public class ResidentDevicePersistenceAdapter implements ResidentDeviceRepositor
                 deviceId, userId, command, result);
     }
 
+    @Override
+    public void updateCurrentState(Long deviceId, String currentState) {
+        deviceJpaRepository.findById(deviceId).ifPresent(device -> {
+            device.updateCurrentState(currentState);
+            deviceJpaRepository.save(device);
+        });
+    }
+
     // ── 헬퍼: 공간 정보(name, type) 단건 조회 ──
 
     private Object[] findSpaceInfo(Long spaceId) {

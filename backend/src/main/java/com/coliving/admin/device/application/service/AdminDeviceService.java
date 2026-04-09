@@ -205,6 +205,10 @@ public class AdminDeviceService implements CreateAdminDeviceUseCase, AdminDevice
             throw new BusinessException(ErrorCode.IOT_COMMUNICATION_FAIL);
         }
 
+        // 6. 제어 성공 시 기기 current_state 업데이트
+        String newState = buildCurrentState(command.command(), command.params());
+        adminDeviceRepositoryPort.updateCurrentState(command.deviceId(), newState);
+
         return new ControlAdminDeviceResult(
                 command.deviceId(),
                 command.command(),
@@ -225,6 +229,45 @@ public class AdminDeviceService implements CreateAdminDeviceUseCase, AdminDevice
         if (!"PRIVATE".equals(spaceType)) {
             throw new BusinessException(ErrorCode.VALIDATION_ERROR,
                     "도어락(DOOR_LOCK)은 개인 공간(PRIVATE)에만 설치할 수 있습니다");
+        }
+    }
+
+    /**
+     * 제어 명령에 따른 current_state JSON 생성
+     */
+    private String buildCurrentState(String command, java.util.Map<String, Object> params) {
+        java.util.Map<String, Object> state = new java.util.HashMap<>();
+        switch (command) {
+            case "ON" -> state.put("power", "ON");
+            case "OFF" -> state.put("power", "OFF");
+            case "LOCK" -> state.put("power", "ON");
+            case "UNLOCK" -> state.put("power", "OFF");
+            case "START" -> state.put("power", "ON");
+            case "STOP" -> state.put("power", "OFF");
+            case "SET_TEMP" -> {
+                state.put("power", "ON");
+                if (params != null && params.containsKey("temperature")) {
+                    state.put("temperature", params.get("temperature"));
+                }
+            }
+            case "SET_BRIGHTNESS" -> {
+                state.put("power", "ON");
+                if (params != null && params.containsKey("brightness")) {
+                    state.put("brightness", params.get("brightness"));
+                }
+            }
+            case "SET_MODE" -> {
+                state.put("power", "ON");
+                if (params != null && params.containsKey("mode")) {
+                    state.put("mode", params.get("mode"));
+                }
+            }
+            default -> state.put("power", "ON");
+        }
+        try {
+            return new com.fasterxml.jackson.databind.ObjectMapper().writeValueAsString(state);
+        } catch (Exception e) {
+            return "{\"power\":\"ON\"}";
         }
     }
 }

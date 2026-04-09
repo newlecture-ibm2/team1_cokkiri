@@ -205,6 +205,14 @@ public class AdminDevicePersistenceAdapter implements AdminDeviceRepositoryPort 
                 deviceId, userId, command, result);
     }
 
+    @Override
+    public void updateCurrentState(Long deviceId, String currentState) {
+        deviceJpaRepository.findById(deviceId).ifPresent(device -> {
+            device.updateCurrentState(currentState);
+            deviceJpaRepository.save(device);
+        });
+    }
+
     private AdminDevice toModel(DeviceEntity entity) {
         return new AdminDevice(
                 entity.getDeviceId(),
