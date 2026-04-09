@@ -25,6 +25,10 @@ interface PendingContract {
   status: string;
   desiredStartDate: string;
   desiredDurationMonths: number;
+  address: string;
+  bankAccount: string;
+  usagePurpose: string;
+  requestNote: string;
   createdAt: string;
 }
 
@@ -43,6 +47,25 @@ export default function AdminContractsPage() {
     specialTerms: ""
   });
   const [rejectReason, setRejectReason] = useState("");
+
+  const selectedContract = contracts.find(c => c.contractId === selectedId);
+
+  // Pre-fill form when modal opens
+  useEffect(() => {
+    if (modalType === "approve" && selectedContract) {
+      const start = new Date(selectedContract.desiredStartDate);
+      const end = new Date(start);
+      end.setMonth(start.getMonth() + selectedContract.desiredDurationMonths);
+      
+      setApproveForm({
+        startDate: selectedContract.desiredStartDate,
+        endDate: end.toISOString().split('T')[0],
+        monthlyRent: "",
+        deposit: "",
+        specialTerms: ""
+      });
+    }
+  }, [modalType, selectedContract]);
 
   const fetchApplications = async () => {
     setIsLoading(true);
@@ -251,6 +274,38 @@ export default function AdminContractsPage() {
                 <div className="flex flex-col gap-1 p-4 bg-muted/20 rounded-xl">
                   <span className="text-[10px] font-black uppercase opacity-40">Target Applicant</span>
                   <p className="text-sm font-black uppercase">{selectedContract.userName} — {selectedContract.spaceName}</p>
+                </div>
+
+                {/* Submitted Details Review Section */}
+                <div className="grid grid-cols-2 gap-4 p-6 bg-primary/[0.02] rounded-2xl border border-primary/5">
+                  <div className="col-span-2 space-y-1">
+                    <p className="text-[9px] font-black tracking-widest text-accent uppercase">Submitted Details</p>
+                    <div className="h-px bg-accent/10 w-full" />
+                  </div>
+                  <div className="space-y-1">
+                    <p className="text-[9px] font-bold text-muted uppercase">Desired Schedule</p>
+                    <p className="text-xs font-black">{selectedContract.desiredStartDate} ({selectedContract.desiredDurationMonths}M)</p>
+                  </div>
+                  <div className="space-y-1">
+                    <p className="text-[9px] font-bold text-muted uppercase">Bank Account</p>
+                    <p className="text-xs font-black">{selectedContract.bankAccount}</p>
+                  </div>
+                  <div className="col-span-2 space-y-1">
+                    <p className="text-[9px] font-bold text-muted uppercase">Address</p>
+                    <p className="text-xs font-black leading-tight">{selectedContract.address}</p>
+                  </div>
+                  <div className="col-span-2 space-y-1">
+                    <p className="text-[9px] font-bold text-muted uppercase">Usage Purpose</p>
+                    <p className="text-xs font-bold italic opacity-70">"{selectedContract.usagePurpose || 'Not specified'}"</p>
+                  </div>
+                  {selectedContract.requestNote && (
+                    <div className="col-span-2 space-y-1 pt-2">
+                       <p className="text-[9px] font-bold text-muted uppercase">Applicant Notes</p>
+                       <div className="p-3 bg-white/50 rounded-lg border border-primary/5 text-xs font-medium italic leading-relaxed">
+                         {selectedContract.requestNote}
+                       </div>
+                    </div>
+                  )}
                 </div>
 
                 {modalType === "approve" ? (
