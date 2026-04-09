@@ -2,8 +2,8 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { motion } from "framer-motion";
-import { createDevice, fetchDeviceTypes } from "../_api";
-import type { CreateDeviceRequest, DeviceType } from "../_types";
+import { createDevice, fetchDeviceTypes, fetchSpaces } from "../_api";
+import type { CreateDeviceRequest, DeviceType, Space } from "../_types";
 import { ApiError } from "@/lib/api";
 
 interface FieldError {
@@ -13,6 +13,7 @@ interface FieldError {
 
 export function DeviceRegisterForm() {
   const [deviceTypes, setDeviceTypes] = useState<DeviceType[]>([]);
+  const [spaces, setSpaces] = useState<Space[]>([]);
   const [form, setForm] = useState<CreateDeviceRequest>({
     spaceId: 0,
     deviceTypeId: 0,
@@ -31,19 +32,40 @@ export function DeviceRegisterForm() {
     }
   }, []);
 
+  const loadSpaces = useCallback(async () => {
+    try {
+      const res = await fetchSpaces();
+      // fetchSpaces는 paginated 응답일 수 있으므로 content 배열 추출
+      const data = res.data;
+      if (Array.isArray(data)) {
+        setSpaces(data);
+      } else if (data && Array.isArray((data as Record<string, unknown>).content)) {
+        setSpaces((data as Record<string, unknown>).content as Space[]);
+      }
+    } catch {
+      // 공간 로드 실패 시 빈 목록
+    }
+  }, []);
+
   useEffect(() => {
     loadDeviceTypes();
-  }, [loadDeviceTypes]);
+    loadSpaces();
+  }, [loadDeviceTypes, loadSpaces]);
+
   const [errors, setErrors] = useState<FieldError>({});
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
   const [apiError, setApiError] = useState<string | null>(null);
 
+  // 공간 분류
+  const privateSpaces = spaces.filter((s) => s.type === "PRIVATE");
+  const commonSpaces = spaces.filter((s) => s.type === "COMMON");
+
   const validate = (): boolean => {
     const newErrors: FieldError = {};
 
     if (!form.spaceId || form.spaceId <= 0) {
-      newErrors.spaceId = "공간 ID는 필수입니다";
+      newErrors.spaceId = "설치 공간을 선택해 주세요";
     }
     if (!form.deviceTypeId || form.deviceTypeId <= 0) {
       newErrors.deviceTypeId = "기기 종류를 선택해 주세요";
@@ -217,6 +239,52 @@ export function DeviceRegisterForm() {
         </div>
       </fieldset>
 
+      {/* ── 설치 위치 ── */}
+      <fieldset className="space-y-6">
+        <legend className="font-black text-xs uppercase tracking-[0.3em] text-muted-foreground mb-4">
+          설치 위치
+        </legend>
+
+        <div className="space-y-2">
+          <label htmlFor="space-select" className="block text-sm font-semibold text-primary">
+            설치 공간 <span className="text-destructive">*</span>
+          </label>
+          <select
+            id="space-select"
+            value={form.spaceId}
+            onChange={(e) => handleChange("spaceId", Number(e.target.value))}
+            className={`w-full rounded-xl border px-4 py-3 text-sm font-medium text-primary
+              bg-surface transition-all duration-200
+              focus:outline-none focus:ring-2 focus:ring-ring/40
+              ${errors.spaceId ? "border-destructive ring-1 ring-destructive/30" : "border-border hover:border-secondary"}`}
+          >
+            <option value={0} disabled>공간을 선택하세요</option>
+            {privateSpaces.length > 0 && (
+              <optgroup label="🏠 개인 공간 (PRIVATE)">
+                {privateSpaces.map((s) => (
+                  <option key={s.spaceId} value={s.spaceId}>
+                    {s.name} · {s.floor}층 · {s.status === "AVAILABLE" ? "공실" : s.status === "OCCUPIED" ? "입주중" : "정비중"}
+                  </option>
+                ))}
+              </optgroup>
+            )}
+            {commonSpaces.length > 0 && (
+              <optgroup label="🏢 공용 공간 (COMMON)">
+                {commonSpaces.map((s) => (
+                  <option key={s.spaceId} value={s.spaceId}>
+                    {s.name} · {s.floor}층
+                  </option>
+                ))}
+              </optgroup>
+            )}
+          </select>
+          {spaces.length === 0 && (
+            <p className="text-xs text-muted-foreground pl-1">공간 목록을 불러오는 중...</p>
+          )}
+          {errors.spaceId && <p className="text-xs font-medium text-destructive pl-1">{errors.spaceId}</p>}
+        </div>
+      </fieldset>
+
       {/* ── 네트워크 정보 ── */}
       <fieldset className="space-y-6">
         <legend className="font-black text-xs uppercase tracking-[0.3em] text-muted-foreground mb-4">
@@ -260,32 +328,6 @@ export function DeviceRegisterForm() {
               ${errors.mockEndpoint ? "border-destructive ring-1 ring-destructive/30" : "border-border hover:border-secondary"}`}
           />
           {errors.mockEndpoint && <p className="text-xs font-medium text-destructive pl-1">{errors.mockEndpoint}</p>}
-        </div>
-      </fieldset>
-
-      {/* ── 설치 위치 ── */}
-      <fieldset className="space-y-6">
-        <legend className="font-black text-xs uppercase tracking-[0.3em] text-muted-foreground mb-4">
-          설치 위치
-        </legend>
-
-        <div className="space-y-2">
-          <label htmlFor="space-id" className="block text-sm font-semibold text-primary">
-            설치 공간 ID <span className="text-destructive">*</span>
-          </label>
-          <input
-            id="space-id"
-            type="number"
-            min={1}
-            placeholder="공간 ID를 입력하세요"
-            value={form.spaceId || ""}
-            onChange={(e) => handleChange("spaceId", Number(e.target.value))}
-            className={`w-full rounded-xl border px-4 py-3 text-sm font-medium text-primary
-              bg-surface placeholder:text-muted-foreground/50 transition-all duration-200
-              focus:outline-none focus:ring-2 focus:ring-ring/40
-              ${errors.spaceId ? "border-destructive ring-1 ring-destructive/30" : "border-border hover:border-secondary"}`}
-          />
-          {errors.spaceId && <p className="text-xs font-medium text-destructive pl-1">{errors.spaceId}</p>}
         </div>
       </fieldset>
 
