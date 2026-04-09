@@ -16,10 +16,15 @@ export default function SpacesPage() {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [editingSpace, setEditingSpace] = useState<SpaceDTO | null>(null);
 
+  // 필터 상태
+  const [filterType, setFilterType] = useState<'ALL' | 'PRIVATE' | 'COMMON'>('ALL');
+
   const loadSpaces = async () => {
     try {
-      const res = await fetchSpaces();
-      setSpaces(res.data?.content || []);
+      const res = await fetchSpaces({ type: filterType });
+      // 프론트엔드에서 간편하게 정렬 (이름순)
+      const sorted = (res.data?.content || []).sort((a: SpaceDTO, b: SpaceDTO) => a.name.localeCompare(b.name));
+      setSpaces(sorted);
     } catch (e) {
       console.error(e);
     }
@@ -27,7 +32,7 @@ export default function SpacesPage() {
 
   useEffect(() => {
     loadSpaces();
-  }, []);
+  }, [filterType]);
 
   const getStatusDisplay = (space: SpaceDTO) => {
     if (space.type === 'PRIVATE') {
@@ -93,7 +98,25 @@ export default function SpacesPage() {
 
       {/* 공간 관리 탭 */}
       {activeTab === 'spaces' && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        <>
+          {/* 타입 필터 칩 */}
+          <div className="flex gap-2 mb-6">
+            {['ALL', 'PRIVATE', 'COMMON'].map((type) => (
+              <button
+                key={type}
+                onClick={() => setFilterType(type as any)}
+                className={`px-4 py-2 rounded-full text-xs font-bold tracking-widest uppercase transition-all
+                  ${filterType === type 
+                    ? 'bg-[var(--color-accent)] text-white shadow-md' 
+                    : 'bg-black/5 text-foreground hover:bg-black/10'
+                  }`}
+              >
+                {type === 'ALL' ? '전체 보기' : type}
+              </button>
+            ))}
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {spaces.map((space: SpaceDTO, idx: number) => {
             const status = getStatusDisplay(space);
             const thumbnailUrl = space.images?.find(img => img.isThumbnail)?.imageUrl || space.images?.[0]?.imageUrl;
@@ -147,7 +170,8 @@ export default function SpacesPage() {
               </motion.div>
             );
           })}
-        </div>
+          </div>
+        </>
       )}
 
       {/* 방 유형 관리 탭 */}

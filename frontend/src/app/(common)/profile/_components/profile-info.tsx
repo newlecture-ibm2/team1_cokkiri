@@ -5,11 +5,14 @@ import { apiFetch, ApiError } from "@/lib/api";
 import { Profile } from "../_types/profile";
 import { UserRound } from "lucide-react";
 import { motion } from "framer-motion";
+import { PasswordChangeModal } from "./password-change-modal";
 
 export default function ProfileInfo() {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  
+  const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
 
   useEffect(() => {
     let isMounted = true;
@@ -141,12 +144,18 @@ export default function ProfileInfo() {
           <motion.button 
             whileHover={{ scale: 1.02, y: -2 }}
             whileTap={{ scale: 0.98 }}
+            onClick={() => setIsPasswordModalOpen(true)}
             className="rounded-none border border-primary/20 bg-transparent px-8 py-4 text-primary transition-colors hover:bg-primary/5 hover:border-primary text-xs font-black uppercase tracking-[0.2em]"
           >
             비밀번호 변경
           </motion.button>
         </div>
       </div>
+
+      <PasswordChangeModal 
+        isOpen={isPasswordModalOpen} 
+        onClose={() => setIsPasswordModalOpen(false)} 
+      />
     </motion.div>
   );
 }

@@ -1,34 +1,18 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
-import { fetchRoom } from '../_api/roomApi';
-import type { RoomDTO } from '../_types';
-import { HeroImage } from './_components/ImageCarousel';
-import { SpecGrid } from './_components/SpecTable';
-import { AmenityBadges } from './_components/AmenityBadges';
-import { RoomGallery } from './_components/RoomGallery';
-
-const STATUS_MAP: Record<string, { text: string; className: string }> = {
-  AVAILABLE: {
-    text: '계약 가능',
-    className: 'bg-secondary/10 text-secondary border-secondary/20',
-  },
-  OCCUPIED: {
-    text: '입주 중',
-    className: 'bg-destructive/10 text-destructive border-destructive/20',
-  },
-  MAINTENANCE: {
-    text: '점검 중',
-    className: 'bg-accent/20 text-accent border-accent/30',
-  },
-};
+import { fetchCommonSpace, CommonSpaceDto } from '../_api';
+import { FacilityHero } from './_components/FacilityHero';
+import { FacilitySpec } from './_components/FacilitySpec';
+import { FacilityGallery } from './_components/FacilityGallery';
+import { AmenityBadges } from '../../rooms/[id]/_components/AmenityBadges';
 
 const formatKRW = (value?: number) => {
-  if (value === undefined || value === null) return '-';
+  if (value === undefined || value === null || value === 0) return '무료';
   if (value >= 10000) {
     const man = Math.floor(value / 10000);
     const remainder = value % 10000;
@@ -39,9 +23,9 @@ const formatKRW = (value?: number) => {
   return `₩${value.toLocaleString()}`;
 };
 
-export default function RoomDetailPage() {
+export default function ExperienceDetailPage() {
   const params = useParams<{ id: string }>();
-  const [room, setRoom] = useState<RoomDTO | null>(null);
+  const [space, setSpace] = useState<CommonSpaceDto | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedImage, setSelectedImage] = useState(0);
@@ -53,11 +37,11 @@ export default function RoomDetailPage() {
   useEffect(() => {
     const load = async () => {
       try {
-        const res = await fetchRoom(Number(params.id));
-        setRoom(res.data);
+        const res = await fetchCommonSpace(Number(params.id));
+        setSpace(res);
       } catch (e) {
         console.error(e);
-        setError('방 정보를 불러올 수 없습니다');
+        setError('시설 정보를 불러올 수 없습니다');
       } finally {
         setLoading(false);
       }
@@ -67,27 +51,23 @@ export default function RoomDetailPage() {
 
   if (loading) return <DetailSkeleton />;
 
-  if (error || !room) {
+  if (error || !space) {
     return (
       <div className="min-h-screen bg-background text-foreground flex flex-col items-center justify-center p-8">
-        <p className="text-lg font-bold opacity-50 mb-6">{error || '방을 찾을 수 없습니다'}</p>
-        <Link href="/rooms" className="text-sm font-bold text-secondary underline underline-offset-4">
+        <p className="text-lg font-bold opacity-50 mb-6">{error || '시설을 찾을 수 없습니다'}</p>
+        <Link href="/experience" className="text-sm font-bold text-[var(--color-accent)] underline underline-offset-4">
           ← 목록으로 돌아가기
         </Link>
       </div>
     );
   }
 
-  const statusInfo = STATUS_MAP[room.status] || STATUS_MAP.AVAILABLE;
-  const isPrivate = room.roomTypeId !== undefined && room.roomTypeId !== null;
-  const totalMonthly = (room.monthlyRent || 0) + (room.maintenanceFee || 0);
-
   return (
     <div className="min-h-screen bg-background text-foreground selection:bg-primary selection:text-primary-foreground">
-      {/* Hero Image — Full viewport */}
-      <HeroImage
-        images={room.images}
-        roomName={room.name}
+      {/* Hero Image */}
+      <FacilityHero
+        images={space.images}
+        spaceName={space.name}
         selectedImage={selectedImage}
         onSelectImage={setSelectedImage}
       />
@@ -104,10 +84,18 @@ export default function RoomDetailPage() {
                 viewport={{ once: true }}
               >
                 <span
-                  className={`inline-block px-6 py-2.5 text-xs md:text-sm font-black tracking-[0.2em] uppercase rounded-full border ${statusInfo.className}`}
+                  className={`inline-block px-6 py-2.5 text-xs md:text-sm font-black tracking-[0.2em] uppercase rounded-full border ${space.isReservable
+                      ? 'bg-[var(--color-accent)]/10 text-[var(--color-accent)] border-[var(--color-accent)]/20'
+                      : 'bg-black/5 text-foreground border-foreground/10'
+                    }`}
                 >
-                  {statusInfo.text}
+                  {space.isReservable ? '예약제 공간' : '자유 이용 공간'}
                 </span>
+                {space.status === 'MAINTENANCE' && (
+                  <span className="ml-3 inline-block px-6 py-2.5 text-xs md:text-sm font-black tracking-[0.2em] uppercase rounded-full border bg-destructive/10 text-destructive border-destructive/20">
+                    점검 중
+                  </span>
+                )}
               </motion.div>
 
               <motion.div
@@ -117,11 +105,11 @@ export default function RoomDetailPage() {
                 className="max-w-4xl"
               >
                 <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-black tracking-tight text-foreground mb-6 md:mb-10 leading-[1.1] break-keep">
-                  도시의 중심에서 누리는 진정한 휴식의 공간.
+                  공유와 소통, 진정한 코리빙의 경험.
                 </h2>
-                {room.description && (
+                {space.description && (
                   <p className="text-base sm:text-lg md:text-xl lg:text-2xl leading-relaxed font-medium text-foreground/70 text-balance italic">
-                    &ldquo;{room.description}&rdquo;
+                    &ldquo;{space.description}&rdquo;
                   </p>
                 )}
               </motion.div>
@@ -131,7 +119,7 @@ export default function RoomDetailPage() {
             <div className="h-px bg-foreground/10" />
 
             {/* Room Details Grid */}
-            <SpecGrid room={room} />
+            <FacilitySpec space={space} />
 
             {/* Separator */}
             <div className="h-px bg-foreground/10" />
@@ -141,37 +129,31 @@ export default function RoomDetailPage() {
               {/* Pricing Details */}
               <div className="space-y-12">
                 <h3 className="text-sm md:text-base font-black tracking-[0.3em] uppercase opacity-30">
-                  Pricing Details
+                  Usage Fee
                 </h3>
                 <div className="space-y-6">
-                  {[
-                    { label: '보증금', value: formatKRW(room.deposit) },
-                    { label: '월 임대료', value: formatKRW(room.monthlyRent) },
-                    { label: '관리비', value: room.maintenanceFee ? `${formatKRW(room.maintenanceFee)} / 월` : '-' },
-                  ].map((item) => (
-                    <div key={item.label} className="flex justify-between items-baseline group">
-                      <span className="text-base md:text-lg lg:text-xl font-bold tracking-tight text-foreground/50">
-                        {item.label}
-                      </span>
-                      <div className="flex-1 mx-4 border-b border-dotted border-foreground/20" />
-                      <span className="text-lg md:text-xl lg:text-3xl font-black text-foreground">
-                        {item.value}
-                      </span>
-                    </div>
-                  ))}
+                  <div className="flex justify-between items-baseline group">
+                    <span className="text-base md:text-lg lg:text-xl font-bold tracking-tight text-foreground/50">
+                      시간당 이용료
+                    </span>
+                    <div className="flex-1 mx-4 border-b border-dotted border-foreground/20" />
+                    <span className="text-lg md:text-xl lg:text-3xl font-black text-foreground">
+                      {formatKRW(space.usageFee)}
+                    </span>
+                  </div>
                 </div>
               </div>
 
               {/* Amenities */}
-              <AmenityBadges amenities={room.amenities} />
+              <AmenityBadges amenities={space.amenities} />
             </div>
 
             {/* Separator */}
             <div className="h-px bg-foreground/10" />
 
             {/* Image Gallery (내 도메인 전용 카드) */}
-            {room.images && room.images.length > 0 && (
-              <RoomGallery images={room.images} />
+            {space.images && space.images.length > 0 && (
+              <FacilityGallery images={space.images} />
             )}
           </div>
 
@@ -186,54 +168,29 @@ export default function RoomDetailPage() {
               <div className="space-y-6">
                 <div>
                   <h3 className="text-sm md:text-base font-black tracking-[0.4em] uppercase opacity-50 mb-4">
-                    Make it Yours
+                    Experience Together
                   </h3>
                   <p className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-black tracking-tighter leading-tight">
-                    이 특별한 공간의<br />새로운 주인공이 되세요.
+                    {space.isReservable ? '입주하고 편리하게 예약하세요.' : '입주자라면 누구나, 언제든지.'}
                   </p>
-                </div>
-
-                <div className="flex flex-wrap gap-x-12 gap-y-6 pt-4">
-                  <div className="space-y-1">
-                    <span className="text-xs md:text-sm font-bold tracking-widest uppercase opacity-40 block">
-                      Total Monthly
-                    </span>
-                    <p className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black">
-                      ₩{totalMonthly.toLocaleString()}
-                    </p>
-                  </div>
-                  {room.deposit && (
-                    <div className="space-y-1">
-                      <span className="text-xs md:text-sm font-bold tracking-widest uppercase opacity-40 block">
-                        Deposit
-                      </span>
-                      <p className="text-xl sm:text-2xl md:text-3xl font-bold opacity-70">
-                        ₩{room.deposit.toLocaleString()}
-                      </p>
-                    </div>
-                  )}
                 </div>
               </div>
 
-              {room.status === 'AVAILABLE' && isPrivate ? (
+              {space.status === 'MAINTENANCE' ? (
+                <div className="inline-flex items-center justify-center h-16 md:h-22 px-12 rounded-full bg-white/10 text-white/40 font-black tracking-widest text-sm md:text-base cursor-not-allowed shrink-0 border border-white/10">
+                  점검 중
+                </div>
+              ) : space.isReservable ? (
                 <Link
-                  href={`/contract-apply?spaceId=${room.spaceId}`}
-                  className="group inline-flex items-center justify-center h-16 md:h-22 px-12 rounded-full bg-background text-primary hover:bg-secondary hover:text-white transition-all duration-500 font-black tracking-widest text-sm md:text-base"
+                  href={`/facilities?spaceId=${space.spaceId}`}
+                  className="group inline-flex items-center justify-center h-16 md:h-22 px-12 rounded-full bg-background text-primary hover:bg-secondary hover:text-white transition-all duration-500 font-black tracking-widest text-sm md:text-base shrink-0"
                 >
-                  Apply Now
-                  <ArrowRight className="ml-3 h-5 w-5 transition-transform group-hover:translate-x-1" />
-                </Link>
-              ) : room.status === 'AVAILABLE' && !isPrivate ? (
-                <Link
-                  href={`/facilities?spaceId=${room.spaceId}`}
-                  className="group inline-flex items-center justify-center h-16 md:h-22 px-12 rounded-full bg-background text-primary hover:bg-secondary hover:text-white transition-all duration-500 font-black tracking-widest text-sm md:text-base"
-                >
-                  Reserve
+                  Reserve Facility
                   <ArrowRight className="ml-3 h-5 w-5 transition-transform group-hover:translate-x-1" />
                 </Link>
               ) : (
-                <div className="inline-flex items-center justify-center h-16 md:h-22 px-12 rounded-full bg-white/10 text-white/40 font-black tracking-widest text-sm md:text-base cursor-not-allowed">
-                  {room.status === 'OCCUPIED' ? 'Fully Booked' : 'Under Maintenance'}
+                <div className="inline-flex items-center justify-center h-16 md:h-22 px-12 rounded-full bg-white/10 text-white/90 border border-white/20 font-black tracking-widest text-sm md:text-base shrink-0">
+                  자유 이용 시설
                 </div>
               )}
             </div>
@@ -257,12 +214,12 @@ function DetailSkeleton() {
       {/* Content Skeleton */}
       <div className="px-6 py-16 md:px-12 lg:px-24 md:py-32">
         <div className="mx-auto max-w-[1200px] animate-pulse space-y-20">
-          <div className="h-8 w-24 bg-foreground/5 rounded-full" />
+          <div className="h-8 w-32 bg-foreground/5 rounded-full" />
           <div className="h-16 w-3/4 bg-foreground/5 rounded-2xl" />
           <div className="h-6 w-full bg-foreground/5 rounded-xl" />
           <div className="h-px bg-foreground/10" />
           <div className="grid grid-cols-2 gap-4 lg:grid-cols-3">
-            {Array.from({ length: 9 }).map((_, i) => (
+            {Array.from({ length: 6 }).map((_, i) => (
               <div key={i} className="h-20 bg-foreground/[0.02] border border-foreground/5 rounded-2xl" />
             ))}
           </div>
