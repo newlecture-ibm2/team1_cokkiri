@@ -2,6 +2,7 @@ package com.coliving.common.notification.application.service;
 
 import com.coliving.common.notification.adapter.in.web.dto.res.NotificationSseEventResponseDto;
 import com.coliving.common.notification.model.Notification;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
@@ -14,6 +15,7 @@ public class NotificationSseService {
     private static final long SSE_TIMEOUT_MS = 30L * 60L * 1000L;
     private static final String EVENT_CONNECTED = "connected";
     private static final String EVENT_NOTIFICATION = "notification";
+    private static final String EVENT_HEARTBEAT = "heartbeat";
 
     private final Map<Long, Map<String, SseEmitter>> emittersByUser = new ConcurrentHashMap<>();
 
@@ -86,6 +88,22 @@ public class NotificationSseService {
                 emitter.complete();
                 removeEmitter(userId, emitterId);
             }
+        });
+    }
+
+    @Scheduled(fixedDelay = 30000)
+    public void sendHeartbeat() {
+        emittersByUser.forEach((userId, userEmitters) -> {
+            userEmitters.forEach((emitterId, emitter) -> {
+                try {
+                    emitter.send(SseEmitter.event()
+                            .name(EVENT_HEARTBEAT)
+                            .data("ping"));
+                } catch (Exception e) {
+                    emitter.complete();
+                    removeEmitter(userId, emitterId);
+                }
+            });
         });
     }
 
