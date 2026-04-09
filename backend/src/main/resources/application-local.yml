@@ -21,7 +21,7 @@ spring:
       port: ${REDIS_PORT:6379}
 
 jwt:
-  secret: dev-secret-key-minimum-32-characters-long!!
+  secret: 4de1f2a3c9b78e5d614088a2c5b7c8d9e0f12a3b4c5d6e7f8a9b0c1d2e3f4a5b
   access-expiration: 1800000
   refresh-expiration: 604800000
 

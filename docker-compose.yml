@@ -64,8 +64,6 @@ services:
     container_name: team1-cokkiri-db
     image: postgres:16-alpine
     restart: unless-stopped
-    ports:
-      - "5432:5432"
     environment:
       POSTGRES_DB: coliving
       POSTGRES_USER: ${DB_USERNAME:-coliving}
@@ -83,8 +81,8 @@ services:
     image: wiremock/wiremock:3.5.4
     restart: unless-stopped
     command: [ "--port", "8000" ]
-    ports:
-      - "8000:8000"
+    expose:
+      - "8000"
     volumes:
       # 이미 볼륨 마운트가 되어 있어 호스트에서 수정 시 즉시 반영됩니다.
       - ./mock-iot/mappings:/home/wiremock/mappings
@@ -94,8 +92,8 @@ services:
     image: redis:7-alpine
     restart: unless-stopped
     command: [ "redis-server", "--appendonly", "yes" ]
-    ports:
-      - "6379:6379"
+    expose:
+      - "6379"
     healthcheck:
       test: [ "CMD", "redis-cli", "ping" ]
       interval: 10s
