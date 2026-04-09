@@ -60,7 +60,38 @@ export default function ContractApplyForm() {
   const [error, setError] = useState<string | null>(null);
   const [showToast, setShowToast] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [userProfile, setUserProfile] = useState<{
+    name?: string; phone?: string; email?: string;
+    gender?: string; nationality?: string; birthDate?: string;
+  } | null>(null);
   const isReadOnly = formData.status === "ACTIVE" || formData.status === "EXPIRED" || formData.status === "TERMINATED" || formData.status === "APPROVED";
+
+  // Payment states
+  const [paymentMethod, setPaymentMethod] = useState<"card" | "transfer" | null>(null);
+  const [cardNumber, setCardNumber] = useState("");
+  const [cardExpiry, setCardExpiry] = useState("");
+  const [cardCvc, setCardCvc] = useState("");
+  const [isPaymentProcessing, setIsPaymentProcessing] = useState(false);
+  const [paymentComplete, setPaymentComplete] = useState(false);
+  const [virtualAccount, setVirtualAccount] = useState<{ bank: string; account: string; holder: string } | null>(null);
+
+  // Fetch user profile
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const res = await fetch('/api/users/me');
+        if (res.ok) {
+          const result = await res.json();
+          if (result.success && result.data) {
+            setUserProfile(result.data);
+          }
+        }
+      } catch (e) {
+        console.warn('Failed to fetch user profile', e);
+      }
+    };
+    fetchProfile();
+  }, []);
 
 
   // Load draft from API & LocalStorage
@@ -384,6 +415,31 @@ export default function ContractApplyForm() {
                   </p>
                 </div>
 
+                {/* User Profile Info Card */}
+                {userProfile && (
+                  <div className="p-8 bg-primary/[0.03] rounded-[2rem] border border-primary/10 space-y-6">
+                    <div className="flex items-center gap-3 mb-2">
+                      <User className="w-5 h-5 text-accent" />
+                      <span className="text-[10px] font-black tracking-[0.3em] uppercase text-accent">MY INFORMATION</span>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      {[
+                        { label: "NAME", value: userProfile.name },
+                        { label: "PHONE", value: userProfile.phone },
+                        { label: "EMAIL", value: userProfile.email },
+                        { label: "GENDER", value: userProfile.gender === "MALE" ? "남성" : userProfile.gender === "FEMALE" ? "여성" : userProfile.gender },
+                        { label: "NATIONALITY", value: userProfile.nationality },
+                        { label: "BIRTH DATE", value: userProfile.birthDate },
+                      ].filter(item => item.value).map((item) => (
+                        <div key={item.label} className="space-y-1">
+                          <span className="text-[9px] font-black tracking-[0.3em] uppercase text-primary/30 block">{item.label}</span>
+                          <p className="text-sm font-bold tracking-tight text-primary">{item.value}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
                 <div className="space-y-10 pt-4">
                   <div className="space-y-4">
                     <label className="text-[10px] font-black tracking-[0.3em] uppercase text-primary/40 block">
@@ -465,7 +521,7 @@ export default function ContractApplyForm() {
 
                 <div className="space-y-4">
                   <label className="text-[10px] font-black tracking-[0.3em] uppercase text-primary/40 block">
-                    BANK ACCOUNT INFO
+                    BANK ACCOUNT INFO (보증금 반환 계좌)
                   </label>
                   <input
                     type="text"
@@ -477,6 +533,197 @@ export default function ContractApplyForm() {
                     className="w-full bg-primary/5 border-none p-6 rounded-2xl text-lg font-bold focus:ring-2 focus:ring-accent transition-all disabled:opacity-50"
                   />
                 </div>
+
+                {/* Payment Method Selection */}
+                <div className="space-y-6">
+                  <label className="text-[10px] font-black tracking-[0.3em] uppercase text-primary/40 block">
+                    PAYMENT METHOD (보증금 납부 방법)
+                  </label>
+                  <div className="grid grid-cols-2 gap-4">
+                    <button
+                      type="button"
+                      onClick={() => setPaymentMethod("card")}
+                      className={`p-6 rounded-2xl border-2 transition-all flex flex-col items-center gap-3 ${
+                        paymentMethod === "card"
+                          ? "border-accent bg-accent/10 shadow-lg shadow-accent/10"
+                          : "border-primary/10 hover:border-accent/40 bg-primary/[0.02]"
+                      }`}
+                    >
+                      <CreditCard className={`w-8 h-8 ${paymentMethod === "card" ? "text-accent" : "text-primary/40"}`} />
+                      <span className="text-[10px] font-black tracking-[0.2em] uppercase">CREDIT CARD</span>
+                      <span className="text-[9px] font-bold tracking-tight opacity-50">신용/체크카드 결제</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setPaymentMethod("transfer");
+                        // Generate virtual account
+                        const banks = ["국민은행", "신한은행", "하나은행", "우리은행", "농협은행"];
+                        const bank = banks[Math.floor(Math.random() * banks.length)];
+                        const acct = `${Math.floor(100 + Math.random() * 900)}-${Math.floor(100000 + Math.random() * 900000)}-${Math.floor(10000 + Math.random() * 90000)}`;
+                        setVirtualAccount({ bank, account: acct, holder: "㈜코끼리" });
+                      }}
+                      className={`p-6 rounded-2xl border-2 transition-all flex flex-col items-center gap-3 ${
+                        paymentMethod === "transfer"
+                          ? "border-accent bg-accent/10 shadow-lg shadow-accent/10"
+                          : "border-primary/10 hover:border-accent/40 bg-primary/[0.02]"
+                      }`}
+                    >
+                      <Building className={`w-8 h-8 ${paymentMethod === "transfer" ? "text-accent" : "text-primary/40"}`} />
+                      <span className="text-[10px] font-black tracking-[0.2em] uppercase">BANK TRANSFER</span>
+                      <span className="text-[9px] font-bold tracking-tight opacity-50">가상계좌 이체</span>
+                    </button>
+                  </div>
+                </div>
+
+                {/* Credit Card Form */}
+                <AnimatePresence mode="wait">
+                  {paymentMethod === "card" && !paymentComplete && (
+                    <motion.div
+                      key="card-form"
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: "auto" }}
+                      exit={{ opacity: 0, height: 0 }}
+                      className="overflow-hidden"
+                    >
+                      <div className="p-8 bg-white rounded-[2rem] border border-primary/10 shadow-xl space-y-6">
+                        <div className="flex items-center gap-3">
+                          <CreditCard className="w-5 h-5 text-accent" />
+                          <span className="text-[10px] font-black tracking-[0.3em] uppercase text-accent">CARD DETAILS</span>
+                        </div>
+
+                        <div className="space-y-5">
+                          <div className="space-y-2">
+                            <label className="text-[9px] font-black tracking-[0.3em] uppercase text-primary/30 block">
+                              CARD NUMBER
+                            </label>
+                            <input
+                              type="text"
+                              value={cardNumber}
+                              onChange={(e) => {
+                                const v = e.target.value.replace(/\D/g, "").slice(0, 16);
+                                setCardNumber(v.replace(/(.{4})/g, "$1 ").trim());
+                              }}
+                              placeholder="0000 0000 0000 0000"
+                              className="w-full bg-primary/5 border-none p-5 rounded-xl text-lg font-bold tracking-widest focus:ring-2 focus:ring-accent transition-all"
+                            />
+                          </div>
+                          <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                              <label className="text-[9px] font-black tracking-[0.3em] uppercase text-primary/30 block">
+                                EXPIRY DATE
+                              </label>
+                              <input
+                                type="text"
+                                value={cardExpiry}
+                                onChange={(e) => {
+                                  let v = e.target.value.replace(/\D/g, "").slice(0, 4);
+                                  if (v.length > 2) v = v.slice(0, 2) + "/" + v.slice(2);
+                                  setCardExpiry(v);
+                                }}
+                                placeholder="MM/YY"
+                                className="w-full bg-primary/5 border-none p-5 rounded-xl text-lg font-bold tracking-widest focus:ring-2 focus:ring-accent transition-all"
+                              />
+                            </div>
+                            <div className="space-y-2">
+                              <label className="text-[9px] font-black tracking-[0.3em] uppercase text-primary/30 block">
+                                CVC
+                              </label>
+                              <input
+                                type="password"
+                                value={cardCvc}
+                                onChange={(e) => setCardCvc(e.target.value.replace(/\D/g, "").slice(0, 3))}
+                                placeholder="•••"
+                                className="w-full bg-primary/5 border-none p-5 rounded-xl text-lg font-bold tracking-widest focus:ring-2 focus:ring-accent transition-all"
+                              />
+                            </div>
+                          </div>
+                        </div>
+
+                        <button
+                          type="button"
+                          disabled={cardNumber.replace(/\s/g, "").length < 16 || cardExpiry.length < 5 || cardCvc.length < 3 || isPaymentProcessing}
+                          onClick={async () => {
+                            setIsPaymentProcessing(true);
+                            await new Promise(r => setTimeout(r, 2000));
+                            setIsPaymentProcessing(false);
+                            setPaymentComplete(true);
+                          }}
+                          className="w-full py-5 bg-accent text-white rounded-2xl text-[10px] font-black tracking-[0.2em] uppercase transition-all hover:bg-primary disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center gap-3"
+                        >
+                          {isPaymentProcessing ? (
+                            <><Loader2 className="w-4 h-4 animate-spin" /> PROCESSING PAYMENT...</>
+                          ) : (
+                            <><ShieldCheck className="w-4 h-4" /> PAY DEPOSIT</>
+                          )}
+                        </button>
+                      </div>
+                    </motion.div>
+                  )}
+
+                  {/* Virtual Account Info */}
+                  {paymentMethod === "transfer" && virtualAccount && !paymentComplete && (
+                    <motion.div
+                      key="transfer-info"
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: "auto" }}
+                      exit={{ opacity: 0, height: 0 }}
+                      className="overflow-hidden"
+                    >
+                      <div className="p-8 bg-white rounded-[2rem] border border-primary/10 shadow-xl space-y-6">
+                        <div className="flex items-center gap-3">
+                          <Building className="w-5 h-5 text-accent" />
+                          <span className="text-[10px] font-black tracking-[0.3em] uppercase text-accent">VIRTUAL ACCOUNT</span>
+                        </div>
+
+                        <div className="bg-accent/5 p-6 rounded-2xl space-y-4">
+                          {[
+                            { label: "은행", value: virtualAccount.bank },
+                            { label: "계좌번호", value: virtualAccount.account },
+                            { label: "예금주", value: virtualAccount.holder },
+                            { label: "입금 기한", value: (() => { const d = new Date(); d.setDate(d.getDate() + 3); return d.toLocaleDateString("ko-KR", { year: "numeric", month: "long", day: "numeric" }) + " 23:59까지"; })() },
+                          ].map((item) => (
+                            <div key={item.label} className="flex items-center justify-between">
+                              <span className="text-[10px] font-black tracking-[0.2em] uppercase text-primary/40">{item.label}</span>
+                              <span className="text-sm font-black tracking-tight text-primary">{item.value}</span>
+                            </div>
+                          ))}
+                        </div>
+
+                        <div className="p-4 bg-orange-50 rounded-xl border border-orange-100">
+                          <p className="text-[10px] font-bold text-orange-700 tracking-tight leading-relaxed">
+                            ⚠️ 위 가상계좌로 보증금을 입금해주세요. 기한 내 미입금 시 계좌가 만료됩니다. 
+                            입금 확인 후 자동으로 결제 완료 처리됩니다.
+                          </p>
+                        </div>
+
+                        <button
+                          type="button"
+                          onClick={() => setPaymentComplete(true)}
+                          className="w-full py-5 bg-accent text-white rounded-2xl text-[10px] font-black tracking-[0.2em] uppercase transition-all hover:bg-primary flex items-center justify-center gap-3"
+                        >
+                          <CheckCircle2 className="w-4 h-4" /> CONFIRM TRANSFER COMPLETE
+                        </button>
+                      </div>
+                    </motion.div>
+                  )}
+
+                  {/* Payment Complete */}
+                  {paymentComplete && (
+                    <motion.div
+                      key="payment-done"
+                      initial={{ opacity: 0, scale: 0.95 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      className="p-8 bg-accent/10 rounded-[2rem] border border-accent/20 text-center space-y-4"
+                    >
+                      <CheckCircle2 className="w-12 h-12 text-accent mx-auto" />
+                      <h3 className="text-lg font-black tracking-tighter uppercase">Payment Confirmed</h3>
+                      <p className="text-sm font-bold tracking-tight opacity-60">
+                        {paymentMethod === "card" ? "카드 결제가 완료되었습니다." : "입금 확인이 완료되었습니다."}
+                      </p>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <button type="button" onClick={prevStep} className="py-8 border-2 border-primary/10 text-primary rounded-full font-black tracking-[0.2em] transition-all hover:bg-primary/5">
