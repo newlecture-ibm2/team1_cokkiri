@@ -4,5 +4,6 @@ public enum ReferenceType {
     CONTRACT,
     RESERVATION,
     VOC,
+    COMMUNITY,
     PAYMENT
 }
