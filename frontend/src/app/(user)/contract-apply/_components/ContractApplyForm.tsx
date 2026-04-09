@@ -71,25 +71,20 @@ export default function ContractApplyForm() {
 
       const contractId = searchParams.get("id");
       try {
-        // 1. Try LocalStorage first for instant hit (only if no specific contractId)
-        if (!contractId) {
-          const savedDraft = localStorage.getItem(`contract_draft_${spaceId}`);
-          if (savedDraft) {
-            setFormData(prev => ({ ...prev, ...JSON.parse(savedDraft) }));
-          }
-        }
-
-        // 2. Fetch from Server for latest truth
+        // 1. Fetch from Server for latest truth (server is the authority)
         const url = contractId 
           ? `/api/contracts/${contractId}`
           : `/api/contracts/draft?spaceId=${spaceId}`;
 
         const response = await fetch(url);
+        let serverHasData = false;
+
         if (response.ok) {
           const result = await response.json();
           if (result.success && result.data) {
-            setFormData(prev => ({
-              ...INITIAL_DATA, // Use INITIAL_DATA as base for server results
+            serverHasData = true;
+            setFormData({
+              ...INITIAL_DATA,
               contractId: result.data.contractId,
               desiredStartDate: result.data.desiredStartDate || INITIAL_DATA.desiredStartDate,
               desiredDurationMonths: result.data.desiredDurationMonths || INITIAL_DATA.desiredDurationMonths,
@@ -100,7 +95,34 @@ export default function ContractApplyForm() {
               privacyAgreed: result.data.privacyAgreed || INITIAL_DATA.privacyAgreed,
               termsAgreed: result.data.status !== "DRAFT",
               status: result.data.status || "DRAFT",
-            }));
+            });
+          }
+        }
+
+        // 2. If server has no draft, try LocalStorage only for NEW drafts (no contractId)
+        if (!serverHasData && !contractId) {
+          const savedDraft = localStorage.getItem(`contract_draft_${spaceId}`);
+          if (savedDraft) {
+            const parsed = JSON.parse(savedDraft);
+            // Only restore localStorage data if it's genuinely a DRAFT (not leftover from a submitted contract)
+            if (!parsed.status || parsed.status === "DRAFT") {
+              setFormData(prev => ({ ...prev, ...parsed }));
+            } else {
+              // Stale localStorage from a previous submission — clear it
+              localStorage.removeItem(`contract_draft_${spaceId}`);
+            }
+          }
+        }
+
+        // 3. If server explicitly has no draft and no localStorage hit, ensure clean state
+        if (!serverHasData && !contractId) {
+          // Clear any stale localStorage for this space (previous contracts)
+          const savedDraft = localStorage.getItem(`contract_draft_${spaceId}`);
+          if (savedDraft) {
+            const parsed = JSON.parse(savedDraft);
+            if (parsed.status && parsed.status !== "DRAFT") {
+              localStorage.removeItem(`contract_draft_${spaceId}`);
+            }
           }
         }
       } catch (e) {
@@ -137,14 +159,14 @@ export default function ContractApplyForm() {
     }
   }, [spaceId]);
 
-  // Throttled Auto-save
+  // Throttled Auto-save (skip for read-only contracts or when viewing a specific submission)
   useEffect(() => {
-    if (step > 4 || isLoading) return;
+    if (step > 4 || isLoading || isReadOnly) return;
     const handler = setTimeout(() => {
       saveDraft(formData, false);
     }, 2000);
     return () => clearTimeout(handler);
-  }, [formData, saveDraft, step, isLoading]);
+  }, [formData, saveDraft, step, isLoading, isReadOnly]);
 
   const nextStep = () => setStep(s => Math.min(s + 1, 4));
   const prevStep = () => setStep(s => Math.max(s - 1, 1));
