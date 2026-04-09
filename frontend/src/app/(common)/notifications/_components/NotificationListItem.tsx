@@ -19,30 +19,38 @@ export function NotificationListItem({ item }: { item: NotificationItem }) {
   const [isRead, setIsRead] = useState(item.isRead);
 
   const handleClick = async () => {
-    // 1. 이미 읽은 상태가 아니라면 읽음 처리 API 호출
+    console.log("Notification Clicked:", item);
+
+    // 1. 읽음 처리 (비동기로 진행하되 페이지 이동을 막지 않음)
     if (!isRead) {
-      try {
-        const res = await fetch(`/api/notifications/${item.notificationId}/read`, {
-          method: "PATCH",
-        });
-        if (res.ok) {
-          setIsRead(true);
+      fetch(`/api/notifications/${item.notificationId}/read`, { method: "PATCH" })
+        .then(res => {
+          if (res.ok) setIsRead(true);
+          else console.warn("Read status update failed", res.status);
+        })
+        .catch(err => console.error("Read status error", err));
+    }
+
+    // 2. 경로 설정로직 최적화 (대소문자 무관하게 체크)
+    let targetPath = "/notifications";
+    const refType = item.referenceType?.toUpperCase();
+    const type = item.type?.toUpperCase();
+    const refId = item.referenceId;
+
+    if (refId) {
+      if (refType === "COMMUNITY") {
+        targetPath = `/community/${refId}`;
+      } else if (refType === "VOC") {
+        // 민원 생성 알림만 관리자 페이지로, 나머지는 마이페이지 민원 상세로
+        if (type === "VOC_CREATED") {
+          targetPath = `/admin/vocs/${refId}`;
+        } else {
+          targetPath = `/profile/vocs/${refId}`;
         }
-      } catch (error) {
-        console.error("Failed to mark notification as read", error);
       }
     }
 
-    // 2. 알림 타입 및 참조 아이디에 따른 상세 페이지 이동 경로 설정
-    let targetPath = "/notifications"; // 기본값 (상세 페이지가 없을 경우 알림 목록 유지)
-    
-    if (item.referenceType === "COMMUNITY" && item.referenceId) {
-      targetPath = `/community/${item.referenceId}`;
-    } else if (item.referenceType === "VOC" && item.referenceId) {
-      targetPath = `/my/voc/${item.referenceId}`;
-    }
-
-    // 3. 페이지 이동
+    console.log("Redirecting to:", targetPath);
     router.push(targetPath);
   };
 

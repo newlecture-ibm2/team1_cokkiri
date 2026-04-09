@@ -19,11 +19,15 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.annotation.Propagation;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.List;
 import java.util.Set;
 
+@Slf4j
 @Service
 public class NotificationService implements NotificationUseCase, CreateNotificationUseCase {
     private static final Set<String> ALLOWED_SORT_PROPERTIES = Set.of(
@@ -76,7 +80,7 @@ public class NotificationService implements NotificationUseCase, CreateNotificat
     }
 
     @Override
-    @Transactional
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public CreateNotificationResult create(CreateNotificationCommand command) {
         if (command.getUserId() == null || command.getType() == null) {
             throw new BusinessException(ErrorCode.VALIDATION_ERROR);
@@ -86,19 +90,41 @@ public class NotificationService implements NotificationUseCase, CreateNotificat
             throw new BusinessException(ErrorCode.VALIDATION_ERROR);
         }
 
-        Notification saved = notificationRepositoryPort.create(
-                command.getUserId(),
-                command.getType(),
-                command.getTitle(),
-                command.getMessage(),
-                command.getReferenceType(),
-                command.getReferenceId()
-        );
-        eventPublisher.publishEvent(new NotificationCreatedEvent(saved));
+        if (command.getReferenceType() != null && command.getReferenceId() != null) {
+            boolean exists = notificationRepositoryPort.exists(
+                    command.getUserId(),
+                    command.getType(),
+                    command.getReferenceType(),
+                    command.getReferenceId()
+            );
+            if (exists) {
+                return CreateNotificationResult.builder()
+                        .notificationId(null)
+                        .build();
+            }
+        }
 
-        return CreateNotificationResult.builder()
-                .notificationId(saved.getNotificationId())
-                .build();
+        try {
+            Notification saved = notificationRepositoryPort.create(
+                    command.getUserId(),
+                    command.getType(),
+                    command.getTitle(),
+                    command.getMessage(),
+                    command.getReferenceType(),
+                    command.getReferenceId()
+            );
+            eventPublisher.publishEvent(new NotificationCreatedEvent(saved));
+
+            return CreateNotificationResult.builder()
+                    .notificationId(saved.getNotificationId())
+                    .build();
+        } catch (DataIntegrityViolationException e) {
+            log.warn("Duplicate notification attempt prevented: {} for user {}", 
+                    command.getType(), command.getUserId());
+            return CreateNotificationResult.builder()
+                    .notificationId(null)
+                    .build();
+        }
     }
 
     @Override

@@ -12,6 +12,13 @@ WORKDIR /app
 COPY . .
 # Stage 1에서 설치된 리눅스용 node_modules를 가져옴
 COPY --from=deps /app/node_modules ./node_modules
+
+# PortOne V2 결제 연동 (빌드 시 NEXT_PUBLIC_ 변수 주입)
+ARG NEXT_PUBLIC_PORTONE_STORE_ID
+ARG NEXT_PUBLIC_PORTONE_CHANNEL_KEY
+ENV NEXT_PUBLIC_PORTONE_STORE_ID=$NEXT_PUBLIC_PORTONE_STORE_ID
+ENV NEXT_PUBLIC_PORTONE_CHANNEL_KEY=$NEXT_PUBLIC_PORTONE_CHANNEL_KEY
+
 RUN npm run build
 
 # ── Stage 3: 실행 (standalone) ──
