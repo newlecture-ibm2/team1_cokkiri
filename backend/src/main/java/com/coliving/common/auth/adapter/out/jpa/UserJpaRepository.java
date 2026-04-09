@@ -1,6 +1,13 @@
 package com.coliving.common.auth.adapter.out.jpa;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+
+import com.coliving.common.auth.model.UserRole;
+import com.coliving.common.auth.model.UserStatus;
 
 import java.util.Optional;
 
@@ -8,6 +15,17 @@ import java.util.Optional;
  * USERS 테이블 JPA Repository
  */
 public interface UserJpaRepository extends JpaRepository<UserEntity, Long> {
+
+    @Query("SELECT u FROM UserEntity u " +
+           "WHERE (:role IS NULL OR u.role = :role) " +
+           "AND (:status IS NULL OR u.status = :status) " +
+           "AND (:name IS NULL OR u.name LIKE %:name%) " +
+           "AND (:loginId IS NULL OR u.loginId LIKE %:loginId%)")
+    Page<UserEntity> findUsersWithFilters(@Param("role") UserRole role, 
+                                          @Param("status") UserStatus status, 
+                                          @Param("name") String name, 
+                                          @Param("loginId") String loginId, 
+                                          Pageable pageable);
 
     /**
      * 로그인 ID로 사용자 조회

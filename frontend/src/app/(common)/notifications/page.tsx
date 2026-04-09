@@ -5,6 +5,7 @@ import { LoginRequiredGate } from "@/components/shared/LoginRequiredGate";
 import { PaginationBar } from "@/app/(common)/community/_components/PaginationBar";
 import { bffGet } from "./_api/bff-server";
 import { MotionEnter } from "@/app/(common)/community/_components/MotionEnter";
+import { NotificationListItem } from "./_components/NotificationListItem";
 
 type ApiResponse<T> = {
   success: boolean;
@@ -177,29 +178,7 @@ export default async function NotificationsPage({ searchParams }: { searchParams
               </li>
             ) : (
               list.content.map((item) => (
-                <li
-                  key={item.notificationId}
-                  className={`group bg-white rounded-[2.5rem] p-10 md:p-14 border transition-all relative overflow-hidden ${item.isRead ? "border-primary/5 opacity-60" : "border-accent/20 shadow-2xl shadow-accent/5"}`}
-                >
-                  <div className="flex flex-col md:flex-row md:items-start justify-between gap-8 relative z-10">
-                     <div className="space-y-6 max-w-2xl">
-                        <div className="flex items-center gap-4">
-                           <span className="text-[10px] font-black tracking-[0.3em] uppercase opacity-30">MSG-00{item.notificationId}</span>
-                           <span className={`text-[10px] font-black tracking-[0.2em] uppercase px-4 py-1.5 rounded-full ${item.isRead ? "bg-muted/10 text-muted-foreground" : "bg-accent/10 text-accent"}`}>
-                              {item.type ?? "NOTICE"}
-                           </span>
-                        </div>
-                        <div>
-                          <h2 className="text-3xl font-black tracking-tighter leading-tight uppercase italic">{item.title}</h2>
-                          <p className="mt-4 text-lg font-medium tracking-tight text-primary opacity-60">{item.message}</p>
-                        </div>
-                     </div>
-                     <div className="shrink-0 flex flex-col items-end gap-2">
-                        <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">{new Date(item.createdAt).toLocaleDateString()}</span>
-                        <span className="text-[10px] font-black uppercase tracking-widest opacity-20">{new Date(item.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
-                     </div>
-                  </div>
-                </li>
+                <NotificationListItem key={item.notificationId} item={item} />
               ))
             )}
           </ul>

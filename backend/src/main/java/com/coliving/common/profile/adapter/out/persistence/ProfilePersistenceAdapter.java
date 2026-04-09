@@ -20,6 +20,21 @@ public class ProfilePersistenceAdapter implements ProfileRepositoryPort {
         return userJpaRepository.findById(userId).map(this::toResponseDto);
     }
 
+    @Override
+    public String getPasswordHash(Long userId) {
+        return userJpaRepository.findById(userId)
+                .map(UserEntity::getPasswordHash)
+                .orElseThrow(() -> new com.coliving.global.error.BusinessException(com.coliving.global.error.ErrorCode.ACCOUNT_NOT_FOUND));
+    }
+
+    @Override
+    public void updatePassword(Long userId, String newPasswordHash) {
+        UserEntity user = userJpaRepository.findById(userId)
+                .orElseThrow(() -> new com.coliving.global.error.BusinessException(com.coliving.global.error.ErrorCode.ACCOUNT_NOT_FOUND));
+        user.updatePassword(newPasswordHash);
+        userJpaRepository.save(user);
+    }
+
     private ProfileResponseDto toResponseDto(UserEntity user) {
         return ProfileResponseDto.builder()
                 .id(user.getUserId())
