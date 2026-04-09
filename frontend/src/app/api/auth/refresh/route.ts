@@ -43,7 +43,13 @@ export async function POST(req: NextRequest) {
       
       const failResponse = NextResponse.json(result, { status: backendRes.status });
       // 만료된 세션 제거
-      failResponse.cookies.set('session_id', '', { path: '/', maxAge: 0 });
+      failResponse.cookies.set('session_id', '', {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+        path: '/',
+        maxAge: 0,
+      });
       return failResponse;
     }
 
