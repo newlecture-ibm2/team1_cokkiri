@@ -27,6 +27,9 @@ export const useAuthStore = create<AuthState>((set) => ({
     } finally {
       // 서버 상태와 관계없이 클라이언트 상태(Zustand) 초기화
       set({ isLoggedIn: false, user: null });
+      if (typeof window !== 'undefined') {
+        window.location.href = '/';
+      }
     }
   },
 

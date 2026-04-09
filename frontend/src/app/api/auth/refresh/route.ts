@@ -59,8 +59,8 @@ export async function POST(req: NextRequest) {
       { status: 200 }
     );
 
-  } catch (error) {
-    console.error('[Refresh Route] Unexpected error:', error);
+  } catch (error: any) {
+    console.error(`[Refresh Route] Unexpected error: ${error.message || 'Unknown Error'}`);
     return NextResponse.json(
       { success: false, message: '토큰 갱신 중 서버 오류가 발생했습니다.', errorCode: 'INTERNAL_SERVER_ERROR' },
       { status: 500 }
