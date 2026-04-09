@@ -74,8 +74,8 @@ public class AdminSpaceService implements AdminSpaceUseCase {
 
     @Override
     @Transactional(readOnly = true)
-    public Page<AdminSpaceResult> getSpaces(Pageable pageable) {
-        return adminSpaceRepositoryPort.findAll(pageable)
+    public Page<AdminSpaceResult> getSpaces(SpaceType type, SpaceStatus status, Pageable pageable) {
+        return adminSpaceRepositoryPort.findSpaces(type, status, pageable)
                 .map(AdminSpaceResult::from);
     }
 
@@ -170,9 +170,11 @@ public class AdminSpaceService implements AdminSpaceUseCase {
 
     @Override
     public void deleteImage(Long spaceId, Long imageId) {
-        // 공간 존재 검증
-        adminSpaceRepositoryPort.findById(spaceId)
-                .orElseThrow(() -> new BusinessException(ErrorCode.SPACE_NOT_FOUND));
+        // 공간 존재 검증 시 엔티티 전체를 로드하면 JPA 양방향 연관관계(Cascade) 때문에 
+        // soft-delete 된 이미지가 트랜잭션 플러시 시점에 다시 살아남 (findById 대신 existsById 사용)
+        if (!adminSpaceRepositoryPort.existsById(spaceId)) {
+            throw new BusinessException(ErrorCode.SPACE_NOT_FOUND);
+        }
 
         adminSpaceRepositoryPort.deleteImage(imageId);
     }

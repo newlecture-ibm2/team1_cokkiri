@@ -10,6 +10,7 @@ import type { RoomDTO } from '../_types';
 import { HeroImage } from './_components/ImageCarousel';
 import { SpecGrid } from './_components/SpecTable';
 import { AmenityBadges } from './_components/AmenityBadges';
+import { RoomGallery } from './_components/RoomGallery';
 
 const STATUS_MAP: Record<string, { text: string; className: string }> = {
   AVAILABLE: {
@@ -164,6 +165,14 @@ export default function RoomDetailPage() {
               {/* Amenities */}
               <AmenityBadges amenities={room.amenities} />
             </div>
+
+            {/* Separator */}
+            <div className="h-px bg-foreground/10" />
+
+            {/* Image Gallery (내 도메인 전용 카드) */}
+            {room.images && room.images.length > 0 && (
+              <RoomGallery images={room.images} />
+            )}
           </div>
 
           {/* Reserve CTA — Editorial dark card */}

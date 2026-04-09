@@ -13,7 +13,7 @@ public interface AdminSpaceUseCase {
 
     AdminSpaceResult getSpace(Long spaceId);
 
-    Page<AdminSpaceResult> getSpaces(Pageable pageable);
+    Page<AdminSpaceResult> getSpaces(com.coliving.admin.space.model.SpaceType type, com.coliving.admin.space.model.SpaceStatus status, Pageable pageable);
 
     AdminSpaceResult updateSpace(UpdateSpaceCommand command);
 

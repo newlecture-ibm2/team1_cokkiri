@@ -27,6 +27,13 @@ export default function SpaceCreateModal({
 
   useEffect(() => {
     if (isOpen) {
+      setFormData({
+        type: 'PRIVATE',
+        status: 'AVAILABLE',
+        amenities: [],
+      });
+      setAmenityInput('');
+      setFiles([]);
       fetchRoomTypes()
         .then((res) => setRoomTypes(res.data || []))
         .catch(console.error);

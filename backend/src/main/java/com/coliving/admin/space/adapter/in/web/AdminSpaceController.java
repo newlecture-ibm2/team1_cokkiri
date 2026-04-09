@@ -74,8 +74,10 @@ public class AdminSpaceController {
     @Operation(summary = "공간 목록 조회 (페이징)")
     @GetMapping
     public ApiResponse<Page<AdminSpaceResponseDto>> getSpaces(
+            @RequestParam(required = false) com.coliving.admin.space.model.SpaceType type,
+            @RequestParam(required = false) com.coliving.admin.space.model.SpaceStatus status,
             @PageableDefault(size = 20) Pageable pageable) {
-        Page<AdminSpaceResponseDto> result = adminSpaceUseCase.getSpaces(pageable)
+        Page<AdminSpaceResponseDto> result = adminSpaceUseCase.getSpaces(type, status, pageable)
                 .map(AdminSpaceResponseDto::from);
         return ApiResponse.ok(result);
     }

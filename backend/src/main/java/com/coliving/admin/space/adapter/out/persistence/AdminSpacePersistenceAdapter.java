@@ -76,8 +76,13 @@ public class AdminSpacePersistenceAdapter implements AdminSpaceRepositoryPort {
     }
 
     @Override
-    public Page<AdminSpace> findAll(Pageable pageable) {
-        return spaceJpaRepository.findAll(pageable).map(this::toAdminSpace);
+    public boolean existsById(Long spaceId) {
+        return spaceJpaRepository.existsById(spaceId);
+    }
+
+    @Override
+    public Page<AdminSpace> findSpaces(com.coliving.admin.space.model.SpaceType type, com.coliving.admin.space.model.SpaceStatus status, Pageable pageable) {
+        return spaceJpaRepository.findSpacesWithFilter(type, status, pageable).map(this::toAdminSpace);
     }
 
     @Override

@@ -8,6 +8,7 @@ import { ArrowRight } from 'lucide-react';
 import { fetchCommonSpace, CommonSpaceDto } from '../_api';
 import { FacilityHero } from './_components/FacilityHero';
 import { FacilitySpec } from './_components/FacilitySpec';
+import { FacilityGallery } from './_components/FacilityGallery';
 import { AmenityBadges } from '../../rooms/[id]/_components/AmenityBadges';
 
 const formatKRW = (value?: number) => {
@@ -83,11 +84,10 @@ export default function ExperienceDetailPage() {
                 viewport={{ once: true }}
               >
                 <span
-                  className={`inline-block px-6 py-2.5 text-xs md:text-sm font-black tracking-[0.2em] uppercase rounded-full border ${
-                    space.isReservable 
-                      ? 'bg-[var(--color-accent)]/10 text-[var(--color-accent)] border-[var(--color-accent)]/20' 
+                  className={`inline-block px-6 py-2.5 text-xs md:text-sm font-black tracking-[0.2em] uppercase rounded-full border ${space.isReservable
+                      ? 'bg-[var(--color-accent)]/10 text-[var(--color-accent)] border-[var(--color-accent)]/20'
                       : 'bg-black/5 text-foreground border-foreground/10'
-                  }`}
+                    }`}
                 >
                   {space.isReservable ? '예약제 공간' : '자유 이용 공간'}
                 </span>
@@ -147,6 +147,14 @@ export default function ExperienceDetailPage() {
               {/* Amenities */}
               <AmenityBadges amenities={space.amenities} />
             </div>
+
+            {/* Separator */}
+            <div className="h-px bg-foreground/10" />
+
+            {/* Image Gallery (내 도메인 전용 카드) */}
+            {space.images && space.images.length > 0 && (
+              <FacilityGallery images={space.images} />
+            )}
           </div>
 
           {/* Reserve CTA — Editorial dark card */}

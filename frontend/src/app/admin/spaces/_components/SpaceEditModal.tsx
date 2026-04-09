@@ -19,6 +19,7 @@ export default function SpaceEditModal({ isOpen, space, onClose, onUpdated }: Sp
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [roomTypes, setRoomTypes] = useState<RoomTypeDTO[]>([]);
   const [newFiles, setNewFiles] = useState<File[]>([]);
+  const [amenityInput, setAmenityInput] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -26,6 +27,7 @@ export default function SpaceEditModal({ isOpen, space, onClose, onUpdated }: Sp
       setFormData({ ...space });
       setShowDeleteConfirm(false);
       setNewFiles([]);
+      setAmenityInput('');
     }
   }, [space]);
 
@@ -75,6 +77,23 @@ export default function SpaceEditModal({ isOpen, space, onClose, onUpdated }: Sp
         alert('이미지 삭제에 실패했습니다.');
       }
     }
+  };
+
+  const addAmenity = () => {
+    if (amenityInput.trim()) {
+      setFormData({
+        ...formData,
+        amenities: [...(formData.amenities || []), amenityInput.trim()],
+      });
+      setAmenityInput('');
+    }
+  };
+
+  const removeAmenity = (index: number) => {
+    setFormData({
+      ...formData,
+      amenities: formData.amenities?.filter((_, i) => i !== index),
+    });
   };
 
   const handleDragOver = (e: React.DragEvent) => e.preventDefault();
@@ -221,6 +240,31 @@ export default function SpaceEditModal({ isOpen, space, onClose, onUpdated }: Sp
                 value={formData.description || ''}
                 onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setFormData({ ...formData, description: e.target.value })}
               />
+            </div>
+
+            {/* 옵션 / 부대시설 */}
+            <div className="mb-4">
+              <label className="block text-sm font-bold mb-2">옵션 / 부대시설 (어메니티)</label>
+              <div className="flex gap-2 mb-3">
+                <input
+                  type="text"
+                  value={amenityInput}
+                  onChange={(e) => setAmenityInput(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && addAmenity()}
+                  className="flex-1 px-4 py-3 rounded-2xl bg-[var(--color-muted)] text-[var(--foreground)] outline-none"
+                  placeholder="예: 에어컨 (입력 후 엔터)"
+                />
+                <button type="button" onClick={addAmenity} className="px-4 py-3 bg-[var(--color-accent)] text-white rounded-2xl font-bold">
+                  추가
+                </button>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {formData.amenities?.map((am, i) => (
+                  <span key={i} className="flex items-center gap-1 bg-black/10 px-3 py-1 rounded-full text-sm font-bold tracking-tight">
+                    {am} <button type="button" onClick={() => removeAmenity(i)}><X size={12} /></button>
+                  </span>
+                ))}
+              </div>
             </div>
 
             {/* PRIVATE 상세 */}
