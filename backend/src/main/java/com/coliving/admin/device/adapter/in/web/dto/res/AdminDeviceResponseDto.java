@@ -10,6 +10,8 @@ import java.time.OffsetDateTime;
 public record AdminDeviceResponseDto(
         Long deviceId,
         Long spaceId,
+        String spaceName,
+        Integer spaceFloor,
         Long deviceTypeId,
         String deviceTypeCode,
         String deviceTypeName,
@@ -29,6 +31,8 @@ public record AdminDeviceResponseDto(
         return new AdminDeviceResponseDto(
                 device.deviceId(),
                 device.spaceId(),
+                device.spaceName(),
+                device.spaceFloor(),
                 device.deviceTypeId(),
                 device.deviceTypeCode(),
                 device.deviceTypeName(),

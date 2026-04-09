@@ -81,10 +81,14 @@ export function DeviceRegisterForm() {
     } else if (form.name.length > 100) {
       newErrors.name = "기기명은 100자 이내여야 합니다";
     }
-    if (form.modelName && form.modelName.length > 100) {
+    if (!form.modelName || !form.modelName.trim()) {
+      newErrors.modelName = "모델명은 필수입니다";
+    } else if (form.modelName.length > 100) {
       newErrors.modelName = "모델명은 100자 이내여야 합니다";
     }
-    if (form.macAddress && form.macAddress.length > 50) {
+    if (!form.macAddress || !form.macAddress.trim()) {
+      newErrors.macAddress = "MAC 주소는 필수입니다";
+    } else if (form.macAddress.length > 50) {
       newErrors.macAddress = "MAC 주소는 50자 이내여야 합니다";
     }
     if (form.mockEndpoint && !isValidUrl(form.mockEndpoint)) {
@@ -137,7 +141,12 @@ export function DeviceRegisterForm() {
       });
     } catch (err) {
       if (err instanceof ApiError) {
-        setApiError(err.message);
+        // MAC 주소 중복 에러 → 필드 인라인 에러로 표시
+        if (err.errorCode === "DUPLICATE_MAC_ADDRESS") {
+          setErrors((prev) => ({ ...prev, macAddress: err.message || "이미 등록된 MAC 주소입니다" }));
+        } else {
+          setApiError(err.message);
+        }
       } else {
         setApiError("기기 등록에 실패했습니다. 다시 시도해 주세요.");
       }
@@ -228,7 +237,7 @@ export function DeviceRegisterForm() {
         {/* 모델명 */}
         <div className="space-y-2">
           <label htmlFor="model-name" className="block text-sm font-semibold text-primary">
-            모델명
+            모델명 <span className="text-destructive">*</span>
           </label>
           <input
             id="model-name"
@@ -300,7 +309,7 @@ export function DeviceRegisterForm() {
         {/* MAC 주소 */}
         <div className="space-y-2">
           <label htmlFor="mac-address" className="block text-sm font-semibold text-primary">
-            MAC 주소
+            MAC 주소 <span className="text-destructive">*</span>
           </label>
           <input
             id="mac-address"

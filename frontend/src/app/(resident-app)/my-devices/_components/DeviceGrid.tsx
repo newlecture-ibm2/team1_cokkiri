@@ -285,10 +285,13 @@ function DeviceCard({
         {device.name}
       </p>
 
-      {/* 공간명 */}
+      {/* 공간명 + 층 */}
       {device.spaceName && (
         <p className="text-[10px] font-medium text-muted-foreground">
           {device.spaceName}
+          {device.spaceFloor != null && (
+            <span className="ml-0.5">({device.spaceFloor}층)</span>
+          )}
         </p>
       )}
 
