@@ -12,3 +12,5 @@ build/
 *.swp
 *.log
 
+# Docker overrides
+docker-compose.override.yml

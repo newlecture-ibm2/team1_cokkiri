@@ -23,6 +23,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 public class SecurityConfig {
 
     private final JwtTokenProvider jwtTokenProvider;
+    private final com.coliving.common.auth.application.port.out.AuthRepositoryPort authRepositoryPort;
 
     /** 일반 회원·입주자·관리자 공통 (JWT role 클레임과 동일) */
     private static final String[] MEMBER_ROLES = {"USER", "RESIDENT", "ADMIN"};
@@ -83,7 +84,19 @@ public class SecurityConfig {
 
                         // --- 그 외 API ---
                         .anyRequest().authenticated())
-                .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider),
+                .exceptionHandling(exception -> exception
+                        .authenticationEntryPoint((request, response, authException) -> {
+                            response.setContentType("application/json;charset=UTF-8");
+                            response.setStatus(401);
+                            response.getWriter().write("{\"success\":false,\"message\":\"로그인이 필요하거나 토큰이 만료되었습니다.\",\"errorCode\":\"UNAUTHORIZED\"}");
+                        })
+                        .accessDeniedHandler((request, response, accessDeniedException) -> {
+                            response.setContentType("application/json;charset=UTF-8");
+                            response.setStatus(403);
+                            response.getWriter().write("{\"success\":false,\"message\":\"접근 권한이 없습니다.\",\"errorCode\":\"FORBIDDEN\"}");
+                        })
+                )
+                .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider, authRepositoryPort),
                         UsernamePasswordAuthenticationFilter.class);
 
         return http.build();

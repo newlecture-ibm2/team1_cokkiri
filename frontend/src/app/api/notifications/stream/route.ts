@@ -34,24 +34,39 @@ export async function GET() {
     );
   }
 
-  const upstream = await fetch(`${BACKEND_URL}/api/notifications/stream`, {
-    method: "GET",
-    headers: {
-      Authorization: `Bearer ${accessToken}`,
-      Accept: "text/event-stream",
-    },
-    cache: "no-store",
-  });
+  let upstream;
+  try {
+    upstream = await fetch(`${BACKEND_URL}/api/notifications/stream`, {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        Accept: "text/event-stream",
+      },
+      cache: "no-store",
+    });
 
-  if (!upstream.ok || !upstream.body) {
+    if (!upstream.ok || !upstream.body) {
+      return new Response(
+        JSON.stringify({
+          success: false,
+          message: "실시간 알림 채널 연결에 실패했습니다.",
+          errorCode: "SSE_CONNECT_FAILED",
+        }),
+        {
+          status: upstream.status || 502,
+          headers: { "Content-Type": "application/json" },
+        },
+      );
+    }
+  } catch (error) {
     return new Response(
       JSON.stringify({
         success: false,
-        message: "실시간 알림 채널 연결에 실패했습니다.",
-        errorCode: "SSE_CONNECT_FAILED",
+        message: "백엔드 서버와 연결할 수 없습니다.",
+        errorCode: "BACKEND_UNAVAILABLE",
       }),
       {
-        status: upstream.status || 502,
+        status: 502,
         headers: { "Content-Type": "application/json" },
       },
     );
