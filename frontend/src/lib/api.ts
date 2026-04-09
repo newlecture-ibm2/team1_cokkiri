@@ -39,7 +39,18 @@ export async function apiFetch<T>(
       );
     }
     if (response.status === 401) {
-      if (path !== '/auth/login' && path !== '/auth/refresh' && path !== '/auth/logout' && !isRefreshing) {
+      let isTokenError = true;
+      let parsedData: ApiResponse<T> | null = null;
+      
+      if (looksJson && trimmed.length > 0) {
+        parsedData = parseApiJson<T>(trimmed);
+        const eCode = (parsedData as any).errorCode || (parsedData as any).error_code;
+        if (eCode && eCode !== 'UNAUTHORIZED' && eCode !== 'TOKEN_EXPIRED') {
+          isTokenError = false;
+        }
+      }
+
+      if (isTokenError && path !== '/auth/login' && path !== '/auth/refresh' && path !== '/auth/logout' && !isRefreshing) {
         isRefreshing = true;
         try {
           const refreshRes = await fetch(`${BASE_URL}/auth/refresh`, { method: 'POST', credentials: 'include' });
@@ -60,10 +71,10 @@ export async function apiFetch<T>(
         }
       }
 
-      // 백엔드가 JSON 에러 메시지를 보낸 경우(예: 로그인 실패) 그것을 우선 사용
-      if (looksJson && trimmed.length > 0) {
-        const data = parseApiJson<T>(trimmed);
-        throw new ApiError(data.message || LOGIN_REQUIRED_MESSAGE, data.error_code || 'UNAUTHORIZED');
+      // 백엔드가 JSON 에러 메시지를 보낸 경우(예: 로그인 실패, 비밀번호 불일치 등) 그것을 우선 사용
+      if (parsedData) {
+        const eCode = (parsedData as any).errorCode || (parsedData as any).error_code;
+        throw new ApiError(parsedData.message || LOGIN_REQUIRED_MESSAGE, eCode || 'UNAUTHORIZED');
       }
       throw new ApiError(LOGIN_REQUIRED_MESSAGE, 'UNAUTHORIZED');
     }
@@ -81,7 +92,8 @@ export async function apiFetch<T>(
   const data = parseApiJson<T>(trimmed);
 
   if (!data.success) {
-    throw new ApiError(data.message || '요청에 실패했습니다', data.error_code);
+    const eCode = (data as any).errorCode || (data as any).error_code;
+    throw new ApiError(data.message || '요청에 실패했습니다', eCode);
   }
 
   return data;

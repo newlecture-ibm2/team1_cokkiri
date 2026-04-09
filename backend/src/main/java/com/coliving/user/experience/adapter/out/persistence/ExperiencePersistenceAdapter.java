@@ -25,8 +25,7 @@ public class ExperiencePersistenceAdapter implements ExperienceRepositoryPort {
 
     @Override
     public List<CommonSpace> findAllCommonSpaces() {
-        List<SpaceEntity> entities = spaceJpaRepository.findByTypeAndStatusNot(
-                SpaceType.COMMON, SpaceStatus.MAINTENANCE);
+        List<SpaceEntity> entities = spaceJpaRepository.findByTypeFetchAll(SpaceType.COMMON);
 
         return entities.stream()
                 .map(this::toCommonSpace)
@@ -36,7 +35,7 @@ public class ExperiencePersistenceAdapter implements ExperienceRepositoryPort {
     @Override
     public Optional<CommonSpace> findCommonSpaceById(Long spaceId) {
         return spaceJpaRepository.findById(spaceId)
-                .filter(entity -> entity.getType() == SpaceType.COMMON && entity.getStatus() != SpaceStatus.MAINTENANCE)
+                .filter(entity -> entity.getType() == SpaceType.COMMON)
                 .map(this::toCommonSpace);
     }
 
