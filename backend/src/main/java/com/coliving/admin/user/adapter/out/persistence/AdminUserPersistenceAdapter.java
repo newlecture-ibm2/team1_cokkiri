@@ -5,7 +5,6 @@ import com.coliving.admin.user.application.result.AdminUserResult;
 import com.coliving.common.auth.adapter.out.jpa.UserEntity;
 import com.coliving.common.auth.adapter.out.jpa.UserJpaRepository;
 import com.coliving.common.auth.model.UserRole;
-import com.coliving.common.auth.model.UserStatus;
 import com.coliving.global.error.BusinessException;
 import com.coliving.global.error.ErrorCode;
 import lombok.RequiredArgsConstructor;

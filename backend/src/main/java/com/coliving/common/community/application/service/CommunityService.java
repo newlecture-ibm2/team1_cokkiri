@@ -14,8 +14,7 @@ import com.coliving.common.notification.application.command.CreateNotificationCo
 import com.coliving.common.notification.application.port.in.CreateNotificationUseCase;
 import com.coliving.common.notification.model.NotificationType;
 import com.coliving.common.notification.model.ReferenceType;
-import com.coliving.admin.user.application.port.out.AdminUserRepositoryPort;
-import com.coliving.common.auth.model.UserRole;
+import com.coliving.common.notification.application.port.out.NotificationUserQueryPort;
 import com.coliving.global.error.BusinessException;
 import com.coliving.global.error.ErrorCode;
 import com.coliving.global.attachment.RetainedAttachmentResolver;
@@ -25,7 +24,6 @@ import com.coliving.global.html.PostBodyHtmlSanitizer;
 import com.coliving.global.validation.PlainTextFieldValidation;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -42,16 +40,16 @@ public class CommunityService implements CommunityUseCase {
     private final CommunityRepositoryPort repositoryPort;
     private final CommunityLikeActionGuard likeActionGuard;
     private final CreateNotificationUseCase createNotificationUseCase;
-    private final AdminUserRepositoryPort adminUserRepositoryPort;
+    private final NotificationUserQueryPort notificationUserQueryPort;
 
     public CommunityService(CommunityRepositoryPort repositoryPort,
             CommunityLikeActionGuard likeActionGuard,
             CreateNotificationUseCase createNotificationUseCase,
-            AdminUserRepositoryPort adminUserRepositoryPort) {
+            NotificationUserQueryPort notificationUserQueryPort) {
         this.repositoryPort = repositoryPort;
         this.likeActionGuard = likeActionGuard;
         this.createNotificationUseCase = createNotificationUseCase;
-        this.adminUserRepositoryPort = adminUserRepositoryPort;
+        this.notificationUserQueryPort = notificationUserQueryPort;
     }
 
     @Override
@@ -147,11 +145,10 @@ public class CommunityService implements CommunityUseCase {
     }
 
     private void notifyAllResidentsOfNotice(Post post, String title) {
-        adminUserRepositoryPort.findUsers(UserRole.USER, "ACTIVE", null, null, Pageable.unpaged())
-                .getContent()
-                .forEach(user -> {
+        notificationUserQueryPort.findActiveResidentUserIds()
+                .forEach(userId -> {
                     createNotificationUseCase.create(CreateNotificationCommand.builder()
-                            .userId(user.getId())
+                            .userId(userId)
                             .type(NotificationType.COMMUNITY_NOTICE)
                             .title(title)
                             .message(String.format("「%s」 공지사항이 등록되었습니다.", post.getTitle()))
