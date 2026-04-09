@@ -43,6 +43,14 @@ public class ContractController {
         return ApiResponse.ok(result);
     }
 
+    @Operation(summary = "특정 계약 조회", description = "계약 ID를 기반으로 계약 상세 정보를 조회합니다.")
+    @GetMapping("/{id}")
+    public ApiResponse<ContractDraftResult> getContract(@PathVariable Long id, Authentication authentication) {
+        Long userId = Long.parseLong(authentication.getName());
+        ContractDraftResult result = contractUseCase.getContract(userId, id);
+        return ApiResponse.ok(result);
+    }
+
     @Operation(summary = "계약서 임시저장", description = "작성 중인 계약 정보를 유효성 검사 없이 임시 저장합니다.")
     @PostMapping("/draft")
     public ApiResponse<Long> saveDraft(@RequestBody ContractApplyRequestDto request, Authentication authentication) {

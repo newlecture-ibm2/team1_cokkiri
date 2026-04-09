@@ -23,6 +23,11 @@ public interface ContractUseCase {
      * 내 계약 내역 전체 조회
      */
     List<ContractDraftResult> getMyContracts(Long userId);
+    
+    /**
+     * 특정 계약 조회
+     */
+    ContractDraftResult getContract(Long userId, Long contractId);
 
     /**
      * 최종 계약 신청 (제출)
