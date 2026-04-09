@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useCallback } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import * as PortOne from "@portone/browser-sdk/v2";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   Calendar, 
@@ -68,12 +69,48 @@ export default function ContractApplyForm() {
 
   // Payment states
   const [paymentMethod, setPaymentMethod] = useState<"card" | "transfer" | null>(null);
-  const [cardNumber, setCardNumber] = useState("");
-  const [cardExpiry, setCardExpiry] = useState("");
-  const [cardCvc, setCardCvc] = useState("");
   const [isPaymentProcessing, setIsPaymentProcessing] = useState(false);
   const [paymentComplete, setPaymentComplete] = useState(false);
   const [virtualAccount, setVirtualAccount] = useState<{ bank: string; account: string; holder: string } | null>(null);
+  const [portonePaymentId, setPortonePaymentId] = useState<string | null>(null);
+
+  // PortOne card payment handler
+  const handlePortoneCardPayment = async () => {
+    const storeId = process.env.NEXT_PUBLIC_PORTONE_STORE_ID;
+    const channelKey = process.env.NEXT_PUBLIC_PORTONE_CHANNEL_KEY;
+
+    if (!storeId || !channelKey) {
+      alert("결제 설정이 완료되지 않았습니다. 관리자에게 문의하세요.");
+      return;
+    }
+
+    setIsPaymentProcessing(true);
+    try {
+      const paymentId = `deposit-${spaceId}-${Date.now()}`;
+      const response = await PortOne.requestPayment({
+        storeId,
+        channelKey,
+        paymentId,
+        orderName: `코끼리 보증금 - Room ${spaceId}`,
+        totalAmount: 1000,
+        currency: "CURRENCY_KRW",
+        payMethod: "CARD",
+      });
+
+      if (response && !response.code) {
+        // 결제 성공
+        setPortonePaymentId(paymentId);
+        setPaymentComplete(true);
+      } else {
+        // 결제 실패 또는 취소
+        alert(response?.message || "결제가 취소되었거나 실패했습니다.");
+      }
+    } catch (err: any) {
+      alert(err.message || "결제 처리 중 오류가 발생했습니다.");
+    } finally {
+      setIsPaymentProcessing(false);
+    }
+  };
 
   // Fetch user profile
   useEffect(() => {
@@ -576,7 +613,7 @@ export default function ContractApplyForm() {
                   </div>
                 </div>
 
-                {/* Credit Card Form */}
+                {/* Credit Card Payment via PortOne */}
                 <AnimatePresence mode="wait">
                   {paymentMethod === "card" && !paymentComplete && (
                     <motion.div
@@ -589,74 +626,35 @@ export default function ContractApplyForm() {
                       <div className="p-8 bg-white rounded-[2rem] border border-primary/10 shadow-xl space-y-6">
                         <div className="flex items-center gap-3">
                           <CreditCard className="w-5 h-5 text-accent" />
-                          <span className="text-[10px] font-black tracking-[0.3em] uppercase text-accent">CARD DETAILS</span>
+                          <span className="text-[10px] font-black tracking-[0.3em] uppercase text-accent">CARD PAYMENT</span>
                         </div>
 
-                        <div className="space-y-5">
-                          <div className="space-y-2">
-                            <label className="text-[9px] font-black tracking-[0.3em] uppercase text-primary/30 block">
-                              CARD NUMBER
-                            </label>
-                            <input
-                              type="text"
-                              value={cardNumber}
-                              onChange={(e) => {
-                                const v = e.target.value.replace(/\D/g, "").slice(0, 16);
-                                setCardNumber(v.replace(/(.{4})/g, "$1 ").trim());
-                              }}
-                              placeholder="0000 0000 0000 0000"
-                              className="w-full bg-primary/5 border-none p-5 rounded-xl text-lg font-bold tracking-widest focus:ring-2 focus:ring-accent transition-all"
-                            />
+                        <div className="p-6 bg-accent/5 rounded-2xl space-y-3">
+                          <div className="flex items-center justify-between">
+                            <span className="text-[10px] font-black tracking-[0.2em] uppercase text-primary/40">결제 금액</span>
+                            <span className="text-2xl font-black tracking-tight text-primary">₩1,000</span>
                           </div>
-                          <div className="grid grid-cols-2 gap-4">
-                            <div className="space-y-2">
-                              <label className="text-[9px] font-black tracking-[0.3em] uppercase text-primary/30 block">
-                                EXPIRY DATE
-                              </label>
-                              <input
-                                type="text"
-                                value={cardExpiry}
-                                onChange={(e) => {
-                                  let v = e.target.value.replace(/\D/g, "").slice(0, 4);
-                                  if (v.length > 2) v = v.slice(0, 2) + "/" + v.slice(2);
-                                  setCardExpiry(v);
-                                }}
-                                placeholder="MM/YY"
-                                className="w-full bg-primary/5 border-none p-5 rounded-xl text-lg font-bold tracking-widest focus:ring-2 focus:ring-accent transition-all"
-                              />
-                            </div>
-                            <div className="space-y-2">
-                              <label className="text-[9px] font-black tracking-[0.3em] uppercase text-primary/30 block">
-                                CVC
-                              </label>
-                              <input
-                                type="password"
-                                value={cardCvc}
-                                onChange={(e) => setCardCvc(e.target.value.replace(/\D/g, "").slice(0, 3))}
-                                placeholder="•••"
-                                className="w-full bg-primary/5 border-none p-5 rounded-xl text-lg font-bold tracking-widest focus:ring-2 focus:ring-accent transition-all"
-                              />
-                            </div>
-                          </div>
+                          <p className="text-[10px] font-bold tracking-tight opacity-50">
+                            테스트 결제 금액입니다. 실제 보증금은 계약 승인 후 별도 안내됩니다.
+                          </p>
                         </div>
 
                         <button
                           type="button"
-                          disabled={cardNumber.replace(/\s/g, "").length < 16 || cardExpiry.length < 5 || cardCvc.length < 3 || isPaymentProcessing}
-                          onClick={async () => {
-                            setIsPaymentProcessing(true);
-                            await new Promise(r => setTimeout(r, 2000));
-                            setIsPaymentProcessing(false);
-                            setPaymentComplete(true);
-                          }}
-                          className="w-full py-5 bg-accent text-white rounded-2xl text-[10px] font-black tracking-[0.2em] uppercase transition-all hover:bg-primary disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center gap-3"
+                          disabled={isPaymentProcessing}
+                          onClick={handlePortoneCardPayment}
+                          className="w-full py-6 bg-accent text-white rounded-2xl text-[10px] font-black tracking-[0.2em] uppercase transition-all hover:bg-primary disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center gap-3 shadow-xl shadow-accent/20"
                         >
                           {isPaymentProcessing ? (
                             <><Loader2 className="w-4 h-4 animate-spin" /> PROCESSING PAYMENT...</>
                           ) : (
-                            <><ShieldCheck className="w-4 h-4" /> PAY DEPOSIT</>
+                            <><CreditCard className="w-5 h-5" /> PAY WITH CARD</>
                           )}
                         </button>
+
+                        <p className="text-[9px] font-bold tracking-tight text-center opacity-40">
+                          포트원(PortOne) 보안 결제창으로 이동합니다. 카드 정보는 안전하게 처리됩니다.
+                        </p>
                       </div>
                     </motion.div>
                   )}
