@@ -206,5 +206,19 @@ public class AdminMonitoringPersistenceAdapter implements AdminMonitoringReposit
                 """)
                 .getResultList();
     }
+
+    @Override
+    public List<Object[]> findDeviceStatusBySpace() {
+        return em.createNativeQuery("""
+                SELECT s.name, s.type, dt.name, d.status, COUNT(*)
+                FROM devices d
+                JOIN spaces s ON d.space_id = s.space_id
+                JOIN device_types dt ON d.device_type_id = dt.device_type_id
+                WHERE d.deleted_at IS NULL AND s.deleted_at IS NULL AND d.is_active = true
+                GROUP BY s.name, s.type, dt.name, d.status
+                ORDER BY s.type, s.name, dt.name, d.status
+                """)
+                .getResultList();
+    }
 }
 

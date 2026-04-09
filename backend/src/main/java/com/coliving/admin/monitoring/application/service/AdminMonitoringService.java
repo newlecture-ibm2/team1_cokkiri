@@ -4,6 +4,7 @@ import com.coliving.admin.monitoring.adapter.in.web.dto.res.AdminControlLogRespo
 import com.coliving.admin.monitoring.adapter.in.web.dto.res.ControlFrequencyResponseDto;
 import com.coliving.admin.monitoring.adapter.in.web.dto.res.DeviceErrorStatsResponseDto;
 import com.coliving.admin.monitoring.adapter.in.web.dto.res.DeviceStatusSummaryResponseDto;
+import com.coliving.admin.monitoring.adapter.in.web.dto.res.SpaceDeviceStatusResponseDto;
 import com.coliving.admin.monitoring.application.command.AdminControlLogListCommand;
 import com.coliving.admin.monitoring.application.port.in.AdminMonitoringUseCase;
 import com.coliving.admin.monitoring.application.port.out.AdminMonitoringRepositoryPort;
@@ -133,5 +134,17 @@ public class AdminMonitoringService implements AdminMonitoringUseCase {
                 ))
                 .collect(Collectors.toList());
     }
-}
 
+    @Override
+    public List<SpaceDeviceStatusResponseDto> getDeviceStatusBySpace() {
+        return monitoringRepositoryPort.findDeviceStatusBySpace().stream()
+                .map(row -> new SpaceDeviceStatusResponseDto(
+                        (String) row[0],                   // spaceName
+                        (String) row[1],                   // spaceType
+                        (String) row[2],                   // deviceTypeName
+                        (String) row[3],                   // status
+                        ((Number) row[4]).longValue()       // count
+                ))
+                .collect(Collectors.toList());
+    }
+}

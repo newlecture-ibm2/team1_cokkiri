@@ -32,4 +32,7 @@ public interface AdminMonitoringRepositoryPort {
 
     /** 일별 에러(FAILURE) 빈도 (최근 30일) */
     List<Object[]> countDailyErrors();
+
+    /** 공간별 기기 종류·상태 현황 (space_name, space_type, device_type_name, status, count) */
+    List<Object[]> findDeviceStatusBySpace();
 }

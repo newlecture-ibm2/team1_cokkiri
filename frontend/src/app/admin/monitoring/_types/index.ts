@@ -28,4 +28,13 @@ export interface EnergyStatsResponse {
   frequencyBySpaceType: ControlFrequency[];
   frequencyByCommand: ControlFrequency[];
   dailyErrorFrequency: ControlFrequency[];
+  deviceStatusBySpace: SpaceDeviceStatus[];
+}
+
+export interface SpaceDeviceStatus {
+  spaceName: string;
+  spaceType: "PRIVATE" | "COMMON";
+  deviceTypeName: string;
+  status: "ONLINE" | "OFFLINE" | "ERROR";
+  count: number;
 }
