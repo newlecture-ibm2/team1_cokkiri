@@ -37,6 +37,7 @@ export interface SpaceDTO {
 
   // Images
   images?: {
+    spaceImageId?: number;
     imageUrl: string;
     imageType: string;
     isThumbnail: boolean;
@@ -108,6 +109,12 @@ export const updateSpace = async (spaceId: number, data: Partial<SpaceDTO> & Rec
 
 export const deleteSpace = async (spaceId: number) => {
   return await apiFetch<any>(`/admin/spaces/${spaceId}`, {
+    method: 'DELETE',
+  });
+};
+
+export const deleteSpaceImage = async (spaceId: number, imageId: number) => {
+  return await apiFetch<any>(`/admin/spaces/${spaceId}/images/${imageId}`, {
     method: 'DELETE',
   });
 };

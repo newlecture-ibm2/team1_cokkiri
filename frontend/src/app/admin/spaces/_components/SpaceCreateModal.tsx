@@ -154,6 +154,24 @@ export default function SpaceCreateModal({
                 </select>
               </div>
             )}
+
+            {/* 예약 가능 여부 (COMMON만) */}
+            {formData.type === 'COMMON' && (
+              <div className="col-span-2 sm:col-span-1">
+                <label className="block text-sm font-bold mb-2">예약 가능 여부</label>
+                <button
+                  type="button"
+                  onClick={() => setFormData({ ...formData, isReservable: !formData.isReservable })}
+                  className={`w-full px-4 py-3 rounded-2xl font-bold tracking-tight transition-all duration-300 border ${
+                    formData.isReservable
+                      ? 'bg-[var(--color-accent)] text-white border-[var(--color-accent)]'
+                      : 'bg-[var(--color-muted)] text-[var(--foreground)]/60 border-transparent'
+                  }`}
+                >
+                  {formData.isReservable ? '✓ 예약제 (시설 예약 필요)' : '자유 이용 (예약 불필요)'}
+                </button>
+              </div>
+            )}
             <div className="col-span-1">
               <label className="block text-sm font-bold mb-2">해당 층</label>
               <input

@@ -257,4 +257,9 @@ public class AdminSpacePersistenceAdapter implements AdminSpaceRepositoryPort {
 
         spaceImageJpaRepository.save(imageEntity);
     }
+
+    @Override
+    public void deleteImage(Long imageId) {
+        spaceImageJpaRepository.deleteById(imageId);
+    }
 }

@@ -28,4 +28,6 @@ public interface AdminSpaceRepositoryPort {
     void updatePositions(List<AdminSpace> spaces);
 
     void saveImage(Long spaceId, AdminSpace.SpaceImage image);
+
+    void deleteImage(Long imageId);
 }

@@ -53,5 +53,13 @@ public interface SpaceJpaRepository extends JpaRepository<SpaceEntity, Long> {
             Pageable pageable);
 
     List<SpaceEntity> findByFloor(Integer floor);
+
+    @Query(value = "SELECT DISTINCT s FROM SpaceEntity s " +
+                    "LEFT JOIN FETCH s.commonDetail " +
+                    "LEFT JOIN FETCH s.images " +
+                    "WHERE s.type = :type AND s.status <> :excludeStatus " +
+                    "ORDER BY s.name")
+    List<SpaceEntity> findByTypeAndStatusNot(@Param("type") SpaceType type,
+                                             @Param("excludeStatus") SpaceStatus excludeStatus);
 }
 

@@ -155,4 +155,13 @@ public class AdminSpaceController {
             return ResponseEntity.notFound().build();
         }
     }
+
+    @Operation(summary = "공간 이미지 삭제")
+    @DeleteMapping("/{spaceId}/images/{imageId}")
+    public ApiResponse<Void> deleteSpaceImage(
+            @PathVariable Long spaceId,
+            @PathVariable Long imageId) {
+        adminSpaceUseCase.deleteImage(spaceId, imageId);
+        return ApiResponse.ok(null);
+    }
 }

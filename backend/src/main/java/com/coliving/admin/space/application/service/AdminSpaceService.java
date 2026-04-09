@@ -167,4 +167,13 @@ public class AdminSpaceService implements AdminSpaceUseCase {
         // 이미지가 실제로 존재하는지 여부 검증 (DB) 등 추가 가능
         return fileStoragePort.loadFile(spaceId, fileName);
     }
+
+    @Override
+    public void deleteImage(Long spaceId, Long imageId) {
+        // 공간 존재 검증
+        adminSpaceRepositoryPort.findById(spaceId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.SPACE_NOT_FOUND));
+
+        adminSpaceRepositoryPort.deleteImage(imageId);
+    }
 }

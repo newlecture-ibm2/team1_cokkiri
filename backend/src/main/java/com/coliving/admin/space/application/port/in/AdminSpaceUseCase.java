@@ -22,4 +22,6 @@ public interface AdminSpaceUseCase {
     void uploadImage(Long spaceId, org.springframework.web.multipart.MultipartFile file, com.coliving.admin.space.model.ImageType imageType, Boolean isThumbnail);
 
     java.nio.file.Path loadImage(Long spaceId, String fileName);
+
+    void deleteImage(Long spaceId, Long imageId);
 }
