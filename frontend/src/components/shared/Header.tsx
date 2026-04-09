@@ -37,7 +37,7 @@ const navItems: NavItem[] = [
       { name: "My Reservations", path: "/my-history/reservation" },
       { name: "My VOC", path: "/profile/vocs" },
       { name: "My Contracts", path: "/my-contracts" },
-      { name: "Logout", path: "/login" },
+      { name: "Logout", path: "#" },
     ],
   },
 ];
@@ -106,7 +106,7 @@ const dropdownPanelShellVariants = {
 
 export function Header() {
   const pathname = usePathname();
-  const { user, isLoggedIn, isLoading } = useAuthStore();
+  const { user, isLoggedIn, isLoading, logout } = useAuthStore();
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [openMobileSection, setOpenMobileSection] = useState<string | null>(null);
@@ -232,6 +232,15 @@ export function Header() {
                                 <motion.div key={child.path} variants={dropdownLinkVariants} className="w-full">
                                   <Link
                                     href={child.path}
+                                    onClick={
+                                      child.name === "Logout"
+                                        ? async (e) => {
+                                            e.preventDefault();
+                                            await logout();
+                                            setDesktopOpenMenu(null);
+                                          }
+                                        : undefined
+                                    }
                                     className={subLinkClass(
                                       pathActive(pathname, child.path),
                                       item.name === "My",
@@ -402,7 +411,15 @@ export function Header() {
                                     <li key={child.path}>
                                       <Link
                                         href={child.path}
-                                        onClick={() => setIsMobileMenuOpen(false)}
+                                        onClick={
+                                          child.name === "Logout"
+                                            ? async (e) => {
+                                                e.preventDefault();
+                                                await logout();
+                                                setIsMobileMenuOpen(false);
+                                              }
+                                            : () => setIsMobileMenuOpen(false)
+                                        }
                                         className={cn(
                                           "block rounded-lg py-3 pl-5 font-black uppercase transition-colors",
                                           item.name === "My"
