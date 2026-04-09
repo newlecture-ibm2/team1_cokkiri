@@ -251,9 +251,9 @@ export default function AdminContractsPage() {
               initial={{ opacity: 0, scale: 0.9, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.9, y: 20 }}
-              className="bg-white w-full max-w-lg rounded-[2rem] shadow-2xl overflow-hidden"
+              className="bg-white w-full max-w-2xl max-h-[90vh] rounded-[3rem] shadow-2xl overflow-hidden flex flex-col"
             >
-              <div className="p-8 pb-4 border-b border-primary/10 flex items-center justify-between">
+              <div className="p-8 pb-4 border-b border-primary/10 flex items-center justify-between flex-shrink-0 bg-white z-10">
                 <div>
                   <p className="text-[10px] font-black tracking-widest uppercase text-accent mb-1">
                     {modalType === "approve" ? "Review Conditions" : "Rejection Details"}
@@ -270,7 +270,7 @@ export default function AdminContractsPage() {
                 </button>
               </div>
 
-              <div className="p-8 flex flex-col gap-6">
+              <div className="p-8 flex flex-col gap-8 overflow-y-auto flex-grow scrollbar-hide">
                 <div className="flex flex-col gap-1 p-4 bg-muted/20 rounded-xl">
                   <span className="text-[10px] font-black uppercase opacity-40">Target Applicant</span>
                   <p className="text-sm font-black uppercase">{selectedContract.userName} — {selectedContract.spaceName}</p>
@@ -371,7 +371,7 @@ export default function AdminContractsPage() {
                 )}
               </div>
 
-              <div className="p-8 pt-0 flex gap-4">
+              <div className="p-8 pt-4 border-t border-primary/10 flex gap-4 flex-shrink-0 bg-white z-10">
                 <button
                   onClick={() => setModalType(null)}
                   className="flex-1 px-8 py-4 bg-muted/30 text-[10px] font-black uppercase rounded-full hover:bg-muted transition-colors"
