@@ -28,7 +28,7 @@ public class RoomPersistenceAdapter implements RoomRepositoryPort {
     @Override
     public Page<Room> findAvailablePrivateSpaces(Pageable pageable) {
         return spaceJpaRepository
-                .findByTypeAndStatus(SpaceType.PRIVATE, SpaceStatus.AVAILABLE, pageable)
+                .findByType(SpaceType.PRIVATE, pageable)
                 .map(this::toRoom);
     }
 
@@ -36,7 +36,7 @@ public class RoomPersistenceAdapter implements RoomRepositoryPort {
     public Page<Room> findAvailableRoomsWithFilter(Long roomTypeId, BigDecimal minRent,
                                                     BigDecimal maxRent, Integer floor, Pageable pageable) {
         return spaceJpaRepository
-                .findAvailableRoomsWithFilter(roomTypeId, minRent, maxRent, floor, pageable)
+                .findRoomsWithFilter(roomTypeId, minRent, maxRent, floor, pageable)
                 .map(this::toRoom);
     }
 

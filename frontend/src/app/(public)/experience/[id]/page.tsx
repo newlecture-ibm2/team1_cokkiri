@@ -176,7 +176,11 @@ export default function ExperienceDetailPage() {
                 </div>
               </div>
 
-              {space.isReservable ? (
+              {space.status === 'MAINTENANCE' ? (
+                <div className="inline-flex items-center justify-center h-16 md:h-22 px-12 rounded-full bg-white/10 text-white/40 font-black tracking-widest text-sm md:text-base cursor-not-allowed shrink-0 border border-white/10">
+                  점검 중
+                </div>
+              ) : space.isReservable ? (
                 <Link
                   href={`/facilities?spaceId=${space.spaceId}`}
                   className="group inline-flex items-center justify-center h-16 md:h-22 px-12 rounded-full bg-background text-primary hover:bg-secondary hover:text-white transition-all duration-500 font-black tracking-widest text-sm md:text-base shrink-0"
