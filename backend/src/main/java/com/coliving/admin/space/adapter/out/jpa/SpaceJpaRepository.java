@@ -20,6 +20,16 @@ public interface SpaceJpaRepository extends JpaRepository<SpaceEntity, Long> {
     Optional<SpaceEntity> findByName(String name);
 
     @Query(value = "SELECT s FROM SpaceEntity s " +
+                   "WHERE (:type IS NULL OR s.type = :type) " +
+                   "AND (:status IS NULL OR s.status = :status)",
+           countQuery = "SELECT COUNT(s) FROM SpaceEntity s " +
+                        "WHERE (:type IS NULL OR s.type = :type) " +
+                        "AND (:status IS NULL OR s.status = :status)")
+    Page<SpaceEntity> findSpacesWithFilter(@Param("type") SpaceType type,
+                                           @Param("status") SpaceStatus status,
+                                           Pageable pageable);
+
+    @Query(value = "SELECT s FROM SpaceEntity s " +
                     "LEFT JOIN FETCH s.privateDetail " +
                     "WHERE s.type = :type AND s.status = :status",
             countQuery = "SELECT COUNT(s) FROM SpaceEntity s " +
@@ -53,5 +63,13 @@ public interface SpaceJpaRepository extends JpaRepository<SpaceEntity, Long> {
             Pageable pageable);
 
     List<SpaceEntity> findByFloor(Integer floor);
+
+    @Query(value = "SELECT DISTINCT s FROM SpaceEntity s " +
+                    "LEFT JOIN FETCH s.commonDetail " +
+                    "LEFT JOIN FETCH s.images " +
+                    "WHERE s.type = :type AND s.status <> :excludeStatus " +
+                    "ORDER BY s.name")
+    List<SpaceEntity> findByTypeAndStatusNot(@Param("type") SpaceType type,
+                                             @Param("excludeStatus") SpaceStatus excludeStatus);
 }
 
