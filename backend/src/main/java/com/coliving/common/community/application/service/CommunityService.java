@@ -15,6 +15,7 @@ import com.coliving.common.notification.application.port.in.CreateNotificationUs
 import com.coliving.common.notification.model.NotificationType;
 import com.coliving.common.notification.model.ReferenceType;
 import com.coliving.admin.user.application.port.out.AdminUserRepositoryPort;
+import com.coliving.admin.user.application.result.AdminUserResult;
 import com.coliving.common.auth.model.UserRole;
 import com.coliving.common.auth.model.UserStatus;
 import org.springframework.data.domain.Pageable;
@@ -148,18 +149,23 @@ public class CommunityService implements CommunityUseCase {
     }
 
     private void notifyAllResidentsOfNotice(Post post, String title) {
-        adminUserRepositoryPort.findUsers(UserRole.USER, UserStatus.ACTIVE.name(), null, null, Pageable.unpaged())
-                .getContent()
-                .forEach(user -> {
-                    createNotificationUseCase.create(CreateNotificationCommand.builder()
-                            .userId(user.getId())
-                            .type(NotificationType.COMMUNITY_NOTICE)
-                            .title(title)
-                            .message(String.format("「%s」 공지사항이 등록되었습니다.", post.getTitle()))
-                            .referenceType(ReferenceType.COMMUNITY)
-                            .referenceId(post.getPostId())
-                            .build());
-                });
+        if (post == null) return;
+
+        Page<AdminUserResult> userPage = adminUserRepositoryPort.findUsers(UserRole.USER, UserStatus.ACTIVE.name(), null, null, Pageable.unpaged());
+        if (userPage == null || userPage.getContent() == null || userPage.getContent().isEmpty()) {
+            return;
+        }
+
+        userPage.getContent().forEach(user -> {
+            createNotificationUseCase.create(CreateNotificationCommand.builder()
+                    .userId(user.getId())
+                    .type(NotificationType.COMMUNITY_NOTICE)
+                    .title(title)
+                    .message(String.format("「%s」 공지사항이 등록되었습니다.", post.getTitle()))
+                    .referenceType(ReferenceType.COMMUNITY)
+                    .referenceId(post.getPostId())
+                    .build());
+        });
     }
 
     @Override
