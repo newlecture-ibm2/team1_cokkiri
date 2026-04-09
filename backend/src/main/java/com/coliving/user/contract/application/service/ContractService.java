@@ -44,41 +44,45 @@ public class ContractService implements ContractUseCase {
     public ContractDraftResult getDraft(Long userId, Long spaceId) {
         return contractRepositoryPort.findByUserIdAndSpaceId(userId, spaceId)
                 .filter(c -> c.getStatus() == ContractStatus.DRAFT)
-                .map(c -> ContractDraftResult.builder()
-                        .contractId(c.getContractId())
-                        .spaceId(c.getSpaceId())
-                        .status(c.getStatus())
-                        .desiredStartDate(c.getDesiredStartDate())
-                        .desiredDurationMonths(c.getDesiredDurationMonths())
-                        .address(c.getAddress())
-                        .bankAccount(c.getBankAccount())
-                        .usagePurpose(c.getUsagePurpose())
-                        .requestNote(c.getRequestNote())
-                        .privacyAgreed(c.getPrivacyAgreed())
-                        .rejectedReason(c.getRejectedReason())
-                        .createdAt(c.getCreatedAt())
-                        .build())
+                .map(this::toDraftResult)
                 .orElse(null);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public ContractDraftResult getContract(Long userId, Long contractId) {
+        Contract contract = contractRepositoryPort.findById(contractId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND));
+
+        if (!contract.getUserId().equals(userId)) {
+            throw new BusinessException(ErrorCode.FORBIDDEN);
+        }
+
+        return toDraftResult(contract);
+    }
+
+    private ContractDraftResult toDraftResult(Contract c) {
+        return ContractDraftResult.builder()
+                .contractId(c.getContractId())
+                .spaceId(c.getSpaceId())
+                .status(c.getStatus())
+                .desiredStartDate(c.getDesiredStartDate())
+                .desiredDurationMonths(c.getDesiredDurationMonths())
+                .address(c.getAddress())
+                .bankAccount(c.getBankAccount())
+                .usagePurpose(c.getUsagePurpose())
+                .requestNote(c.getRequestNote())
+                .privacyAgreed(c.getPrivacyAgreed())
+                .rejectedReason(c.getRejectedReason())
+                .createdAt(c.getCreatedAt())
+                .build();
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<ContractDraftResult> getMyContracts(Long userId) {
         return contractRepositoryPort.findAllByUserId(userId).stream()
-                .map(c -> ContractDraftResult.builder()
-                        .contractId(c.getContractId())
-                        .spaceId(c.getSpaceId())
-                        .status(c.getStatus())
-                        .desiredStartDate(c.getDesiredStartDate())
-                        .desiredDurationMonths(c.getDesiredDurationMonths())
-                        .address(c.getAddress())
-                        .bankAccount(c.getBankAccount())
-                        .usagePurpose(c.getUsagePurpose())
-                        .requestNote(c.getRequestNote())
-                        .privacyAgreed(c.getPrivacyAgreed())
-                        .rejectedReason(c.getRejectedReason())
-                        .createdAt(c.getCreatedAt())
-                        .build())
+                .map(this::toDraftResult)
                 .collect(Collectors.toList());
     }
 

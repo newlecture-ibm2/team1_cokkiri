@@ -31,6 +31,7 @@ interface ContractFormData {
   bankAccount: string;
   privacyAgreed: boolean;
   termsAgreed: boolean;
+  status?: string;
 }
 
 const INITIAL_DATA: ContractFormData = {
@@ -42,6 +43,7 @@ const INITIAL_DATA: ContractFormData = {
   bankAccount: "",
   privacyAgreed: false,
   termsAgreed: false,
+  status: "DRAFT",
 };
 
 export default function ContractApplyForm() {
@@ -57,20 +59,30 @@ export default function ContractApplyForm() {
   const [error, setError] = useState<string | null>(null);
   const [showToast, setShowToast] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const isReadOnly = formData.status !== "DRAFT" && formData.status !== "REJECTED";
+
 
   // Load draft from API & LocalStorage
   useEffect(() => {
     const loadDraft = async () => {
       setIsLoading(true);
+      const contractId = searchParams.get("id");
       try {
-        // 1. Try LocalStorage first for instant hit
-        const savedDraft = localStorage.getItem(`contract_draft_${spaceId}`);
-        if (savedDraft) {
-          setFormData(prev => ({ ...prev, ...JSON.parse(savedDraft) }));
+        // 1. Try LocalStorage first for instant hit (only if no specific contractId)
+        if (!contractId) {
+          const savedDraft = localStorage.getItem(`contract_draft_${spaceId}`);
+          if (savedDraft) {
+            setFormData(prev => ({ ...prev, ...JSON.parse(savedDraft) }));
+          }
         }
 
         // 2. Fetch from Server for latest truth
-        const response = await fetch(`/api/contracts/draft?spaceId=${spaceId}`);
+        // If contractId exists, fetch specific contract, else fetch draft by spaceId
+        const url = contractId 
+          ? `/api/contracts/${contractId}`
+          : `/api/contracts/draft?spaceId=${spaceId}`;
+
+        const response = await fetch(url);
         if (response.ok) {
           const result = await response.json();
           if (result.success && result.data) {
@@ -83,7 +95,13 @@ export default function ContractApplyForm() {
               usagePurpose: result.data.usagePurpose || prev.usagePurpose,
               requestNote: result.data.requestNote || prev.requestNote,
               privacyAgreed: result.data.privacyAgreed || prev.privacyAgreed,
+              termsAgreed: result.data.status !== "DRAFT", // If not DRAFT, assume terms were agreed during submission
+              status: result.data.status || "DRAFT",
             }));
+            
+            // If viewing a submitted contract, move to final step or a summary view if needed
+            // But here the user just says "contents remain". 
+            // Maybe we should allow them to see it in the form steps.
           }
         }
       } catch (e) {
@@ -94,7 +112,7 @@ export default function ContractApplyForm() {
     };
 
     loadDraft();
-  }, [spaceId]);
+  }, [spaceId, searchParams]);
 
   // Throttled Draft Save API Call
   const saveDraft = useCallback(async (data: ContractFormData, isManual: boolean = false) => {
@@ -191,6 +209,12 @@ export default function ContractApplyForm() {
       {/* Editorial Step Tracker */}
       {step < 5 && (
         <div className="flex flex-col md:flex-row md:items-center justify-between mb-12 gap-8">
+          {isReadOnly && (
+            <div className="flex items-center gap-4 px-6 py-3 bg-accent/10 border border-accent/20 rounded-full">
+              <ShieldCheck className="w-4 h-4 text-accent" />
+              <span className="text-[10px] font-black tracking-[0.2em] text-accent uppercase">VIEWING SUBMISSION - {formData.status}</span>
+            </div>
+          )}
           <div className="flex items-center gap-10 overflow-x-auto pb-4 md:pb-0 scrollbar-hide">
             {steps.map((s, i) => (
               <div key={i} className="flex items-center gap-4 group">
@@ -217,7 +241,7 @@ export default function ContractApplyForm() {
       <div className="relative">
         <div className="bg-white rounded-[3rem] border border-primary/5 shadow-2xl shadow-primary/5 p-10 md:p-20 relative overflow-hidden">
           {/* Top Right Save Button */}
-          {step < 5 && (
+          {step < 5 && !isReadOnly && (
             <button 
               type="button"
               onClick={() => saveDraft(formData, true)}
@@ -273,7 +297,8 @@ export default function ContractApplyForm() {
                       value={formData.desiredStartDate}
                       onChange={handleInputChange}
                       required
-                      className="w-full bg-primary/5 border-none p-6 rounded-2xl text-lg font-bold focus:ring-2 focus:ring-accent transition-all"
+                      disabled={isReadOnly}
+                      className="w-full bg-primary/5 border-none p-6 rounded-2xl text-lg font-bold focus:ring-2 focus:ring-accent transition-all disabled:opacity-50"
                     />
                   </div>
 
@@ -285,7 +310,8 @@ export default function ContractApplyForm() {
                       name="desiredDurationMonths"
                       value={formData.desiredDurationMonths}
                       onChange={handleInputChange}
-                      className="w-full bg-primary/5 border-none p-6 rounded-2xl text-lg font-bold focus:ring-2 focus:ring-accent transition-all appearance-none"
+                      disabled={isReadOnly}
+                      className="w-full bg-primary/5 border-none p-6 rounded-2xl text-lg font-bold focus:ring-2 focus:ring-accent transition-all appearance-none disabled:opacity-50"
                     >
                       {[3, 6, 12, 24].map(m => (
                         <option key={m} value={m}>{m} MONTHS</option>
@@ -333,8 +359,9 @@ export default function ContractApplyForm() {
                       name="address"
                       value={formData.address}
                       onChange={handleInputChange}
+                      disabled={isReadOnly}
                       placeholder="심사용 서류에 기재될 현재 주소를 입력하세요."
-                      className="w-full bg-primary/5 border-none p-6 rounded-2xl text-lg font-bold focus:ring-2 focus:ring-accent transition-all"
+                      className="w-full bg-primary/5 border-none p-6 rounded-2xl text-lg font-bold focus:ring-2 focus:ring-accent transition-all disabled:opacity-50"
                     />
                   </div>
 
@@ -347,8 +374,9 @@ export default function ContractApplyForm() {
                       name="usagePurpose"
                       value={formData.usagePurpose}
                       onChange={handleInputChange}
+                      disabled={isReadOnly}
                       placeholder="입주 목적을 간단히 적어주세요."
-                      className="w-full bg-primary/5 border-none p-6 rounded-2xl text-lg font-bold focus:ring-2 focus:ring-accent transition-all"
+                      className="w-full bg-primary/5 border-none p-6 rounded-2xl text-lg font-bold focus:ring-2 focus:ring-accent transition-all disabled:opacity-50"
                     />
                   </div>
 
@@ -361,7 +389,8 @@ export default function ContractApplyForm() {
                       value={formData.requestNote}
                       onChange={handleInputChange}
                       rows={4}
-                      className="w-full bg-primary/5 border-none p-6 rounded-2xl text-lg font-bold focus:ring-2 focus:ring-accent transition-all resize-none"
+                      disabled={isReadOnly}
+                      className="w-full bg-primary/5 border-none p-6 rounded-2xl text-lg font-bold focus:ring-2 focus:ring-accent transition-all resize-none disabled:opacity-50"
                     />
                   </div>
                 </div>
@@ -408,8 +437,9 @@ export default function ContractApplyForm() {
                     name="bankAccount"
                     value={formData.bankAccount}
                     onChange={handleInputChange}
+                    disabled={isReadOnly}
                     placeholder="은행명 및 계좌번호를 입력하세요."
-                    className="w-full bg-primary/5 border-none p-6 rounded-2xl text-lg font-bold focus:ring-2 focus:ring-accent transition-all"
+                    className="w-full bg-primary/5 border-none p-6 rounded-2xl text-lg font-bold focus:ring-2 focus:ring-accent transition-all disabled:opacity-50"
                   />
                 </div>
 
@@ -446,7 +476,8 @@ export default function ContractApplyForm() {
                       name="privacyAgreed" 
                       checked={formData.privacyAgreed}
                       onChange={handleInputChange}
-                      className="w-8 h-8 rounded-full border-primary/20 text-accent focus:ring-0" 
+                      disabled={isReadOnly}
+                      className="w-8 h-8 rounded-full border-primary/20 text-accent focus:ring-0 disabled:opacity-50" 
                     />
                     <span className="text-[10px] font-black tracking-[0.3em] uppercase">개인정보 수집 및 이용 동의 (필수)</span>
                   </label>
@@ -456,7 +487,8 @@ export default function ContractApplyForm() {
                       name="termsAgreed" 
                       checked={formData.termsAgreed}
                       onChange={handleInputChange}
-                      className="w-8 h-8 rounded-full border-primary/20 text-accent focus:ring-0" 
+                      disabled={isReadOnly}
+                      className="w-8 h-8 rounded-full border-primary/20 text-accent focus:ring-0 disabled:opacity-50" 
                     />
                     <span className="text-[10px] font-black tracking-[0.3em] uppercase">주의사항 확인 및 입주 서약 (필수)</span>
                   </label>
@@ -474,10 +506,12 @@ export default function ContractApplyForm() {
                   </button>
                   <button 
                     type="submit"
-                    disabled={isSubmitting || !formData.privacyAgreed || !formData.termsAgreed}
+                    disabled={isReadOnly || isSubmitting || !formData.privacyAgreed || !formData.termsAgreed}
                     className="py-8 bg-primary text-background rounded-full font-black tracking-[0.2em] flex justify-center items-center gap-4 hover:bg-accent transition-all disabled:opacity-20"
                   >
-                    {isSubmitting ? <Loader2 className="w-6 h-6 animate-spin" /> : <>SUBMIT APPLICATION <Send className="w-5 h-5" /></>}
+                    {isSubmitting ? <Loader2 className="w-6 h-6 animate-spin" /> : 
+                     isReadOnly ? <><ShieldCheck className="w-5 h-5" /> ALREADY SUBMITTED</> : 
+                     <>SUBMIT APPLICATION <Send className="w-5 h-5" /></>}
                   </button>
                 </div>
               </motion.div>
