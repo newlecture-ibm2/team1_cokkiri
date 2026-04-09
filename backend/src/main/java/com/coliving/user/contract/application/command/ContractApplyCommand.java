@@ -7,6 +7,7 @@ import java.time.LocalDate;
 @Getter
 @Builder
 public class ContractApplyCommand {
+    private final Long contractId;
     private final Long spaceId;
     private final LocalDate desiredStartDate;
     private final Integer desiredDurationMonths;

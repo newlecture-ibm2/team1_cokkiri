@@ -13,6 +13,8 @@ import java.time.LocalDate;
 @Setter
 @NoArgsConstructor
 public class ContractApplyRequestDto {
+    private Long contractId;
+
 
     @NotNull(message = "공간 ID는 필수입니다.")
     private Long spaceId;

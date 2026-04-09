@@ -88,9 +88,24 @@ public class ContractService implements ContractUseCase {
 
     @Override
     public ContractResult saveDraft(Long userId, ContractApplyCommand command) {
-        Contract contract = contractRepositoryPort.findByUserIdAndSpaceId(userId, command.getSpaceId())
-                .filter(c -> c.getStatus() == ContractStatus.DRAFT)
-                .orElse(null);
+        Contract contract = null;
+
+        // 1. Try to find by contractId first (explicit update)
+        if (command.getContractId() != null) {
+            contract = contractRepositoryPort.findById(command.getContractId())
+                    .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND));
+            
+            if (!contract.getUserId().equals(userId)) {
+                throw new BusinessException(ErrorCode.FORBIDDEN);
+            }
+        }
+
+        // 2. If not found, try to find current DRAFT for this space
+        if (contract == null) {
+            contract = contractRepositoryPort.findByUserIdAndSpaceId(userId, command.getSpaceId())
+                    .filter(c -> c.getStatus() == ContractStatus.DRAFT)
+                    .orElse(null);
+        }
 
         if (contract == null) {
             contract = createContractFromCommand(userId, command, ContractStatus.DRAFT);
@@ -111,9 +126,24 @@ public class ContractService implements ContractUseCase {
 
     @Override
     public ContractResult submitContract(Long userId, ContractApplyCommand command) {
-        Contract contract = contractRepositoryPort.findByUserIdAndSpaceId(userId, command.getSpaceId())
-                .filter(c -> c.getStatus() == ContractStatus.DRAFT)
-                .orElse(null);
+        Contract contract = null;
+
+        // 1. Try to find by contractId first
+        if (command.getContractId() != null) {
+            contract = contractRepositoryPort.findById(command.getContractId())
+                    .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND));
+
+            if (!contract.getUserId().equals(userId)) {
+                throw new BusinessException(ErrorCode.FORBIDDEN);
+            }
+        }
+
+        // 2. If not found, try to find current DRAFT for this space
+        if (contract == null) {
+            contract = contractRepositoryPort.findByUserIdAndSpaceId(userId, command.getSpaceId())
+                    .filter(c -> c.getStatus() == ContractStatus.DRAFT)
+                    .orElse(null);
+        }
 
         if (contract == null) {
             contract = createContractFromCommand(userId, command, ContractStatus.PENDING);

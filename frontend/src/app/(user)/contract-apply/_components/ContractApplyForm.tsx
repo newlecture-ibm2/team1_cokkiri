@@ -23,6 +23,7 @@ import {
 import Link from "next/link";
 
 interface ContractFormData {
+  contractId?: number;
   desiredStartDate: string;
   desiredDurationMonths: number;
   usagePurpose: string;
@@ -59,13 +60,15 @@ export default function ContractApplyForm() {
   const [error, setError] = useState<string | null>(null);
   const [showToast, setShowToast] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  const isReadOnly = formData.status !== "DRAFT" && formData.status !== "REJECTED";
+  const isReadOnly = formData.status === "ACTIVE" || formData.status === "EXPIRED" || formData.status === "TERMINATED" || formData.status === "APPROVED";
 
 
   // Load draft from API & LocalStorage
   useEffect(() => {
     const loadDraft = async () => {
       setIsLoading(true);
+      setFormData(INITIAL_DATA); // Reset to clean state first
+
       const contractId = searchParams.get("id");
       try {
         // 1. Try LocalStorage first for instant hit (only if no specific contractId)
@@ -77,7 +80,6 @@ export default function ContractApplyForm() {
         }
 
         // 2. Fetch from Server for latest truth
-        // If contractId exists, fetch specific contract, else fetch draft by spaceId
         const url = contractId 
           ? `/api/contracts/${contractId}`
           : `/api/contracts/draft?spaceId=${spaceId}`;
@@ -87,21 +89,18 @@ export default function ContractApplyForm() {
           const result = await response.json();
           if (result.success && result.data) {
             setFormData(prev => ({
-              ...prev,
-              desiredStartDate: result.data.desiredStartDate || prev.desiredStartDate,
-              desiredDurationMonths: result.data.desiredDurationMonths || prev.desiredDurationMonths,
-              address: result.data.address || prev.address,
-              bankAccount: result.data.bankAccount || prev.bankAccount,
-              usagePurpose: result.data.usagePurpose || prev.usagePurpose,
-              requestNote: result.data.requestNote || prev.requestNote,
-              privacyAgreed: result.data.privacyAgreed || prev.privacyAgreed,
-              termsAgreed: result.data.status !== "DRAFT", // If not DRAFT, assume terms were agreed during submission
+              ...INITIAL_DATA, // Use INITIAL_DATA as base for server results
+              contractId: result.data.contractId,
+              desiredStartDate: result.data.desiredStartDate || INITIAL_DATA.desiredStartDate,
+              desiredDurationMonths: result.data.desiredDurationMonths || INITIAL_DATA.desiredDurationMonths,
+              address: result.data.address || INITIAL_DATA.address,
+              bankAccount: result.data.bankAccount || INITIAL_DATA.bankAccount,
+              usagePurpose: result.data.usagePurpose || INITIAL_DATA.usagePurpose,
+              requestNote: result.data.requestNote || INITIAL_DATA.requestNote,
+              privacyAgreed: result.data.privacyAgreed || INITIAL_DATA.privacyAgreed,
+              termsAgreed: result.data.status !== "DRAFT",
               status: result.data.status || "DRAFT",
             }));
-            
-            // If viewing a submitted contract, move to final step or a summary view if needed
-            // But here the user just says "contents remain". 
-            // Maybe we should allow them to see it in the form steps.
           }
         }
       } catch (e) {
@@ -121,7 +120,7 @@ export default function ContractApplyForm() {
       await fetch('/api/contracts/draft', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...data, spaceId: Number(spaceId) })
+        body: JSON.stringify({ ...data, spaceId: Number(spaceId), contractId: data.contractId })
       }).catch(err => console.warn("API Draft save error, check backend."));
       
       localStorage.setItem(`contract_draft_${spaceId}`, JSON.stringify(data));
@@ -175,6 +174,7 @@ export default function ContractApplyForm() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
+          contractId: formData.contractId,
           spaceId: Number(spaceId),
           desiredStartDate: formData.desiredStartDate,
           desiredDurationMonths: Number(formData.desiredDurationMonths),
@@ -209,10 +209,12 @@ export default function ContractApplyForm() {
       {/* Editorial Step Tracker */}
       {step < 5 && (
         <div className="flex flex-col md:flex-row md:items-center justify-between mb-12 gap-8">
-          {isReadOnly && (
+          {formData.status !== "DRAFT" && (
             <div className="flex items-center gap-4 px-6 py-3 bg-accent/10 border border-accent/20 rounded-full">
               <ShieldCheck className="w-4 h-4 text-accent" />
-              <span className="text-[10px] font-black tracking-[0.2em] text-accent uppercase">VIEWING SUBMISSION - {formData.status}</span>
+              <span className="text-[10px] font-black tracking-[0.2em] text-accent uppercase">
+                {isReadOnly ? "FINALIZED SUBMISSION" : "VIEWING/EDITING SUBMISSION"} - {formData.status}
+              </span>
             </div>
           )}
           <div className="flex items-center gap-10 overflow-x-auto pb-4 md:pb-0 scrollbar-hide">
@@ -240,21 +242,32 @@ export default function ContractApplyForm() {
       {/* Main Content Area */}
       <div className="relative">
         <div className="bg-white rounded-[3rem] border border-primary/5 shadow-2xl shadow-primary/5 p-10 md:p-20 relative overflow-hidden">
-          {/* Top Right Save Button */}
-          {step < 5 && !isReadOnly && (
-            <button 
-              type="button"
-              onClick={() => saveDraft(formData, true)}
-              disabled={isSaving || isLoading}
-              className="absolute top-8 right-8 z-10 flex items-center gap-2 px-6 py-3 bg-primary/5 hover:bg-accent hover:text-white rounded-full text-[10px] font-black tracking-[0.2em] uppercase transition-all group disabled:opacity-50"
-            >
-              {(isSaving || isLoading) ? (
-                <Loader2 className="w-3 h-3 animate-spin"/>
-              ) : (
-                <Save className="w-3 h-3 transition-transform group-hover:scale-110" />
+          {/* Top Right Save & Exit Buttons */}
+          {step < 5 && (
+            <div className="absolute top-8 right-8 z-10 flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => router.back()}
+                className="flex items-center gap-2 px-6 py-3 bg-primary/5 hover:bg-rose-500 hover:text-white rounded-full text-[10px] font-black tracking-[0.2em] uppercase transition-all"
+              >
+                CLOSE
+              </button>
+              {!isReadOnly && (
+                <button 
+                  type="button"
+                  onClick={() => saveDraft(formData, true)}
+                  disabled={isSaving || isLoading}
+                  className="flex items-center gap-2 px-6 py-3 bg-primary/5 hover:bg-accent hover:text-white rounded-full text-[10px] font-black tracking-[0.2em] uppercase transition-all group disabled:opacity-50"
+                >
+                  {(isSaving || isLoading) ? (
+                    <Loader2 className="w-3 h-3 animate-spin"/>
+                  ) : (
+                    <Save className="w-3 h-3 transition-transform group-hover:scale-110" />
+                  )}
+                  {isLoading ? "LOADING..." : "SAVE DRAFT"}
+                </button>
               )}
-              {isLoading ? "LOADING..." : "SAVE DRAFT"}
-            </button>
+            </div>
           )}
 
           {/* Editorial Background Element */}
