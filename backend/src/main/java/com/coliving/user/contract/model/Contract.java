@@ -13,6 +13,7 @@ import java.time.OffsetDateTime;
 @AllArgsConstructor
 public class Contract {
     private final Long contractId;
+    private final Long version;
     private final Long userId;
     private final Long spaceId;
     private final ContractOrigin origin;
