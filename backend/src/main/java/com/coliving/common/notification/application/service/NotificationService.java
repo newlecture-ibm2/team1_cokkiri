@@ -86,6 +86,20 @@ public class NotificationService implements NotificationUseCase, CreateNotificat
             throw new BusinessException(ErrorCode.VALIDATION_ERROR);
         }
 
+        if (command.getReferenceType() != null && command.getReferenceId() != null) {
+            boolean exists = notificationRepositoryPort.exists(
+                    command.getUserId(),
+                    command.getType(),
+                    command.getReferenceType(),
+                    command.getReferenceId()
+            );
+            if (exists) {
+                return CreateNotificationResult.builder()
+                        .notificationId(null)
+                        .build();
+            }
+        }
+
         Notification saved = notificationRepositoryPort.create(
                 command.getUserId(),
                 command.getType(),

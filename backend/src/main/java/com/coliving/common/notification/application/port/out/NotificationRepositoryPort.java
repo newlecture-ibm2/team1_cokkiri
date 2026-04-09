@@ -23,4 +23,6 @@ public interface NotificationRepositoryPort {
      * 참조 대상이 무효화된 경우(예: 민원 취소) 연결된 알림을 soft delete 합니다.
      */
     void softDeleteByReference(ReferenceType referenceType, Long referenceId);
+
+    boolean exists(Long userId, NotificationType type, ReferenceType referenceType, Long referenceId);
 }
