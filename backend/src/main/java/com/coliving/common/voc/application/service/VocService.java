@@ -12,7 +12,10 @@ import com.coliving.common.notification.application.port.out.NotificationReposit
 import com.coliving.common.notification.model.NotificationType;
 import com.coliving.common.notification.model.ReferenceType;
 import com.coliving.common.voc.application.port.out.VocRepositoryPort;
-import com.coliving.common.notification.application.port.out.NotificationUserQueryPort;
+import com.coliving.admin.user.application.port.out.AdminUserRepositoryPort;
+import com.coliving.common.auth.model.UserRole;
+import com.coliving.common.auth.model.UserStatus;
+import org.springframework.data.domain.Pageable;
 import com.coliving.common.voc.application.result.VocListItemResult;
 import com.coliving.common.voc.application.result.VocListResult;
 import com.coliving.common.voc.application.result.VocResult;
@@ -45,16 +48,16 @@ public class VocService implements VocUseCase {
     private final VocRepositoryPort vocRepositoryPort;
     private final NotificationRepositoryPort notificationRepositoryPort;
     private final CreateNotificationUseCase createNotificationUseCase;
-    private final NotificationUserQueryPort notificationUserQueryPort;
+    private final AdminUserRepositoryPort adminUserRepositoryPort;
 
     public VocService(VocRepositoryPort vocRepositoryPort,
             NotificationRepositoryPort notificationRepositoryPort,
             CreateNotificationUseCase createNotificationUseCase,
-            NotificationUserQueryPort notificationUserQueryPort) {
+            AdminUserRepositoryPort adminUserRepositoryPort) {
         this.vocRepositoryPort = vocRepositoryPort;
         this.notificationRepositoryPort = notificationRepositoryPort;
         this.createNotificationUseCase = createNotificationUseCase;
-        this.notificationUserQueryPort = notificationUserQueryPort;
+        this.adminUserRepositoryPort = adminUserRepositoryPort;
     }
 
     @Override
@@ -73,10 +76,11 @@ public class VocService implements VocUseCase {
     }
 
     private void notifyAdminsOfVoc(Voc voc, String title) {
-        notificationUserQueryPort.findActiveAdminUserIds()
-                .forEach(adminId -> {
+        adminUserRepositoryPort.findUsers(UserRole.ADMIN, UserStatus.ACTIVE.name(), null, null, Pageable.unpaged())
+                .getContent()
+                .forEach(admin -> {
                     createNotificationUseCase.create(CreateNotificationCommand.builder()
-                            .userId(adminId)
+                            .userId(admin.getId())
                             .type(NotificationType.VOC_CREATED)
                             .title(title)
                             .message(String.format("「%s」 민원이 등록되었습니다.", voc.getTitle()))
