@@ -86,8 +86,8 @@ async function handler(req: NextRequest) {
       status: backendRes.status,
       headers: forwardedHeaders,
     });
-  } catch (error) {
-    console.error('[BFF Proxy] Backend fetch failed:', error);
+  } catch (error: any) {
+    console.error(`[BFF Proxy] Backend fetch failed: ${error.message || 'Unknown Error'}`);
     return NextResponse.json(
       { success: false, message: '백엔드 서비스가 응답하지 않습니다.', errorCode: 'SERVICE_UNAVAILABLE' },
       { status: 503 },

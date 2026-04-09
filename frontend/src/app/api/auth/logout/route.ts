@@ -24,8 +24,8 @@ export async function POST(req: NextRequest) {
       // Redis 세션 삭제
       await redis.del(`session:${sessionId}:access`);
       await redis.del(`session:${sessionId}:refresh`);
-    } catch (err) {
-      console.error('[Logout Route] Redis error:', err);
+    } catch (err: any) {
+      console.error(`[Logout Route] Redis error: ${err.message || 'Unknown Error'}`);
     }
   }
 
@@ -39,8 +39,8 @@ export async function POST(req: NextRequest) {
       method: 'POST',
       headers,
     });
-  } catch (err) {
-    console.error('[Logout Route] Backend logout failed:', err);
+  } catch (err: any) {
+    console.error(`[Logout Route] Backend logout failed: ${err.message || 'Unknown Error'}`);
   }
 
   // session_id 쿠키 제거

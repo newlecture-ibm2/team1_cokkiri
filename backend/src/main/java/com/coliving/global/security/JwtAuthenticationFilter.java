@@ -19,6 +19,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private static final String BEARER_PREFIX = "Bearer ";
 
     private final JwtTokenProvider jwtTokenProvider;
+    private final com.coliving.common.auth.application.port.out.AuthRepositoryPort authRepositoryPort;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request,
@@ -27,6 +28,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         String token = resolveToken(request);
 
         if (StringUtils.hasText(token) && jwtTokenProvider.validateToken(token)) {
+            String jti = jwtTokenProvider.getJti(token);
+            if (jti != null && authRepositoryPort.isTokenBlacklisted(jti)) {
+                // 토큰 밴 상태
+                response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Token is blacklisted");
+                return;
+            }
+
             Authentication authentication = jwtTokenProvider.getAuthentication(token);
             SecurityContextHolder.getContext().setAuthentication(authentication);
         }
