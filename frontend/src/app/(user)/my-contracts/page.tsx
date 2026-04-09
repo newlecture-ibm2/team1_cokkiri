@@ -292,7 +292,7 @@ export default function MyContractsPage() {
                   </div>
 
                   <div className="flex items-center gap-4">
-                    <Link href={`/contract-apply?spaceId=${contract.spaceId}`}>
+                    <Link href={`/contract-apply?id=${contract.contractId}&spaceId=${contract.spaceId}`}>
                       <button className="h-16 px-8 bg-muted/10 hover:bg-muted/20 text-primary rounded-2xl text-[10px] font-black tracking-[0.2em] uppercase transition-all whitespace-nowrap">
                         VIEW SUBMISSION
                       </button>

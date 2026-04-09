@@ -18,5 +18,9 @@ public class AdminContractListResult {
     private ContractStatus status;
     private LocalDate desiredStartDate;
     private Integer desiredDurationMonths;
+    private String address;
+    private String bankAccount;
+    private String usagePurpose;
+    private String requestNote;
     private OffsetDateTime createdAt;
 }

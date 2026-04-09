@@ -149,7 +149,7 @@ public class AdminSpaceService implements AdminSpaceUseCase {
         String savedFileName = fileStoragePort.storeFile(spaceId, file);
 
         // 프론트엔드가 자체 프록시(/api/bff/...)를 통해 컨트롤러 엔드포인트를 타도록 경로 합성
-        String imageUrl = "/api/bff/admin/spaces/" + spaceId + "/images/serve/" + savedFileName;
+        String imageUrl = "/api/admin/spaces/" + spaceId + "/images/serve/" + savedFileName;
 
         AdminSpace.SpaceImage newImage = AdminSpace.SpaceImage.builder()
                 .imageUrl(imageUrl)
