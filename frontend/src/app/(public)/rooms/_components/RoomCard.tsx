@@ -83,7 +83,7 @@ export function RoomCard({ room, index }: RoomCardProps) {
             <p className="text-sm font-black tracking-[0.3em] text-secondary uppercase">
               {room.roomTypeName || '—'}
             </p>
-            {room.monthlyRent !== undefined && (
+            {room.monthlyRent != null && (
               <p className="text-lg font-black text-foreground">
                 ₩{room.monthlyRent.toLocaleString()}
                 <span className="ml-1 text-xs opacity-30">/월</span>

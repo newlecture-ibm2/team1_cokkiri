@@ -29,10 +29,19 @@ export default function SpacesPage() {
     loadSpaces();
   }, []);
 
-  const statusLabel: Record<string, { text: string; color: string }> = {
-    AVAILABLE: { text: '이용 가능', color: 'bg-green-500' },
-    OCCUPIED: { text: '사용 중', color: 'bg-red-500' },
-    MAINTENANCE: { text: '점검 중', color: 'bg-yellow-500' },
+  const getStatusDisplay = (space: SpaceDTO) => {
+    if (space.type === 'PRIVATE') {
+      return {
+        AVAILABLE: { text: '계약 가능', color: 'bg-green-500' },
+        OCCUPIED: { text: '입주 중', color: 'bg-blue-500' },
+        MAINTENANCE: { text: '점검 중', color: 'bg-yellow-500' },
+      }[space.status] || { text: space.status, color: 'bg-gray-500' };
+    }
+    return {
+      AVAILABLE: { text: '이용 가능', color: 'bg-green-500' },
+      OCCUPIED: { text: '사용 중', color: 'bg-blue-500' },
+      MAINTENANCE: { text: '점검 중', color: 'bg-yellow-500' },
+    }[space.status] || { text: space.status, color: 'bg-gray-500' };
   };
 
   const tabs: { key: Tab; label: string; icon: React.ReactNode }[] = [
@@ -86,7 +95,8 @@ export default function SpacesPage() {
       {activeTab === 'spaces' && (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {spaces.map((space: SpaceDTO, idx: number) => {
-            const status = statusLabel[space.status] || { text: space.status, color: 'bg-gray-500' };
+            const status = getStatusDisplay(space);
+            const thumbnailUrl = space.images?.find(img => img.isThumbnail)?.imageUrl || space.images?.[0]?.imageUrl;
             return (
               <motion.div 
                 key={space.spaceId}
@@ -124,10 +134,10 @@ export default function SpacesPage() {
                   <p className="mt-1 text-xs font-bold text-[var(--color-accent)]">{space.roomTypeName}</p>
                 )}
 
-                {space.images && space.images.length > 0 ? (
+                {thumbnailUrl ? (
                   <div className="mt-4 w-full h-32 rounded-2xl overflow-hidden bg-black/10">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={space.images[0].imageUrl} alt={space.name} className="w-full h-full object-cover" />
+                    <img src={thumbnailUrl} alt={space.name} className="w-full h-full object-cover" />
                   </div>
                 ) : (
                   <div className="mt-4 w-full h-32 rounded-2xl bg-black/10 flex items-center justify-center font-bold tracking-tighter text-black/30">
