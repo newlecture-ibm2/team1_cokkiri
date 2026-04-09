@@ -25,7 +25,7 @@ public interface NotificationJpaRepository extends JpaRepository<NotificationEnt
 
     Optional<NotificationEntity> findByNotificationIdAndUserId(Long notificationId, Long userId);
 
-    boolean existsByUserIdAndTypeAndReferenceTypeAndReferenceIdAndIsReadFalse(
+    boolean existsByUserIdAndTypeAndReferenceTypeAndReferenceId(
             Long userId,
             com.coliving.common.notification.model.NotificationType type,
             ReferenceType referenceType,

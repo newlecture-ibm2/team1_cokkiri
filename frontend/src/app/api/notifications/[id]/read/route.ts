@@ -26,8 +26,10 @@ export async function PATCH(
     });
 
     if (!res.ok) {
+      const errorText = await res.text();
+      console.warn(`Backend answered with ${res.status}: ${errorText}`);
       return NextResponse.json(
-        { success: false, message: "백엔드 알림 상태 업데이트 실패" },
+        { success: false, message: `백엔드 오류 (${res.status})`, detail: errorText },
         { status: res.status }
       );
     }
@@ -35,9 +37,9 @@ export async function PATCH(
     const data = await res.json();
     return NextResponse.json(data);
   } catch (error) {
-    console.error("Marker-as-read BFF Error:", error);
+    console.error("Critical Marker-as-read BFF Error:", error);
     return NextResponse.json(
-      { success: false, message: "BFF 내부 서버 오류" },
+      { success: false, message: "BFF 내부 서버 오류 (백엔드 연결 실패 가능성)", error: String(error) },
       { status: 500 }
     );
   }
