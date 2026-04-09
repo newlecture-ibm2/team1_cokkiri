@@ -132,7 +132,7 @@ export default function AdminContractsPage() {
     }
   };
 
-  const selectedContract = contracts.find(c => c.contractId === selectedId);
+
 
   return (
     <div className="flex flex-col gap-8 p-6 md:p-12 bg-background min-h-screen">
