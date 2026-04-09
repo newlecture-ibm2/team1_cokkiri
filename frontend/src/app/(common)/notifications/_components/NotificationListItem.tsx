@@ -41,12 +41,17 @@ export function NotificationListItem({ item }: { item: NotificationItem }) {
       if (refType === "COMMUNITY") {
         targetPath = `/community/${refId}`;
       } else if (refType === "VOC") {
-        // 민원 생성 알림만 관리자 페이지로, 나머지는 마이페이지 민원 상세로
         if (type === "VOC_CREATED") {
           targetPath = `/admin/vocs/${refId}`;
         } else {
           targetPath = `/profile/vocs/${refId}`;
         }
+      } else if (refType === "CONTRACT") {
+        targetPath = `/profile/contracts`; // 계약 상세 페이지가 생기면 `/profile/contracts/${refId}`로 변경 예정
+      } else if (refType === "RESERVATION") {
+        targetPath = `/profile/reservations`;
+      } else if (refType === "PAYMENT") {
+        targetPath = `/profile/payments`;
       }
     }
 
