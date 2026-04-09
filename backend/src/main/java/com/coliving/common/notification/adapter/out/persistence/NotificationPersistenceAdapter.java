@@ -69,6 +69,13 @@ public class NotificationPersistenceAdapter implements NotificationRepositoryPor
         }
     }
 
+    @Override
+    public boolean exists(Long userId, NotificationType type, ReferenceType referenceType, Long referenceId) {
+        return notificationJpaRepository.existsByUserIdAndTypeAndReferenceTypeAndReferenceIdAndIsReadFalse(
+                userId, type, referenceType, referenceId
+        );
+    }
+
     private Notification toModel(NotificationEntity entity) {
         return Notification.builder()
                 .notificationId(entity.getNotificationId())

@@ -34,12 +34,17 @@ export function NotificationListItem({ item }: { item: NotificationItem }) {
     }
 
     // 2. 알림 타입 및 참조 아이디에 따른 상세 페이지 이동 경로 설정
-    let targetPath = "/notifications"; // 기본값 (상세 페이지가 없을 경우 알림 목록 유지)
+    let targetPath = "/notifications"; // 기본값
     
     if (item.referenceType === "COMMUNITY" && item.referenceId) {
       targetPath = `/community/${item.referenceId}`;
     } else if (item.referenceType === "VOC" && item.referenceId) {
-      targetPath = `/my/voc/${item.referenceId}`;
+      // 알림 타입에 따라 관리자 페이지 또는 사용자 페이지 선택
+      if (item.type === "VOC_CREATED") {
+        targetPath = `/admin/vocs/${item.referenceId}`;
+      } else {
+        targetPath = `/profile/vocs/${item.referenceId}`;
+      }
     }
 
     // 3. 페이지 이동
