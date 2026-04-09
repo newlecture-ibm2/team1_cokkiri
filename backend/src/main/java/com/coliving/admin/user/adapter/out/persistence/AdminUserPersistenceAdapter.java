@@ -20,12 +20,13 @@ public class AdminUserPersistenceAdapter implements AdminUserRepositoryPort {
     private final UserJpaRepository userJpaRepository;
 
     @Override
-    public Page<AdminUserResult> findUsers(UserRole role, String status, String name, String loginId, Pageable pageable) {
+    public Page<AdminUserResult> findUsers(UserRole role, String status, String name, String loginId,
+            Pageable pageable) {
         UserStatus userStatus = null;
         if (status != null && !status.trim().isEmpty()) {
             userStatus = UserStatus.from(status);
         }
-        
+
         return userJpaRepository.findUsersWithFilters(role, userStatus, name, loginId, pageable).map(this::toResult);
     }
 

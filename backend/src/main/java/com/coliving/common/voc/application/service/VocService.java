@@ -12,9 +12,7 @@ import com.coliving.common.notification.application.port.out.NotificationReposit
 import com.coliving.common.notification.model.NotificationType;
 import com.coliving.common.notification.model.ReferenceType;
 import com.coliving.common.voc.application.port.out.VocRepositoryPort;
-import com.coliving.admin.user.application.port.out.AdminUserRepositoryPort;
-import com.coliving.common.auth.model.UserRole;
-import org.springframework.data.domain.Pageable;
+import com.coliving.common.notification.application.port.out.NotificationUserQueryPort;
 import com.coliving.common.voc.application.result.VocListItemResult;
 import com.coliving.common.voc.application.result.VocListResult;
 import com.coliving.common.voc.application.result.VocResult;
@@ -42,22 +40,21 @@ import java.util.Set;
 @Service
 public class VocService implements VocUseCase {
     private static final Set<String> ALLOWED_SORT_PROPERTIES = Set.of(
-            "createdAt", "updatedAt", "status"
-    );
+            "createdAt", "updatedAt", "status");
 
     private final VocRepositoryPort vocRepositoryPort;
     private final NotificationRepositoryPort notificationRepositoryPort;
     private final CreateNotificationUseCase createNotificationUseCase;
-    private final AdminUserRepositoryPort adminUserRepositoryPort;
+    private final NotificationUserQueryPort notificationUserQueryPort;
 
     public VocService(VocRepositoryPort vocRepositoryPort,
-                      NotificationRepositoryPort notificationRepositoryPort,
-                      CreateNotificationUseCase createNotificationUseCase,
-                      AdminUserRepositoryPort adminUserRepositoryPort) {
+            NotificationRepositoryPort notificationRepositoryPort,
+            CreateNotificationUseCase createNotificationUseCase,
+            NotificationUserQueryPort notificationUserQueryPort) {
         this.vocRepositoryPort = vocRepositoryPort;
         this.notificationRepositoryPort = notificationRepositoryPort;
         this.createNotificationUseCase = createNotificationUseCase;
-        this.adminUserRepositoryPort = adminUserRepositoryPort;
+        this.notificationUserQueryPort = notificationUserQueryPort;
     }
 
     @Override
@@ -68,8 +65,7 @@ public class VocService implements VocUseCase {
                 command.getCategory(),
                 PlainTextFieldValidation.requireNonBlankTitleForSave(command.getTitle()),
                 VocBodyHtmlSanitizer.sanitize(command.getContent()),
-                command.getAttachments()
-        );
+                command.getAttachments());
 
         notifyAdminsOfVoc(created, "새로운 민원이 등록되었습니다");
 
@@ -77,11 +73,10 @@ public class VocService implements VocUseCase {
     }
 
     private void notifyAdminsOfVoc(Voc voc, String title) {
-        adminUserRepositoryPort.findUsers(UserRole.ADMIN, "ACTIVE", null, null, Pageable.unpaged())
-                .getContent()
-                .forEach(admin -> {
+        notificationUserQueryPort.findActiveAdminUserIds()
+                .forEach(adminId -> {
                     createNotificationUseCase.create(CreateNotificationCommand.builder()
-                            .userId(admin.getId())
+                            .userId(adminId)
                             .type(NotificationType.VOC_CREATED)
                             .title(title)
                             .message(String.format("「%s」 민원이 등록되었습니다.", voc.getTitle()))
@@ -157,8 +152,7 @@ public class VocService implements VocUseCase {
                 command.getCategory(),
                 PlainTextFieldValidation.requireNonBlankTitleForSave(command.getTitle()),
                 VocBodyHtmlSanitizer.sanitize(command.getContent()),
-                base
-        );
+                base);
 
         notifyAdminsOfVoc(updated, "민원이 수정되었습니다");
 
