@@ -2,7 +2,11 @@ services:
   frontend:
     container_name: team1-cokkiri-frontend
     image: team1-cokkiri-frontend:latest
-    build: ./frontend
+    build:
+      context: ./frontend
+      args:
+        - NEXT_PUBLIC_PORTONE_STORE_ID=store-4d66fd44-b28d-47c6-bed8-f660be2ff078
+        - NEXT_PUBLIC_PORTONE_CHANNEL_KEY=channel-key-8232248b-51b5-464e-b9df-6cebd3be3402
     restart: unless-stopped
     ports:
       - "3111:3000"
@@ -12,6 +16,8 @@ services:
       - INTERNAL_FRONTEND_URL=http://frontend:3000
       - JWT_SECRET=${JWT_SECRET}
       - REDIS_URL=redis://redis:6379/0
+      - NEXT_PUBLIC_PORTONE_STORE_ID=store-4d66fd44-b28d-47c6-bed8-f660be2ff078
+      - NEXT_PUBLIC_PORTONE_CHANNEL_KEY=channel-key-8232248b-51b5-464e-b9df-6cebd3be3402
     depends_on:
       - backend
     # 👇 프론트엔드 Watch 설정 추가

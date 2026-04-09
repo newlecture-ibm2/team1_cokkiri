@@ -10,6 +10,7 @@ import { fetchTimeSlots, createReservation } from "../_api";
 import type { Facility } from "../_types";
 import { ApiError } from "@/lib/api";
 import { ReservationRequestModal } from "./ReservationRequestModal";
+import { ReservationBlockedModal } from "./ReservationBlockedModal";
 
 // ──────────────────────────────────────────
 // 상수
@@ -180,6 +181,7 @@ export function WeeklyTimetable({ facility, onReserved }: WeeklyTimetableProps) 
   const [booking, setBooking] = useState(false);
   const [feedback, setFeedback] = useState<{ type: "success" | "error"; msg: string } | null>(null);
   const [isReservationModalOpen, setIsReservationModalOpen] = useState(false);
+  const [blockedReservationMessage, setBlockedReservationMessage] = useState<string | null>(null);
   const [dragState, setDragState] = useState<{ active: boolean; anchorDate: string | null; anchorTime: string | null }>({
     active: false,
     anchorDate: null,
@@ -354,8 +356,16 @@ export function WeeklyTimetable({ facility, onReserved }: WeeklyTimetableProps) 
       loadSlots();
       onReserved?.();
     } catch (e) {
-      if (e instanceof ApiError) setFeedback({ type: "error", msg: e.message });
-      else setFeedback({ type: "error", msg: "예약 신청에 실패했습니다." });
+      if (e instanceof ApiError) {
+        if (e.message.includes("입주 기간 종료로 인해 예약이 불가능합니다")) {
+          setIsReservationModalOpen(false);
+          setBlockedReservationMessage("계약 종료 이후에는 공용시설 예약이 불가능합니다. 계약 기간을 확인해주세요.");
+        } else {
+          setFeedback({ type: "error", msg: e.message });
+        }
+      } else {
+        setFeedback({ type: "error", msg: "예약 신청에 실패했습니다." });
+      }
     } finally {
       setBooking(false);
     }
@@ -579,6 +589,12 @@ export function WeeklyTimetable({ facility, onReserved }: WeeklyTimetableProps) 
           isSubmitting={booking}
         />
       ) : null}
+
+      <ReservationBlockedModal
+        isOpen={blockedReservationMessage !== null}
+        message={blockedReservationMessage ?? ""}
+        onClose={() => setBlockedReservationMessage(null)}
+      />
     </div>
   );
 }

@@ -9,6 +9,9 @@ import com.coliving.reservation.adapter.out.jpa.ReservationEntity;
 import com.coliving.reservation.adapter.out.jpa.ReservationJpaRepository;
 import com.coliving.reservation.application.port.in.ReservationCommandUseCase;
 import com.coliving.reservation.exception.ReservationOverlapException;
+import com.coliving.user.contract.adapter.out.jpa.ContractEntity;
+import com.coliving.user.contract.adapter.out.jpa.ContractJpaRepository;
+import com.coliving.user.contract.model.ContractStatus;
 import com.coliving.admin.space.adapter.out.jpa.SpaceEntity;
 import com.coliving.admin.space.adapter.out.jpa.SpaceJpaRepository;
 import lombok.RequiredArgsConstructor;
@@ -40,6 +43,7 @@ public class ReservationCommandService implements ReservationCommandUseCase {
     private final ReservationJpaRepository reservationRepository;
     private final UserJpaRepository userRepository;
     private final SpaceJpaRepository spaceRepository;
+    private final ContractJpaRepository contractJpaRepository;
 
     /**
      * 시설 예약 신청
@@ -48,9 +52,10 @@ public class ReservationCommandService implements ReservationCommandUseCase {
      * 1. 시간 범위 유효성 검사 (종료 > 시작)
      * 2. 사용자 조회
      * 3. 시설 조회
-     * 4. 최대 이용 시간(2시간) 검증
-     * 5. 동시성 체크 — 동일 시설/날짜/시간대에 APPROVED 예약 존재 시 ReservationOverlapException
-     * 6. 엔티티 생성(APPROVED) 및 저장
+     * 4. 활성 계약 종료일(endDate) 검증
+     * 5. 최대 이용 시간(2시간) 검증
+     * 6. 동시성 체크 — 동일 시설/날짜/시간대에 APPROVED 예약 존재 시 ReservationOverlapException
+     * 7. 엔티티 생성(APPROVED) 및 저장
      */
     @Override
     @Transactional
@@ -58,10 +63,6 @@ public class ReservationCommandService implements ReservationCommandUseCase {
         // 1. 시간 범위 유효성 검사
         if (!request.isValidTimeRange()) {
             throw new BusinessException(ErrorCode.VALIDATION_ERROR, "종료 시간은 시작 시간보다 이후여야 합니다.");
-        }
-
-        if (!request.isWithinMaxUsageMinutes(MAX_RESERVATION_MINUTES)) {
-            throw new BusinessException(ErrorCode.VALIDATION_ERROR, "공용시설 예약은 최대 2시간까지만 가능합니다.");
         }
 
         // 2. 요청 사용자 조회
@@ -74,7 +75,26 @@ public class ReservationCommandService implements ReservationCommandUseCase {
         SpaceEntity spaceEntity = spaceRepository.findById(request.getSpaceId())
                 .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND, "시설을 찾을 수 없습니다."));
 
-        // 4. 동시성 체크: 해당 시간에 APPROVED 중복 예약 여부 확인
+        // 4. 활성 계약 종료일 검증 (종료일 당일 포함)
+        ContractEntity activeContract = contractJpaRepository.findByUserIdAndStatus(userId, ContractStatus.ACTIVE)
+                .stream()
+                .findFirst()
+                .orElseThrow(() -> new BusinessException(ErrorCode.NO_ACTIVE_CONTRACT, "유효한 활성 계약이 없어 예약할 수 없습니다."));
+
+        if (activeContract.getEndDate() == null) {
+            throw new BusinessException(ErrorCode.NO_ACTIVE_CONTRACT, "유효한 활성 계약 종료일이 없어 예약할 수 없습니다.");
+        }
+
+        if (request.getReservationDate().isAfter(activeContract.getEndDate())) {
+            throw new BusinessException(ErrorCode.VALIDATION_ERROR, "입주 기간 종료로 인해 예약이 불가능합니다");
+        }
+
+        // 5. 최대 이용 시간(2시간) 검증
+        if (!request.isWithinMaxUsageMinutes(MAX_RESERVATION_MINUTES)) {
+            throw new BusinessException(ErrorCode.VALIDATION_ERROR, "공용시설 예약은 최대 2시간까지만 가능합니다.");
+        }
+
+        // 6. 동시성 체크: 해당 시간에 APPROVED 중복 예약 여부 확인
         // TODO: (고도화) 다중 인스턴스 환경에서 완벽한 동시성 제어를 위해 Redisson 분산 락, DB Partial Unique Index 도입 고려
         boolean hasOverlap = reservationRepository.existsOverlappingReservation(
                 request.getSpaceId(),
@@ -90,7 +110,7 @@ public class ReservationCommandService implements ReservationCommandUseCase {
             throw new ReservationOverlapException("선택한 시간에 이미 다른 확정된 예약이 존재합니다.");
         }
 
-        // 5. 예약 엔티티 생성 (초기 상태: APPROVED) 및 저장
+        // 7. 예약 엔티티 생성 (초기 상태: APPROVED) 및 저장
         @SuppressWarnings("null")
         ReservationEntity savedReservation = reservationRepository.save(
                 ReservationEntity.builder()
