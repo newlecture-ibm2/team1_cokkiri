@@ -109,6 +109,16 @@ public class AdminVocService implements AdminVocUseCase {
     @Transactional
     public VocResult resolveVoc(ResolveVocCommand command) {
         Voc resolved = vocRepositoryPort.markResolved(command.getVocId());
+
+        createNotificationUseCase.create(CreateNotificationCommand.builder()
+                .userId(resolved.getUserId())
+                .type(NotificationType.VOC_RESOLVED)
+                .title("민원이 해결되었습니다")
+                .message(String.format("「%s」 민원이 해결 상태로 변경되었습니다.", resolved.getTitle()))
+                .referenceType(ReferenceType.VOC)
+                .referenceId(resolved.getVocId())
+                .build());
+
         return toVocResult(resolved);
     }
 

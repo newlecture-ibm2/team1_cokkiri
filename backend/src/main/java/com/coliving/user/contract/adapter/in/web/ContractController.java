@@ -101,6 +101,7 @@ public class ContractController {
 
     private ContractApplyCommand toCommand(ContractApplyRequestDto dto) {
         return ContractApplyCommand.builder()
+                .contractId(dto.getContractId())
                 .spaceId(dto.getSpaceId())
                 .desiredStartDate(dto.getDesiredStartDate())
                 .desiredDurationMonths(dto.getDesiredDurationMonths())

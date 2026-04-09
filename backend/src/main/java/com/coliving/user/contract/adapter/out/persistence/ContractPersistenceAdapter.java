@@ -40,9 +40,16 @@ public class ContractPersistenceAdapter implements ContractRepositoryPort {
         return jpaRepository.findByUserIdAndSpaceId(userId, spaceId).map(this::toModel);
     }
 
+    @Override
+    public Optional<Contract> findDraftByUserIdAndSpaceId(Long userId, Long spaceId) {
+        return jpaRepository.findByUserIdAndSpaceIdAndStatus(userId, spaceId, 
+                com.coliving.user.contract.model.ContractStatus.DRAFT).map(this::toModel);
+    }
+
     private ContractEntity toEntity(Contract model) {
         return ContractEntity.builder()
                 .contractId(model.getContractId())
+                .version(model.getVersion())
                 .userId(model.getUserId())
                 .spaceId(model.getSpaceId())
                 .origin(model.getOrigin())
@@ -69,6 +76,7 @@ public class ContractPersistenceAdapter implements ContractRepositoryPort {
     private Contract toModel(ContractEntity entity) {
         return Contract.builder()
                 .contractId(entity.getContractId())
+                .version(entity.getVersion())
                 .userId(entity.getUserId())
                 .spaceId(entity.getSpaceId())
                 .origin(entity.getOrigin())

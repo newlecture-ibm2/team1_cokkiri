@@ -14,6 +14,7 @@ import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.Date;
+import java.util.UUID;
 
 @Slf4j
 @Component
@@ -45,6 +46,7 @@ public class JwtTokenProvider {
 
         JwtBuilder builder = Jwts.builder()
                 .subject(String.valueOf(userId))
+                .id(UUID.randomUUID().toString())
                 .claim("role", role)
                 .issuedAt(now)
                 .expiration(expiry)
@@ -66,6 +68,7 @@ public class JwtTokenProvider {
 
         return Jwts.builder()
                 .subject(String.valueOf(userId))
+                .id(UUID.randomUUID().toString())
                 .issuedAt(now)
                 .expiration(expiry)
                 .signWith(key)
@@ -105,6 +108,14 @@ public class JwtTokenProvider {
 
     public Long getContractId(String token) {
         return getClaims(token).get("contract_id", Long.class);
+    }
+
+    public String getJti(String token) {
+        return getClaims(token).getId();
+    }
+
+    public Date getExpiration(String token) {
+        return getClaims(token).getExpiration();
     }
 
     private Claims getClaims(String token) {
