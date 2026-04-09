@@ -28,3 +28,9 @@ export async function fetchCommonSpaces(): Promise<CommonSpaceDto[]> {
   const res = await apiFetch<CommonSpaceDto[]>('/experience');
   return res.data ?? [];
 }
+
+export async function fetchCommonSpace(spaceId: number): Promise<CommonSpaceDto> {
+  const res = await apiFetch<CommonSpaceDto>(`/experience/${spaceId}`);
+  if (!res.data) throw new Error('Facility not found');
+  return res.data;
+}

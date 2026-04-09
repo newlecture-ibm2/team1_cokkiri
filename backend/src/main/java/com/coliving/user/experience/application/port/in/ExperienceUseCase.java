@@ -15,4 +15,9 @@ public interface ExperienceUseCase {
      * 전체 공용시설 목록 조회 (점검 중 제외)
      */
     List<CommonSpace> getAllCommonSpaces();
+
+    /**
+     * 특정 공용시설 상세 조회
+     */
+    CommonSpace getCommonSpace(Long spaceId);
 }

@@ -2,18 +2,20 @@
 
 import { motion } from 'framer-motion';
 import { Clock, Users, CalendarCheck, Sparkles } from 'lucide-react';
+import Link from 'next/link';
 import { CommonSpaceDto } from '../_api';
 
 export function FacilityCard({ space, index }: { space: CommonSpaceDto; index: number }) {
   const fallbackImage = `https://picsum.photos/seed/space${space.spaceId}/800/600`;
 
   return (
-    <motion.article
-      initial={{ opacity: 0, y: 40 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.6, delay: index * 0.08, ease: [0.22, 1, 0.36, 1] }}
-      className="group relative overflow-hidden rounded-[2rem] bg-[var(--color-muted)]/30 border border-foreground/5 transition-all duration-500 hover:shadow-xl hover:border-foreground/10"
-    >
+    <Link href={`/experience/${space.spaceId}`} className="block">
+      <motion.article
+        initial={{ opacity: 0, y: 40 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, delay: index * 0.08, ease: [0.22, 1, 0.36, 1] }}
+        className="group relative overflow-hidden rounded-[2rem] bg-[var(--color-muted)]/30 border border-foreground/5 transition-all duration-500 hover:shadow-xl hover:border-foreground/10"
+      >
       {/* 이미지 */}
       <div className="relative aspect-[16/10] overflow-hidden">
         {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -100,5 +102,6 @@ export function FacilityCard({ space, index }: { space: CommonSpaceDto; index: n
         )}
       </div>
     </motion.article>
+    </Link>
   );
 }

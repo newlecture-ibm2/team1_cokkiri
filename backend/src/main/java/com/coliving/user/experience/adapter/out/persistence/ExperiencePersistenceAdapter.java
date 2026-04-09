@@ -15,6 +15,7 @@ import org.springframework.stereotype.Component;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 @Component
 @RequiredArgsConstructor
@@ -30,6 +31,13 @@ public class ExperiencePersistenceAdapter implements ExperienceRepositoryPort {
         return entities.stream()
                 .map(this::toCommonSpace)
                 .toList();
+    }
+
+    @Override
+    public Optional<CommonSpace> findCommonSpaceById(Long spaceId) {
+        return spaceJpaRepository.findById(spaceId)
+                .filter(entity -> entity.getType() == SpaceType.COMMON && entity.getStatus() != SpaceStatus.MAINTENANCE)
+                .map(this::toCommonSpace);
     }
 
     private CommonSpace toCommonSpace(SpaceEntity entity) {
