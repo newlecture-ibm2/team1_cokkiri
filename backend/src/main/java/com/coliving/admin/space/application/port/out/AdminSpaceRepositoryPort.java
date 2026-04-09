@@ -17,7 +17,9 @@ public interface AdminSpaceRepositoryPort {
 
     Optional<AdminSpace> findById(Long spaceId);
 
-    Page<AdminSpace> findAll(Pageable pageable);
+    boolean existsById(Long spaceId);
+
+    Page<AdminSpace> findSpaces(com.coliving.admin.space.model.SpaceType type, com.coliving.admin.space.model.SpaceStatus status, Pageable pageable);
 
     boolean existsByName(String name);
 
@@ -28,4 +30,6 @@ public interface AdminSpaceRepositoryPort {
     void updatePositions(List<AdminSpace> spaces);
 
     void saveImage(Long spaceId, AdminSpace.SpaceImage image);
+
+    void deleteImage(Long imageId);
 }

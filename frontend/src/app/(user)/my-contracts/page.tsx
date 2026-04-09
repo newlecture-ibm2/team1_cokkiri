@@ -91,12 +91,15 @@ export default function MyContractsPage() {
       if (result.success && result.data) {
         setSigningContractId(null);
         alert(result.data.message || "계약이 체결되었습니다!");
-        router.push("/my-devices");
+        router.push("/my-contracts");
+        router.refresh();
       } else {
         alert(result.message || "계약 체결에 실패했습니다.");
+        setSigningContractId(null);
       }
     } catch (err: any) {
       alert(err.message || "네트워크 오류가 발생했습니다.");
+      setSigningContractId(null);
     } finally {
       setIsSubmitting(false);
     }

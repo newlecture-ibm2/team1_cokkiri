@@ -37,14 +37,20 @@ export interface SpaceDTO {
 
   // Images
   images?: {
+    spaceImageId?: number;
     imageUrl: string;
     imageType: string;
     isThumbnail: boolean;
   }[];
 }
 
-export const fetchSpaces = async () => {
-  const res = await apiFetch<any>('/admin/spaces');
+export const fetchSpaces = async (params?: { type?: string; status?: string }) => {
+  const query = new URLSearchParams();
+  if (params?.type && params.type !== 'ALL') query.append('type', params.type);
+  if (params?.status && params.status !== 'ALL') query.append('status', params.status);
+  
+  const queryString = query.toString() ? `?${query.toString()}` : '';
+  const res = await apiFetch<any>(`/admin/spaces${queryString}`);
   if (res.data?.content) {
     res.data.content = res.data.content.map((s: any) => ({
       ...s,
@@ -108,6 +114,12 @@ export const updateSpace = async (spaceId: number, data: Partial<SpaceDTO> & Rec
 
 export const deleteSpace = async (spaceId: number) => {
   return await apiFetch<any>(`/admin/spaces/${spaceId}`, {
+    method: 'DELETE',
+  });
+};
+
+export const deleteSpaceImage = async (spaceId: number, imageId: number) => {
+  return await apiFetch<any>(`/admin/spaces/${spaceId}/images/${imageId}`, {
     method: 'DELETE',
   });
 };
