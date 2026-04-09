@@ -49,6 +49,7 @@ public class ContractPersistenceAdapter implements ContractRepositoryPort {
     private ContractEntity toEntity(Contract model) {
         return ContractEntity.builder()
                 .contractId(model.getContractId())
+                .version(model.getVersion())
                 .userId(model.getUserId())
                 .spaceId(model.getSpaceId())
                 .origin(model.getOrigin())
@@ -75,6 +76,7 @@ public class ContractPersistenceAdapter implements ContractRepositoryPort {
     private Contract toModel(ContractEntity entity) {
         return Contract.builder()
                 .contractId(entity.getContractId())
+                .version(entity.getVersion())
                 .userId(entity.getUserId())
                 .spaceId(entity.getSpaceId())
                 .origin(entity.getOrigin())

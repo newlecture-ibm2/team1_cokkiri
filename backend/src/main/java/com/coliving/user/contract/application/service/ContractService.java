@@ -174,11 +174,12 @@ public class ContractService implements ContractUseCase {
             throw new BusinessException(ErrorCode.INVALID_STATUS);
         }
 
-        // 2. 호실 AVAILABLE 확인 (AdminSpaceRepositoryPort 사용)
+        // 2. 호실 상태 확인 (AdminSpaceRepositoryPort 사용)
         var space = adminSpaceRepositoryPort.findById(contract.getSpaceId())
                 .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND));
 
-        if (space.getStatus() != SpaceStatus.AVAILABLE) {
+        // 데모/테스트 편의: OCCUPIED여도 계약 체결 허용 (MAINTENANCE만 차단)
+        if (space.getStatus() == SpaceStatus.MAINTENANCE) {
             throw new BusinessException(ErrorCode.SPACE_NOT_AVAILABLE);
         }
 
