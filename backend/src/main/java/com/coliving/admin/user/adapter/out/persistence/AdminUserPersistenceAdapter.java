@@ -5,7 +5,6 @@ import com.coliving.admin.user.application.result.AdminUserResult;
 import com.coliving.common.auth.adapter.out.jpa.UserEntity;
 import com.coliving.common.auth.adapter.out.jpa.UserJpaRepository;
 import com.coliving.common.auth.model.UserRole;
-import com.coliving.common.auth.model.UserStatus;
 import com.coliving.global.error.BusinessException;
 import com.coliving.global.error.ErrorCode;
 import lombok.RequiredArgsConstructor;
@@ -20,10 +19,13 @@ public class AdminUserPersistenceAdapter implements AdminUserRepositoryPort {
     private final UserJpaRepository userJpaRepository;
 
     @Override
-    public Page<AdminUserResult> findUsers(UserRole role, String status, String name, String loginId, Pageable pageable) {
-        // JPA Specification or QueryDSL should ideally be used for multi-filter. 
-        // For MVP, we fetch all and slice, or we can use custom queries. Since this is an MVP scaffold, we'll return all mapped.
-        // To do this properly, a custom query method in UserJpaRepository is needed. For now, doing a basic findAll.
+    public Page<AdminUserResult> findUsers(UserRole role, String status, String name, String loginId,
+            Pageable pageable) {
+        // JPA Specification or QueryDSL should ideally be used for multi-filter.
+        // For MVP, we fetch all and slice, or we can use custom queries. Since this is
+        // an MVP scaffold, we'll return all mapped.
+        // To do this properly, a custom query method in UserJpaRepository is needed.
+        // For now, doing a basic findAll.
         return userJpaRepository.findAll(pageable).map(this::toResult);
     }
 
