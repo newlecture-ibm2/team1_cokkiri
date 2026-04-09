@@ -13,6 +13,7 @@ import com.coliving.common.notification.model.NotificationType;
 import com.coliving.common.notification.model.ReferenceType;
 import com.coliving.common.voc.application.port.out.VocRepositoryPort;
 import com.coliving.admin.user.application.port.out.AdminUserRepositoryPort;
+import com.coliving.admin.user.application.result.AdminUserResult;
 import com.coliving.common.auth.model.UserRole;
 import com.coliving.common.auth.model.UserStatus;
 import org.springframework.data.domain.Pageable;
@@ -76,18 +77,23 @@ public class VocService implements VocUseCase {
     }
 
     private void notifyAdminsOfVoc(Voc voc, String title) {
-        adminUserRepositoryPort.findUsers(UserRole.ADMIN, UserStatus.ACTIVE.name(), null, null, Pageable.unpaged())
-                .getContent()
-                .forEach(admin -> {
-                    createNotificationUseCase.create(CreateNotificationCommand.builder()
-                            .userId(admin.getId())
-                            .type(NotificationType.VOC_CREATED)
-                            .title(title)
-                            .message(String.format("「%s」 민원이 등록되었습니다.", voc.getTitle()))
-                            .referenceType(ReferenceType.VOC)
-                            .referenceId(voc.getVocId())
-                            .build());
-                });
+        if (voc == null) return;
+
+        Page<AdminUserResult> adminPage = adminUserRepositoryPort.findUsers(UserRole.ADMIN, UserStatus.ACTIVE.name(), null, null, Pageable.unpaged());
+        if (adminPage == null || adminPage.getContent() == null || adminPage.getContent().isEmpty()) {
+            return;
+        }
+
+        adminPage.getContent().forEach(admin -> {
+            createNotificationUseCase.create(CreateNotificationCommand.builder()
+                    .userId(admin.getId())
+                    .type(NotificationType.VOC_CREATED)
+                    .title(title)
+                    .message(String.format("「%s」 민원이 등록되었습니다.", voc.getTitle()))
+                    .referenceType(ReferenceType.VOC)
+                    .referenceId(voc.getVocId())
+                    .build());
+        });
     }
 
     @Override

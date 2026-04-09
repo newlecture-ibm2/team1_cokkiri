@@ -9,10 +9,8 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.nio.file.*;
 import java.util.UUID;
-import java.util.List;
 
 @Component
 public class LocalFileStorageAdapter implements FileStoragePort {
@@ -38,7 +36,8 @@ public class LocalFileStorageAdapter implements FileStoragePort {
 
         // 2. MIME 타입 검증
         String contentType = file.getContentType();
-        if (contentType == null || !(contentType.equals("image/jpeg") || contentType.equals("image/png") || contentType.equals("image/webp"))) {
+        if (contentType == null || !(contentType.equals("image/jpeg") || contentType.equals("image/png")
+                || contentType.equals("image/webp"))) {
             throw new BusinessException(ErrorCode.VALIDATION_ERROR);
         }
 
@@ -49,14 +48,14 @@ public class LocalFileStorageAdapter implements FileStoragePort {
         if (i > 0) {
             extension = originalFileName.substring(i);
         }
-        
+
         String newFileName = UUID.randomUUID().toString() + extension;
         Path targetSpaceDir = this.fileStorageLocation.resolve(String.valueOf(spaceId));
 
         try {
             Files.createDirectories(targetSpaceDir);
             Path targetLocation = targetSpaceDir.resolve(newFileName);
-            
+
             // 매직 바이트 검사 등은 생략하거나 추가 검증 라이브러리 연동 가능
             file.transferTo(targetLocation.toFile());
 
