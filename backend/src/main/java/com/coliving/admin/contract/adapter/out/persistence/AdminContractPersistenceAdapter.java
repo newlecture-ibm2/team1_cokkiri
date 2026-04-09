@@ -53,6 +53,10 @@ public class AdminContractPersistenceAdapter implements AdminContractRepositoryP
                         .status(c.getStatus())
                         .desiredStartDate(c.getDesiredStartDate())
                         .desiredDurationMonths(c.getDesiredDurationMonths())
+                        .address(c.getAddress())
+                        .bankAccount(c.getBankAccount())
+                        .usagePurpose(c.getUsagePurpose())
+                        .requestNote(c.getRequestNote())
                         .createdAt(c.getCreatedAt())
                         .build())
                 .collect(Collectors.toList());
