@@ -151,21 +151,33 @@ public class CommunityService implements CommunityUseCase {
     private void notifyAllResidentsOfNotice(Post post, String title) {
         if (post == null) return;
 
-        Page<AdminUserResult> userPage = adminUserRepositoryPort.findUsers(UserRole.USER, UserStatus.ACTIVE.name(), null, null, Pageable.unpaged());
-        if (userPage == null || userPage.getContent() == null || userPage.getContent().isEmpty()) {
-            return;
-        }
+        try {
+            // USER + RESIDENT 모두에게 알림 전송
+            for (UserRole role : List.of(UserRole.USER, UserRole.RESIDENT)) {
+                Page<AdminUserResult> userPage = adminUserRepositoryPort.findUsers(
+                        role, UserStatus.ACTIVE.name(), null, null, Pageable.unpaged());
+                if (userPage == null || userPage.getContent() == null) {
+                    continue;
+                }
 
-        userPage.getContent().forEach(user -> {
-            createNotificationUseCase.create(CreateNotificationCommand.builder()
-                    .userId(user.getId())
-                    .type(NotificationType.COMMUNITY_NOTICE)
-                    .title(title)
-                    .message(String.format("「%s」 공지사항이 등록되었습니다.", post.getTitle()))
-                    .referenceType(ReferenceType.COMMUNITY)
-                    .referenceId(post.getPostId())
-                    .build());
-        });
+                for (AdminUserResult user : userPage.getContent()) {
+                    try {
+                        createNotificationUseCase.create(CreateNotificationCommand.builder()
+                                .userId(user.getId())
+                                .type(NotificationType.COMMUNITY_NOTICE)
+                                .title(title)
+                                .message(String.format("「%s」 공지사항이 등록되었습니다.", post.getTitle()))
+                                .referenceType(ReferenceType.COMMUNITY)
+                                .referenceId(post.getPostId())
+                                .build());
+                    } catch (Exception e) {
+                        // 개별 알림 실패는 무시 — 게시글 등록에 영향 없음
+                    }
+                }
+            }
+        } catch (Exception e) {
+            // 알림 전체 실패해도 공지사항 등록은 반드시 성공해야 함
+        }
     }
 
     @Override
