@@ -25,3 +25,5 @@ data/uploads/
 
 # Local config files
 application-local.yml
+run.bat
+run

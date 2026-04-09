@@ -39,10 +39,10 @@ export async function apiFetch<T>(
       );
     }
     if (response.status === 401) {
-      if (path !== '/auth/login' && path !== '/auth/refresh' && !isRefreshing) {
+      if (path !== '/auth/login' && path !== '/auth/refresh' && path !== '/auth/logout' && !isRefreshing) {
         isRefreshing = true;
         try {
-          const refreshRes = await fetch(`${BASE_URL}/auth/refresh`, { method: 'POST' });
+          const refreshRes = await fetch(`${BASE_URL}/auth/refresh`, { method: 'POST', credentials: 'include' });
           if (refreshRes.ok) {
             isRefreshing = false;
             // 토큰 갱신 성공, 원래 요청 재시도

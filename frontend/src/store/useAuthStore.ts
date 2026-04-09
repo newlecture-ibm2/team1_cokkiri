@@ -27,7 +27,7 @@ export const useAuthStore = create<AuthState>((set) => ({
     } finally {
       // 서버 상태와 관계없이 클라이언트 상태(Zustand) 초기화
       set({ isLoggedIn: false, user: null });
-      if (typeof window !== 'undefined') {
+      if (typeof window !== 'undefined' && window.location.pathname !== '/') {
         window.location.href = '/';
       }
     }
@@ -57,6 +57,11 @@ export const useAuthStore = create<AuthState>((set) => ({
 
 if (typeof window !== 'undefined') {
   window.addEventListener('auth:expired', () => {
-    useAuthStore.getState().logout();
+    const store = useAuthStore.getState();
+    if (store.isLoggedIn) {
+      store.logout();
+    } else {
+      useAuthStore.setState({ isLoggedIn: false, user: null, isLoading: false });
+    }
   });
 }
