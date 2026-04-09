@@ -55,10 +55,15 @@ export const fetchSpaces = async () => {
   return res;
 };
 
-export const createSpace = async (data: SpaceDTO) => {
+export const createSpace = async (data: SpaceDTO & Record<string, any>) => {
+  const { 
+    spaceId, roomTypeName, images, 
+    privateDetail, commonDetail, positionX, positionY, 
+    ...payload 
+  } = data;
   return await apiFetch<any>('/admin/spaces', {
     method: 'POST',
-    body: JSON.stringify(data),
+    body: JSON.stringify(payload),
   });
 };
 
@@ -89,10 +94,15 @@ export const fetchSpace = async (spaceId: number) => {
   return res as ApiResponse<SpaceDTO>;
 };
 
-export const updateSpace = async (spaceId: number, data: Partial<SpaceDTO>) => {
+export const updateSpace = async (spaceId: number, data: Partial<SpaceDTO> & Record<string, any>) => {
+  const { 
+    spaceId: _id, type, roomTypeName, images, 
+    privateDetail, commonDetail, positionX, positionY, 
+    ...payload 
+  } = data;
   return await apiFetch<any>(`/admin/spaces/${spaceId}`, {
     method: 'PUT',
-    body: JSON.stringify(data),
+    body: JSON.stringify(payload),
   });
 };
 

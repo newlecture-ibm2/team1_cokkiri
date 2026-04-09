@@ -96,7 +96,7 @@ export default async function ProfileVocsPage({ searchParams }: { searchParams: 
               <p className="text-xl font-bold tracking-tight text-primary underline decoration-destructive/30 underline-offset-8">
                 {listError}
               </p>
-              {error === LOGIN_REQUIRED_MESSAGE && (
+              {authError === LOGIN_REQUIRED_MESSAGE && (
                  <Link href="/login" className="mt-8 inline-flex h-12 bg-primary text-white px-8 rounded-xl items-center gap-2 text-[9px] font-black uppercase tracking-[0.2em] hover:bg-accent transition-all animate-pulse underline decoration-transparent">
                    Go to Login <ArrowRight className="size-3" />
                  </Link>
