@@ -2,6 +2,7 @@ package com.coliving.admin.space.application.port.in;
 
 import com.coliving.admin.space.application.command.CreateSpaceCommand;
 import com.coliving.admin.space.application.command.UpdateSpaceCommand;
+import com.coliving.admin.space.application.command.UpdateSpaceLayoutCommand;
 import com.coliving.admin.space.application.result.AdminSpaceResult;
 
 import org.springframework.data.domain.Page;
@@ -18,6 +19,8 @@ public interface AdminSpaceUseCase {
     AdminSpaceResult updateSpace(UpdateSpaceCommand command);
 
     void deleteSpace(Long spaceId);
+
+    void updateLayout(UpdateSpaceLayoutCommand command);
 
     void uploadImage(Long spaceId, org.springframework.web.multipart.MultipartFile file, com.coliving.admin.space.model.ImageType imageType, Boolean isThumbnail);
 

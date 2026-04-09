@@ -9,8 +9,8 @@ import {
   type DragEndEvent,
   type Modifier,
 } from '@dnd-kit/core';
-import { motion } from 'framer-motion';
-import { Map } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Map, Save, Loader2, Check } from 'lucide-react';
 import { useFloorPlan } from '../../_hooks/useFloorPlan';
 import { DEFAULT_LAYOUT } from '../../_types/layout';
 import { FloorSelector } from './FloorSelector';
@@ -38,7 +38,11 @@ export function FloorPlanEditor() {
     selectedFloor,
     setSelectedFloor,
     updateBlockPosition,
+    saveLayout,
     loading,
+    saving,
+    dirty,
+    saveMessage,
   } = useFloorPlan();
 
   const [cellSize, setCellSize] = useState(0);
@@ -105,17 +109,54 @@ export function FloorPlanEditor() {
 
   return (
     <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}>
-      {/* 층 선택 */}
-      <FloorSelector
-        floors={floors}
-        selectedFloor={selectedFloor}
-        onSelectFloor={setSelectedFloor}
-      />
+      {/* 상단: 층 선택 + 저장 버튼 */}
+      <div className="flex items-center justify-between mb-2">
+        <FloorSelector
+          floors={floors}
+          selectedFloor={selectedFloor}
+          onSelectFloor={setSelectedFloor}
+        />
 
-      {/* 안내 */}
-      <p className="text-[10px] font-bold uppercase tracking-[0.2em] opacity-30 mb-4">
-        블록을 드래그하여 배치를 변경하세요 · 변경사항은 아직 저장되지 않습니다
-      </p>
+        <button
+          onClick={saveLayout}
+          disabled={!dirty || saving}
+          className={`flex items-center gap-2 px-6 py-3 rounded-full font-black text-sm tracking-tight transition-all duration-300
+            ${dirty
+              ? 'bg-[var(--foreground)] text-[var(--background)] shadow-xl hover:scale-105'
+              : 'bg-black/5 opacity-40 cursor-not-allowed'
+            }`}
+        >
+          {saving ? (
+            <Loader2 size={16} className="animate-spin" />
+          ) : (
+            <Save size={16} />
+          )}
+          {saving ? '저장 중...' : '배치 저장'}
+        </button>
+      </div>
+
+      {/* 안내 + 토스트 */}
+      <div className="flex items-center justify-between mb-4">
+        <p className="text-[10px] font-bold uppercase tracking-[0.2em] opacity-30">
+          {dirty
+            ? '변경사항이 있습니다 · 저장 버튼을 눌러 주세요'
+            : '블록을 드래그하여 배치를 변경하세요'}
+        </p>
+
+        <AnimatePresence>
+          {saveMessage && (
+            <motion.div
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: 20 }}
+              className="flex items-center gap-1.5 text-[10px] font-bold tracking-tight"
+            >
+              <Check size={12} className="text-[var(--color-accent)]" />
+              <span className="opacity-60">{saveMessage}</span>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
 
       {/* 도면 격자 */}
       <DndContext
