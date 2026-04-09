@@ -28,5 +28,9 @@ public class UpdateSpaceLayoutRequestDto {
 
         @NotNull(message = "positionY는 필수입니다.")
         private Integer positionY;
+
+        private Integer positionW;
+
+        private Integer positionH;
     }
 }

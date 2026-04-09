@@ -38,6 +38,7 @@ export function FloorPlanEditor() {
     selectedFloor,
     setSelectedFloor,
     updateBlockPosition,
+    updateBlockSize,
     saveLayout,
     loading,
     saving,
@@ -78,6 +79,13 @@ export function FloorPlanEditor() {
       updateBlockPosition(block.spaceId, newGridX, newGridY);
     },
     [blocks, cellSize, updateBlockPosition],
+  );
+
+  const handleResizeEnd = useCallback(
+    (spaceId: number, gridW: number, gridH: number) => {
+      updateBlockSize(spaceId, gridW, gridH);
+    },
+    [updateBlockSize],
   );
 
   if (loading) {
@@ -166,7 +174,7 @@ export function FloorPlanEditor() {
       >
         <GridCanvas onCellSizeChange={setCellSize}>
           {blocks.map((block) => (
-            <SpaceBlock key={block.spaceId} block={block} cellSize={cellSize} />
+            <SpaceBlock key={block.spaceId} block={block} cellSize={cellSize} onResizeEnd={handleResizeEnd} />
           ))}
         </GridCanvas>
       </DndContext>

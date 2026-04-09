@@ -4,7 +4,7 @@ import { useEffect, useState, useCallback, useRef } from 'react';
 import { fetchSpaces, updateSpaceLayout, SpaceDTO, extractRoomTypeName } from '../_api/spaceAdminApi';
 import type { FloorPlanBlock } from '../_types/layout';
 
-/** SpaceDTO → FloorPlanBlock 변환 */
+/** SpaceDTO → FloorPlanBlock 변환 (DB 값 우선, 없으면 기본값) */
 function spaceToBlock(space: SpaceDTO): FloorPlanBlock {
   return {
     spaceId: space.spaceId!,
@@ -14,10 +14,17 @@ function spaceToBlock(space: SpaceDTO): FloorPlanBlock {
     roomTypeName: extractRoomTypeName(space),
     gridX: space.positionX ?? 0,
     gridY: space.positionY ?? 0,
-    gridW: space.type === 'COMMON' ? 4 : 3,
-    gridH: 2,
+    gridW: space.positionW ?? (space.type === 'COMMON' ? 4 : 3),
+    gridH: space.positionH ?? 2,
     hasDeviceError: space.hasDeviceError ?? false,
   };
+}
+
+interface OriginalState {
+  x: number;
+  y: number;
+  w: number;
+  h: number;
 }
 
 export function useFloorPlan() {
@@ -29,8 +36,8 @@ export function useFloorPlan() {
   const [dirty, setDirty] = useState(false);
   const [saveMessage, setSaveMessage] = useState<string | null>(null);
 
-  // 원본 좌표 스냅샷 (dirty 판별용)
-  const originalPositions = useRef<Map<number, { x: number; y: number }>>(new Map());
+  // 원본 좌표+크기 스냅샷 (dirty 판별용)
+  const originalPositions = useRef<Map<number, OriginalState>>(new Map());
 
   // 전체 공간 로드
   const loadSpaces = useCallback(async () => {
@@ -40,11 +47,16 @@ export function useFloorPlan() {
       const spaces: SpaceDTO[] = res.data?.content || res.data || [];
       setAllSpaces(spaces);
 
-      // 원본 좌표 기록
-      const posMap = new Map<number, { x: number; y: number }>();
+      // 원본 좌표+크기 기록
+      const posMap = new Map<number, OriginalState>();
       spaces.forEach((s: SpaceDTO) => {
         if (s.spaceId != null) {
-          posMap.set(s.spaceId, { x: s.positionX ?? 0, y: s.positionY ?? 0 });
+          posMap.set(s.spaceId, {
+            x: s.positionX ?? 0,
+            y: s.positionY ?? 0,
+            w: s.positionW ?? (s.type === 'COMMON' ? 4 : 3),
+            h: s.positionH ?? 2,
+          });
         }
       });
       originalPositions.current = posMap;
@@ -94,14 +106,26 @@ export function useFloorPlan() {
     [],
   );
 
+  // 블록 크기 업데이트 (로컬 상태)
+  const updateBlockSize = useCallback(
+    (spaceId: number, gridW: number, gridH: number) => {
+      setBlocks((prev) =>
+        prev.map((b) => (b.spaceId === spaceId ? { ...b, gridW, gridH } : b)),
+      );
+      setDirty(true);
+      setSaveMessage(null);
+    },
+    [],
+  );
+
   // 배치 저장 (서버 전송)
   const saveLayout = useCallback(async () => {
     if (!dirty || blocks.length === 0) return;
 
-    // 변경된 블록만 필터링
+    // 변경된 블록만 필터링 (위치 또는 크기 변경)
     const changed = blocks.filter((b) => {
       const orig = originalPositions.current.get(b.spaceId);
-      return !orig || orig.x !== b.gridX || orig.y !== b.gridY;
+      return !orig || orig.x !== b.gridX || orig.y !== b.gridY || orig.w !== b.gridW || orig.h !== b.gridH;
     });
 
     if (changed.length === 0) {
@@ -117,12 +141,14 @@ export function useFloorPlan() {
           spaceId: b.spaceId,
           positionX: b.gridX,
           positionY: b.gridY,
+          positionW: b.gridW,
+          positionH: b.gridH,
         })),
       );
 
-      // 원본 좌표 갱신
+      // 원본 좌표+크기 갱신
       changed.forEach((b) => {
-        originalPositions.current.set(b.spaceId, { x: b.gridX, y: b.gridY });
+        originalPositions.current.set(b.spaceId, { x: b.gridX, y: b.gridY, w: b.gridW, h: b.gridH });
       });
 
       setDirty(false);
@@ -141,6 +167,7 @@ export function useFloorPlan() {
     selectedFloor,
     setSelectedFloor,
     updateBlockPosition,
+    updateBlockSize,
     saveLayout,
     loading,
     saving,

@@ -37,6 +37,8 @@ export interface SpaceDTO {
   // Position (평면도 배치용)
   positionX?: number;
   positionY?: number;
+  positionW?: number;
+  positionH?: number;
 
   // Device Error (모니터링 오버레이용)
   hasDeviceError?: boolean;
@@ -78,15 +80,12 @@ export const fetchSpaces = async (params?: { type?: string; status?: string }) =
 };
 
 export const updateSpaceLayout = async (
-  positions: { spaceId: number; positionX: number; positionY: number }[],
+  positions: { spaceId: number; positionX: number; positionY: number; positionW?: number; positionH?: number }[],
 ) => {
-  const res = await fetch('/api/bff/admin/spaces/layout', {
+  return await apiFetch<void>('/admin/spaces/layout', {
     method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ positions }),
   });
-  if (!res.ok) throw new Error('Failed to save layout');
-  return res.json();
 };
 
 export const createSpace = async (data: SpaceDTO & Record<string, any>) => {

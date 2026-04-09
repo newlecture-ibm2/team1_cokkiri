@@ -45,6 +45,8 @@ public class AdminSpaceController {
                                 .spaceId(p.getSpaceId())
                                 .positionX(p.getPositionX())
                                 .positionY(p.getPositionY())
+                                .positionW(p.getPositionW())
+                                .positionH(p.getPositionH())
                                 .build())
                         .toList())
                 .build();

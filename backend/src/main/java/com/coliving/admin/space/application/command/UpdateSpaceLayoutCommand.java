@@ -17,5 +17,7 @@ public class UpdateSpaceLayoutCommand {
         private final Long spaceId;
         private final Integer positionX;
         private final Integer positionY;
+        private final Integer positionW;
+        private final Integer positionH;
     }
 }

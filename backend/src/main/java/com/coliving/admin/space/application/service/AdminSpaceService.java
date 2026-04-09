@@ -151,6 +151,8 @@ public class AdminSpaceService implements AdminSpaceUseCase {
                         .spaceId(pos.getSpaceId())
                         .positionX(pos.getPositionX())
                         .positionY(pos.getPositionY())
+                        .positionW(pos.getPositionW())
+                        .positionH(pos.getPositionH())
                         .build())
                 .toList();
 

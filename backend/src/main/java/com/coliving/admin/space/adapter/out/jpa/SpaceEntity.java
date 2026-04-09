@@ -60,6 +60,12 @@ public class SpaceEntity extends BaseEntity {
     @Column(name = "position_y")
     private Integer positionY;
 
+    @Column(name = "position_w")
+    private Integer positionW;
+
+    @Column(name = "position_h")
+    private Integer positionH;
+
     @Formula("(EXISTS (SELECT 1 FROM devices d WHERE d.space_id = space_id AND d.status = 'ERROR' AND d.deleted_at IS NULL))")
     private Boolean hasDeviceError;
 
@@ -76,7 +82,8 @@ public class SpaceEntity extends BaseEntity {
     @Builder
     public SpaceEntity(String name, SpaceType type, SpaceStatus status,
                        Integer floor, BigDecimal area, String amenities,
-                       String description, Integer positionX, Integer positionY) {
+                       String description, Integer positionX, Integer positionY,
+                       Integer positionW, Integer positionH) {
         this.name = name;
         this.type = type;
         this.status = status;
@@ -86,6 +93,8 @@ public class SpaceEntity extends BaseEntity {
         this.description = description;
         this.positionX = positionX;
         this.positionY = positionY;
+        this.positionW = positionW;
+        this.positionH = positionH;
     }
 
     public void updateBasicInfo(String name, SpaceStatus status, Integer floor,
@@ -105,6 +114,13 @@ public class SpaceEntity extends BaseEntity {
     public void updatePosition(Integer positionX, Integer positionY) {
         this.positionX = positionX;
         this.positionY = positionY;
+    }
+
+    public void updatePosition(Integer positionX, Integer positionY, Integer positionW, Integer positionH) {
+        this.positionX = positionX;
+        this.positionY = positionY;
+        if (positionW != null) this.positionW = positionW;
+        if (positionH != null) this.positionH = positionH;
     }
 
     public void assignPrivateDetail(PrivateSpaceDetailEntity detail) {

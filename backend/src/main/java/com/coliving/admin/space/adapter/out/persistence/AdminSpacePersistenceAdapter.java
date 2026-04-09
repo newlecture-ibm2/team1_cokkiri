@@ -108,7 +108,12 @@ public class AdminSpacePersistenceAdapter implements AdminSpaceRepositoryPort {
         for (AdminSpace adminSpace : spaces) {
             SpaceEntity entity = spaceJpaRepository.findById(adminSpace.getSpaceId())
                     .orElseThrow(() -> new BusinessException(ErrorCode.SPACE_NOT_FOUND));
-            entity.updatePosition(adminSpace.getPositionX(), adminSpace.getPositionY());
+            entity.updatePosition(
+                    adminSpace.getPositionX(),
+                    adminSpace.getPositionY(),
+                    adminSpace.getPositionW(),
+                    adminSpace.getPositionH()
+            );
             spaceJpaRepository.save(entity);
         }
     }
@@ -193,6 +198,8 @@ public class AdminSpacePersistenceAdapter implements AdminSpaceRepositoryPort {
                 .description(entity.getDescription())
                 .positionX(entity.getPositionX())
                 .positionY(entity.getPositionY())
+                .positionW(entity.getPositionW())
+                .positionH(entity.getPositionH())
                 .hasDeviceError(entity.getHasDeviceError());
 
         if (entity.getPrivateDetail() != null) {
