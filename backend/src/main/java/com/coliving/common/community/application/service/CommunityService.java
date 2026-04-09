@@ -14,7 +14,10 @@ import com.coliving.common.notification.application.command.CreateNotificationCo
 import com.coliving.common.notification.application.port.in.CreateNotificationUseCase;
 import com.coliving.common.notification.model.NotificationType;
 import com.coliving.common.notification.model.ReferenceType;
-import com.coliving.common.notification.application.port.out.NotificationUserQueryPort;
+import com.coliving.admin.user.application.port.out.AdminUserRepositoryPort;
+import com.coliving.common.auth.model.UserRole;
+import com.coliving.common.auth.model.UserStatus;
+import org.springframework.data.domain.Pageable;
 import com.coliving.global.error.BusinessException;
 import com.coliving.global.error.ErrorCode;
 import com.coliving.global.attachment.RetainedAttachmentResolver;
@@ -40,16 +43,16 @@ public class CommunityService implements CommunityUseCase {
     private final CommunityRepositoryPort repositoryPort;
     private final CommunityLikeActionGuard likeActionGuard;
     private final CreateNotificationUseCase createNotificationUseCase;
-    private final NotificationUserQueryPort notificationUserQueryPort;
+    private final AdminUserRepositoryPort adminUserRepositoryPort;
 
     public CommunityService(CommunityRepositoryPort repositoryPort,
             CommunityLikeActionGuard likeActionGuard,
             CreateNotificationUseCase createNotificationUseCase,
-            NotificationUserQueryPort notificationUserQueryPort) {
+            AdminUserRepositoryPort adminUserRepositoryPort) {
         this.repositoryPort = repositoryPort;
         this.likeActionGuard = likeActionGuard;
         this.createNotificationUseCase = createNotificationUseCase;
-        this.notificationUserQueryPort = notificationUserQueryPort;
+        this.adminUserRepositoryPort = adminUserRepositoryPort;
     }
 
     @Override
@@ -145,10 +148,11 @@ public class CommunityService implements CommunityUseCase {
     }
 
     private void notifyAllResidentsOfNotice(Post post, String title) {
-        notificationUserQueryPort.findActiveResidentUserIds()
-                .forEach(userId -> {
+        adminUserRepositoryPort.findUsers(UserRole.USER, UserStatus.ACTIVE.name(), null, null, Pageable.unpaged())
+                .getContent()
+                .forEach(user -> {
                     createNotificationUseCase.create(CreateNotificationCommand.builder()
-                            .userId(userId)
+                            .userId(user.getId())
                             .type(NotificationType.COMMUNITY_NOTICE)
                             .title(title)
                             .message(String.format("「%s」 공지사항이 등록되었습니다.", post.getTitle()))
