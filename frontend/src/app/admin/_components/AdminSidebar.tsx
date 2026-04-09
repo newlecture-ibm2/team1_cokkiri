@@ -11,6 +11,7 @@ import {
   CreditCard,
   MessageSquareText,
   MessagesSquare,
+  Activity,
   X,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -28,8 +29,9 @@ const NAV_SECTIONS: {
     items: [
       { href: "/admin/spaces", label: "공간 관리", icon: Building2 },
       { href: "/admin/contracts", label: "계약", icon: FileText },
-      { href: "/admin/devices", label: "기기", icon: Cpu },
       { href: "/admin/reservations", label: "예약", icon: CalendarDays },
+      { href: "/admin/devices", label: "기기", icon: Cpu },
+      { href: "/admin/monitoring", label: "기기 모니터링", icon: Activity },
       { href: "/admin/billing", label: "결제·청구", icon: CreditCard },
       { href: "/admin/vocs", label: "민원", icon: MessageSquareText },
       { href: "/admin/community", label: "커뮤니티", icon: MessagesSquare },

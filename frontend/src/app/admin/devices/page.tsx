@@ -23,6 +23,14 @@ export default function DevicesPage() {
         </div>
         <div className="flex gap-3">
           <Link
+            href="/admin/monitoring"
+            className="inline-flex items-center gap-2 whitespace-nowrap rounded-xl border border-border px-5 py-3
+              text-xs font-bold uppercase tracking-[0.2em] text-primary
+              transition-colors duration-200 hover:bg-muted"
+          >
+            📊 기기 모니터링
+          </Link>
+          <Link
             href="/admin/devices/types"
             className="inline-flex items-center gap-2 whitespace-nowrap rounded-xl border border-border px-5 py-3
               text-xs font-bold uppercase tracking-[0.2em] text-primary
