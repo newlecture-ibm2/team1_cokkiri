@@ -40,6 +40,12 @@ public class ContractPersistenceAdapter implements ContractRepositoryPort {
         return jpaRepository.findByUserIdAndSpaceId(userId, spaceId).map(this::toModel);
     }
 
+    @Override
+    public Optional<Contract> findDraftByUserIdAndSpaceId(Long userId, Long spaceId) {
+        return jpaRepository.findByUserIdAndSpaceIdAndStatus(userId, spaceId, 
+                com.coliving.user.contract.model.ContractStatus.DRAFT).map(this::toModel);
+    }
+
     private ContractEntity toEntity(Contract model) {
         return ContractEntity.builder()
                 .contractId(model.getContractId())

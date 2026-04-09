@@ -42,8 +42,7 @@ public class ContractService implements ContractUseCase {
     @Override
     @Transactional(readOnly = true)
     public ContractDraftResult getDraft(Long userId, Long spaceId) {
-        return contractRepositoryPort.findByUserIdAndSpaceId(userId, spaceId)
-                .filter(c -> c.getStatus() == ContractStatus.DRAFT)
+        return contractRepositoryPort.findDraftByUserIdAndSpaceId(userId, spaceId)
                 .map(this::toDraftResult)
                 .orElse(null);
     }
@@ -102,8 +101,7 @@ public class ContractService implements ContractUseCase {
 
         // 2. If not found, try to find current DRAFT for this space
         if (contract == null) {
-            contract = contractRepositoryPort.findByUserIdAndSpaceId(userId, command.getSpaceId())
-                    .filter(c -> c.getStatus() == ContractStatus.DRAFT)
+            contract = contractRepositoryPort.findDraftByUserIdAndSpaceId(userId, command.getSpaceId())
                     .orElse(null);
         }
 
@@ -140,8 +138,7 @@ public class ContractService implements ContractUseCase {
 
         // 2. If not found, try to find current DRAFT for this space
         if (contract == null) {
-            contract = contractRepositoryPort.findByUserIdAndSpaceId(userId, command.getSpaceId())
-                    .filter(c -> c.getStatus() == ContractStatus.DRAFT)
+            contract = contractRepositoryPort.findDraftByUserIdAndSpaceId(userId, command.getSpaceId())
                     .orElse(null);
         }
 

@@ -17,6 +17,11 @@ public interface ContractJpaRepository extends JpaRepository<ContractEntity, Lon
     Optional<ContractEntity> findByUserIdAndSpaceId(Long userId, Long spaceId);
 
     /**
+     * 특정 유저의 특정 공간에서 특정 상태의 계약 조회
+     */
+    Optional<ContractEntity> findByUserIdAndSpaceIdAndStatus(Long userId, Long spaceId, ContractStatus status);
+
+    /**
      * 특정 유저의 계약 목록 조회 (최신순)
      */
     List<ContractEntity> findByUserIdOrderByCreatedAtDesc(Long userId);
