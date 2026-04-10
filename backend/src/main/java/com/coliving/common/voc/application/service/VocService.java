@@ -158,6 +158,11 @@ public class VocService implements VocUseCase {
         vocRepositoryPort.cancelOwned(command.getVocId(), command.getUserId());
         notificationRepositoryPort.softDeleteByReference(ReferenceType.VOC, command.getVocId());
 
+        eventPublisher.publishEvent(new VocAdminNotifyEvent(
+                existing.getVocId(),
+                existing.getTitle(),
+                "민원이 취소되었습니다"));
+
         Voc cancelled = vocRepositoryPort.findByVocIdAndUserId(command.getVocId(), command.getUserId())
                 .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND));
         return toVocResult(cancelled);
