@@ -10,6 +10,7 @@ import { VocCard } from "@/app/(common)/vocs/_components/VocCard";
 import { PaginationBar } from "@/app/(common)/community/_components/PaginationBar";
 import { NewVocForm } from "@/app/(common)/vocs/new/_components/NewVocForm";
 import { MyVocTabLinks } from "./_components/MyVocTabLinks";
+import { VocAccessDeniedState } from "./_components/VocAccessDeniedState";
 
 type SearchParams = Promise<{ tab?: string; p?: string; s?: string }>;
 
@@ -31,23 +32,33 @@ export default async function ProfileVocsPage({ searchParams }: { searchParams: 
   let list: VocListData | null = null;
   let listError: string | null = null;
   let authError: string | null = null;
+  let isNotResident = false;
 
-  const res = await bffGet(`vocs/my?${qs.toString()}`);
-  if (res.status === 401) {
+  // 1. 현재 사용자 정보 로드 (Role 체크)
+  const meRes = await bffGet("users/me");
+  if (meRes.status === 401) {
     authError = LOGIN_REQUIRED_MESSAGE;
-  } else if (res.status === 403) {
-    const meRes = await bffGet("users/me");
-    if (meRes.status === 401 || meRes.status === 403) {
-      authError = LOGIN_REQUIRED_MESSAGE;
-    } else if (showList) {
-      listError = "목록을 불러오지 못했습니다.";
+  } else if (meRes.ok) {
+    const meBody = await meRes.json();
+    if (meBody.success && meBody.data?.role === "USER") {
+      isNotResident = true;
     }
-  } else if (showList && !res.ok) {
-    listError = "목록을 불러오지 못했습니다.";
-  } else if (showList) {
-    const body = (await res.json()) as ApiResponse<VocListData>;
-    if (body.success && body.data) list = body.data;
-    else listError = body.message ?? "목록을 불러오지 못했습니다.";
+  }
+
+  // 2. 민원 목록 로드 (Resident인 경우만)
+  if (!isNotResident && !authError) {
+    const res = await bffGet(`vocs/my?${qs.toString()}`);
+    if (res.status === 401) {
+      authError = LOGIN_REQUIRED_MESSAGE;
+    } else if (res.status === 403) {
+      listError = "권한이 없습니다.";
+    } else if (showList && !res.ok) {
+      listError = "목록을 불러오지 못했습니다.";
+    } else if (showList) {
+      const body = (await res.json()) as ApiResponse<VocListData>;
+      if (body.success && body.data) list = body.data;
+      else listError = body.message ?? "목록을 불러오지 못했습니다.";
+    }
   }
 
   const listBaseQuery = "tab=list";
@@ -78,7 +89,9 @@ export default async function ProfileVocsPage({ searchParams }: { searchParams: 
 
       {authError === LOGIN_REQUIRED_MESSAGE ? <LoginRequiredGate /> : null}
 
-      {!showList ? (
+      {isNotResident ? (
+        <VocAccessDeniedState />
+      ) : !showList ? (
         <div className="mx-auto max-w-4xl space-y-12">
           <div className="bg-white p-12 rounded-[3rem] border border-primary/5 shadow-2xl shadow-primary/5">
              <div className="mb-12 space-y-2">

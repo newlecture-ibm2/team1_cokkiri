@@ -79,10 +79,10 @@ public class SecurityConfig {
                                 "/api/reservations/**", "/api/control-logs/**")
                         .hasAnyRole("RESIDENT", "ADMIN")
 
-                        // --- VOC: 입주자·관리자·일반회원 (본인 민원만 서비스 레이어에서 추가 제한) ---
-                        .requestMatchers("/api/vocs/**").hasAnyRole(MEMBER_ROLES)
+                        // --- VOC: 입주자·관리자 전용 ---
+                        .requestMatchers("/api/vocs/**").hasAnyRole(RESIDENT_ADMIN_ROLES)
                         // VOC 본문 이미지·첨부 파일
-                        .requestMatchers(HttpMethod.GET, "/api/files/voc/**").hasAnyRole(MEMBER_ROLES)
+                        .requestMatchers(HttpMethod.GET, "/api/files/voc/**").hasAnyRole(RESIDENT_ADMIN_ROLES)
 
                         // --- 알림: 로그인 회원 전체 (USER 포함) ---
                         .requestMatchers("/api/notifications/**").hasAnyRole(MEMBER_ROLES)

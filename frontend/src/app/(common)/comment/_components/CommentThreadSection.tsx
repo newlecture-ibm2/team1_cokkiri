@@ -152,39 +152,46 @@ export function CommentThreadSection({
                     답글
                   </button>
                   {openReply ? (
-                    <form
-                      onSubmit={(e) => {
-                        e.preventDefault();
-                        addComment(node.commentId, replyDraft);
-                      }}
-                      className="rounded-2xl border border-primary/10 bg-background p-4 shadow-sm"
-                    >
-                      <textarea
-                        value={replyDraft}
-                        onChange={(e) => setReplyDraftById((prev) => ({ ...prev, [node.commentId]: e.target.value }))}
-                        rows={2}
-                        placeholder="답글을 입력하세요"
-                        className="w-full resize-y rounded-xl border border-input bg-surface px-3 py-2 text-sm font-medium tracking-tight text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                      />
-                      <div className="mt-2 flex justify-end gap-2">
-                        <button
-                          type="button"
-                          onClick={() => setOpenReplyForId(null)}
-                          className="rounded-full border border-border px-4 py-1.5 text-[11px] font-black uppercase tracking-[0.24em] text-foreground"
-                        >
-                          취소
-                        </button>
-                        <motion.button
-                          type="submit"
-                          disabled={pending || !replyDraft.trim()}
-                          whileHover={{ scale: 1.02 }}
-                          whileTap={{ scale: 0.98 }}
-                          className="rounded-full bg-primary px-4 py-1.5 text-[11px] font-black uppercase tracking-[0.24em] text-primary-foreground disabled:opacity-50"
-                        >
-                          등록
-                        </motion.button>
+                    currentUser?.role === "USER" ? (
+                      <div className="rounded-2xl border border-dashed border-primary/20 bg-primary/5 p-6 text-center">
+                        <p className="font-bold text-[11px] text-primary tracking-tight">입주민 전용 기능입니다</p>
+                        <p className="mt-1 text-[9px] font-medium text-muted-foreground opacity-60">답글 작성 권한이 없습니다.</p>
                       </div>
-                    </form>
+                    ) : (
+                      <form
+                        onSubmit={(e) => {
+                          e.preventDefault();
+                          addComment(node.commentId, replyDraft);
+                        }}
+                        className="rounded-2xl border border-primary/10 bg-background p-4 shadow-sm"
+                      >
+                        <textarea
+                          value={replyDraft}
+                          onChange={(e) => setReplyDraftById((prev) => ({ ...prev, [node.commentId]: e.target.value }))}
+                          rows={2}
+                          placeholder="답글을 입력하세요"
+                          className="w-full resize-y rounded-xl border border-input bg-surface px-3 py-2 text-sm font-medium tracking-tight text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                        />
+                        <div className="mt-2 flex justify-end gap-2">
+                          <button
+                            type="button"
+                            onClick={() => setOpenReplyForId(null)}
+                            className="rounded-full border border-border px-4 py-1.5 text-[11px] font-black uppercase tracking-[0.24em] text-foreground"
+                          >
+                            취소
+                          </button>
+                          <motion.button
+                            type="submit"
+                            disabled={pending || !replyDraft.trim()}
+                            whileHover={{ scale: 1.02 }}
+                            whileTap={{ scale: 0.98 }}
+                            className="rounded-full bg-primary px-4 py-1.5 text-[11px] font-black uppercase tracking-[0.24em] text-primary-foreground disabled:opacity-50"
+                          >
+                            등록
+                          </motion.button>
+                        </div>
+                      </form>
+                    )
                   ) : null}
                 </div>
               }
@@ -224,36 +231,46 @@ export function CommentThreadSection({
         </p>
       ) : null}
 
-      <form
-        onSubmit={(e) => {
-          e.preventDefault();
-          addComment(null, rootDraft);
-        }}
-        className="mt-8 rounded-[2rem] border border-primary/10 bg-background p-6 shadow-2xl shadow-primary/5 md:p-8"
-      >
-        <label htmlFor={`comment-root-${postId}`} className="sr-only">
-          댓글 작성
-        </label>
-        <textarea
-          id={`comment-root-${postId}`}
-          value={rootDraft}
-          onChange={(e) => setRootDraft(e.target.value)}
-          rows={3}
-          placeholder="댓글을 입력하세요"
-          className="w-full resize-y rounded-xl border border-input bg-surface px-4 py-3 font-medium tracking-tight text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-        />
-        <div className="mt-4 flex justify-end">
-          <motion.button
-            type="submit"
-            disabled={pending || !rootDraft.trim()}
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            className="rounded-full bg-primary px-5 py-2.5 text-xs font-black uppercase tracking-[0.24em] text-primary-foreground disabled:opacity-50"
-          >
-            등록
-          </motion.button>
+      {currentUser?.role === "USER" ? (
+        <div className="mt-8 rounded-[2rem] border border-dashed border-primary/20 bg-primary/5 p-12 text-center">
+          <p className="font-black text-xs uppercase tracking-[0.4em] text-destructive mb-3">Resident Only</p>
+          <p className="font-bold text-primary tracking-tight">입주민 전용 기능입니다</p>
+          <p className="mt-2 text-[10px] font-medium text-muted-foreground opacity-60">
+            댓글 작성을 위해선 실제 입주가 확인된 거주민 권한이 필요합니다.
+          </p>
         </div>
-      </form>
+      ) : (
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            addComment(null, rootDraft);
+          }}
+          className="mt-8 rounded-[2rem] border border-primary/10 bg-background p-6 shadow-2xl shadow-primary/5 md:p-8"
+        >
+          <label htmlFor={`comment-root-${postId}`} className="sr-only">
+            댓글 작성
+          </label>
+          <textarea
+            id={`comment-root-${postId}`}
+            value={rootDraft}
+            onChange={(e) => setRootDraft(e.target.value)}
+            rows={3}
+            placeholder="댓글을 입력하세요"
+            className="w-full resize-y rounded-xl border border-input bg-surface px-4 py-3 font-medium tracking-tight text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          />
+          <div className="mt-4 flex justify-end">
+            <motion.button
+              type="submit"
+              disabled={pending || !rootDraft.trim()}
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              className="rounded-full bg-primary px-5 py-2.5 text-xs font-black uppercase tracking-[0.24em] text-primary-foreground disabled:opacity-50"
+            >
+              등록
+            </motion.button>
+          </div>
+        </form>
+      )}
     </section>
   );
 }
