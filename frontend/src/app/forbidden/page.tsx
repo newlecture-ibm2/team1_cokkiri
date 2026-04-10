@@ -1,13 +1,13 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { motion, Variants } from "framer-motion";
+import { motion } from "framer-motion";
 import { MoveLeft, Home, LockKeyhole } from "lucide-react";
 
 export default function ForbiddenPage() {
   const router = useRouter();
 
-  const containerVariants: Variants = {
+  const containerVariants = {
     hidden: { opacity: 0 },
     visible: { 
       opacity: 1,
@@ -15,7 +15,7 @@ export default function ForbiddenPage() {
     }
   };
 
-  const itemVariants: Variants = {
+  const itemVariants = {
     hidden: { opacity: 0, y: 30 },
     visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: "easeOut" } }
   };
