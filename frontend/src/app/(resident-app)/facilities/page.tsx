@@ -5,7 +5,7 @@ export default function FacilitiesPage() {
   return (
     <Suspense
       fallback={
-        <div className="space-y-8 px-6 pt-16 pb-24 md:px-12 md:pt-32">
+        <div className="space-y-6">
           <div className="space-y-2">
             <div className="h-3 w-16 rounded bg-muted/30 animate-pulse" />
             <div className="h-8 w-48 rounded bg-muted/30 animate-pulse" />

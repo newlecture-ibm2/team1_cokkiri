@@ -7,6 +7,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useSearchParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
+import { CheckCircle, Building2 } from "lucide-react";
 import { FacilityCard } from "./FacilityCard";
 import { WeeklyTimetable } from "./WeeklyTimetable";
 import { fetchFacilities } from "../_api";
@@ -48,7 +49,7 @@ export default function FacilitiesContent() {
   }, [loadFacilities]);
 
   return (
-    <div className="space-y-8 px-6 pt-16 pb-24 md:px-12 md:pt-32">
+    <div className="space-y-6">
       {/* 페이지 헤더 */}
       <motion.header
         initial={{ opacity: 0, y: 20 }}
@@ -85,8 +86,10 @@ export default function FacilitiesContent() {
         </div>
       ) : facilities.length === 0 ? (
         <div className="rounded-[2rem] border border-border bg-surface p-12 text-center">
-          <p className="text-4xl">🏡</p>
-          <p className="mt-4 text-sm font-semibold text-primary">등록된 시설이 없습니다</p>
+          <div className="flex justify-center text-muted-foreground/40 mb-3">
+            <Building2 size={40} strokeWidth={1} />
+          </div>
+          <p className="mt-2 text-sm font-semibold text-primary">등록된 시설이 없습니다</p>
           <p className="mt-1 text-xs text-muted-foreground">관리자에게 문의해 주세요.</p>
         </div>
       ) : (
@@ -138,8 +141,10 @@ export default function FacilitiesContent() {
               />
             ) : (
               <div className="rounded-[2rem] border border-accent/30 bg-accent/5 p-8 text-center">
-                <p className="text-3xl">✅</p>
-                <p className="mt-3 text-sm font-bold text-primary">자유 이용 시설</p>
+                <div className="flex justify-center text-accent/60 mb-3">
+                  <CheckCircle size={36} strokeWidth={1.5} />
+                </div>
+                <p className="mt-1 text-sm font-bold text-primary">자유 이용 시설</p>
                 <p className="mt-1 text-xs text-muted-foreground">
                   예약 없이 운영 시간 내 자유롭게 이용하실 수 있습니다.
                 </p>
