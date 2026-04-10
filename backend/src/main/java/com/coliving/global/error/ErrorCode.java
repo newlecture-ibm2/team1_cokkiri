@@ -16,6 +16,8 @@ public enum ErrorCode {
     ACTIVE_CONTRACT_EXISTS(HttpStatus.CONFLICT, "활성 계약이 존재하여 진행할 수 없습니다"),
     UNPAID_PAYMENT_EXISTS(HttpStatus.CONFLICT, "미납금이 존재하여 진행할 수 없습니다"),
     DUPLICATE_LOGIN_ID(HttpStatus.CONFLICT, "이미 사용 중인 로그인 ID입니다"),
+    DUPLICATE_EMAIL(HttpStatus.CONFLICT, "이미 사용 중인 이메일입니다"),
+    DUPLICATE_BOTH(HttpStatus.CONFLICT, "이미 사용 중인 로그인 ID 및 이메일입니다"),
 
     // ── 계정 찾기 ──
     ACCOUNT_NOT_FOUND(HttpStatus.NOT_FOUND, "일치하는 계정 없음"),

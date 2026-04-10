@@ -74,13 +74,14 @@ export async function apiFetch<T>(
       // 백엔드가 JSON 에러 메시지를 보낸 경우(예: 로그인 실패, 비밀번호 불일치 등) 그것을 우선 사용
       if (parsedData) {
         const eCode = (parsedData as any).errorCode || (parsedData as any).error_code;
-        throw new ApiError(parsedData.message || LOGIN_REQUIRED_MESSAGE, eCode || 'UNAUTHORIZED');
+        throw new ApiError(parsedData.message || LOGIN_REQUIRED_MESSAGE, eCode || 'UNAUTHORIZED', (parsedData as any).data);
       }
       throw new ApiError(LOGIN_REQUIRED_MESSAGE, 'UNAUTHORIZED');
     }
     if (looksJson && trimmed.length > 0) {
       const data = parseApiJson<T>(trimmed);
-      throw new ApiError(data.message || '요청에 실패했습니다', data.error_code);
+      const eCode = (data as any).errorCode || (data as any).error_code;
+      throw new ApiError(data.message || '요청에 실패했습니다', eCode, (data as any).data);
     }
     throw new ApiError(`요청에 실패했습니다 (${response.status})`, undefined);
   }
@@ -93,7 +94,7 @@ export async function apiFetch<T>(
 
   if (!data.success) {
     const eCode = (data as any).errorCode || (data as any).error_code;
-    throw new ApiError(data.message || '요청에 실패했습니다', eCode);
+    throw new ApiError(data.message || '요청에 실패했습니다', eCode, data.data);
   }
 
   return data;
@@ -102,7 +103,8 @@ export async function apiFetch<T>(
 export class ApiError extends Error {
   constructor(
     message: string,
-    public errorCode?: string
+    public errorCode?: string,
+    public data?: any
   ) {
     super(message);
     this.name = 'ApiError';
