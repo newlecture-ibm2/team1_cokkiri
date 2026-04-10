@@ -90,7 +90,7 @@ public class AdminMonitoringService implements AdminMonitoringUseCase {
                         (String) row[2],                                     // deviceName
                         (String) row[3],                                     // deviceTypeName
                         (String) row[4],                                     // spaceName
-                        ((Number) row[5]).longValue(),                       // userId
+                        row[5] != null ? ((Number) row[5]).longValue() : null, // userId (nullable)
                         (String) row[6],                                     // userName
                         (String) row[7],                                     // actorType
                         (String) row[8],                                     // command
