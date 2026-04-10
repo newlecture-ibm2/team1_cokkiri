@@ -9,8 +9,8 @@ import com.coliving.resident.log.model.ControlLog;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.format.annotation.DateTimeFormat;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -37,7 +37,6 @@ public class ControlLogController {
 
     @GetMapping("/my")
     public ApiResponse<Map<String, Object>> getMyControlLogs(
-            @AuthenticationPrincipal UserDetails userDetails,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
             @RequestParam(required = false) String spaceType,
@@ -46,7 +45,8 @@ public class ControlLogController {
             @RequestParam(defaultValue = "0") int p,
             @RequestParam(defaultValue = "20") int s
     ) {
-        Long userId = Long.parseLong(userDetails.getUsername());
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        Long userId = Long.valueOf(auth.getName());
 
         ControlLogListCommand command = new ControlLogListCommand(
                 userId, startDate, endDate, spaceType, deviceTypeCode, result, p, s

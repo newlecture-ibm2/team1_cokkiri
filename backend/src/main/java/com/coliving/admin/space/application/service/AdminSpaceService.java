@@ -2,6 +2,7 @@ package com.coliving.admin.space.application.service;
 
 import com.coliving.admin.space.application.command.CreateSpaceCommand;
 import com.coliving.admin.space.application.command.UpdateSpaceCommand;
+import com.coliving.admin.space.application.command.UpdateSpaceLayoutCommand;
 import com.coliving.admin.space.application.port.in.AdminSpaceUseCase;
 import com.coliving.admin.space.application.port.out.AdminSpaceRepositoryPort;
 import com.coliving.admin.space.application.result.AdminSpaceResult;
@@ -16,6 +17,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -139,6 +142,21 @@ public class AdminSpaceService implements AdminSpaceUseCase {
         }
 
         adminSpaceRepositoryPort.softDelete(spaceId);
+    }
+
+    @Override
+    public void updateLayout(UpdateSpaceLayoutCommand command) {
+        List<AdminSpace> spacesToUpdate = command.getPositions().stream()
+                .map(pos -> AdminSpace.builder()
+                        .spaceId(pos.getSpaceId())
+                        .positionX(pos.getPositionX())
+                        .positionY(pos.getPositionY())
+                        .positionW(pos.getPositionW())
+                        .positionH(pos.getPositionH())
+                        .build())
+                .toList();
+
+        adminSpaceRepositoryPort.updatePositions(spacesToUpdate);
     }
 
     @Override

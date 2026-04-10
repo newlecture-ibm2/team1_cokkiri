@@ -59,7 +59,7 @@ public class AdminDevicePersistenceAdapter implements AdminDeviceRepositoryPort 
                     .modelName(device.modelName())
                     .macAddress(device.macAddress())
                     .mockEndpoint(device.mockEndpoint())
-                    .status(DeviceStatus.OFFLINE)
+                    .status(DeviceStatus.valueOf(device.status()))
                     .currentState("{}")
                     .isActive(true)
                     .installedAt(OffsetDateTime.now())

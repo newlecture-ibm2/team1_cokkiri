@@ -28,9 +28,9 @@ import java.util.Objects;
  * #81 예약 조회 및 취소 롤백
  *
  * 03-backend-architecture §5:
- *   - @Transactional 명시
- *   - jpaRepository.save(entity) 명시적 호출 (더티 체킹 의존 금지)
- *   - IllegalStateException → BusinessException(INVALID_STATUS)로 변환
+ * - @Transactional 명시
+ * - jpaRepository.save(entity) 명시적 호출 (더티 체킹 의존 금지)
+ * - IllegalStateException → BusinessException(INVALID_STATUS)로 변환
  */
 @Slf4j
 @Service
@@ -95,13 +95,13 @@ public class ReservationCommandService implements ReservationCommandUseCase {
         }
 
         // 6. 동시성 체크: 해당 시간에 APPROVED 중복 예약 여부 확인
-        // TODO: (고도화) 다중 인스턴스 환경에서 완벽한 동시성 제어를 위해 Redisson 분산 락, DB Partial Unique Index 도입 고려
+        // TODO: (고도화) 다중 인스턴스 환경에서 완벽한 동시성 제어를 위해 Redisson 분산 락, DB Partial Unique
+        // Index 도입 고려
         boolean hasOverlap = reservationRepository.existsOverlappingReservation(
                 request.getSpaceId(),
                 request.getReservationDate(),
                 request.getStartTime(),
-                request.getEndTime()
-        );
+                request.getEndTime());
 
         if (hasOverlap) {
             log.warn("예약 충돌 발생 - spaceId: {}, date: {}, time: {}~{}",
@@ -119,8 +119,7 @@ public class ReservationCommandService implements ReservationCommandUseCase {
                         .reservationDate(request.getReservationDate())
                         .startTime(request.getStartTime())
                         .endTime(request.getEndTime())
-                        .build()
-        );
+                        .build());
 
         log.info("새로운 예약 성공 - reservationId: {}, spaceId: {}, userId: {}",
                 savedReservation.getId(), savedReservation.getSpaceId(), savedReservation.getUserId());

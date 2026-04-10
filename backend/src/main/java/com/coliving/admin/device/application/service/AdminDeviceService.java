@@ -57,7 +57,7 @@ public class AdminDeviceService implements CreateAdminDeviceUseCase, AdminDevice
                 command.modelName(),
                 command.macAddress(),
                 command.mockEndpoint(),
-                "OFFLINE", "{}",
+                "ONLINE", "{}",
                 true,
                 null, null, null, null
         );

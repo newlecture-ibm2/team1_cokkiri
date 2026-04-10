@@ -6,17 +6,10 @@ import com.coliving.common.voc.application.command.GetMyVocCommand;
 import com.coliving.common.voc.application.command.ListMyVocsCommand;
 import com.coliving.common.voc.application.command.UpdateVocCommand;
 import com.coliving.common.voc.application.port.in.VocUseCase;
-import com.coliving.common.notification.application.port.in.CreateNotificationUseCase;
-import com.coliving.common.notification.application.command.CreateNotificationCommand;
 import com.coliving.common.notification.application.port.out.NotificationRepositoryPort;
-import com.coliving.common.notification.model.NotificationType;
 import com.coliving.common.notification.model.ReferenceType;
+import com.coliving.common.voc.application.event.VocAdminNotifyEvent;
 import com.coliving.common.voc.application.port.out.VocRepositoryPort;
-import com.coliving.admin.user.application.port.out.AdminUserRepositoryPort;
-import com.coliving.admin.user.application.result.AdminUserResult;
-import com.coliving.common.auth.model.UserRole;
-import com.coliving.common.auth.model.UserStatus;
-import org.springframework.data.domain.Pageable;
 import com.coliving.common.voc.application.result.VocListItemResult;
 import com.coliving.common.voc.application.result.VocListResult;
 import com.coliving.common.voc.application.result.VocResult;
@@ -33,6 +26,7 @@ import com.coliving.global.validation.PlainTextFieldValidation;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -48,17 +42,14 @@ public class VocService implements VocUseCase {
 
     private final VocRepositoryPort vocRepositoryPort;
     private final NotificationRepositoryPort notificationRepositoryPort;
-    private final CreateNotificationUseCase createNotificationUseCase;
-    private final AdminUserRepositoryPort adminUserRepositoryPort;
+    private final ApplicationEventPublisher eventPublisher;
 
     public VocService(VocRepositoryPort vocRepositoryPort,
             NotificationRepositoryPort notificationRepositoryPort,
-            CreateNotificationUseCase createNotificationUseCase,
-            AdminUserRepositoryPort adminUserRepositoryPort) {
+            ApplicationEventPublisher eventPublisher) {
         this.vocRepositoryPort = vocRepositoryPort;
         this.notificationRepositoryPort = notificationRepositoryPort;
-        this.createNotificationUseCase = createNotificationUseCase;
-        this.adminUserRepositoryPort = adminUserRepositoryPort;
+        this.eventPublisher = eventPublisher;
     }
 
     @Override
@@ -71,29 +62,12 @@ public class VocService implements VocUseCase {
                 VocBodyHtmlSanitizer.sanitize(command.getContent()),
                 command.getAttachments());
 
-        notifyAdminsOfVoc(created, "새로운 민원이 등록되었습니다");
+        eventPublisher.publishEvent(new VocAdminNotifyEvent(
+                created.getVocId(),
+                created.getTitle(),
+                "새로운 민원이 등록되었습니다"));
 
         return toVocResult(created);
-    }
-
-    private void notifyAdminsOfVoc(Voc voc, String title) {
-        if (voc == null) return;
-
-        Page<AdminUserResult> adminPage = adminUserRepositoryPort.findUsers(UserRole.ADMIN, UserStatus.ACTIVE.name(), null, null, Pageable.unpaged());
-        if (adminPage == null || adminPage.getContent() == null || adminPage.getContent().isEmpty()) {
-            return;
-        }
-
-        adminPage.getContent().forEach(admin -> {
-            createNotificationUseCase.create(CreateNotificationCommand.builder()
-                    .userId(admin.getId())
-                    .type(NotificationType.VOC_CREATED)
-                    .title(title)
-                    .message(String.format("「%s」 민원이 등록되었습니다.", voc.getTitle()))
-                    .referenceType(ReferenceType.VOC)
-                    .referenceId(voc.getVocId())
-                    .build());
-        });
     }
 
     @Override
@@ -164,7 +138,10 @@ public class VocService implements VocUseCase {
                 VocBodyHtmlSanitizer.sanitize(command.getContent()),
                 base);
 
-        notifyAdminsOfVoc(updated, "민원이 수정되었습니다");
+        eventPublisher.publishEvent(new VocAdminNotifyEvent(
+                updated.getVocId(),
+                updated.getTitle(),
+                "민원이 수정되었습니다"));
 
         return toVocResult(updated);
     }
