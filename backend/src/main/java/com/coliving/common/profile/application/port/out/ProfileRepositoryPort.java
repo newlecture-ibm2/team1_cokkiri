@@ -8,4 +8,6 @@ public interface ProfileRepositoryPort {
     
     String getPasswordHash(Long userId);
     void updatePassword(Long userId, String newPasswordHash);
+    
+    void withdrawUser(Long userId);
 }
