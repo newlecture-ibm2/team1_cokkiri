@@ -9,12 +9,20 @@ import org.springframework.data.repository.query.Param;
 import com.coliving.common.auth.model.UserRole;
 import com.coliving.common.auth.model.UserStatus;
 
+import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 
 /**
  * USERS 테이블 JPA Repository
  */
 public interface UserJpaRepository extends JpaRepository<UserEntity, Long> {
+
+    /**
+     * 공지 알림 등 역할·상태만으로 회원 목록을 가져올 때 사용합니다.
+     * ({@link #findUsersWithFilters}는 name/loginId LIKE 때문에 일부 환경에서 바인딩 이슈가 날 수 있음)
+     */
+    List<UserEntity> findAllByRoleInAndStatus(Collection<UserRole> roles, UserStatus status);
 
     @Query("SELECT u FROM UserEntity u " +
            "WHERE (:role IS NULL OR u.role = :role) " +

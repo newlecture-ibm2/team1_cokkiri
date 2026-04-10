@@ -13,6 +13,9 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
+import java.util.Set;
+
 @Component
 @RequiredArgsConstructor
 public class AdminUserPersistenceAdapter implements AdminUserRepositoryPort {
@@ -28,6 +31,16 @@ public class AdminUserPersistenceAdapter implements AdminUserRepositoryPort {
         }
 
         return userJpaRepository.findUsersWithFilters(role, userStatus, name, loginId, pageable).map(this::toResult);
+    }
+
+    @Override
+    public List<AdminUserResult> findActiveUsersWithRoles(Set<UserRole> roles) {
+        if (roles == null || roles.isEmpty()) {
+            return List.of();
+        }
+        return userJpaRepository.findAllByRoleInAndStatus(roles, UserStatus.ACTIVE).stream()
+                .map(this::toResult)
+                .toList();
     }
 
     @Override

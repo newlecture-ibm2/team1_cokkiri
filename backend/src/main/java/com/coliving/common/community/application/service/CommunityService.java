@@ -18,15 +18,16 @@ import com.coliving.admin.user.application.port.out.AdminUserRepositoryPort;
 import com.coliving.admin.user.application.result.AdminUserResult;
 import com.coliving.common.auth.model.UserRole;
 import com.coliving.common.auth.model.UserStatus;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import com.coliving.global.error.BusinessException;
 import com.coliving.global.error.ErrorCode;
+import lombok.extern.slf4j.Slf4j;
 import com.coliving.global.attachment.RetainedAttachmentResolver;
 import com.coliving.global.html.PlainTextHtmlSanitizer;
 import com.coliving.global.html.PostBodyHtmlPathNormalizer;
 import com.coliving.global.html.PostBodyHtmlSanitizer;
 import com.coliving.global.validation.PlainTextFieldValidation;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
@@ -36,6 +37,7 @@ import java.util.ArrayList;
 import java.util.Set;
 import java.util.List;
 
+@Slf4j
 @Service
 public class CommunityService implements CommunityUseCase {
     private static final Set<String> ALLOWED_SORT_PROPERTIES = Set.of(
@@ -151,15 +153,23 @@ public class CommunityService implements CommunityUseCase {
     private void notifyAllResidentsOfNotice(Post post, String title) {
         if (post == null) return;
 
+        log.info("Starting notice notification fan-out for post: {}", post.getPostId());
+        int successCount = 0;
+        int totalUsers = 0;
+
         try {
             // USER + RESIDENT 모두에게 알림 전송
             for (UserRole role : List.of(UserRole.USER, UserRole.RESIDENT)) {
+                // Pageable.unpaged()가 일부 환경에서 오동작할 수 있으므로 명시적 큰 사이즈 부여 고려 가능
                 Page<AdminUserResult> userPage = adminUserRepositoryPort.findUsers(
-                        role, UserStatus.ACTIVE.name(), null, null, Pageable.unpaged());
+                        role, UserStatus.ACTIVE.name(), null, null, PageRequest.of(0, 1000));
+                
                 if (userPage == null || userPage.getContent() == null) {
+                    log.warn("No active users found for role: {}", role);
                     continue;
                 }
 
+                totalUsers += userPage.getContent().size();
                 for (AdminUserResult user : userPage.getContent()) {
                     try {
                         createNotificationUseCase.create(CreateNotificationCommand.builder()
@@ -170,13 +180,16 @@ public class CommunityService implements CommunityUseCase {
                                 .referenceType(ReferenceType.COMMUNITY)
                                 .referenceId(post.getPostId())
                                 .build());
+                        successCount++;
                     } catch (Exception e) {
-                        // 개별 알림 실패는 무시 — 게시글 등록에 영향 없음
+                        log.error("Failed to send notice notification to user: {}", user.getId(), e);
                     }
                 }
             }
+            log.info("Notice notification fan-out completed. Success: {}/{}, PostId: {}", 
+                    successCount, totalUsers, post.getPostId());
         } catch (Exception e) {
-            // 알림 전체 실패해도 공지사항 등록은 반드시 성공해야 함
+            log.error("Critical failure during notice notification fan-out for post: {}", post.getPostId(), e);
         }
     }
 
