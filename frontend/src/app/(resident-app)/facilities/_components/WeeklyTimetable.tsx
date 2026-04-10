@@ -4,13 +4,15 @@
 // functional-specification §3.2.2: 가로=요일, 세로=시간대, 색상 구분
 // ui-guideline: Moss & Aloe 시맨틱 클래스, framer-motion 마이크로 애니메이션
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { ChevronLeft, ChevronRight, CalendarDays } from "lucide-react";
 import { fetchTimeSlots, createReservation } from "../_api";
 import type { Facility } from "../_types";
 import { ApiError } from "@/lib/api";
 import { ReservationRequestModal } from "./ReservationRequestModal";
 import { ReservationBlockedModal } from "./ReservationBlockedModal";
+
 
 // ──────────────────────────────────────────
 // 상수
@@ -90,6 +92,139 @@ function parseSlots(
     }
   }
   return result;
+}
+
+// ──────────────────────────────────────────
+// 미니 달력 팝업 컴포넌트
+// ──────────────────────────────────────────
+
+const CAL_DAYS = ["월", "화", "수", "목", "금", "토", "일"];
+
+interface MiniCalendarProps {
+  weekStart: Date;
+  onSelectDate: (date: Date) => void;
+  onClose: () => void;
+}
+
+function MiniCalendar({ weekStart, onSelectDate, onClose }: MiniCalendarProps) {
+  const ref = useRef<HTMLDivElement>(null);
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  const [viewYear, setViewYear] = useState(weekStart.getFullYear());
+  const [viewMonth, setViewMonth] = useState(weekStart.getMonth()); // 0-indexed
+
+  // 외부 클릭 감지
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) {
+        onClose();
+      }
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [onClose]);
+
+  // 해당 월의 날짜 그리드 생성 (월요일 시작)
+  const firstDay = new Date(viewYear, viewMonth, 1);
+  // 월요일 기준 시작 오프셋 (0=월,1=화,...,6=일)
+  const startOffset = (firstDay.getDay() + 6) % 7;
+  const daysInMonth = new Date(viewYear, viewMonth + 1, 0).getDate();
+  const cells: (Date | null)[] = [
+    ...Array(startOffset).fill(null),
+    ...Array.from({ length: daysInMonth }, (_, i) => new Date(viewYear, viewMonth, i + 1)),
+  ];
+  // 7의 배수로 맞추기
+  while (cells.length % 7 !== 0) cells.push(null);
+
+  const shiftMonth = (delta: number) => {
+    const d = new Date(viewYear, viewMonth + delta, 1);
+    setViewYear(d.getFullYear());
+    setViewMonth(d.getMonth());
+  };
+
+  // 현재 weekStart의 주 범위
+  const wsStart = new Date(weekStart);
+  wsStart.setHours(0, 0, 0, 0);
+  const wsEnd = new Date(wsStart);
+  wsEnd.setDate(wsEnd.getDate() + 6);
+
+  const isInSelectedWeek = (d: Date) => d >= wsStart && d <= wsEnd;
+
+  return (
+    <motion.div
+      ref={ref}
+      initial={{ opacity: 0, y: -8, scale: 0.97 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      exit={{ opacity: 0, y: -8, scale: 0.97 }}
+      transition={{ duration: 0.18 }}
+      className="absolute left-1/2 top-full z-50 mt-2 w-72 -translate-x-1/2 rounded-[1.5rem] border border-border bg-background shadow-xl shadow-primary/10"
+    >
+      {/* 월 이동 헤더 */}
+      <div className="flex items-center justify-between border-b border-border px-4 py-3">
+        <button
+          onClick={() => shiftMonth(-1)}
+          className="rounded-lg p-1.5 text-muted-foreground transition hover:bg-muted/40 hover:text-primary"
+        >
+          <ChevronLeft size={16} />
+        </button>
+        <p className="text-sm font-bold text-primary">
+          {viewYear}년 {viewMonth + 1}월
+        </p>
+        <button
+          onClick={() => shiftMonth(1)}
+          className="rounded-lg p-1.5 text-muted-foreground transition hover:bg-muted/40 hover:text-primary"
+        >
+          <ChevronRight size={16} />
+        </button>
+      </div>
+
+      {/* 요일 행 */}
+      <div className="grid grid-cols-7 border-b border-border/50 px-3 pt-2 pb-1">
+        {CAL_DAYS.map((d) => (
+          <div key={d} className="text-center text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+            {d}
+          </div>
+        ))}
+      </div>
+
+      {/* 날짜 그리드 */}
+      <div className="grid grid-cols-7 gap-y-0.5 p-3">
+        {cells.map((date, idx) => {
+          if (!date) return <div key={`empty-${idx}`} />;
+          const isToday = date.getTime() === today.getTime();
+          const inSelectedWeek = isInSelectedWeek(date);
+          return (
+            <button
+              key={date.toISOString()}
+              onClick={() => { onSelectDate(date); onClose(); }}
+              className={`mx-auto flex h-8 w-8 items-center justify-center rounded-xl text-xs font-bold transition-all
+                ${
+                  inSelectedWeek
+                    ? "bg-primary text-primary-foreground"
+                    : isToday
+                    ? "border border-accent text-accent"
+                    : "text-primary hover:bg-muted/50"
+                }
+              `}
+            >
+              {date.getDate()}
+            </button>
+          );
+        })}
+      </div>
+
+      {/* 오늘로 이동 버튼 */}
+      <div className="border-t border-border/50 px-4 py-2.5">
+        <button
+          onClick={() => { onSelectDate(new Date()); onClose(); }}
+          className="w-full rounded-xl py-1.5 text-xs font-bold text-accent transition hover:bg-accent/10"
+        >
+          오늘로 이동
+        </button>
+      </div>
+    </motion.div>
+  );
 }
 
 // ──────────────────────────────────────────
@@ -175,6 +310,7 @@ export function WeeklyTimetable({ facility, onReserved }: WeeklyTimetableProps) 
   const [timetable, setTimetable] = useState<TimetableData>({});
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [calendarOpen, setCalendarOpen] = useState(false);
 
   // 선택: { date, startTime, endTime(=startTime+30분) }
   const [selectedSlots, setSelectedSlots] = useState<{ date: string; time: string }[]>([]);
@@ -380,33 +516,57 @@ export function WeeklyTimetable({ facility, onReserved }: WeeklyTimetableProps) 
     });
   };
 
+  const handleDateSelect = (date: Date) => {
+    setWeekStart(getWeekStart(date));
+  };
+
   return (
     <div className="space-y-4">
       {/* 주 이동 헤더 */}
-      <div className="flex items-center justify-between rounded-2xl border border-border bg-surface px-4 py-3">
+      <div className="relative flex items-center justify-between rounded-2xl border border-border bg-surface px-4 py-3">
         <button
           onClick={() => shiftWeek(-1)}
-          className="rounded-xl px-3 py-1.5 text-sm font-bold text-muted-foreground transition hover:bg-muted/40 hover:text-primary"
+          className="flex items-center gap-1 rounded-xl px-3 py-1.5 text-sm font-bold text-muted-foreground transition hover:bg-muted/40 hover:text-primary"
         >
-          ← 이전 주
+          <ChevronLeft size={16} />
+          <span className="hidden sm:inline">이전 주</span>
         </button>
 
-        <div className="text-center">
-          <p className="text-xs font-black uppercase tracking-[0.2em] text-muted-foreground">
-            {weekStart.getFullYear()}년
-          </p>
-          <p className="text-sm font-bold text-primary">
-            {weekStart.getMonth() + 1}월 {weekStart.getDate()}일 –{" "}
-            {weekDates[6].getMonth() + 1}월 {weekDates[6].getDate()}일
-          </p>
-        </div>
+        {/* 날짜 범위 클릭 → 달력 팝업 */}
+        <button
+          onClick={() => setCalendarOpen((v) => !v)}
+          className="flex items-center gap-2 rounded-xl px-3 py-1.5 text-center transition hover:bg-muted/30"
+        >
+          <CalendarDays size={15} className="text-accent" />
+          <div className="text-center">
+            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">
+              {weekStart.getFullYear()}년
+            </p>
+            <p className="text-sm font-bold text-primary">
+              {weekStart.getMonth() + 1}월 {weekStart.getDate()}일 –{" "}
+              {weekDates[6].getMonth() + 1}월 {weekDates[6].getDate()}일
+            </p>
+          </div>
+        </button>
 
         <button
           onClick={() => shiftWeek(1)}
-          className="rounded-xl px-3 py-1.5 text-sm font-bold text-muted-foreground transition hover:bg-muted/40 hover:text-primary"
+          className="flex items-center gap-1 rounded-xl px-3 py-1.5 text-sm font-bold text-muted-foreground transition hover:bg-muted/40 hover:text-primary"
         >
-          다음 주 →
+          <span className="hidden sm:inline">다음 주</span>
+          <ChevronRight size={16} />
         </button>
+
+        {/* 달력 팝업 */}
+        <AnimatePresence>
+          {calendarOpen && (
+            <MiniCalendar
+              weekStart={weekStart}
+              onSelectDate={handleDateSelect}
+              onClose={() => setCalendarOpen(false)}
+            />
+          )}
+        </AnimatePresence>
       </div>
 
       {/* 범례 */}
