@@ -169,16 +169,8 @@ export default function RegisterForm() {
   };
 
   const getInputClasses = (hasError: boolean) => 
-    `w-full border-b bg-transparent px-0 py-3 text-lg font-medium text-primary outline-none transition-colors placeholder:text-primary/30 ${hasError ? 'border-red-500 focus:border-red-500' : 'border-primary/20 focus:border-accent'}`;
-  const labelClasses = "block text-[10px] font-black uppercase tracking-[0.3em] text-primary/60 mb-1";
-
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: { staggerChildren: 0.1, delayChildren: 0.2 }
-    }
-  };
+    `w-full border-b bg-transparent px-0 py-3 text-lg font-medium text-primary outline-none transition-colors placeholder:text-primary/50 ${hasError ? 'border-red-500 focus:border-red-500' : 'border-primary/20 focus:border-accent'}`;
+  const labelClasses = "block text-[10px] font-black uppercase tracking-[0.3em] text-primary/80 mb-1";
 
   const itemVariants = {
     hidden: { opacity: 0, y: 30 },
@@ -203,10 +195,7 @@ export default function RegisterForm() {
   }
 
   return (
-    <motion.form 
-      variants={containerVariants}
-      initial="hidden"
-      animate="visible"
+    <form 
       onSubmit={handleSubmit} 
       className="flex flex-col gap-10"
       noValidate
@@ -247,7 +236,7 @@ export default function RegisterForm() {
             {fieldErrors.password ? (
               <p className="absolute top-full left-0 mt-1.5 text-red-500 text-xs font-medium leading-tight">{fieldErrors.password}</p>
             ) : (
-              <p className="absolute top-full left-0 mt-1.5 text-primary/40 text-[11px] font-medium tracking-tight">8자 이상, 영문+숫자+특수문자 조합</p>
+              <p className="absolute top-full left-0 mt-1.5 text-primary/60 text-[11px] font-medium tracking-tight">8자 이상, 영문+숫자+특수문자 조합</p>
             )}
           </div>
           <div className="relative">
@@ -291,7 +280,7 @@ export default function RegisterForm() {
                className={`${getInputClasses(false)} cursor-pointer flex justify-between items-center`}
              >
                <span>{formData.gender === 'MALE' ? 'MALE (남성)' : 'FEMALE (여성)'}</span>
-               <motion.span animate={{ rotate: isGenderOpen ? 180 : 0 }} className="text-[10px] text-primary/40">▼</motion.span>
+               <motion.span animate={{ rotate: isGenderOpen ? 180 : 0 }} className="text-[10px] text-primary/50">▼</motion.span>
              </div>
              
              <AnimatePresence>
@@ -309,7 +298,7 @@ export default function RegisterForm() {
                    >
                      {formData.gender === 'MALE' && <motion.div layoutId="gender-active" className="absolute left-0 top-0 bottom-0 w-1 bg-accent" />}
                      <span className="font-black tracking-tight text-primary group-hover:tracking-widest transition-all duration-300">MALE</span>
-                     <span className="text-[10px] text-primary/50 font-bold uppercase tracking-[0.2em]">남성</span>
+                     <span className="text-[10px] text-primary/60 font-bold uppercase tracking-[0.2em]">남성</span>
                    </div>
                    <div 
                      onClick={() => { setFormData(p => ({...p, gender: 'FEMALE'})); setIsGenderOpen(false); }}
@@ -317,7 +306,7 @@ export default function RegisterForm() {
                    >
                      {formData.gender === 'FEMALE' && <motion.div layoutId="gender-active" className="absolute left-0 top-0 bottom-0 w-1 bg-accent" />}
                      <span className="font-black tracking-tight text-primary group-hover:tracking-widest transition-all duration-300">FEMALE</span>
-                     <span className="text-[10px] text-primary/50 font-bold uppercase tracking-[0.2em]">여성</span>
+                     <span className="text-[10px] text-primary/60 font-bold uppercase tracking-[0.2em]">여성</span>
                    </div>
                  </motion.div>
                )}
@@ -333,7 +322,7 @@ export default function RegisterForm() {
               }}
               className={`${getInputClasses(!!fieldErrors.birthDate)} cursor-pointer flex items-center justify-between`}
             >
-               <span className={formData.birthDate ? 'text-primary' : 'text-primary/30'}>
+               <span className={formData.birthDate ? 'text-primary' : 'text-primary/50'}>
                  {formData.birthDate ? formData.birthDate : 'YYYY-MM-DD'}
                </span>
             </div>
@@ -408,6 +397,6 @@ export default function RegisterForm() {
           {loading ? 'Creating Account...' : 'Complete Registration'}
         </Button>
       </motion.div>
-    </motion.form>
+    </form>
   );
 }
