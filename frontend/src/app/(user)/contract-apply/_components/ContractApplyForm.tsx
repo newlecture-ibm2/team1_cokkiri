@@ -116,7 +116,7 @@ export default function ContractApplyForm() {
   useEffect(() => {
     const fetchProfile = async () => {
       try {
-        const res = await fetch('/api/users/me');
+        const res = await fetch('/api/users/me', { credentials: 'include' });
         if (res.ok) {
           const result = await res.json();
           if (result.success && result.data) {
@@ -144,7 +144,7 @@ export default function ContractApplyForm() {
           ? `/api/contracts/${contractId}`
           : `/api/contracts/draft?spaceId=${spaceId}`;
 
-        const response = await fetch(url);
+        const response = await fetch(url, { credentials: 'include' });
         let serverHasData = false;
 
         if (response.ok) {
@@ -218,6 +218,7 @@ export default function ContractApplyForm() {
       const res = await fetch('/api/contracts/draft', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify(requestData)
       });
 
@@ -281,6 +282,7 @@ export default function ContractApplyForm() {
       const response = await fetch('/api/contracts/submit', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({
           contractId: formData.contractId,
           spaceId: Number(spaceId),

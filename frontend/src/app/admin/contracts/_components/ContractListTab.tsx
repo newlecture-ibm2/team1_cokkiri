@@ -441,6 +441,23 @@ export function ContractListTab({ refreshKey, onRefresh }: Props) {
                             {c.startDate} ~ {c.endDate}
                           </span>
                         </div>
+                      ) : c.desiredStartDate ? (
+                        <div className="flex items-center gap-1.5">
+                          <Calendar className="w-3.5 h-3.5 text-blue-400" />
+                          <div>
+                            <span className="text-xs font-bold text-blue-600">
+                              {c.desiredStartDate}
+                            </span>
+                            {c.desiredDurationMonths && (
+                              <span className="text-[10px] font-bold text-muted ml-1">
+                                ({c.desiredDurationMonths}개월)
+                              </span>
+                            )}
+                            <span className="ml-1 text-[9px] font-black tracking-wider uppercase text-blue-400">
+                              희망
+                            </span>
+                          </div>
+                        </div>
                       ) : (
                         <span className="text-xs text-muted/50">—</span>
                       )}
@@ -475,9 +492,17 @@ export function ContractListTab({ refreshKey, onRefresh }: Props) {
                                     spaceName: c.spaceName,
                                     userName: c.userName,
                                   });
+                                  // Pre-fill with desired dates from application
+                                  let calcEndDate = "";
+                                  if (c.desiredStartDate && c.desiredDurationMonths) {
+                                    const start = new Date(c.desiredStartDate);
+                                    const end = new Date(start);
+                                    end.setMonth(start.getMonth() + c.desiredDurationMonths);
+                                    calcEndDate = end.toISOString().split("T")[0];
+                                  }
                                   setApproveForm({
-                                    startDate: "",
-                                    endDate: "",
+                                    startDate: c.desiredStartDate || "",
+                                    endDate: calcEndDate,
                                     monthlyRent: "",
                                     deposit: "",
                                     specialTerms: "",
