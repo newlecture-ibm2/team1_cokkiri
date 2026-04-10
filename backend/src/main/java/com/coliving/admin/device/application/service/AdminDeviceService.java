@@ -6,14 +6,12 @@ import com.coliving.admin.device.application.command.CreateAdminDeviceCommand;
 import com.coliving.admin.device.application.command.DeleteAdminDeviceCommand;
 import com.coliving.admin.device.application.command.UpdateAdminDeviceActiveCommand;
 import com.coliving.admin.device.application.command.UpdateAdminDeviceCommand;
-import com.coliving.admin.device.application.command.UpdateAdminDeviceStatusCommand;
 import com.coliving.admin.device.application.port.in.AdminDeviceUseCase;
 import com.coliving.admin.device.application.port.in.CreateAdminDeviceUseCase;
 import com.coliving.admin.device.application.port.out.AdminDeviceRepositoryPort;
 import com.coliving.admin.device.application.result.ControlAdminDeviceResult;
 import com.coliving.admin.device.application.result.CreateAdminDeviceResult;
 import com.coliving.admin.device.model.AdminDevice;
-import com.coliving.admin.device.model.DeviceStatus;
 import com.coliving.global.error.BusinessException;
 import com.coliving.global.error.ErrorCode;
 import com.coliving.infra.iot.IotClient;
@@ -123,26 +121,6 @@ public class AdminDeviceService implements CreateAdminDeviceUseCase, AdminDevice
                 .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND));
     }
 
-    // ── 상태 변경 (ONLINE/OFFLINE/ERROR) ──
-
-    @Override
-    @Transactional
-    public AdminDevice updateStatus(UpdateAdminDeviceStatusCommand command) {
-        adminDeviceRepositoryPort.findById(command.deviceId())
-                .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND, "기기를 찾을 수 없습니다"));
-
-        try {
-            DeviceStatus.valueOf(command.status());
-        } catch (IllegalArgumentException e) {
-            throw new BusinessException(ErrorCode.VALIDATION_ERROR, "유효하지 않은 상태값입니다: " + command.status());
-        }
-
-        adminDeviceRepositoryPort.updateStatus(command.deviceId(), command.status());
-
-        return adminDeviceRepositoryPort.findById(command.deviceId())
-                .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND));
-    }
-
     // ── 기기 삭제 — Soft Delete (ADM-DEV-06) ──
 
     @Override
@@ -208,6 +186,8 @@ public class AdminDeviceService implements CreateAdminDeviceUseCase, AdminDevice
         );
 
         if (!success) {
+            // IoT 통신 실패 시 기기 상태를 자동으로 ERROR로 전환
+            adminDeviceRepositoryPort.updateStatus(command.deviceId(), "ERROR");
             throw new BusinessException(ErrorCode.IOT_COMMUNICATION_FAIL);
         }
 

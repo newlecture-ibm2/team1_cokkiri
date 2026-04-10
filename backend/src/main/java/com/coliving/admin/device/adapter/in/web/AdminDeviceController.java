@@ -4,7 +4,6 @@ import com.coliving.admin.device.adapter.in.web.dto.req.ControlAdminDeviceReques
 import com.coliving.admin.device.adapter.in.web.dto.req.CreateAdminDeviceRequestDto;
 import com.coliving.admin.device.adapter.in.web.dto.req.UpdateAdminDeviceActiveRequestDto;
 import com.coliving.admin.device.adapter.in.web.dto.req.UpdateAdminDeviceRequestDto;
-import com.coliving.admin.device.adapter.in.web.dto.req.UpdateAdminDeviceStatusRequestDto;
 import com.coliving.admin.device.adapter.in.web.dto.res.AdminDeviceResponseDto;
 import com.coliving.admin.device.adapter.in.web.dto.res.ControlAdminDeviceResponseDto;
 import com.coliving.admin.device.adapter.in.web.dto.res.CreateAdminDeviceResponseDto;
@@ -121,18 +120,10 @@ public class AdminDeviceController {
                 updated.isActive() ? "기기가 활성화되었습니다" : "기기가 비활성화되었습니다"));
     }
 
-    /**
-     * 기기 상태 변경 (ONLINE/OFFLINE/ERROR)
-     * PATCH /api/admin/devices/{id}/status
-     */
-    @PatchMapping("/{id}/status")
-    public ResponseEntity<ApiResponse<AdminDeviceResponseDto>> updateStatus(
-            @PathVariable Long id,
-            @Valid @RequestBody UpdateAdminDeviceStatusRequestDto requestDto) {
-
-        AdminDevice updated = adminDeviceUseCase.updateStatus(requestDto.toCommand(id));
-        return ResponseEntity.ok(ApiResponse.ok(AdminDeviceResponseDto.from(updated), "기기 상태가 변경되었습니다"));
-    }
+    // 기기 상태(ONLINE/OFFLINE/ERROR)는 자동 관리:
+    // - 활성/비활성 토글 → ONLINE/OFFLINE 자동 전환 (ADM-DEV-03)
+    // - IoT 통신 실패 → ERROR 자동 전환
+    // 관리자 수동 상태변경 API는 제거됨
 
     /**
      * 기기 삭제 — Soft Delete (ADM-DEV-06)

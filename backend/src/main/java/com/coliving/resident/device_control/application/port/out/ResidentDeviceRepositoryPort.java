@@ -47,4 +47,7 @@ public interface ResidentDeviceRepositoryPort {
 
     /** 기기 제어 성공 후 current_state(JSONB) 업데이트 */
     void updateCurrentState(Long deviceId, String currentState);
+
+    /** IoT 통신 실패 시 기기 상태를 ERROR로 자동 전환 */
+    void updateDeviceStatus(Long deviceId, String status);
 }
