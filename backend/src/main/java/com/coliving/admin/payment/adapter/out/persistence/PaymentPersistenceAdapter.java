@@ -10,7 +10,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Component
@@ -19,6 +21,7 @@ public class PaymentPersistenceAdapter implements PaymentRepositoryPort {
 
     private final PaymentJpaRepository paymentJpaRepository;
     private final ContractJpaRepository contractJpaRepository;
+    private final com.coliving.common.auth.adapter.out.jpa.UserJpaRepository userJpaRepository;
 
     @Override
     public Payment save(Payment payment) {
@@ -57,39 +60,59 @@ public class PaymentPersistenceAdapter implements PaymentRepositoryPort {
         }
 
         PaymentEntity savedEntity = paymentJpaRepository.save(paymentEntity);
-        return mapToDomain(savedEntity);
+        return findById(savedEntity.getPaymentId()).orElse(mapToDomain(savedEntity, null));
     }
 
     @Override
     public Optional<Payment> findById(Long paymentId) {
         return paymentJpaRepository.findById(paymentId)
-                .map(this::mapToDomain);
+                .map(e -> {
+                    var user = userJpaRepository.findById(e.getUserId()).orElse(null);
+                    return mapToDomain(e, user);
+                });
     }
 
     @Override
     public List<Payment> findAll() {
-        return paymentJpaRepository.findAll().stream()
-                .map(this::mapToDomain)
-                .collect(Collectors.toList());
+        List<PaymentEntity> entities = paymentJpaRepository.findAll();
+        return mapEntitiesToDomainWithUsers(entities);
     }
 
     @Override
     public List<Payment> findByUserId(Long userId) {
-        return paymentJpaRepository.findByUserId(userId).stream()
-                .map(this::mapToDomain)
+        List<PaymentEntity> entities = paymentJpaRepository.findByUserId(userId);
+        return mapEntitiesToDomainWithUsers(entities);
+    }
+
+    private List<Payment> mapEntitiesToDomainWithUsers(List<PaymentEntity> entities) {
+        Set<Long> userIds = entities.stream()
+                .map(PaymentEntity::getUserId)
+                .collect(Collectors.toSet());
+        
+        Map<Long, com.coliving.common.auth.adapter.out.jpa.UserEntity> userMap = 
+                userJpaRepository.findAllById(userIds).stream()
+                        .collect(Collectors.toMap(
+                                com.coliving.common.auth.adapter.out.jpa.UserEntity::getUserId, 
+                                u -> u
+                        ));
+
+        return entities.stream()
+                .map(e -> mapToDomain(e, userMap.get(e.getUserId())))
                 .collect(Collectors.toList());
     }
 
-    private Payment mapToDomain(PaymentEntity entity) {
+    private Payment mapToDomain(PaymentEntity entity, com.coliving.common.auth.adapter.out.jpa.UserEntity user) {
         Payment domain = new Payment();
         domain.setPaymentId(entity.getPaymentId());
         domain.setContractId(entity.getContract() != null ? entity.getContract().getContractId() : null);
         domain.setReservationId(entity.getReservationId());
         domain.setUserId(entity.getUserId());
-        if (entity.getUser() != null) {
-            domain.setUserName(entity.getUser().getName());
-            domain.setLoginId(entity.getUser().getLoginId());
+        
+        if (user != null) {
+            domain.setUserName(user.getName());
+            domain.setLoginId(user.getLoginId());
         }
+        
         domain.setType(entity.getType());
         domain.setAmount(entity.getAmount());
         domain.setStatus(entity.getStatus());
