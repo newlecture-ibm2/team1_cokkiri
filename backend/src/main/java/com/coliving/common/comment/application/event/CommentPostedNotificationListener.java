@@ -12,6 +12,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
 
+import java.util.Objects;
+
 @Slf4j
 @Component
 @RequiredArgsConstructor
@@ -37,7 +39,7 @@ public class CommentPostedNotificationListener {
 
     private void notifyPostAuthor(CommentPostedEvent event) {
         communityRepositoryPort.findPostById(event.getPostId()).ifPresent(post -> {
-            if (post.getUserId().equals(event.getActorId())) {
+            if (Objects.equals(post.getUserId(), event.getActorId())) {
                 return;
             }
             try {
@@ -60,11 +62,11 @@ public class CommentPostedNotificationListener {
             return;
         }
         commentRepositoryPort.findCommentById(event.getParentCommentId()).ifPresent(parent -> {
-            if (parent.getUserId().equals(event.getActorId())) {
+            if (Objects.equals(parent.getUserId(), event.getActorId())) {
                 return;
             }
             boolean isPostOwner = communityRepositoryPort.findPostById(event.getPostId())
-                    .map(p -> p.getUserId().equals(parent.getUserId()))
+                    .map(p -> Objects.equals(p.getUserId(), parent.getUserId()))
                     .orElse(false);
             if (isPostOwner) {
                 return;

@@ -1,5 +1,6 @@
 package com.coliving.user.contract.adapter.in.web.dto.req;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.validation.constraints.FutureOrPresent;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -12,6 +13,7 @@ import java.time.LocalDate;
 @Getter
 @Setter
 @NoArgsConstructor
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class ContractApplyRequestDto {
     private Long contractId;
 
