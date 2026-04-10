@@ -7,3 +7,7 @@ export const ACCESS_DENIED_MESSAGE = "접근 권한이 없습니다.";
 /** 로그인은 되었으나 본인 민원이 아닐 때(403) 안내 문구 */
 export const VOC_MY_VOC_FORBIDDEN_MESSAGE =
   "본인이 등록한 민원만 열람·수정할 수 있습니다.";
+
+/** 입주자 전용 기능에 일반 회원이 접근했을 때 안내 문구 */
+export const RESIDENT_ONLY_MESSAGE =
+  "이 기능은 입주자만 이용할 수 있습니다.";

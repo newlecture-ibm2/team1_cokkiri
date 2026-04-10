@@ -6,6 +6,7 @@ import { motion } from "framer-motion";
 import { Send } from "lucide-react";
 import { bffErrorMessageFromResponse } from "@/lib/bff-error-message";
 import { LoginRequiredModal } from "@/components/shared/LoginRequiredModal";
+import { AccessDeniedModal } from "@/components/shared/AccessDeniedModal";
 import { cn } from "@/lib/utils";
 
 export function CommentComposer({ postId }: { postId: number }) {
@@ -13,6 +14,7 @@ export function CommentComposer({ postId }: { postId: number }) {
   const [content, setContent] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [showLoginModal, setShowLoginModal] = useState(false);
+  const [showAccessDenied, setShowAccessDenied] = useState(false);
   const [pending, startTransition] = useTransition();
 
   function submit(e: React.FormEvent) {
@@ -33,6 +35,10 @@ export function CommentComposer({ postId }: { postId: number }) {
           setShowLoginModal(true);
           return;
         }
+        if (res.status === 403) {
+          setShowAccessDenied(true);
+          return;
+        }
         if (res.ok) {
           setContent("");
           router.refresh();
@@ -51,6 +57,7 @@ export function CommentComposer({ postId }: { postId: number }) {
       className="bg-primary/5 rounded-[3rem] p-10 md:p-14 border border-primary/5 shadow-2xl shadow-primary/5 relative overflow-hidden"
     >
       <LoginRequiredModal isOpen={showLoginModal} onClose={() => setShowLoginModal(false)} />
+      <AccessDeniedModal isOpen={showAccessDenied} onClose={() => setShowAccessDenied(false)} />
       
       <div className="relative z-10 flex flex-col gap-6">
         <div className="flex flex-col gap-1">
