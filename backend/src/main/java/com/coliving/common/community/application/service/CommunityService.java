@@ -9,6 +9,7 @@ import com.coliving.common.community.model.ActorRole;
 import com.coliving.common.community.model.Post;
 import com.coliving.common.community.model.PostAttachment;
 import com.coliving.common.community.model.PostCategory;
+import com.coliving.common.comment.application.event.CommentPostedEvent;
 import com.coliving.common.community.model.Comment;
 import com.coliving.common.notification.application.command.CreateNotificationCommand;
 import com.coliving.common.notification.application.port.in.CreateNotificationUseCase;
@@ -30,6 +31,7 @@ import com.coliving.global.html.PostBodyHtmlSanitizer;
 import com.coliving.global.validation.PlainTextFieldValidation;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -47,15 +49,18 @@ public class CommunityService implements CommunityUseCase {
     private final CommunityLikeActionGuard likeActionGuard;
     private final CreateNotificationUseCase createNotificationUseCase;
     private final AdminUserRepositoryPort adminUserRepositoryPort;
+    private final ApplicationEventPublisher eventPublisher;
 
     public CommunityService(CommunityRepositoryPort repositoryPort,
             CommunityLikeActionGuard likeActionGuard,
             CreateNotificationUseCase createNotificationUseCase,
-            AdminUserRepositoryPort adminUserRepositoryPort) {
+            AdminUserRepositoryPort adminUserRepositoryPort,
+            ApplicationEventPublisher eventPublisher) {
         this.repositoryPort = repositoryPort;
         this.likeActionGuard = likeActionGuard;
         this.createNotificationUseCase = createNotificationUseCase;
         this.adminUserRepositoryPort = adminUserRepositoryPort;
+        this.eventPublisher = eventPublisher;
     }
 
     @Override
@@ -295,18 +300,10 @@ public class CommunityService implements CommunityUseCase {
                 .createdAt(created.getCreatedAt())
                 .build();
 
-        // 게시글 작성자에게 알림 (내 댓글인 경우 제외)
-        Post post = repositoryPort.findPostById(created.getPostId()).orElse(null);
-        if (post != null && !post.getUserId().equals(created.getUserId())) {
-            createNotificationUseCase.create(CreateNotificationCommand.builder()
-                    .userId(post.getUserId())
-                    .type(NotificationType.COMMUNITY_COMMENT)
-                    .title("내 게시글에 새로운 댓글이 달렸습니다")
-                    .message(String.format("「%s」 글에 새로운 댓글이 등록되었습니다.", post.getTitle()))
-                    .referenceType(ReferenceType.COMMUNITY)
-                    .referenceId(post.getPostId())
-                    .build());
-        }
+        eventPublisher.publishEvent(new CommentPostedEvent(
+                command.getPostId(),
+                command.getActorId(),
+                command.getParentCommentId()));
 
         return result;
     }
