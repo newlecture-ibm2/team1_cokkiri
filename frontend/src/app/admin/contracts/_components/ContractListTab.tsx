@@ -66,6 +66,8 @@ export function ContractListTab({ refreshKey, onRefresh }: Props) {
   const [isLoading, setIsLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState<string>("ALL");
   const [searchTerm, setSearchTerm] = useState("");
+  const [dateFrom, setDateFrom] = useState("");
+  const [dateTo, setDateTo] = useState("");
 
   // Edit Modal
   const [editId, setEditId] = useState<number | null>(null);
@@ -176,11 +178,21 @@ export function ContractListTab({ refreshKey, onRefresh }: Props) {
   // ── Filter ──
 
   const filtered = contracts.filter((c) => {
+    // Text search
     const matchesSearch =
       searchTerm === "" ||
       c.userName.toLowerCase().includes(searchTerm.toLowerCase()) ||
       c.spaceName.toLowerCase().includes(searchTerm.toLowerCase());
-    return matchesSearch;
+    if (!matchesSearch) return false;
+
+    // Date range filter (based on startDate, fallback to createdAt)
+    const refDate = c.startDate || c.createdAt?.split("T")[0];
+    if (refDate) {
+      if (dateFrom && refDate < dateFrom) return false;
+      if (dateTo && refDate > dateTo) return false;
+    }
+
+    return true;
   });
 
   const statuses = ["ALL", "ACTIVE", "PENDING", "APPROVED", "EXPIRED", "TERMINATED", "REJECTED", "CANCELLED", "DRAFT"];
@@ -205,7 +217,8 @@ export function ContractListTab({ refreshKey, onRefresh }: Props) {
       </div>
 
       {/* ── Filters ── */}
-      <div className="flex flex-col md:flex-row md:items-center gap-4 mb-8">
+      <div className="flex flex-col gap-4 mb-8">
+        {/* Status chips */}
         <div className="flex items-center gap-2 flex-wrap">
           {statuses.map((s) => (
             <button
@@ -221,15 +234,43 @@ export function ContractListTab({ refreshKey, onRefresh }: Props) {
             </button>
           ))}
         </div>
-        <div className="flex items-center gap-2 px-4 py-2.5 bg-white rounded-full border border-primary/10 focus-within:border-accent/40 transition-colors ml-auto">
-          <Search className="w-3.5 h-3.5 text-muted" />
-          <input
-            type="text"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            placeholder="이름 또는 호실 검색..."
-            className="bg-transparent text-xs font-bold placeholder:text-muted/40 focus:outline-none w-40"
-          />
+
+        {/* Date range + Search */}
+        <div className="flex flex-col md:flex-row md:items-center gap-4">
+          <div className="flex items-center gap-3">
+            <Calendar className="w-4 h-4 text-muted shrink-0" />
+            <input
+              type="date"
+              value={dateFrom}
+              onChange={(e) => setDateFrom(e.target.value)}
+              className="bg-white px-3 py-2.5 rounded-xl text-xs font-bold border border-primary/10 focus:ring-2 ring-accent outline-none"
+            />
+            <span className="text-xs font-bold text-muted">~</span>
+            <input
+              type="date"
+              value={dateTo}
+              onChange={(e) => setDateTo(e.target.value)}
+              className="bg-white px-3 py-2.5 rounded-xl text-xs font-bold border border-primary/10 focus:ring-2 ring-accent outline-none"
+            />
+            {(dateFrom || dateTo) && (
+              <button
+                onClick={() => { setDateFrom(""); setDateTo(""); }}
+                className="text-[10px] font-black text-red-500 uppercase tracking-widest hover:underline"
+              >
+                초기화
+              </button>
+            )}
+          </div>
+          <div className="flex items-center gap-2 px-4 py-2.5 bg-white rounded-full border border-primary/10 focus-within:border-accent/40 transition-colors ml-auto">
+            <Search className="w-3.5 h-3.5 text-muted" />
+            <input
+              type="text"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              placeholder="이름 또는 호실 검색..."
+              className="bg-transparent text-xs font-bold placeholder:text-muted/40 focus:outline-none w-40"
+            />
+          </div>
         </div>
       </div>
 

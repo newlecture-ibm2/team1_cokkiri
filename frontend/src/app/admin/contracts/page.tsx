@@ -1,18 +1,19 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   FileText,
   ClipboardCheck,
   Plus,
-  Loader2,
+  History,
 } from "lucide-react";
 import { ContractListTab } from "./_components/ContractListTab";
 import { ApplicationsTab } from "./_components/ApplicationsTab";
+import { TenantHistoryTab } from "./_components/TenantHistoryTab";
 import { CreateContractModal } from "./_components/CreateContractModal";
 
-type TabType = "all" | "applications";
+type TabType = "all" | "applications" | "history";
 
 export default function AdminContractsPage() {
   const [activeTab, setActiveTab] = useState<TabType>("all");
@@ -24,6 +25,7 @@ export default function AdminContractsPage() {
   const tabs: { key: TabType; label: string; icon: React.ElementType }[] = [
     { key: "all", label: "전체 계약", icon: FileText },
     { key: "applications", label: "신청 관리", icon: ClipboardCheck },
+    { key: "history", label: "방별 변천사", icon: History },
   ];
 
   return (
@@ -69,27 +71,23 @@ export default function AdminContractsPage() {
 
       {/* ── Tab Content ── */}
       <AnimatePresence mode="wait">
-        {activeTab === "all" ? (
-          <motion.div
-            key="all"
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -12 }}
-            transition={{ duration: 0.3 }}
-          >
+        <motion.div
+          key={activeTab}
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -12 }}
+          transition={{ duration: 0.3 }}
+        >
+          {activeTab === "all" && (
             <ContractListTab refreshKey={refreshKey} onRefresh={triggerRefresh} />
-          </motion.div>
-        ) : (
-          <motion.div
-            key="applications"
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -12 }}
-            transition={{ duration: 0.3 }}
-          >
+          )}
+          {activeTab === "applications" && (
             <ApplicationsTab refreshKey={refreshKey} onRefresh={triggerRefresh} />
-          </motion.div>
-        )}
+          )}
+          {activeTab === "history" && (
+            <TenantHistoryTab refreshKey={refreshKey} onRefresh={triggerRefresh} />
+          )}
+        </motion.div>
       </AnimatePresence>
 
       {/* ── Create Contract Modal ── */}

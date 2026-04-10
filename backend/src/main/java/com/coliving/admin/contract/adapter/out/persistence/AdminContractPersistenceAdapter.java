@@ -44,10 +44,12 @@ public class AdminContractPersistenceAdapter implements AdminContractRepositoryP
     }
 
     private List<AdminContractListResult> toResultList(List<ContractEntity> contracts) {
-        if (contracts.isEmpty()) return Collections.emptyList();
+        if (contracts.isEmpty())
+            return Collections.emptyList();
 
         List<Long> userIds = contracts.stream().map(ContractEntity::getUserId).distinct().collect(Collectors.toList());
-        List<Long> spaceIds = contracts.stream().map(ContractEntity::getSpaceId).distinct().collect(Collectors.toList());
+        List<Long> spaceIds = contracts.stream().map(ContractEntity::getSpaceId).distinct()
+                .collect(Collectors.toList());
 
         Map<Long, String> userNames = userJpaRepository.findAllById(userIds).stream()
                 .collect(Collectors.toMap(UserEntity::getUserId, UserEntity::getName));
