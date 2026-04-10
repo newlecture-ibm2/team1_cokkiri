@@ -34,7 +34,7 @@ backend/src/main/java/com/coliving/
 ├── admin/        # 관리자 유스케이스
 │   ├── contract/ space/ device/ reservation/ payment/ monitoring/ dashboard/ voc/
 ├── user/         # 유저 유스케이스
-│   ├── room/ contract/ history/
+│   ├── room/ contract/ experience/ history/
 ├── resident/     # 입주자 유스케이스
 │   ├── device/ booking/ log/
 ├── common/       # 공통 (전역할)
@@ -52,6 +52,8 @@ frontend/src/
 │   ├── layout.tsx, page.tsx   # 루트
 │   ├── (auth)/                # 🔓 login,register,find-id,reset-password
 │   ├── (public)/rooms/        # 🌐 방목록,[id]상세
+│   ├── (public)/experience/   # 🌐 공용시설 소개,[id]상세
+│   ├── (public)/floor-map/    # 🌐 사용자용 인터랙티브 평면도
 │   ├── (resident-app)/        # 📱 모바일지향: my-devices,facilities,my-contract
 │   ├── (user)/                # 👤 contract-apply,my-contracts,my-contract-info,my-history(device,reservation)
 │   ├── (admin)/               # 🏢 dashboard,spaces,devices,contracts,reservations,billing,vocs
@@ -173,7 +175,7 @@ public class User extends BaseEntity { ... }
 ## 8. 로깅 및 보안
 
 ### 8.1 접근제어
-permitAll: POST auth/(register,login,refresh,find-id,reset-password), GET rooms/**, swagger
+permitAll: POST auth/(register,login,refresh,find-id,reset-password), GET rooms/**, experience/**, floors, swagger
 hasRole(ADMIN): /api/admin/**
 hasAnyRole(RESIDENT,ADMIN): /api/devices/**, facilities/**, reservations/**, control-logs/**
 authenticated: 그외 /api/**

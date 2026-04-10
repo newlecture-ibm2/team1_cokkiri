@@ -62,6 +62,8 @@ public class AdminSpacePersistenceAdapter implements AdminSpaceRepositoryPort {
                 .description(adminSpace.getDescription())
                 .positionX(adminSpace.getPositionX())
                 .positionY(adminSpace.getPositionY())
+                .positionW(adminSpace.getPositionW())
+                .positionH(adminSpace.getPositionH())
                 .build();
 
         SpaceEntity savedSpace = spaceJpaRepository.save(entity);
