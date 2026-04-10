@@ -44,6 +44,9 @@ public class AdminSpaceService implements AdminSpaceUseCase {
                 .description(command.getDescription());
 
         if (command.getType() == SpaceType.PRIVATE) {
+            if (command.getRoomTypeId() == null) {
+                throw new BusinessException(ErrorCode.VALIDATION_ERROR);
+            }
             builder.privateDetail(AdminSpace.PrivateSpaceDetail.builder()
                     .roomTypeId(command.getRoomTypeId())
                     .roomCount(command.getRoomCount())
@@ -109,6 +112,9 @@ public class AdminSpaceService implements AdminSpaceUseCase {
                 .positionY(existing.getPositionY());
 
         if (existing.getType() == SpaceType.PRIVATE) {
+            if (command.getRoomTypeId() == null) {
+                throw new BusinessException(ErrorCode.VALIDATION_ERROR);
+            }
             builder.privateDetail(AdminSpace.PrivateSpaceDetail.builder()
                     .roomTypeId(command.getRoomTypeId())
                     .roomCount(command.getRoomCount())
