@@ -14,6 +14,7 @@ import com.coliving.admin.device.application.result.CreateAdminDeviceResult;
 import com.coliving.admin.device.model.AdminDevice;
 import com.coliving.global.error.BusinessException;
 import com.coliving.global.error.ErrorCode;
+import com.coliving.infra.iot.DeviceStateUtil;
 import com.coliving.infra.iot.IotClient;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -55,7 +56,9 @@ public class AdminDeviceService implements CreateAdminDeviceUseCase, AdminDevice
                 command.modelName(),
                 command.macAddress(),
                 command.mockEndpoint(),
-                "ONLINE", "{}",
+                "ONLINE",
+                command.currentState() != null && !command.currentState().isBlank()
+                        ? command.currentState() : "{}",
                 true,
                 null, null, null, null
         );
@@ -191,8 +194,8 @@ public class AdminDeviceService implements CreateAdminDeviceUseCase, AdminDevice
             throw new BusinessException(ErrorCode.IOT_COMMUNICATION_FAIL);
         }
 
-        // 6. 제어 성공 시 기기 current_state 업데이트
-        String newState = buildCurrentState(command.command(), command.params());
+        // 6. 제어 성공 시 기기 current_state 업데이트 (기존 상태에 params 병합)
+        String newState = DeviceStateUtil.mergeState(device.currentState(), command.params());
         adminDeviceRepositoryPort.updateCurrentState(command.deviceId(), newState);
 
         return new ControlAdminDeviceResult(
@@ -215,45 +218,6 @@ public class AdminDeviceService implements CreateAdminDeviceUseCase, AdminDevice
         if (!"PRIVATE".equals(spaceType)) {
             throw new BusinessException(ErrorCode.VALIDATION_ERROR,
                     "도어락(DOOR_LOCK)은 개인 공간(PRIVATE)에만 설치할 수 있습니다");
-        }
-    }
-
-    /**
-     * 제어 명령에 따른 current_state JSON 생성
-     */
-    private String buildCurrentState(String command, java.util.Map<String, Object> params) {
-        java.util.Map<String, Object> state = new java.util.HashMap<>();
-        switch (command) {
-            case "ON" -> state.put("power", "ON");
-            case "OFF" -> state.put("power", "OFF");
-            case "LOCK" -> state.put("power", "ON");
-            case "UNLOCK" -> state.put("power", "OFF");
-            case "START" -> state.put("power", "ON");
-            case "STOP" -> state.put("power", "OFF");
-            case "SET_TEMP" -> {
-                state.put("power", "ON");
-                if (params != null && params.containsKey("temperature")) {
-                    state.put("temperature", params.get("temperature"));
-                }
-            }
-            case "SET_BRIGHTNESS" -> {
-                state.put("power", "ON");
-                if (params != null && params.containsKey("brightness")) {
-                    state.put("brightness", params.get("brightness"));
-                }
-            }
-            case "SET_MODE" -> {
-                state.put("power", "ON");
-                if (params != null && params.containsKey("mode")) {
-                    state.put("mode", params.get("mode"));
-                }
-            }
-            default -> state.put("power", "ON");
-        }
-        try {
-            return new com.fasterxml.jackson.databind.ObjectMapper().writeValueAsString(state);
-        } catch (Exception e) {
-            return "{\"power\":\"ON\"}";
         }
     }
 }

@@ -27,11 +27,14 @@ public record CreateAdminDeviceRequestDto(
         @Size(max = 50, message = "MAC 주소는 50자 이내여야 합니다")
         String macAddress,
 
-        String mockEndpoint
+        String mockEndpoint,
+
+        /** 초기 기기 상태 JSON (선택, 예: {"power":"OFF","temperature":22}) */
+        String currentState
 ) {
     public CreateAdminDeviceCommand toCommand() {
         return new CreateAdminDeviceCommand(
-                spaceId, deviceTypeId, name, modelName, macAddress, mockEndpoint
+                spaceId, deviceTypeId, name, modelName, macAddress, mockEndpoint, currentState
         );
     }
 }

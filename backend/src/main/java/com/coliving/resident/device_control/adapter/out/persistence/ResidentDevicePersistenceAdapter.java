@@ -170,6 +170,14 @@ public class ResidentDevicePersistenceAdapter implements ResidentDeviceRepositor
                 deviceId, userId, command, result);
     }
 
+
+    @Override
+    public String findCurrentState(Long deviceId) {
+        return deviceJpaRepository.findById(deviceId)
+                .map(DeviceEntity::getCurrentState)
+                .orElse("{}");
+    }
+
     @Override
     public void updateCurrentState(Long deviceId, String currentState) {
         deviceJpaRepository.findById(deviceId).ifPresent(device -> {

@@ -23,6 +23,7 @@ export interface CreateDeviceRequest {
   modelName: string;
   macAddress: string;
   mockEndpoint: string;
+  currentState?: string;
 }
 
 export interface CreateDeviceResponse {

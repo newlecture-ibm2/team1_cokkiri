@@ -45,6 +45,9 @@ public interface ResidentDeviceRepositoryPort {
                         String command, Map<String, Object> commandParams,
                         String result, String errorMessage, String correlationId);
 
+    /** 기기의 현재 current_state(JSONB) 조회 — 상태 병합(merge)에 사용 */
+    String findCurrentState(Long deviceId);
+
     /** 기기 제어 성공 후 current_state(JSONB) 업데이트 */
     void updateCurrentState(Long deviceId, String currentState);
 
