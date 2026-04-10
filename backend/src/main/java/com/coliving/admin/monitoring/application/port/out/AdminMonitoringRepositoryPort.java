@@ -30,6 +30,9 @@ public interface AdminMonitoringRepositoryPort {
     /** 명령(command)별 제어 빈도 */
     List<Object[]> countControlByCommand();
 
+    /** 기기 종류 × 명령 교차 집계 (device_type_name, command, count) */
+    List<Object[]> countControlByDeviceTypeAndCommand();
+
     /** 일별 에러(FAILURE) 빈도 (최근 30일) */
     List<Object[]> countDailyErrors();
 

@@ -203,11 +203,12 @@ export function DeviceGrid() {
             initial={{ opacity: 0, y: -12 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -8 }}
-            className={`fixed top-4 left-1/2 -translate-x-1/2 z-50 rounded-xl border px-5 py-3 text-sm font-medium shadow-lg ${
-              feedbackType === "error"
-                ? "border-destructive/40 bg-background text-destructive"
-                : "border-secondary/40 bg-background text-primary"
-            }`}
+            className="fixed top-4 left-1/2 -translate-x-1/2 z-50 rounded-xl border px-5 py-3 text-sm font-bold shadow-2xl"
+            style={{
+              backgroundColor: feedbackType === "error" ? "#dc2626" : "#2C3424",
+              color: "#ffffff",
+              borderColor: feedbackType === "error" ? "#b91c1c" : "#768064",
+            }}
           >
             {feedbackType === "error" ? "⚠️ " : "✅ "}
             {feedback}

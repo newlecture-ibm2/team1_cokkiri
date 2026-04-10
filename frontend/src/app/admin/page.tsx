@@ -5,6 +5,7 @@ import {
   Building2,
   FileText,
   Cpu,
+  Activity,
   CalendarDays,
   CreditCard,
   MessageSquareText,
@@ -25,11 +26,12 @@ const shortcuts: { href: string; label: string; description: string; icon: typeo
   },
   { href: "/admin/spaces", label: "공간 관리", description: "호실·공용 공간", icon: Building2 },
   { href: "/admin/contracts", label: "계약", description: "신청·체결·만료", icon: FileText },
-  { href: "/admin/devices", label: "기기", description: "IoT 등록·제어", icon: Cpu },
   { href: "/admin/reservations", label: "예약", description: "공용 시설 예약", icon: CalendarDays },
+  { href: "/admin/devices", label: "기기", description: "IoT 등록·제어", icon: Cpu },
+  { href: "/admin/monitoring", label: "기기 모니터링", description: "상태·이력·통계", icon: Activity },
   { href: "/admin/billing", label: "결제·청구", description: "청구·승인", icon: CreditCard },
-  { href: "/admin/community", label: "커뮤니티 관리", description: "게시글·댓글 운영", icon: MessagesSquare },
   { href: "/admin/vocs", label: "민원", description: "전체 민원·답변", icon: MessageSquareText },
+  { href: "/admin/community", label: "커뮤니티", description: "게시글·댓글 운영", icon: MessagesSquare },
 ];
 
 export default function AdminHomePage() {

@@ -3,6 +3,8 @@ package com.coliving.resident.log.adapter.in.web;
 import com.coliving.admin.device.adapter.out.jpa.DeviceTypeJpaRepository;
 import com.coliving.global.dto.ApiResponse;
 import com.coliving.resident.log.adapter.in.web.dto.ControlLogResponseDto;
+import com.coliving.resident.log.adapter.out.jpa.ControlLogJpaRepository;
+import com.coliving.resident.log.adapter.out.jpa.ControlResult;
 import com.coliving.resident.log.application.command.ControlLogListCommand;
 import com.coliving.resident.log.application.port.in.ControlLogUseCase;
 import com.coliving.resident.log.model.ControlLog;
@@ -34,6 +36,7 @@ public class ControlLogController {
 
     private final ControlLogUseCase controlLogUseCase;
     private final DeviceTypeJpaRepository deviceTypeJpaRepository;
+    private final ControlLogJpaRepository controlLogJpaRepository;
 
     @GetMapping("/my")
     public ApiResponse<Map<String, Object>> getMyControlLogs(
@@ -59,12 +62,18 @@ public class ControlLogController {
                 .map(ControlLogResponseDto::from)
                 .toList();
 
+        // 전체 성공/실패 건수 (필터 무관, 해당 유저의 전체 이력 기준)
+        long successCount = controlLogJpaRepository.countByUserIdAndResult(userId, ControlResult.SUCCESS);
+        long failureCount = controlLogJpaRepository.countByUserIdAndResult(userId, ControlResult.FAILURE);
+
         Map<String, Object> data = new HashMap<>();
         data.put("content", content);
         data.put("page", page.getNumber());
         data.put("size", page.getSize());
         data.put("totalElements", page.getTotalElements());
         data.put("totalPages", page.getTotalPages());
+        data.put("successCount", successCount);
+        data.put("failureCount", failureCount);
 
         return ApiResponse.ok(data);
     }
