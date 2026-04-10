@@ -286,12 +286,13 @@ export function ContractListTab({ refreshKey, onRefresh }: Props) {
   return (
     <>
       {/* ── Stats ── */}
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
+      <div className="grid grid-cols-2 md:grid-cols-6 gap-4 mb-8">
         {[
           { label: "전체", value: contracts.length, color: "text-primary" },
           { label: "계약 중", value: contracts.filter((c) => c.status === "ACTIVE").length, color: "text-accent" },
           { label: "심사 중", value: contracts.filter((c) => c.status === "PENDING").length, color: "text-blue-600" },
           { label: "임시저장", value: contracts.filter((c) => c.status === "DRAFT").length, color: "text-gray-500" },
+          { label: "반려", value: contracts.filter((c) => c.status === "REJECTED").length, color: "text-red-500" },
           { label: "만료/해지", value: contracts.filter((c) => c.status === "EXPIRED" || c.status === "TERMINATED").length, color: "text-red-600" },
         ].map((s) => (
           <div key={s.label} className="p-6 bg-white rounded-2xl border border-primary/5 shadow-sm">
@@ -464,28 +465,30 @@ export function ContractListTab({ refreshKey, onRefresh }: Props) {
                             <Edit3 className="w-4 h-4" />
                           </button>
                         )}
-                        {c.status === "PENDING" && (
+                        {(c.status === "PENDING" || c.status === "APPROVED") && (
                           <>
-                            <button
-                              onClick={() => {
-                                setApproveModal({
-                                  id: c.contractId,
-                                  spaceName: c.spaceName,
-                                  userName: c.userName,
-                                });
-                                setApproveForm({
-                                  startDate: "",
-                                  endDate: "",
-                                  monthlyRent: "",
-                                  deposit: "",
-                                  specialTerms: "",
-                                });
-                              }}
-                              className="p-2 rounded-lg hover:bg-green-50 text-muted hover:text-green-600 transition-colors"
-                              title="승인"
-                            >
-                              <CheckCircle2 className="w-4 h-4" />
-                            </button>
+                            {c.status === "PENDING" && (
+                              <button
+                                onClick={() => {
+                                  setApproveModal({
+                                    id: c.contractId,
+                                    spaceName: c.spaceName,
+                                    userName: c.userName,
+                                  });
+                                  setApproveForm({
+                                    startDate: "",
+                                    endDate: "",
+                                    monthlyRent: "",
+                                    deposit: "",
+                                    specialTerms: "",
+                                  });
+                                }}
+                                className="p-2 rounded-lg hover:bg-green-50 text-muted hover:text-green-600 transition-colors"
+                                title="승인"
+                              >
+                                <CheckCircle2 className="w-4 h-4" />
+                              </button>
+                            )}
                             <button
                               onClick={() => {
                                 setRejectModal({
@@ -504,6 +507,20 @@ export function ContractListTab({ refreshKey, onRefresh }: Props) {
                         )}
                         {c.status === "ACTIVE" && (
                           <>
+                            <button
+                              onClick={() => {
+                                setRejectModal({
+                                  id: c.contractId,
+                                  spaceName: c.spaceName,
+                                  userName: c.userName,
+                                });
+                                setRejectReason("");
+                              }}
+                              className="p-2 rounded-lg hover:bg-red-50 text-muted hover:text-red-500 transition-colors"
+                              title="반려"
+                            >
+                              <XCircle className="w-4 h-4" />
+                            </button>
                             <button
                               onClick={() =>
                                 setActionModal({
