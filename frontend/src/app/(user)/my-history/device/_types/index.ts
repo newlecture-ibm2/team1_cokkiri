@@ -21,6 +21,8 @@ export interface ControlLogPage {
   size: number;
   totalElements: number;
   totalPages: number;
+  successCount: number;
+  failureCount: number;
 }
 
 export interface ControlLogFilters {

@@ -4,6 +4,7 @@ import com.coliving.admin.monitoring.adapter.in.web.dto.res.AdminControlLogRespo
 import com.coliving.admin.monitoring.adapter.in.web.dto.res.ControlFrequencyResponseDto;
 import com.coliving.admin.monitoring.adapter.in.web.dto.res.DeviceErrorStatsResponseDto;
 import com.coliving.admin.monitoring.adapter.in.web.dto.res.DeviceStatusSummaryResponseDto;
+import com.coliving.admin.monitoring.adapter.in.web.dto.res.DeviceTypeCommandFrequencyResponseDto;
 import com.coliving.admin.monitoring.adapter.in.web.dto.res.SpaceDeviceStatusResponseDto;
 import com.coliving.admin.monitoring.application.command.AdminControlLogListCommand;
 import com.coliving.admin.monitoring.application.port.in.AdminMonitoringUseCase;
@@ -44,14 +45,14 @@ public class AdminMonitoringService implements AdminMonitoringUseCase {
     public List<DeviceErrorStatsResponseDto> getDeviceErrorStats() {
         return monitoringRepositoryPort.findDeviceErrorStats().stream()
                 .map(row -> new DeviceErrorStatsResponseDto(
-                        ((Number) row[0]).longValue(),    // deviceId
-                        (String) row[1],                   // deviceName
-                        (String) row[2],                   // deviceTypeCode
-                        (String) row[3],                   // deviceTypeName
-                        (String) row[4],                   // spaceName
-                        (String) row[5],                   // status
-                        ((Number) row[6]).longValue(),      // errorCount
-                        row[7] != null ? row[7].toString() : null  // lastOnlineAt
+                        ((Number) row[0]).longValue(),              // deviceId
+                        row[1] != null ? row[1].toString() : null,  // deviceName
+                        row[2] != null ? row[2].toString() : null,  // deviceTypeCode
+                        row[3] != null ? row[3].toString() : null,  // deviceTypeName
+                        row[4] != null ? row[4].toString() : null,  // spaceName
+                        row[5] != null ? row[5].toString() : null,  // status
+                        ((Number) row[6]).longValue(),               // errorCount
+                        row[7] != null ? row[7].toString() : null   // lastOnlineAt
                 ))
                 .collect(Collectors.toList());
     }
@@ -60,8 +61,8 @@ public class AdminMonitoringService implements AdminMonitoringUseCase {
     public List<ControlFrequencyResponseDto> getControlFrequencyByDeviceType() {
         return monitoringRepositoryPort.countControlByDeviceType().stream()
                 .map(row -> new ControlFrequencyResponseDto(
-                        (String) row[0],                   // deviceTypeName
-                        ((Number) row[1]).longValue()       // count
+                        row[0] != null ? row[0].toString() : null,
+                        ((Number) row[1]).longValue()
                 ))
                 .collect(Collectors.toList());
     }
@@ -83,22 +84,39 @@ public class AdminMonitoringService implements AdminMonitoringUseCase {
         int totalPages = (int) Math.ceil((double) totalElements / command.size());
 
         List<AdminControlLogResponseDto> content = rows.stream()
-                .map(row -> new AdminControlLogResponseDto(
-                        ((Number) row[0]).longValue(),                       // controlLogId
-                        ((Number) row[1]).longValue(),                       // deviceId
-                        (String) row[2],                                     // deviceName
-                        (String) row[3],                                     // deviceTypeName
-                        (String) row[4],                                     // spaceName
-                        ((Number) row[5]).longValue(),                       // userId
-                        (String) row[6],                                     // userName
-                        (String) row[7],                                     // actorType
-                        (String) row[8],                                     // command
-                        row[9] != null ? row[9].toString() : null,           // commandParams
-                        (String) row[10],                                    // result
-                        row[11] != null ? (String) row[11] : null,           // errorMessage
-                        row[12] != null ? (String) row[12] : null,           // correlationId
-                        row[13] != null ? ((OffsetDateTime) row[13]) : null  // createdAt
-                ))
+                .map(row -> {
+                    // 네이티브 쿼리 결과 — JDBC 드라이버 반환 타입이 OffsetDateTime/Timestamp 등
+                    // 다양할 수 있으므로 안전하게 변환
+                    OffsetDateTime createdAt = null;
+                    if (row[13] != null) {
+                        if (row[13] instanceof OffsetDateTime odt) {
+                            createdAt = odt;
+                        } else if (row[13] instanceof java.sql.Timestamp ts) {
+                            createdAt = ts.toInstant().atOffset(java.time.ZoneOffset.of("+09:00"));
+                        } else if (row[13] instanceof java.time.LocalDateTime ldt) {
+                            createdAt = ldt.atOffset(java.time.ZoneOffset.of("+09:00"));
+                        } else {
+                            createdAt = OffsetDateTime.parse(row[13].toString());
+                        }
+                    }
+
+                    return new AdminControlLogResponseDto(
+                            ((Number) row[0]).longValue(),                                    // controlLogId
+                            ((Number) row[1]).longValue(),                                    // deviceId
+                            row[2] != null ? row[2].toString() : null,                        // deviceName
+                            row[3] != null ? row[3].toString() : null,                        // deviceTypeName
+                            row[4] != null ? row[4].toString() : null,                        // spaceName
+                            row[5] != null ? ((Number) row[5]).longValue() : null,             // userId (nullable)
+                            row[6] != null ? row[6].toString() : null,                        // userName
+                            row[7] != null ? row[7].toString() : null,                        // actorType
+                            row[8] != null ? row[8].toString() : null,                        // command
+                            row[9] != null ? row[9].toString() : null,                        // commandParams
+                            row[10] != null ? row[10].toString() : null,                      // result
+                            row[11] != null ? row[11].toString() : null,                      // errorMessage
+                            row[12] != null ? row[12].toString() : null,                      // correlationId
+                            createdAt                                                         // createdAt
+                    );
+                })
                 .collect(Collectors.toList());
 
         return new AdminControlLogPageResult(content, command.page(), command.size(), totalElements, totalPages);
@@ -108,7 +126,7 @@ public class AdminMonitoringService implements AdminMonitoringUseCase {
     public List<ControlFrequencyResponseDto> getControlFrequencyBySpaceType() {
         return monitoringRepositoryPort.countControlBySpaceType().stream()
                 .map(row -> {
-                    String type = (String) row[0];
+                    String type = row[0] != null ? row[0].toString() : "";
                     String label = "PRIVATE".equals(type) ? "개인 공간" : "공용 공간";
                     return new ControlFrequencyResponseDto(label, ((Number) row[1]).longValue());
                 })
@@ -119,8 +137,19 @@ public class AdminMonitoringService implements AdminMonitoringUseCase {
     public List<ControlFrequencyResponseDto> getControlFrequencyByCommand() {
         return monitoringRepositoryPort.countControlByCommand().stream()
                 .map(row -> new ControlFrequencyResponseDto(
-                        (String) row[0],
+                        row[0] != null ? row[0].toString() : null,
                         ((Number) row[1]).longValue()
+                ))
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<DeviceTypeCommandFrequencyResponseDto> getControlFrequencyByDeviceTypeAndCommand() {
+        return monitoringRepositoryPort.countControlByDeviceTypeAndCommand().stream()
+                .map(row -> new DeviceTypeCommandFrequencyResponseDto(
+                        row[0] != null ? row[0].toString() : null,
+                        row[1] != null ? row[1].toString() : null,
+                        ((Number) row[2]).longValue()
                 ))
                 .collect(Collectors.toList());
     }
@@ -139,11 +168,11 @@ public class AdminMonitoringService implements AdminMonitoringUseCase {
     public List<SpaceDeviceStatusResponseDto> getDeviceStatusBySpace() {
         return monitoringRepositoryPort.findDeviceStatusBySpace().stream()
                 .map(row -> new SpaceDeviceStatusResponseDto(
-                        (String) row[0],                   // spaceName
-                        (String) row[1],                   // spaceType
-                        (String) row[2],                   // deviceTypeName
-                        (String) row[3],                   // status
-                        ((Number) row[4]).longValue()       // count
+                        row[0] != null ? row[0].toString() : null,
+                        row[1] != null ? row[1].toString() : null,
+                        row[2] != null ? row[2].toString() : null,
+                        row[3] != null ? row[3].toString() : null,
+                        ((Number) row[4]).longValue()
                 ))
                 .collect(Collectors.toList());
     }

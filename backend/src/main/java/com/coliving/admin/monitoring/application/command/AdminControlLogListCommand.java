@@ -8,6 +8,7 @@ import java.time.LocalDate;
 public record AdminControlLogListCommand(
         Long deviceId,
         Long userId,
+        Long spaceId,
         String result,
         LocalDate startDate,
         LocalDate endDate,

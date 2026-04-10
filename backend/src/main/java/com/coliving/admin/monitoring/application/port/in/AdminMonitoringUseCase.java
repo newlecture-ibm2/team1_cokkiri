@@ -3,6 +3,7 @@ package com.coliving.admin.monitoring.application.port.in;
 import com.coliving.admin.monitoring.adapter.in.web.dto.res.ControlFrequencyResponseDto;
 import com.coliving.admin.monitoring.adapter.in.web.dto.res.DeviceErrorStatsResponseDto;
 import com.coliving.admin.monitoring.adapter.in.web.dto.res.DeviceStatusSummaryResponseDto;
+import com.coliving.admin.monitoring.adapter.in.web.dto.res.DeviceTypeCommandFrequencyResponseDto;
 import com.coliving.admin.monitoring.adapter.in.web.dto.res.SpaceDeviceStatusResponseDto;
 import com.coliving.admin.monitoring.application.command.AdminControlLogListCommand;
 import com.coliving.admin.monitoring.application.result.AdminControlLogPageResult;
@@ -31,6 +32,9 @@ public interface AdminMonitoringUseCase {
 
     /** 명령(command)별 제어 빈도 */
     List<ControlFrequencyResponseDto> getControlFrequencyByCommand();
+
+    /** 기기 종류 × 명령 교차 집계 */
+    List<DeviceTypeCommandFrequencyResponseDto> getControlFrequencyByDeviceTypeAndCommand();
 
     /** 일별 에러(FAILURE) 빈도 (최근 30일) */
     List<ControlFrequencyResponseDto> getDailyErrorFrequency();

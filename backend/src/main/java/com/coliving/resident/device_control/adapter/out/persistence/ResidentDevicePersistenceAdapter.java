@@ -2,6 +2,7 @@ package com.coliving.resident.device_control.adapter.out.persistence;
 
 import com.coliving.admin.device.adapter.out.jpa.DeviceEntity;
 import com.coliving.admin.device.adapter.out.jpa.DeviceJpaRepository;
+import com.coliving.admin.device.model.DeviceStatus;
 import com.coliving.resident.device_control.application.port.out.ResidentDeviceRepositoryPort;
 import com.coliving.resident.device_control.model.ResidentDevice;
 import com.coliving.resident.log.adapter.out.jpa.ActorType;
@@ -210,5 +211,13 @@ public class ResidentDevicePersistenceAdapter implements ResidentDeviceRepositor
                 entity.getIsActive(),
                 entity.getLastOnlineAt()
         );
+    }
+
+    @Override
+    public void updateDeviceStatus(Long deviceId, String status) {
+        deviceJpaRepository.findById(deviceId).ifPresent(device -> {
+            device.updateStatus(DeviceStatus.valueOf(status));
+            deviceJpaRepository.save(device);
+        });
     }
 }

@@ -131,6 +131,8 @@ public class ResidentDeviceService implements ResidentDeviceUseCase {
         );
 
         if (!success) {
+            // IoT 통신 실패 시 기기 상태를 자동으로 ERROR로 전환
+            residentDeviceRepositoryPort.updateDeviceStatus(command.deviceId(), "ERROR");
             throw new BusinessException(ErrorCode.IOT_COMMUNICATION_FAIL);
         }
 

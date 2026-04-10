@@ -190,8 +190,12 @@ export function DeviceListTable() {
             initial={{ opacity: 0, y: -12 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -8 }}
-            className="fixed top-4 left-1/2 -translate-x-1/2 z-50 rounded-xl border border-secondary/40
-              bg-background px-5 py-3 text-sm font-medium text-primary shadow-lg"
+            className="fixed top-4 left-1/2 -translate-x-1/2 z-50 rounded-xl border px-5 py-3 text-sm font-bold shadow-2xl"
+            style={{
+              backgroundColor: "#2C3424",
+              color: "#ffffff",
+              borderColor: "#768064",
+            }}
           >
             ✅ {success}
           </motion.div>
@@ -201,8 +205,12 @@ export function DeviceListTable() {
             initial={{ opacity: 0, y: -12 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -8 }}
-            className="fixed top-4 left-1/2 -translate-x-1/2 z-50 rounded-xl border border-destructive/30
-              bg-background px-5 py-3 text-sm font-medium text-destructive shadow-lg"
+            className="fixed top-4 left-1/2 -translate-x-1/2 z-50 rounded-xl border px-5 py-3 text-sm font-bold shadow-2xl"
+            style={{
+              backgroundColor: "#dc2626",
+              color: "#ffffff",
+              borderColor: "#b91c1c",
+            }}
           >
             ⚠️ {error}
           </motion.div>

@@ -64,7 +64,7 @@ export default function SpaceDeviceStatusChart({ data }: SpaceDeviceStatusChartP
     장애: e.ERROR,
   }));
 
-  const chartHeight = Math.max(300, chartData.length * 50);
+  const chartHeight = Math.max(300, chartData.length * 80);
 
   return (
     <ResponsiveContainer width="100%" height={chartHeight}>
@@ -72,6 +72,8 @@ export default function SpaceDeviceStatusChart({ data }: SpaceDeviceStatusChartP
         data={chartData}
         layout="vertical"
         margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+        barCategoryGap="20%"
+        barGap={2}
       >
         <CartesianGrid strokeDasharray="3 3" stroke="var(--secondary)" opacity={0.4} horizontal={false} />
         <XAxis
@@ -100,9 +102,9 @@ export default function SpaceDeviceStatusChart({ data }: SpaceDeviceStatusChartP
           iconType="circle"
           wrapperStyle={{ fontSize: "12px", paddingBottom: "12px" }}
         />
-        <Bar dataKey="정상" stackId="status" fill={STATUS_COLORS.ONLINE} radius={[0, 0, 0, 0]} />
-        <Bar dataKey="오프라인" stackId="status" fill={STATUS_COLORS.OFFLINE} />
-        <Bar dataKey="장애" stackId="status" fill={STATUS_COLORS.ERROR} radius={[0, 4, 4, 0]} />
+        <Bar dataKey="정상" fill={STATUS_COLORS.ONLINE} radius={[0, 4, 4, 0]} barSize={10} />
+        <Bar dataKey="오프라인" fill={STATUS_COLORS.OFFLINE} radius={[0, 4, 4, 0]} barSize={10} />
+        <Bar dataKey="장애" fill={STATUS_COLORS.ERROR} radius={[0, 4, 4, 0]} barSize={10} />
       </BarChart>
     </ResponsiveContainer>
   );
