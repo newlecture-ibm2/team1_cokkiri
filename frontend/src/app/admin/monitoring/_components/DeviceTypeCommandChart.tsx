@@ -34,7 +34,7 @@ interface DeviceTypeCommandChartProps {
 export default function DeviceTypeCommandChart({ data }: DeviceTypeCommandChartProps) {
   if (data.length === 0) {
     return (
-      <div className="flex items-center justify-center h-[300px] text-[var(--muted)]">
+      <div className="flex items-center justify-center h-[300px] text-muted-foreground">
         제어 이력이 없습니다
       </div>
     );

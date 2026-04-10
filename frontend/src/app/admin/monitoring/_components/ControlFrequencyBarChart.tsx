@@ -26,7 +26,7 @@ export default function ControlFrequencyBarChart({
 }: ControlFrequencyBarChartProps) {
   if (data.length === 0) {
     return (
-      <div className="flex items-center justify-center h-[300px] text-[var(--muted)]">
+      <div className="flex items-center justify-center h-[300px] text-muted-foreground">
         제어 이력이 없습니다
       </div>
     );
@@ -34,7 +34,7 @@ export default function ControlFrequencyBarChart({
 
   return (
     <div>
-      <h3 className="text-sm font-black uppercase tracking-[0.3em] text-[var(--muted)] mb-4">
+      <h3 className="text-sm font-black uppercase tracking-[0.3em] text-muted-foreground mb-4">
         {title}
       </h3>
       <ResponsiveContainer width="100%" height={300}>
