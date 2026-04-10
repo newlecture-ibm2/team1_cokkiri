@@ -21,11 +21,11 @@ import java.time.LocalTime;
  * schema.sql의 reservation 테이블에 매핑된다.
  *
  * ┌──────────────────────────────────────────────────────────────────┐
- * │ 관계 전환 현황 (SPC-2.1 머지 완료)                                 │
- * │                                                                  │
- * │ ✅ user       → @ManyToOne UserEntity (USR-1.1 머지 완료)         │
- * │ ✅ space      → @ManyToOne SpaceEntity (SPC-2.1 머지 완료)        │
- * │ ✅ approvedBy → @ManyToOne UserEntity (nullable, 관리자 참조)      │
+ * │ 관계 전환 현황 (SPC-2.1 머지 완료) │
+ * │ │
+ * │ ✅ user → @ManyToOne UserEntity (USR-1.1 머지 완료) │
+ * │ ✅ space → @ManyToOne SpaceEntity (SPC-2.1 머지 완료) │
+ * │ ✅ approvedBy → @ManyToOne UserEntity (nullable, 관리자 참조) │
  * └──────────────────────────────────────────────────────────────────┘
  */
 @Entity
@@ -70,7 +70,7 @@ public class ReservationEntity extends BaseEntity {
 
     @Builder
     public ReservationEntity(UserEntity user, SpaceEntity space, LocalDate reservationDate,
-                             LocalTime startTime, LocalTime endTime) {
+            LocalTime startTime, LocalTime endTime) {
         this.user = user;
         this.space = space;
         this.reservationDate = reservationDate;
@@ -152,7 +152,7 @@ public class ReservationEntity extends BaseEntity {
         if (this.status != expected) {
             throw new IllegalStateException(
                     "현재 상태(" + this.status + ")에서는 " + action + " 처리를 할 수 없습니다. "
-                    + expected + " 상태여야 합니다.");
+                            + expected + " 상태여야 합니다.");
         }
     }
 }
