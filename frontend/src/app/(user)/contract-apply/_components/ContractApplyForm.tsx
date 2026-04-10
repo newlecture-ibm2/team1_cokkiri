@@ -4,14 +4,14 @@ import React, { useState, useEffect, useCallback } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import * as PortOne from "@portone/browser-sdk/v2";
 import { motion, AnimatePresence } from "framer-motion";
-import { 
-  Calendar, 
-  FileText, 
-  CheckCircle2, 
-  AlertCircle, 
-  ChevronRight, 
-  ChevronLeft, 
-  Save, 
+import {
+  Calendar,
+  FileText,
+  CheckCircle2,
+  AlertCircle,
+  ChevronRight,
+  ChevronLeft,
+  Save,
   Send,
   Loader2,
   Clock,
@@ -51,7 +51,7 @@ const INITIAL_DATA: ContractFormData = {
 export default function ContractApplyForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const spaceId = searchParams.get("spaceId") || "1"; 
+  const spaceId = searchParams.get("spaceId") || "1";
 
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState<ContractFormData>(INITIAL_DATA);
@@ -140,7 +140,7 @@ export default function ContractApplyForm() {
       const contractId = searchParams.get("id");
       try {
         // 1. Fetch from Server for latest truth (server is the authority)
-        const url = contractId 
+        const url = contractId
           ? `/api/contracts/${contractId}`
           : `/api/contracts/draft?spaceId=${spaceId}`;
 
@@ -212,10 +212,10 @@ export default function ContractApplyForm() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ ...data, spaceId: Number(spaceId), contractId: data.contractId })
       }).catch(err => console.warn("API Draft save error, check backend."));
-      
+
       localStorage.setItem(`contract_draft_${spaceId}`, JSON.stringify(data));
       setLastSaved(new Date());
-      
+
       if (isManual) {
         setShowToast(true);
         setTimeout(() => setShowToast(false), 3000);
@@ -242,7 +242,7 @@ export default function ContractApplyForm() {
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target;
     const val = type === "checkbox" ? (e.target as HTMLInputElement).checked : value;
-    
+
     setFormData(prev => ({
       ...prev,
       [name]: val
@@ -263,7 +263,7 @@ export default function ContractApplyForm() {
       const response = await fetch('/api/contracts/submit', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
+        body: JSON.stringify({
           contractId: formData.contractId,
           spaceId: Number(spaceId),
           desiredStartDate: formData.desiredStartDate,
@@ -277,7 +277,7 @@ export default function ContractApplyForm() {
       });
 
       if (!response.ok) throw new Error("Submission failed");
-      
+
       localStorage.removeItem(`contract_draft_${spaceId}`);
       setStep(5);
     } catch (err) {
@@ -310,14 +310,12 @@ export default function ContractApplyForm() {
           <div className="flex items-center gap-10 overflow-x-auto pb-4 md:pb-0 scrollbar-hide">
             {steps.map((s, i) => (
               <div key={i} className="flex items-center gap-4 group">
-                <span className={`text-[10px] font-black tracking-[0.3em] transition-colors ${
-                  step >= i + 1 ? "text-primary" : "text-primary/20"
-                }`}>
+                <span className={`text-[10px] font-black tracking-[0.3em] transition-colors ${step >= i + 1 ? "text-primary" : "text-primary/20"
+                  }`}>
                   {String(i + 1).padStart(2, '0')}
                 </span>
-                <span className={`text-[10px] font-black tracking-[0.2em] transition-all whitespace-nowrap ${
-                  step === i + 1 ? "text-accent" : "text-primary/10"
-                }`}>
+                <span className={`text-[10px] font-black tracking-[0.2em] transition-all whitespace-nowrap ${step === i + 1 ? "text-accent" : "text-primary/10"
+                  }`}>
                   {s.title}
                 </span>
                 {i < steps.length - 1 && (
@@ -343,14 +341,14 @@ export default function ContractApplyForm() {
                 CLOSE
               </button>
               {!isReadOnly && (
-                <button 
+                <button
                   type="button"
                   onClick={() => saveDraft(formData, true)}
                   disabled={isSaving || isLoading}
                   className="flex items-center gap-2 px-6 py-3 bg-primary/5 hover:bg-accent hover:text-white rounded-full text-[10px] font-black tracking-[0.2em] uppercase transition-all group disabled:opacity-50"
                 >
                   {(isSaving || isLoading) ? (
-                    <Loader2 className="w-3 h-3 animate-spin"/>
+                    <Loader2 className="w-3 h-3 animate-spin" />
                   ) : (
                     <Save className="w-3 h-3 transition-transform group-hover:scale-110" />
                   )}
@@ -361,479 +359,477 @@ export default function ContractApplyForm() {
           )}
 
           {/* Editorial Background Element */}
-        {/* Editorial Background Element */}
-        {step < 5 && (
-          <span className="absolute -top-10 -right-10 text-[20vw] font-black text-primary/[0.02] select-none pointer-events-none">
-            {String(step).padStart(2, '0')}
-          </span>
-        )}
+          {/* Editorial Background Element */}
+          {step < 5 && (
+            <span className="absolute -top-10 -right-10 text-[20vw] font-black text-primary/[0.02] select-none pointer-events-none">
+              {String(step).padStart(2, '0')}
+            </span>
+          )}
 
-        <form onSubmit={handleSubmit}>
-          <AnimatePresence mode="wait">
-            {step === 1 && (
-              <motion.div
-                key="step1"
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -20 }}
-                transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-                className="space-y-12"
-              >
-                <div className="space-y-4">
-                  <span className="text-[10px] font-black uppercase tracking-[0.4em] text-accent">STEP 01</span>
-                  <h2 className="text-5xl font-black text-primary tracking-tighter uppercase leading-[0.85]">
-                    SELECT YOUR<br />SCHEDULE
-                  </h2>
-                  <p className="text-lg font-medium tracking-tight opacity-50 max-w-md">
-                    코끼리 하우스에서의 생활이 시작되는 시점과 기간을 선택해주세요.
-                  </p>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-12 pt-8">
-                  <div className="space-y-4">
-                    <label className="text-[10px] font-black tracking-[0.3em] uppercase text-primary/40 block">
-                      START DATE
-                    </label>
-                    <input
-                      type="date"
-                      name="desiredStartDate"
-                      value={formData.desiredStartDate}
-                      onChange={handleInputChange}
-                      required
-                      disabled={isReadOnly}
-                      className="w-full bg-primary/5 border-none p-6 rounded-2xl text-lg font-bold focus:ring-2 focus:ring-accent transition-all disabled:opacity-50"
-                    />
-                  </div>
-
-                  <div className="space-y-4">
-                    <label className="text-[10px] font-black tracking-[0.3em] uppercase text-primary/40 block">
-                      DURATION (MONTHS)
-                    </label>
-                    <select
-                      name="desiredDurationMonths"
-                      value={formData.desiredDurationMonths}
-                      onChange={handleInputChange}
-                      disabled={isReadOnly}
-                      className="w-full bg-primary/5 border-none p-6 rounded-2xl text-lg font-bold focus:ring-2 focus:ring-accent transition-all appearance-none disabled:opacity-50"
-                    >
-                      {[3, 6, 12, 24].map(m => (
-                        <option key={m} value={m}>{m} MONTHS</option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
-
-                <button 
-                  type="button" 
-                  onClick={nextStep}
-                  disabled={!formData.desiredStartDate}
-                  className="w-full py-8 bg-primary hover:bg-accent text-background rounded-full font-black tracking-[0.2em] transition-all flex justify-center items-center gap-4 disabled:opacity-20"
+          <form onSubmit={handleSubmit}>
+            <AnimatePresence mode="wait">
+              {step === 1 && (
+                <motion.div
+                  key="step1"
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -20 }}
+                  transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+                  className="space-y-12"
                 >
-                  PROCEED TO DETAILS <ChevronRight className="w-5 h-5" />
-                </button>
-              </motion.div>
-            )}
+                  <div className="space-y-4">
+                    <span className="text-[10px] font-black uppercase tracking-[0.4em] text-accent">STEP 01</span>
+                    <h2 className="text-5xl font-black text-primary tracking-tighter uppercase leading-[0.85]">
+                      SELECT YOUR<br />SCHEDULE
+                    </h2>
+                    <p className="text-lg font-medium tracking-tight opacity-50 max-w-md">
+                      코끼리 하우스에서의 생활이 시작되는 시점과 기간을 선택해주세요.
+                    </p>
+                  </div>
 
-            {step === 2 && (
-              <motion.div
-                key="step2"
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -20 }}
-                className="space-y-12"
-              >
-                <div className="space-y-4">
-                  <span className="text-[10px] font-black uppercase tracking-[0.4em] text-accent">STEP 02</span>
-                  <h2 className="text-5xl font-black text-primary tracking-tighter uppercase leading-[0.85]">
-                    RESIDENT<br />PROFILE
-                  </h2>
-                  <p className="text-lg font-medium tracking-tight opacity-50">
-                    우리는 거주자 한 분 한 분의 이야기를 소중히 생각합니다.
-                  </p>
-                </div>
-
-                {/* User Profile Info Card */}
-                {userProfile && (
-                  <div className="p-8 bg-primary/[0.03] rounded-[2rem] border border-primary/10 space-y-6">
-                    <div className="flex items-center gap-3 mb-2">
-                      <User className="w-5 h-5 text-accent" />
-                      <span className="text-[10px] font-black tracking-[0.3em] uppercase text-accent">MY INFORMATION</span>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-12 pt-8">
+                    <div className="space-y-4">
+                      <label className="text-[10px] font-black tracking-[0.3em] uppercase text-primary/40 block">
+                        START DATE
+                      </label>
+                      <input
+                        type="date"
+                        name="desiredStartDate"
+                        value={formData.desiredStartDate}
+                        onChange={handleInputChange}
+                        required
+                        disabled={isReadOnly}
+                        className="w-full bg-primary/5 border-none p-6 rounded-2xl text-lg font-bold focus:ring-2 focus:ring-accent transition-all disabled:opacity-50"
+                      />
                     </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      {[
-                        { label: "NAME", value: userProfile.name },
-                        { label: "PHONE", value: userProfile.phone },
-                        { label: "EMAIL", value: userProfile.email },
-                        { label: "GENDER", value: userProfile.gender === "MALE" ? "남성" : userProfile.gender === "FEMALE" ? "여성" : userProfile.gender },
-                        { label: "NATIONALITY", value: userProfile.nationality },
-                        { label: "BIRTH DATE", value: userProfile.birthDate },
-                      ].filter(item => item.value).map((item) => (
-                        <div key={item.label} className="space-y-1">
-                          <span className="text-[9px] font-black tracking-[0.3em] uppercase text-primary/30 block">{item.label}</span>
-                          <p className="text-sm font-bold tracking-tight text-primary">{item.value}</p>
-                        </div>
-                      ))}
+
+                    <div className="space-y-4">
+                      <label className="text-[10px] font-black tracking-[0.3em] uppercase text-primary/40 block">
+                        DURATION (MONTHS)
+                      </label>
+                      <select
+                        name="desiredDurationMonths"
+                        value={formData.desiredDurationMonths}
+                        onChange={handleInputChange}
+                        disabled={isReadOnly}
+                        className="w-full bg-primary/5 border-none p-6 rounded-2xl text-lg font-bold focus:ring-2 focus:ring-accent transition-all appearance-none disabled:opacity-50"
+                      >
+                        {[3, 6, 12, 24].map(m => (
+                          <option key={m} value={m}>{m} MONTHS</option>
+                        ))}
+                      </select>
                     </div>
                   </div>
-                )}
 
-                <div className="space-y-10 pt-4">
-                  <div className="space-y-4">
-                    <label className="text-[10px] font-black tracking-[0.3em] uppercase text-primary/40 block">
-                      CURRENT ADDRESS
-                    </label>
-                    <input
-                      type="text"
-                      name="address"
-                      value={formData.address}
-                      onChange={handleInputChange}
-                      disabled={isReadOnly}
-                      placeholder="심사용 서류에 기재될 현재 주소를 입력하세요."
-                      className="w-full bg-primary/5 border-none p-6 rounded-2xl text-lg font-bold focus:ring-2 focus:ring-accent transition-all disabled:opacity-50"
-                    />
-                  </div>
-
-                  <div className="space-y-4">
-                    <label className="text-[10px] font-black tracking-[0.3em] uppercase text-primary/40 block">
-                      USAGE PURPOSE
-                    </label>
-                    <input
-                      type="text"
-                      name="usagePurpose"
-                      value={formData.usagePurpose}
-                      onChange={handleInputChange}
-                      disabled={isReadOnly}
-                      placeholder="입주 목적을 간단히 적어주세요."
-                      className="w-full bg-primary/5 border-none p-6 rounded-2xl text-lg font-bold focus:ring-2 focus:ring-accent transition-all disabled:opacity-50"
-                    />
-                  </div>
-
-                  <div className="space-y-4">
-                    <label className="text-[10px] font-black tracking-[0.3em] uppercase text-primary/40 block">
-                      ADDITIONAL NOTES
-                    </label>
-                    <textarea
-                      name="requestNote"
-                      value={formData.requestNote}
-                      onChange={handleInputChange}
-                      rows={4}
-                      disabled={isReadOnly}
-                      className="w-full bg-primary/5 border-none p-6 rounded-2xl text-lg font-bold focus:ring-2 focus:ring-accent transition-all resize-none disabled:opacity-50"
-                    />
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <button type="button" onClick={prevStep} className="py-8 border-2 border-primary/10 text-primary rounded-full font-black tracking-[0.2em] transition-all hover:bg-primary/5">
-                    GO BACK
-                  </button>
-                  <button type="button" onClick={nextStep} className="py-8 bg-primary hover:bg-accent text-background rounded-full font-black tracking-[0.2em] transition-all">
-                    NEXT STEP
-                  </button>
-                </div>
-              </motion.div>
-            )}
-
-            {step === 3 && (
-              <motion.div
-                key="step3"
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -20 }}
-                className="space-y-12"
-              >
-                <div className="space-y-4">
-                  <span className="text-[10px] font-black uppercase tracking-[0.4em] text-accent">STEP 03</span>
-                  <h2 className="text-5xl font-black text-primary tracking-tighter uppercase leading-[0.85]">
-                    BILLING &<br />REFUND
-                  </h2>
-                </div>
-
-                <div className="p-8 bg-primary/5 rounded-[2rem] border-l-4 border-accent space-y-4">
-                  <p className="text-sm font-bold tracking-tight opacity-70">
-                    입력하신 계좌 정보는 입주 심사 승인 및 계약 진행 시 대조용으로 활용되며, 
-                    퇴거 시 보증금 반환 계좌로 우선 사용됩니다.
-                  </p>
-                </div>
-
-                <div className="space-y-4">
-                  <label className="text-[10px] font-black tracking-[0.3em] uppercase text-primary/40 block">
-                    BANK ACCOUNT INFO (보증금 반환 계좌)
-                  </label>
-                  <input
-                    type="text"
-                    name="bankAccount"
-                    value={formData.bankAccount}
-                    onChange={handleInputChange}
-                    disabled={isReadOnly}
-                    placeholder="은행명 및 계좌번호를 입력하세요."
-                    className="w-full bg-primary/5 border-none p-6 rounded-2xl text-lg font-bold focus:ring-2 focus:ring-accent transition-all disabled:opacity-50"
-                  />
-                </div>
-
-                {/* Payment Method Selection */}
-                <div className="space-y-6">
-                  <label className="text-[10px] font-black tracking-[0.3em] uppercase text-primary/40 block">
-                    PAYMENT METHOD (보증금 납부 방법)
-                  </label>
-                  <div className="grid grid-cols-2 gap-4">
-                    <button
-                      type="button"
-                      onClick={() => setPaymentMethod("card")}
-                      className={`p-6 rounded-2xl border-2 transition-all flex flex-col items-center gap-3 ${
-                        paymentMethod === "card"
-                          ? "border-accent bg-accent/10 shadow-lg shadow-accent/10"
-                          : "border-primary/10 hover:border-accent/40 bg-primary/[0.02]"
-                      }`}
-                    >
-                      <CreditCard className={`w-8 h-8 ${paymentMethod === "card" ? "text-accent" : "text-primary/40"}`} />
-                      <span className="text-[10px] font-black tracking-[0.2em] uppercase">CREDIT CARD</span>
-                      <span className="text-[9px] font-bold tracking-tight opacity-50">신용/체크카드 결제</span>
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setPaymentMethod("transfer");
-                        // Generate virtual account
-                        const banks = ["국민은행", "신한은행", "하나은행", "우리은행", "농협은행"];
-                        const bank = banks[Math.floor(Math.random() * banks.length)];
-                        const acct = `${Math.floor(100 + Math.random() * 900)}-${Math.floor(100000 + Math.random() * 900000)}-${Math.floor(10000 + Math.random() * 90000)}`;
-                        setVirtualAccount({ bank, account: acct, holder: "㈜코끼리" });
-                      }}
-                      className={`p-6 rounded-2xl border-2 transition-all flex flex-col items-center gap-3 ${
-                        paymentMethod === "transfer"
-                          ? "border-accent bg-accent/10 shadow-lg shadow-accent/10"
-                          : "border-primary/10 hover:border-accent/40 bg-primary/[0.02]"
-                      }`}
-                    >
-                      <Building className={`w-8 h-8 ${paymentMethod === "transfer" ? "text-accent" : "text-primary/40"}`} />
-                      <span className="text-[10px] font-black tracking-[0.2em] uppercase">BANK TRANSFER</span>
-                      <span className="text-[9px] font-bold tracking-tight opacity-50">가상계좌 이체</span>
-                    </button>
-                  </div>
-                </div>
-
-                {/* Credit Card Payment via PortOne */}
-                <AnimatePresence mode="wait">
-                  {paymentMethod === "card" && !paymentComplete && (
-                    <motion.div
-                      key="card-form"
-                      initial={{ opacity: 0, height: 0 }}
-                      animate={{ opacity: 1, height: "auto" }}
-                      exit={{ opacity: 0, height: 0 }}
-                      className="overflow-hidden"
-                    >
-                      <div className="p-8 bg-white rounded-[2rem] border border-primary/10 shadow-xl space-y-6">
-                        <div className="flex items-center gap-3">
-                          <CreditCard className="w-5 h-5 text-accent" />
-                          <span className="text-[10px] font-black tracking-[0.3em] uppercase text-accent">CARD PAYMENT</span>
-                        </div>
-
-                        <div className="p-6 bg-accent/5 rounded-2xl space-y-3">
-                          <div className="flex items-center justify-between">
-                            <span className="text-[10px] font-black tracking-[0.2em] uppercase text-primary/40">결제 금액</span>
-                            <span className="text-2xl font-black tracking-tight text-primary">₩1,000</span>
-                          </div>
-                          <p className="text-[10px] font-bold tracking-tight opacity-50">
-                            테스트 결제 금액입니다. 실제 보증금은 계약 승인 후 별도 안내됩니다.
-                          </p>
-                        </div>
-
-                        <button
-                          type="button"
-                          disabled={isPaymentProcessing}
-                          onClick={handlePortoneCardPayment}
-                          className="w-full py-6 bg-accent text-white rounded-2xl text-[10px] font-black tracking-[0.2em] uppercase transition-all hover:bg-primary disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center gap-3 shadow-xl shadow-accent/20"
-                        >
-                          {isPaymentProcessing ? (
-                            <><Loader2 className="w-4 h-4 animate-spin" /> PROCESSING PAYMENT...</>
-                          ) : (
-                            <><CreditCard className="w-5 h-5" /> PAY WITH CARD</>
-                          )}
-                        </button>
-
-                        <p className="text-[9px] font-bold tracking-tight text-center opacity-40">
-                          포트원(PortOne) 보안 결제창으로 이동합니다. 카드 정보는 안전하게 처리됩니다.
-                        </p>
-                      </div>
-                    </motion.div>
-                  )}
-
-                  {/* Virtual Account Info */}
-                  {paymentMethod === "transfer" && virtualAccount && !paymentComplete && (
-                    <motion.div
-                      key="transfer-info"
-                      initial={{ opacity: 0, height: 0 }}
-                      animate={{ opacity: 1, height: "auto" }}
-                      exit={{ opacity: 0, height: 0 }}
-                      className="overflow-hidden"
-                    >
-                      <div className="p-8 bg-white rounded-[2rem] border border-primary/10 shadow-xl space-y-6">
-                        <div className="flex items-center gap-3">
-                          <Building className="w-5 h-5 text-accent" />
-                          <span className="text-[10px] font-black tracking-[0.3em] uppercase text-accent">VIRTUAL ACCOUNT</span>
-                        </div>
-
-                        <div className="bg-accent/5 p-6 rounded-2xl space-y-4">
-                          {[
-                            { label: "은행", value: virtualAccount.bank },
-                            { label: "계좌번호", value: virtualAccount.account },
-                            { label: "예금주", value: virtualAccount.holder },
-                            { label: "입금 기한", value: (() => { const d = new Date(); d.setDate(d.getDate() + 3); return d.toLocaleDateString("ko-KR", { year: "numeric", month: "long", day: "numeric" }) + " 23:59까지"; })() },
-                          ].map((item) => (
-                            <div key={item.label} className="flex items-center justify-between">
-                              <span className="text-[10px] font-black tracking-[0.2em] uppercase text-primary/40">{item.label}</span>
-                              <span className="text-sm font-black tracking-tight text-primary">{item.value}</span>
-                            </div>
-                          ))}
-                        </div>
-
-                        <div className="p-4 bg-orange-50 rounded-xl border border-orange-100">
-                          <p className="text-[10px] font-bold text-orange-700 tracking-tight leading-relaxed">
-                            ⚠️ 위 가상계좌로 보증금을 입금해주세요. 기한 내 미입금 시 계좌가 만료됩니다. 
-                            입금 확인 후 자동으로 결제 완료 처리됩니다.
-                          </p>
-                        </div>
-
-                        <button
-                          type="button"
-                          onClick={() => setPaymentComplete(true)}
-                          className="w-full py-5 bg-accent text-white rounded-2xl text-[10px] font-black tracking-[0.2em] uppercase transition-all hover:bg-primary flex items-center justify-center gap-3"
-                        >
-                          <CheckCircle2 className="w-4 h-4" /> CONFIRM TRANSFER COMPLETE
-                        </button>
-                      </div>
-                    </motion.div>
-                  )}
-
-                  {/* Payment Complete */}
-                  {paymentComplete && (
-                    <motion.div
-                      key="payment-done"
-                      initial={{ opacity: 0, scale: 0.95 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      className="p-8 bg-accent/10 rounded-[2rem] border border-accent/20 text-center space-y-4"
-                    >
-                      <CheckCircle2 className="w-12 h-12 text-accent mx-auto" />
-                      <h3 className="text-lg font-black tracking-tighter uppercase">Payment Confirmed</h3>
-                      <p className="text-sm font-bold tracking-tight opacity-60">
-                        {paymentMethod === "card" ? "카드 결제가 완료되었습니다." : "입금 확인이 완료되었습니다."}
-                      </p>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <button type="button" onClick={prevStep} className="py-8 border-2 border-primary/10 text-primary rounded-full font-black tracking-[0.2em] transition-all hover:bg-primary/5">
-                    GO BACK
-                  </button>
-                  <button type="button" onClick={nextStep} disabled={!formData.bankAccount} className="py-8 bg-primary hover:bg-accent text-background rounded-full font-black tracking-[0.2em] transition-all disabled:opacity-20">
-                    NEXT STEP
-                  </button>
-                </div>
-              </motion.div>
-            )}
-
-            {step === 4 && (
-              <motion.div
-                key="step4"
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -20 }}
-                className="space-y-12"
-              >
-                <div className="space-y-4">
-                  <span className="text-[10px] font-black uppercase tracking-[0.4em] text-accent">FINAL STEP</span>
-                  <h2 className="text-5xl font-black text-primary tracking-tighter uppercase leading-[0.85]">
-                    REVIEW &<br />SUBMIT
-                  </h2>
-                </div>
-
-                <div className="space-y-4 pt-4">
-                  <label className="flex items-center gap-6 p-8 bg-primary/5 rounded-[2rem] cursor-pointer group transition-all hover:bg-primary/10">
-                    <input 
-                      type="checkbox" 
-                      name="privacyAgreed" 
-                      checked={formData.privacyAgreed}
-                      onChange={handleInputChange}
-                      disabled={isReadOnly}
-                      className="w-8 h-8 rounded-full border-primary/20 text-accent focus:ring-0 disabled:opacity-50" 
-                    />
-                    <span className="text-[10px] font-black tracking-[0.3em] uppercase">개인정보 수집 및 이용 동의 (필수)</span>
-                  </label>
-                  <label className="flex items-center gap-6 p-8 bg-primary/5 rounded-[2rem] cursor-pointer group transition-all hover:bg-primary/10">
-                    <input 
-                      type="checkbox" 
-                      name="termsAgreed" 
-                      checked={formData.termsAgreed}
-                      onChange={handleInputChange}
-                      disabled={isReadOnly}
-                      className="w-8 h-8 rounded-full border-primary/20 text-accent focus:ring-0 disabled:opacity-50" 
-                    />
-                    <span className="text-[10px] font-black tracking-[0.3em] uppercase">주의사항 확인 및 입주 서약 (필수)</span>
-                  </label>
-                </div>
-
-                {error && (
-                  <div className="p-6 bg-rose-50 text-rose-600 text-[10px] font-black tracking-[0.2em] rounded-2xl flex items-center gap-4">
-                    <AlertCircle className="w-5 h-5" /> {error.toUpperCase()}
-                  </div>
-                )}
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <button type="button" onClick={prevStep} className="py-8 border-2 border-primary/10 text-primary rounded-full font-black tracking-[0.2em] transition-all hover:bg-primary/5">
-                    GO BACK
-                  </button>
-                  <button 
-                    type="submit"
-                    disabled={isReadOnly || isSubmitting || !formData.privacyAgreed || !formData.termsAgreed}
-                    className="py-8 bg-primary text-background rounded-full font-black tracking-[0.2em] flex justify-center items-center gap-4 hover:bg-accent transition-all disabled:opacity-20"
+                  <button
+                    type="button"
+                    onClick={nextStep}
+                    disabled={!formData.desiredStartDate}
+                    className="w-full py-8 bg-primary hover:bg-accent text-background rounded-full font-black tracking-[0.2em] transition-all flex justify-center items-center gap-4 disabled:opacity-20"
                   >
-                    {isSubmitting ? <Loader2 className="w-6 h-6 animate-spin" /> : 
-                     isReadOnly ? <><ShieldCheck className="w-5 h-5" /> ALREADY SUBMITTED</> : 
-                     <>SUBMIT APPLICATION <Send className="w-5 h-5" /></>}
+                    PROCEED TO DETAILS <ChevronRight className="w-5 h-5" />
                   </button>
-                </div>
-              </motion.div>
-            )}
+                </motion.div>
+              )}
 
-            {step === 5 && (
-              <motion.div
-                key="success"
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                className="py-20 flex flex-col items-center text-center space-y-12"
-              >
-                <div className="w-40 h-40 bg-accent/10 rounded-full flex items-center justify-center">
-                  <CheckCircle2 className="w-20 h-20 text-accent" />
-                </div>
-                
-                <div className="space-y-6">
-                  <h2 className="text-5xl font-black text-primary tracking-tighter uppercase leading-[0.85]">
-                    SUCCESSFULLY<br />SUBMITTED
-                  </h2>
-                  <p className="text-xl font-medium tracking-tight opacity-50 max-w-sm mx-auto whitespace-pre-wrap">
-                    심사 결과는 1-2일 내로 전달됩니다.{"\n"}대시보드에서 상태를 확인하세요.
-                  </p>
-                </div>
-
-                <Link 
-                  href="/my-contracts"
-                  className="px-16 py-8 bg-primary text-background rounded-full font-black tracking-[0.2em] uppercase transition-all hover:scale-105 shadow-2xl shadow-primary/20"
+              {step === 2 && (
+                <motion.div
+                  key="step2"
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -20 }}
+                  className="space-y-12"
                 >
-                  GO TO DASHBOARD
-                </Link>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </form>
+                  <div className="space-y-4">
+                    <span className="text-[10px] font-black uppercase tracking-[0.4em] text-accent">STEP 02</span>
+                    <h2 className="text-5xl font-black text-primary tracking-tighter uppercase leading-[0.85]">
+                      RESIDENT<br />PROFILE
+                    </h2>
+                    <p className="text-lg font-medium tracking-tight opacity-50">
+                      우리는 거주자 한 분 한 분의 이야기를 소중히 생각합니다.
+                    </p>
+                  </div>
+
+                  {/* User Profile Info Card */}
+                  {userProfile && (
+                    <div className="p-8 bg-primary/[0.03] rounded-[2rem] border border-primary/10 space-y-6">
+                      <div className="flex items-center gap-3 mb-2">
+                        <User className="w-5 h-5 text-accent" />
+                        <span className="text-[10px] font-black tracking-[0.3em] uppercase text-accent">MY INFORMATION</span>
+                      </div>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        {[
+                          { label: "NAME", value: userProfile.name },
+                          { label: "PHONE", value: userProfile.phone },
+                          { label: "EMAIL", value: userProfile.email },
+                          { label: "GENDER", value: userProfile.gender === "MALE" ? "남성" : userProfile.gender === "FEMALE" ? "여성" : userProfile.gender },
+                          { label: "NATIONALITY", value: userProfile.nationality },
+                          { label: "BIRTH DATE", value: userProfile.birthDate },
+                        ].filter(item => item.value).map((item) => (
+                          <div key={item.label} className="space-y-1">
+                            <span className="text-[9px] font-black tracking-[0.3em] uppercase text-primary/30 block">{item.label}</span>
+                            <p className="text-sm font-bold tracking-tight text-primary">{item.value}</p>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="space-y-10 pt-4">
+                    <div className="space-y-4">
+                      <label className="text-[10px] font-black tracking-[0.3em] uppercase text-primary/40 block">
+                        CURRENT ADDRESS
+                      </label>
+                      <input
+                        type="text"
+                        name="address"
+                        value={formData.address}
+                        onChange={handleInputChange}
+                        disabled={isReadOnly}
+                        placeholder="심사용 서류에 기재될 현재 주소를 입력하세요."
+                        className="w-full bg-primary/5 border-none p-6 rounded-2xl text-lg font-bold focus:ring-2 focus:ring-accent transition-all disabled:opacity-50"
+                      />
+                    </div>
+
+                    <div className="space-y-4">
+                      <label className="text-[10px] font-black tracking-[0.3em] uppercase text-primary/40 block">
+                        USAGE PURPOSE
+                      </label>
+                      <input
+                        type="text"
+                        name="usagePurpose"
+                        value={formData.usagePurpose}
+                        onChange={handleInputChange}
+                        disabled={isReadOnly}
+                        placeholder="입주 목적을 간단히 적어주세요."
+                        className="w-full bg-primary/5 border-none p-6 rounded-2xl text-lg font-bold focus:ring-2 focus:ring-accent transition-all disabled:opacity-50"
+                      />
+                    </div>
+
+                    <div className="space-y-4">
+                      <label className="text-[10px] font-black tracking-[0.3em] uppercase text-primary/40 block">
+                        ADDITIONAL NOTES
+                      </label>
+                      <textarea
+                        name="requestNote"
+                        value={formData.requestNote}
+                        onChange={handleInputChange}
+                        rows={4}
+                        disabled={isReadOnly}
+                        className="w-full bg-primary/5 border-none p-6 rounded-2xl text-lg font-bold focus:ring-2 focus:ring-accent transition-all resize-none disabled:opacity-50"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <button type="button" onClick={prevStep} className="py-8 border-2 border-primary/10 text-primary rounded-full font-black tracking-[0.2em] transition-all hover:bg-primary/5">
+                      GO BACK
+                    </button>
+                    <button type="button" onClick={nextStep} className="py-8 bg-primary hover:bg-accent text-background rounded-full font-black tracking-[0.2em] transition-all">
+                      NEXT STEP
+                    </button>
+                  </div>
+                </motion.div>
+              )}
+
+              {step === 3 && (
+                <motion.div
+                  key="step3"
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -20 }}
+                  className="space-y-12"
+                >
+                  <div className="space-y-4">
+                    <span className="text-[10px] font-black uppercase tracking-[0.4em] text-accent">STEP 03</span>
+                    <h2 className="text-5xl font-black text-primary tracking-tighter uppercase leading-[0.85]">
+                      BILLING &<br />REFUND
+                    </h2>
+                  </div>
+
+                  <div className="p-8 bg-primary/5 rounded-[2rem] border-l-4 border-accent space-y-4">
+                    <p className="text-sm font-bold tracking-tight opacity-70">
+                      입력하신 계좌 정보는 입주 심사 승인 및 계약 진행 시 대조용으로 활용되며,
+                      퇴거 시 보증금 반환 계좌로 우선 사용됩니다.
+                    </p>
+                  </div>
+
+                  <div className="space-y-4">
+                    <label className="text-[10px] font-black tracking-[0.3em] uppercase text-primary/40 block">
+                      BANK ACCOUNT INFO (보증금 반환 계좌)
+                    </label>
+                    <input
+                      type="text"
+                      name="bankAccount"
+                      value={formData.bankAccount}
+                      onChange={handleInputChange}
+                      disabled={isReadOnly}
+                      placeholder="은행명 및 계좌번호를 입력하세요."
+                      className="w-full bg-primary/5 border-none p-6 rounded-2xl text-lg font-bold focus:ring-2 focus:ring-accent transition-all disabled:opacity-50"
+                    />
+                  </div>
+
+                  {/* Payment Method Selection */}
+                  <div className="space-y-6">
+                    <label className="text-[10px] font-black tracking-[0.3em] uppercase text-primary/40 block">
+                      PAYMENT METHOD (보증금 납부 방법)
+                    </label>
+                    <div className="grid grid-cols-2 gap-4">
+                      <button
+                        type="button"
+                        onClick={() => setPaymentMethod("card")}
+                        className={`p-6 rounded-2xl border-2 transition-all flex flex-col items-center gap-3 ${paymentMethod === "card"
+                            ? "border-accent bg-accent/10 shadow-lg shadow-accent/10"
+                            : "border-primary/10 hover:border-accent/40 bg-primary/[0.02]"
+                          }`}
+                      >
+                        <CreditCard className={`w-8 h-8 ${paymentMethod === "card" ? "text-accent" : "text-primary/40"}`} />
+                        <span className="text-[10px] font-black tracking-[0.2em] uppercase">CREDIT CARD</span>
+                        <span className="text-[9px] font-bold tracking-tight opacity-50">신용/체크카드 결제</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setPaymentMethod("transfer");
+                          // Generate virtual account
+                          const banks = ["국민은행", "신한은행", "하나은행", "우리은행", "농협은행"];
+                          const bank = banks[Math.floor(Math.random() * banks.length)];
+                          const acct = `${Math.floor(100 + Math.random() * 900)}-${Math.floor(100000 + Math.random() * 900000)}-${Math.floor(10000 + Math.random() * 90000)}`;
+                          setVirtualAccount({ bank, account: acct, holder: "㈜코끼리" });
+                        }}
+                        className={`p-6 rounded-2xl border-2 transition-all flex flex-col items-center gap-3 ${paymentMethod === "transfer"
+                            ? "border-accent bg-accent/10 shadow-lg shadow-accent/10"
+                            : "border-primary/10 hover:border-accent/40 bg-primary/[0.02]"
+                          }`}
+                      >
+                        <Building className={`w-8 h-8 ${paymentMethod === "transfer" ? "text-accent" : "text-primary/40"}`} />
+                        <span className="text-[10px] font-black tracking-[0.2em] uppercase">BANK TRANSFER</span>
+                        <span className="text-[9px] font-bold tracking-tight opacity-50">가상계좌 이체</span>
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Credit Card Payment via PortOne */}
+                  <AnimatePresence mode="wait">
+                    {paymentMethod === "card" && !paymentComplete && (
+                      <motion.div
+                        key="card-form"
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: "auto" }}
+                        exit={{ opacity: 0, height: 0 }}
+                        className="overflow-hidden"
+                      >
+                        <div className="p-8 bg-white rounded-[2rem] border border-primary/10 shadow-xl space-y-6">
+                          <div className="flex items-center gap-3">
+                            <CreditCard className="w-5 h-5 text-accent" />
+                            <span className="text-[10px] font-black tracking-[0.3em] uppercase text-accent">CARD PAYMENT</span>
+                          </div>
+
+                          <div className="p-6 bg-accent/5 rounded-2xl space-y-3">
+                            <div className="flex items-center justify-between">
+                              <span className="text-[10px] font-black tracking-[0.2em] uppercase text-primary/40">결제 금액</span>
+                              <span className="text-2xl font-black tracking-tight text-primary">₩1,000</span>
+                            </div>
+                            <p className="text-[10px] font-bold tracking-tight opacity-50">
+                              테스트 결제 금액입니다. 실제 보증금은 계약 승인 후 별도 안내됩니다.
+                            </p>
+                          </div>
+
+                          <button
+                            type="button"
+                            disabled={isPaymentProcessing}
+                            onClick={handlePortoneCardPayment}
+                            className="w-full py-6 bg-accent text-white rounded-2xl text-[10px] font-black tracking-[0.2em] uppercase transition-all hover:bg-primary disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center gap-3 shadow-xl shadow-accent/20"
+                          >
+                            {isPaymentProcessing ? (
+                              <><Loader2 className="w-4 h-4 animate-spin" /> PROCESSING PAYMENT...</>
+                            ) : (
+                              <><CreditCard className="w-5 h-5" /> PAY WITH CARD</>
+                            )}
+                          </button>
+
+                          <p className="text-[9px] font-bold tracking-tight text-center opacity-40">
+                            포트원(PortOne) 보안 결제창으로 이동합니다. 카드 정보는 안전하게 처리됩니다.
+                          </p>
+                        </div>
+                      </motion.div>
+                    )}
+
+                    {/* Virtual Account Info */}
+                    {paymentMethod === "transfer" && virtualAccount && !paymentComplete && (
+                      <motion.div
+                        key="transfer-info"
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: "auto" }}
+                        exit={{ opacity: 0, height: 0 }}
+                        className="overflow-hidden"
+                      >
+                        <div className="p-8 bg-white rounded-[2rem] border border-primary/10 shadow-xl space-y-6">
+                          <div className="flex items-center gap-3">
+                            <Building className="w-5 h-5 text-accent" />
+                            <span className="text-[10px] font-black tracking-[0.3em] uppercase text-accent">VIRTUAL ACCOUNT</span>
+                          </div>
+
+                          <div className="bg-accent/5 p-6 rounded-2xl space-y-4">
+                            {[
+                              { label: "은행", value: virtualAccount.bank },
+                              { label: "계좌번호", value: virtualAccount.account },
+                              { label: "예금주", value: virtualAccount.holder },
+                              { label: "입금 기한", value: (() => { const d = new Date(); d.setDate(d.getDate() + 3); return d.toLocaleDateString("ko-KR", { year: "numeric", month: "long", day: "numeric" }) + " 23:59까지"; })() },
+                            ].map((item) => (
+                              <div key={item.label} className="flex items-center justify-between">
+                                <span className="text-[10px] font-black tracking-[0.2em] uppercase text-primary/40">{item.label}</span>
+                                <span className="text-sm font-black tracking-tight text-primary">{item.value}</span>
+                              </div>
+                            ))}
+                          </div>
+
+                          <div className="p-4 bg-orange-50 rounded-xl border border-orange-100">
+                            <p className="text-[10px] font-bold text-orange-700 tracking-tight leading-relaxed">
+                              ⚠️ 위 가상계좌로 보증금을 입금해주세요. 기한 내 미입금 시 계좌가 만료됩니다.
+                              입금 확인 후 자동으로 결제 완료 처리됩니다.
+                            </p>
+                          </div>
+
+                          <button
+                            type="button"
+                            onClick={() => setPaymentComplete(true)}
+                            className="w-full py-5 bg-accent text-white rounded-2xl text-[10px] font-black tracking-[0.2em] uppercase transition-all hover:bg-primary flex items-center justify-center gap-3"
+                          >
+                            <CheckCircle2 className="w-4 h-4" /> CONFIRM TRANSFER COMPLETE
+                          </button>
+                        </div>
+                      </motion.div>
+                    )}
+
+                    {/* Payment Complete */}
+                    {paymentComplete && (
+                      <motion.div
+                        key="payment-done"
+                        initial={{ opacity: 0, scale: 0.95 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        className="p-8 bg-accent/10 rounded-[2rem] border border-accent/20 text-center space-y-4"
+                      >
+                        <CheckCircle2 className="w-12 h-12 text-accent mx-auto" />
+                        <h3 className="text-lg font-black tracking-tighter uppercase">Payment Confirmed</h3>
+                        <p className="text-sm font-bold tracking-tight opacity-60">
+                          {paymentMethod === "card" ? "카드 결제가 완료되었습니다." : "입금 확인이 완료되었습니다."}
+                        </p>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <button type="button" onClick={prevStep} className="py-8 border-2 border-primary/10 text-primary rounded-full font-black tracking-[0.2em] transition-all hover:bg-primary/5">
+                      GO BACK
+                    </button>
+                    <button type="button" onClick={nextStep} disabled={!formData.bankAccount} className="py-8 bg-primary hover:bg-accent text-background rounded-full font-black tracking-[0.2em] transition-all disabled:opacity-20">
+                      NEXT STEP
+                    </button>
+                  </div>
+                </motion.div>
+              )}
+
+              {step === 4 && (
+                <motion.div
+                  key="step4"
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -20 }}
+                  className="space-y-12"
+                >
+                  <div className="space-y-4">
+                    <span className="text-[10px] font-black uppercase tracking-[0.4em] text-accent">FINAL STEP</span>
+                    <h2 className="text-5xl font-black text-primary tracking-tighter uppercase leading-[0.85]">
+                      REVIEW &<br />SUBMIT
+                    </h2>
+                  </div>
+
+                  <div className="space-y-4 pt-4">
+                    <label className="flex items-center gap-6 p-8 bg-primary/5 rounded-[2rem] cursor-pointer group transition-all hover:bg-primary/10">
+                      <input
+                        type="checkbox"
+                        name="privacyAgreed"
+                        checked={formData.privacyAgreed}
+                        onChange={handleInputChange}
+                        disabled={isReadOnly}
+                        className="w-8 h-8 rounded-full border-primary/20 text-accent focus:ring-0 disabled:opacity-50"
+                      />
+                      <span className="text-[10px] font-black tracking-[0.3em] uppercase">개인정보 수집 및 이용 동의 (필수)</span>
+                    </label>
+                    <label className="flex items-center gap-6 p-8 bg-primary/5 rounded-[2rem] cursor-pointer group transition-all hover:bg-primary/10">
+                      <input
+                        type="checkbox"
+                        name="termsAgreed"
+                        checked={formData.termsAgreed}
+                        onChange={handleInputChange}
+                        disabled={isReadOnly}
+                        className="w-8 h-8 rounded-full border-primary/20 text-accent focus:ring-0 disabled:opacity-50"
+                      />
+                      <span className="text-[10px] font-black tracking-[0.3em] uppercase">주의사항 확인 및 입주 서약 (필수)</span>
+                    </label>
+                  </div>
+
+                  {error && (
+                    <div className="p-6 bg-rose-50 text-rose-600 text-[10px] font-black tracking-[0.2em] rounded-2xl flex items-center gap-4">
+                      <AlertCircle className="w-5 h-5" /> {error.toUpperCase()}
+                    </div>
+                  )}
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <button type="button" onClick={prevStep} className="py-8 border-2 border-primary/10 text-primary rounded-full font-black tracking-[0.2em] transition-all hover:bg-primary/5">
+                      GO BACK
+                    </button>
+                    <button
+                      type="submit"
+                      disabled={isReadOnly || isSubmitting || !formData.privacyAgreed || !formData.termsAgreed}
+                      className="py-8 bg-primary text-background rounded-full font-black tracking-[0.2em] flex justify-center items-center gap-4 hover:bg-accent transition-all disabled:opacity-20"
+                    >
+                      {isSubmitting ? <Loader2 className="w-6 h-6 animate-spin" /> :
+                        isReadOnly ? <><ShieldCheck className="w-5 h-5" /> ALREADY SUBMITTED</> :
+                          <>SUBMIT APPLICATION <Send className="w-5 h-5" /></>}
+                    </button>
+                  </div>
+                </motion.div>
+              )}
+
+              {step === 5 && (
+                <motion.div
+                  key="success"
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  className="py-20 flex flex-col items-center text-center space-y-12"
+                >
+                  <div className="w-40 h-40 bg-accent/10 rounded-full flex items-center justify-center">
+                    <CheckCircle2 className="w-20 h-20 text-accent" />
+                  </div>
+
+                  <div className="space-y-6">
+                    <h2 className="text-5xl font-black text-primary tracking-tighter uppercase leading-[0.85]">
+                      SUCCESSFULLY<br />SUBMITTED
+                    </h2>
+                    <p className="text-xl font-medium tracking-tight opacity-50 max-w-sm mx-auto whitespace-pre-wrap">
+                      심사 결과는 1-2일 내로 전달됩니다.{"\n"}대시보드에서 상태를 확인하세요.
+                    </p>
+                  </div>
+
+                  <Link
+                    href="/my-contracts"
+                    className="px-16 py-8 bg-primary text-background rounded-full font-black tracking-[0.2em] uppercase transition-all hover:scale-105 shadow-2xl shadow-primary/20"
+                  >
+                    GO TO DASHBOARD
+                  </Link>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </form>
         </div>
       </div>
 
       {/* Premium Toast Component */}
       <AnimatePresence>
         {showToast && (
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, y: 100 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.9 }}
