@@ -8,12 +8,16 @@ interface GridCanvasProps {
   config?: LayoutConfig;
   children: React.ReactNode;
   onCellSizeChange: (cellSize: number) => void;
+  blueprintUrl?: string | null;
+  blueprintOpacity?: number;
 }
 
 export function GridCanvas({
   config = DEFAULT_LAYOUT,
   children,
   onCellSizeChange,
+  blueprintUrl,
+  blueprintOpacity = 0.3,
 }: GridCanvasProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [cellSize, setCellSize] = useState(0);
@@ -54,11 +58,26 @@ export function GridCanvas({
         backgroundColor: 'var(--background)',
       }}
     >
+      {/* 백그라운드 이미지 레이어 (격자 뒤) */}
+      {blueprintUrl && (
+        <div
+          className="absolute inset-0 z-0 pointer-events-none bg-center bg-no-repeat bg-contain"
+          style={{
+            backgroundImage: `url(${blueprintUrl})`,
+            opacity: blueprintOpacity,
+          }}
+        />
+      )}
+
       {/* 격자 라벨 (좌상단) */}
       <div className="absolute top-3 left-4 text-[9px] font-black uppercase tracking-[0.2em] opacity-20 select-none pointer-events-none z-10">
         {config.columns}×{config.rows} GRID
       </div>
-      {children}
+      
+      {/* 칠드런 레이어 (블록, 어노테이션 등) */}
+      <div className="relative z-20 w-full h-full pointer-events-auto">
+        {children}
+      </div>
     </div>
   );
 }

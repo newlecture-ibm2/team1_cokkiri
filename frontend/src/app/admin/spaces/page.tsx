@@ -5,11 +5,12 @@ import { fetchSpaces, SpaceDTO } from './_api/spaceAdminApi';
 import SpaceCreateModal from './_components/SpaceCreateModal';
 import SpaceEditModal from './_components/SpaceEditModal';
 import RoomTypeManager from './_components/RoomTypeManager';
+import AnnotationTypeManager from './_components/AnnotationTypeManager';
 import { FloorPlanEditor } from './_components/floor-plan/FloorPlanEditor';
 import { motion } from 'framer-motion';
-import { Plus, Pencil, LayoutGrid, Tag, Map } from 'lucide-react';
+import { Plus, Pencil, LayoutGrid, Tag, Map, Shapes } from 'lucide-react';
 
-type Tab = 'spaces' | 'room-types' | 'floor-plan';
+type Tab = 'spaces' | 'room-types' | 'floor-plan' | 'annotation-types';
 
 export default function SpacesPage() {
   const [activeTab, setActiveTab] = useState<Tab>('spaces');
@@ -54,6 +55,7 @@ export default function SpacesPage() {
     { key: 'spaces', label: '공간 관리', icon: <LayoutGrid size={16} /> },
     { key: 'room-types', label: '방 유형 관리', icon: <Tag size={16} /> },
     { key: 'floor-plan', label: '배치 관리', icon: <Map size={16} /> },
+    { key: 'annotation-types', label: '배치 요소 관리', icon: <Shapes size={16} /> },
   ];
 
   return (
@@ -184,6 +186,11 @@ export default function SpacesPage() {
       {/* 배치 관리 탭 */}
       {activeTab === 'floor-plan' && (
         <FloorPlanEditor />
+      )}
+
+      {/* 배치 요소 관리 탭 */}
+      {activeTab === 'annotation-types' && (
+        <AnnotationTypeManager />
       )}
 
       {/* 생성 모달 */}

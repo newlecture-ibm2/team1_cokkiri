@@ -69,6 +69,9 @@ public class SecurityConfig {
                         // 게시글 본문(리치 텍스트)에 포함된 업로드 이미지 조회
                         .requestMatchers(HttpMethod.GET, "/api/files/community/**").permitAll()
 
+                        // --- 업로드 파일 정적 서빙 (배경 도면 등) ---
+                        .requestMatchers(HttpMethod.GET, "/api/uploads/**").permitAll()
+
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html").permitAll()
 
                         // --- 관리자 전용 ---
