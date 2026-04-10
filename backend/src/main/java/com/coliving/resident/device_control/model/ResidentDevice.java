@@ -11,6 +11,7 @@ public record ResidentDevice(
         Long spaceId,
         String spaceName,
         String spaceType,
+        Integer spaceFloor,
         String deviceTypeCode,
         String deviceTypeName,
         String deviceTypeUiType,

@@ -3,6 +3,7 @@ export interface MyDevice {
   spaceId: number;
   spaceName: string | null;
   spaceType: "PRIVATE" | "COMMON";
+  spaceFloor: number | null;
   deviceTypeCode: string;
   deviceTypeName: string;
   uiType: string;

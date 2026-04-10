@@ -1,5 +1,6 @@
 package com.coliving.admin.device.application.service;
 
+import com.coliving.admin.device.application.command.AdminDeviceListCommand;
 import com.coliving.admin.device.application.command.ControlAdminDeviceCommand;
 import com.coliving.admin.device.application.command.CreateAdminDeviceCommand;
 import com.coliving.admin.device.application.command.DeleteAdminDeviceCommand;
@@ -15,7 +16,7 @@ import com.coliving.admin.device.model.AdminDevice;
 import com.coliving.admin.device.model.DeviceStatus;
 import com.coliving.global.error.BusinessException;
 import com.coliving.global.error.ErrorCode;
-import com.coliving.infra.iot.MockIotClient;
+import com.coliving.infra.iot.IotClient;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -29,7 +30,7 @@ import java.util.List;
 public class AdminDeviceService implements CreateAdminDeviceUseCase, AdminDeviceUseCase {
 
     private final AdminDeviceRepositoryPort adminDeviceRepositoryPort;
-    private final MockIotClient mockIotClient;
+    private final IotClient iotClient;
 
     // ── 기기 등록 (Create) ──
 
@@ -49,6 +50,7 @@ public class AdminDeviceService implements CreateAdminDeviceUseCase, AdminDevice
         AdminDevice device = new AdminDevice(
                 null,
                 command.spaceId(),
+                null, null,   // spaceName, spaceFloor — PersistenceAdapter에서 채움
                 command.deviceTypeId(),
                 null, null,
                 command.name(),
@@ -70,6 +72,12 @@ public class AdminDeviceService implements CreateAdminDeviceUseCase, AdminDevice
     @Transactional(readOnly = true)
     public List<AdminDevice> getDeviceList() {
         return adminDeviceRepositoryPort.findAll();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<AdminDevice> getDeviceList(AdminDeviceListCommand command) {
+        return adminDeviceRepositoryPort.findAll(command);
     }
 
     // ── 기기 수정 (ADM-DEV-05) ──
@@ -97,6 +105,7 @@ public class AdminDeviceService implements CreateAdminDeviceUseCase, AdminDevice
     }
 
     // ── 활성/비활성 토글 (ADM-DEV-03) ──
+    // 비활성화 → status=OFFLINE 자동 설정 / 재활성화 → status=ONLINE 복원
 
     @Override
     @Transactional
@@ -105,6 +114,10 @@ public class AdminDeviceService implements CreateAdminDeviceUseCase, AdminDevice
                 .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND, "기기를 찾을 수 없습니다"));
 
         adminDeviceRepositoryPort.updateActive(command.deviceId(), command.isActive());
+
+        // 비활성화 시 OFFLINE, 재활성화 시 ONLINE으로 자동 전환
+        String newStatus = command.isActive() ? "ONLINE" : "OFFLINE";
+        adminDeviceRepositoryPort.updateStatus(command.deviceId(), newStatus);
 
         return adminDeviceRepositoryPort.findById(command.deviceId())
                 .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND));
@@ -179,7 +192,7 @@ public class AdminDeviceService implements CreateAdminDeviceUseCase, AdminDevice
         }
 
         // 4. MockIoT 제어 명령 전송
-        boolean success = mockIotClient.sendCommand(
+        boolean success = iotClient.sendCommand(
                 command.deviceId(), command.command(), command.params());
 
         // 5. CONTROL_LOG 감사 이력 기록 (성공/실패 모두 기록)
@@ -197,6 +210,10 @@ public class AdminDeviceService implements CreateAdminDeviceUseCase, AdminDevice
         if (!success) {
             throw new BusinessException(ErrorCode.IOT_COMMUNICATION_FAIL);
         }
+
+        // 6. 제어 성공 시 기기 current_state 업데이트
+        String newState = buildCurrentState(command.command(), command.params());
+        adminDeviceRepositoryPort.updateCurrentState(command.deviceId(), newState);
 
         return new ControlAdminDeviceResult(
                 command.deviceId(),
@@ -218,6 +235,45 @@ public class AdminDeviceService implements CreateAdminDeviceUseCase, AdminDevice
         if (!"PRIVATE".equals(spaceType)) {
             throw new BusinessException(ErrorCode.VALIDATION_ERROR,
                     "도어락(DOOR_LOCK)은 개인 공간(PRIVATE)에만 설치할 수 있습니다");
+        }
+    }
+
+    /**
+     * 제어 명령에 따른 current_state JSON 생성
+     */
+    private String buildCurrentState(String command, java.util.Map<String, Object> params) {
+        java.util.Map<String, Object> state = new java.util.HashMap<>();
+        switch (command) {
+            case "ON" -> state.put("power", "ON");
+            case "OFF" -> state.put("power", "OFF");
+            case "LOCK" -> state.put("power", "ON");
+            case "UNLOCK" -> state.put("power", "OFF");
+            case "START" -> state.put("power", "ON");
+            case "STOP" -> state.put("power", "OFF");
+            case "SET_TEMP" -> {
+                state.put("power", "ON");
+                if (params != null && params.containsKey("temperature")) {
+                    state.put("temperature", params.get("temperature"));
+                }
+            }
+            case "SET_BRIGHTNESS" -> {
+                state.put("power", "ON");
+                if (params != null && params.containsKey("brightness")) {
+                    state.put("brightness", params.get("brightness"));
+                }
+            }
+            case "SET_MODE" -> {
+                state.put("power", "ON");
+                if (params != null && params.containsKey("mode")) {
+                    state.put("mode", params.get("mode"));
+                }
+            }
+            default -> state.put("power", "ON");
+        }
+        try {
+            return new com.fasterxml.jackson.databind.ObjectMapper().writeValueAsString(state);
+        } catch (Exception e) {
+            return "{\"power\":\"ON\"}";
         }
     }
 }

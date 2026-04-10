@@ -7,6 +7,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.SQLRestriction;
 import org.hibernate.type.SqlTypes;
 
@@ -15,6 +16,7 @@ import org.hibernate.type.SqlTypes;
         name = "device_types",
         uniqueConstraints = {@UniqueConstraint(columnNames = "code")}
 )
+@SQLDelete(sql = "UPDATE device_types SET deleted_at = CURRENT_TIMESTAMP WHERE device_type_id = ?")
 @SQLRestriction("deleted_at IS NULL")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)

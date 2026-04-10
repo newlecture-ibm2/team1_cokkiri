@@ -1,5 +1,7 @@
 package com.coliving.admin.monitoring.application.port.out;
 
+import com.coliving.admin.monitoring.application.command.AdminControlLogListCommand;
+
 import java.util.List;
 
 public interface AdminMonitoringRepositoryPort {
@@ -15,4 +17,22 @@ public interface AdminMonitoringRepositoryPort {
 
     /** 일별 제어 빈도 (최근 30일) */
     List<Object[]> countDailyControl();
+
+    /** 관리자 제어 이력 목록 (페이징) */
+    List<Object[]> findControlLogs(AdminControlLogListCommand command);
+
+    /** 관리자 제어 이력 전체 건수 */
+    long countControlLogs(AdminControlLogListCommand command);
+
+    /** 공간 타입별(PRIVATE/COMMON) 제어 빈도 */
+    List<Object[]> countControlBySpaceType();
+
+    /** 명령(command)별 제어 빈도 */
+    List<Object[]> countControlByCommand();
+
+    /** 일별 에러(FAILURE) 빈도 (최근 30일) */
+    List<Object[]> countDailyErrors();
+
+    /** 공간별 기기 종류·상태 현황 (space_name, space_type, device_type_name, status, count) */
+    List<Object[]> findDeviceStatusBySpace();
 }

@@ -4,13 +4,13 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   fetchDevices,
-  updateDeviceStatus,
+  fetchSpaces,
   updateDeviceActive,
   deleteDevice,
   updateDevice,
   controlAdminDevice,
 } from "../_api";
-import type { AdminDevice, UpdateDeviceRequest } from "../_types";
+import type { AdminDevice, UpdateDeviceRequest, Space } from "../_types";
 import { ApiError } from "@/lib/api";
 
 /* ── 상수 ── */
@@ -54,7 +54,7 @@ export function DeviceListTable() {
     try {
       setLoading(true);
       const res = await fetchDevices();
-      setDevices(res.data ?? []);
+      setDevices(res.data?.content ?? []);
     } catch (err) {
       if (err instanceof ApiError) setError(err.message);
       else setError("기기 목록을 불러오지 못했습니다");
@@ -78,17 +78,7 @@ export function DeviceListTable() {
     }
   }, [success, error]);
 
-  const handleStatusChange = async (device: AdminDevice, newStatus: string) => {
-    try {
-      setError(null);
-      await updateDeviceStatus(device.deviceId, newStatus);
-      setSuccess(`"${device.name}" 상태가 변경되었습니다`);
-      loadDevices();
-    } catch (err) {
-      if (err instanceof ApiError) setError(err.message);
-      else setError("상태 변경에 실패했습니다");
-    }
-  };
+
 
   const handleActiveToggle = async (device: AdminDevice) => {
     try {
@@ -193,24 +183,26 @@ export function DeviceListTable() {
 
   return (
     <div className="space-y-4">
-      {/* 알림 */}
+      {/* 알림 — fixed position으로 레이아웃 밀림 방지 */}
       <AnimatePresence>
         {success && (
           <motion.div
-            initial={{ opacity: 0, y: -8 }}
+            initial={{ opacity: 0, y: -12 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0 }}
-            className="rounded-xl border border-secondary/40 bg-surface px-4 py-3 text-sm font-medium text-primary"
+            exit={{ opacity: 0, y: -8 }}
+            className="fixed top-4 left-1/2 -translate-x-1/2 z-50 rounded-xl border border-secondary/40
+              bg-background px-5 py-3 text-sm font-medium text-primary shadow-lg"
           >
             ✅ {success}
           </motion.div>
         )}
         {error && (
           <motion.div
-            initial={{ opacity: 0, y: -8 }}
+            initial={{ opacity: 0, y: -12 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0 }}
-            className="rounded-xl border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm font-medium text-destructive"
+            exit={{ opacity: 0, y: -8 }}
+            className="fixed top-4 left-1/2 -translate-x-1/2 z-50 rounded-xl border border-destructive/30
+              bg-background px-5 py-3 text-sm font-medium text-destructive shadow-lg"
           >
             ⚠️ {error}
           </motion.div>
@@ -250,12 +242,6 @@ export function DeviceListTable() {
                 </div>
               );
             })}
-            <div className="flex items-center gap-2 rounded-xl border border-border bg-surface px-4 py-2">
-              <span className="text-xs font-semibold text-muted-foreground">비활성</span>
-              <span className="text-xs font-black text-primary">
-                {devices.filter((d) => !d.isActive).length}
-              </span>
-            </div>
           </div>
 
           {/* 테이블 */}
@@ -271,7 +257,7 @@ export function DeviceListTable() {
                       종류
                     </th>
                     <th className="px-5 py-3 font-black text-[10px] uppercase tracking-[0.3em] text-muted-foreground">
-                      공간 ID
+                      설치 위치
                     </th>
                     <th className="px-5 py-3 font-black text-[10px] uppercase tracking-[0.3em] text-muted-foreground">
                       상태
@@ -337,27 +323,19 @@ export function DeviceListTable() {
                           </span>
                         </td>
 
-                        {/* 공간 ID */}
-                        <td className="px-5 py-3 font-mono text-xs text-primary">
-                          {device.spaceId}
+                        {/* 설치 공간 */}
+                        <td className="px-5 py-3 text-sm">
+                          <span className="font-semibold text-primary">{device.spaceName ?? "알 수 없음"}</span>
+                          <span className="ml-1 text-xs text-muted-foreground">({device.spaceFloor ?? "-"}층)</span>
                         </td>
 
-                        {/* 상태 드롭다운 */}
+                        {/* 상태 표시 (시스템 자동 관리) */}
                         <td className="px-5 py-3">
                           <div className="flex items-center gap-2">
                             <span className={`inline-block h-2 w-2 rounded-full ${badge.color}`} />
-                            <select
-                              value={device.status}
-                              onChange={(e) => handleStatusChange(device, e.target.value)}
-                              className="rounded-lg border border-border bg-background px-2 py-1 text-xs
-                                font-medium text-primary focus:outline-none focus:ring-2 focus:ring-ring/40"
-                            >
-                              {STATUS_OPTIONS.map((opt) => (
-                                <option key={opt.value} value={opt.value}>
-                                  {opt.label}
-                                </option>
-                              ))}
-                            </select>
+                            <span className="text-xs font-medium text-primary">
+                              {badge.label}
+                            </span>
                           </div>
                         </td>
 
@@ -464,6 +442,28 @@ function EditDeviceModal({
   const [modelName, setModelName] = useState(device.modelName || "");
   const [macAddress, setMacAddress] = useState(device.macAddress || "");
   const [mockEndpoint, setMockEndpoint] = useState(device.mockEndpoint || "");
+  const [spaces, setSpaces] = useState<Space[]>([]);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const res = await fetchSpaces();
+        const data = res.data;
+        if (Array.isArray(data)) setSpaces(data);
+        else if (data && Array.isArray((data as Record<string, unknown>).content))
+          setSpaces((data as Record<string, unknown>).content as Space[]);
+      } catch { /* ignore */ }
+    })();
+  }, []);
+
+  const sortSpaces = (list: Space[]) =>
+    [...list].sort((a, b) => {
+      const floorDiff = (a.floor ?? 0) - (b.floor ?? 0);
+      if (floorDiff !== 0) return floorDiff;
+      return (a.name ?? "").localeCompare(b.name ?? "", "ko", { numeric: true });
+    });
+  const privateSpaces = sortSpaces(spaces.filter((s) => s.type === "PRIVATE"));
+  const commonSpaces = sortSpaces(spaces.filter((s) => s.type === "COMMON"));
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -497,15 +497,34 @@ function EditDeviceModal({
           </label>
 
           <label className="block">
-            <span className="text-xs font-bold text-primary">공간 ID *</span>
-            <input
-              type="number"
+            <span className="text-xs font-bold text-primary">설치 공간 *</span>
+            <select
               value={spaceId}
               onChange={(e) => setSpaceId(Number(e.target.value))}
               required
               className="mt-1 w-full rounded-xl border border-border bg-surface px-3 py-2
                 text-sm text-primary focus:outline-none focus:ring-2 focus:ring-ring/40"
-            />
+            >
+              <option value={0} disabled>공간을 선택하세요</option>
+              {privateSpaces.length > 0 && (
+                <optgroup label="🏠 개인 공간">
+                  {privateSpaces.map((s) => (
+                    <option key={s.spaceId} value={s.spaceId}>
+                      {s.name} · {s.floor}층 · {s.status === "AVAILABLE" ? "공실" : s.status === "OCCUPIED" ? "입주중" : "정비중"}
+                    </option>
+                  ))}
+                </optgroup>
+              )}
+              {commonSpaces.length > 0 && (
+                <optgroup label="🏢 공용 공간">
+                  {commonSpaces.map((s) => (
+                    <option key={s.spaceId} value={s.spaceId}>
+                      {s.name} · {s.floor}층
+                    </option>
+                  ))}
+                </optgroup>
+              )}
+            </select>
           </label>
 
           <label className="block">

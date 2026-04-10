@@ -102,8 +102,16 @@ export function DeviceGrid() {
       const command = isPowerOn ? "OFF" : "ON";
 
       await controlDevice(device.deviceId, { command });
+
+      // Optimistic UI: 로컬 상태 즉시 반영
+      setDevices((prev) =>
+        prev.map((d) =>
+          d.deviceId === device.deviceId
+            ? { ...d, currentState: JSON.stringify({ ...currentState, power: command }) }
+            : d
+        )
+      );
       showFeedback(`"${device.name}" ${command}`, "success");
-      loadDevices();
     } catch (err) {
       if (err instanceof ApiError) showFeedback(err.message, "error");
       else showFeedback("제어에 실패했습니다", "error");
@@ -167,17 +175,17 @@ export function DeviceGrid() {
 
   return (
     <div className="space-y-6">
-      {/* Toast 피드백 */}
+      {/* Toast 피드백 — fixed position으로 레이아웃 밀림 방지 */}
       <AnimatePresence>
         {feedback && (
           <motion.div
             initial={{ opacity: 0, y: -12 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -8 }}
-            className={`rounded-xl border px-4 py-3 text-sm font-medium ${
+            className={`fixed top-4 left-1/2 -translate-x-1/2 z-50 rounded-xl border px-5 py-3 text-sm font-medium shadow-lg ${
               feedbackType === "error"
-                ? "border-destructive/40 bg-destructive/10 text-destructive"
-                : "border-accent/40 bg-accent/10 text-primary"
+                ? "border-destructive/40 bg-background text-destructive"
+                : "border-secondary/40 bg-background text-primary"
             }`}
           >
             {feedbackType === "error" ? "⚠️ " : "✅ "}
@@ -277,10 +285,13 @@ function DeviceCard({
         {device.name}
       </p>
 
-      {/* 공간명 */}
+      {/* 공간명 + 층 */}
       {device.spaceName && (
         <p className="text-[10px] font-medium text-muted-foreground">
           {device.spaceName}
+          {device.spaceFloor != null && (
+            <span className="ml-0.5">({device.spaceFloor}층)</span>
+          )}
         </p>
       )}
 

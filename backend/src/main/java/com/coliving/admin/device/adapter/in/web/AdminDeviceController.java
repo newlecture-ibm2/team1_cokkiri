@@ -8,6 +8,7 @@ import com.coliving.admin.device.adapter.in.web.dto.req.UpdateAdminDeviceStatusR
 import com.coliving.admin.device.adapter.in.web.dto.res.AdminDeviceResponseDto;
 import com.coliving.admin.device.adapter.in.web.dto.res.ControlAdminDeviceResponseDto;
 import com.coliving.admin.device.adapter.in.web.dto.res.CreateAdminDeviceResponseDto;
+import com.coliving.admin.device.application.command.AdminDeviceListCommand;
 import com.coliving.admin.device.application.command.ControlAdminDeviceCommand;
 import com.coliving.admin.device.application.command.DeleteAdminDeviceCommand;
 import com.coliving.admin.device.application.port.in.AdminDeviceUseCase;
@@ -27,7 +28,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/admin/devices")
@@ -40,15 +43,38 @@ public class AdminDeviceController {
 
     /**
      * 기기 목록 조회 (ADM-DEV-01)
-     * GET /api/admin/devices
+     * GET /api/admin/devices?spaceId=&deviceTypeId=&status=&isActive=&p=0&s=20
      */
     @GetMapping
-    public ResponseEntity<ApiResponse<List<AdminDeviceResponseDto>>> getDeviceList() {
-        List<AdminDevice> devices = adminDeviceUseCase.getDeviceList();
-        List<AdminDeviceResponseDto> dtoList = devices.stream()
+    public ResponseEntity<ApiResponse<Map<String, Object>>> getDeviceList(
+            @RequestParam(required = false) Long spaceId,
+            @RequestParam(required = false) Long deviceTypeId,
+            @RequestParam(required = false) String status,
+            @RequestParam(required = false) Boolean isActive,
+            @RequestParam(defaultValue = "0") int p,
+            @RequestParam(defaultValue = "20") int s
+    ) {
+        AdminDeviceListCommand command = new AdminDeviceListCommand(
+                spaceId, deviceTypeId, status, isActive, p, s
+        );
+        List<AdminDevice> allFiltered = adminDeviceUseCase.getDeviceList(command);
+        long totalElements = allFiltered.size();
+        int totalPages = (int) Math.ceil((double) totalElements / s);
+
+        List<AdminDeviceResponseDto> content = allFiltered.stream()
+                .skip((long) p * s)
+                .limit(s)
                 .map(AdminDeviceResponseDto::from)
                 .toList();
-        return ResponseEntity.ok(ApiResponse.ok(dtoList));
+
+        Map<String, Object> result = new LinkedHashMap<>();
+        result.put("content", content);
+        result.put("page", p);
+        result.put("size", s);
+        result.put("totalElements", totalElements);
+        result.put("totalPages", totalPages);
+
+        return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     /**

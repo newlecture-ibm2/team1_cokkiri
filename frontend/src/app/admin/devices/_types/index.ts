@@ -60,6 +60,8 @@ export interface Space {
 export interface AdminDevice {
   deviceId: number;
   spaceId: number;
+  spaceName: string | null;
+  spaceFloor: number | null;
   deviceTypeId: number;
   deviceTypeCode: string;
   deviceTypeName: string;
@@ -90,3 +92,10 @@ export interface ControlAdminDeviceResponse {
   message: string;
 }
 
+export interface DevicePageResponse {
+  content: AdminDevice[];
+  page: number;
+  size: number;
+  totalElements: number;
+  totalPages: number;
+}
