@@ -20,7 +20,7 @@ export default function LoginPage() {
             href="/register" 
             className="inline-flex h-12 w-full items-center justify-center rounded-xl border border-primary text-primary font-black tracking-tighter hover:bg-primary/5 transition-colors"
           >
-            회원가입 하러가기
+            회원가입
           </Link>
         </div>
       </div>

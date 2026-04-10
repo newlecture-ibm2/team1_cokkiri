@@ -10,6 +10,7 @@ import com.coliving.common.voc.model.VocCategory;
 import com.coliving.common.voc.model.VocStatus;
 import com.coliving.global.error.BusinessException;
 import com.coliving.global.error.ErrorCode;
+import org.springframework.context.ApplicationEventPublisher;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -34,6 +35,9 @@ class VocServiceOwnershipTest {
 
     @Mock
     private NotificationRepositoryPort notificationRepositoryPort;
+
+    @Mock
+    private ApplicationEventPublisher eventPublisher;
 
     @InjectMocks
     private VocService vocService;

@@ -12,6 +12,7 @@ import com.coliving.common.notification.application.result.MarkNotificationReadR
 import com.coliving.common.notification.application.result.NotificationItemResult;
 import com.coliving.common.notification.application.result.NotificationListResult;
 import com.coliving.common.notification.model.Notification;
+import com.coliving.common.notification.model.NotificationType;
 import com.coliving.global.error.BusinessException;
 import com.coliving.global.error.ErrorCode;
 import org.springframework.data.domain.Page;
@@ -90,7 +91,11 @@ public class NotificationService implements NotificationUseCase, CreateNotificat
             throw new BusinessException(ErrorCode.VALIDATION_ERROR);
         }
 
-        if (command.getReferenceType() != null && command.getReferenceId() != null) {
+        // 댓글 알림은 referenceId가 글(postId)로 같아서 매 댓글마다 별도 알림이 필요함.
+        // (userId, COMMUNITY_COMMENT, COMMUNITY, postId) 기준 exists 는 첫 댓글 이후 전부 스킵되는 버그가 됨.
+        if (command.getType() != NotificationType.COMMUNITY_COMMENT
+                && command.getReferenceType() != null
+                && command.getReferenceId() != null) {
             boolean exists = notificationRepositoryPort.exists(
                     command.getUserId(),
                     command.getType(),
@@ -113,6 +118,11 @@ public class NotificationService implements NotificationUseCase, CreateNotificat
                     command.getReferenceType(),
                     command.getReferenceId()
             );
+            if (saved == null) {
+                return CreateNotificationResult.builder()
+                        .notificationId(null)
+                        .build();
+            }
             eventPublisher.publishEvent(new NotificationCreatedEvent(saved));
 
             return CreateNotificationResult.builder()

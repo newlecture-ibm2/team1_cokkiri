@@ -44,15 +44,23 @@ public class AuthService implements RegisterUseCase, LoginUseCase, RefreshUseCas
     @Override
     @Transactional
     public void register(RegisterCommand command) {
+        java.util.Map<String, String> errors = new java.util.HashMap<>();
+
         if (!command.getPassword().equals(command.getPasswordConfirm())) {
-            throw new BusinessException(ErrorCode.VALIDATION_ERROR, "비밀번호가 일치하지 않습니다.");
+            errors.put("passwordConfirm", "비밀번호가 일치하지 않습니다.");
         }
 
         if (authRepositoryPort.existsByLoginId(command.getLoginId())) {
-            throw new BusinessException(ErrorCode.DUPLICATE_LOGIN_ID);
+            errors.put("loginId", "이미 사용 중인 로그인 ID입니다.");
         }
 
-        /* 이메일 중복 체크가 필요한 경우 여기에 추가 */
+        if (authRepositoryPort.existsByEmail(command.getEmail())) {
+            errors.put("email", "이미 사용 중인 이메일입니다.");
+        }
+
+        if (!errors.isEmpty()) {
+            throw new BusinessException(ErrorCode.VALIDATION_ERROR, errors);
+        }
         
         String encodedPassword = passwordEncoder.encode(command.getPassword());
         
