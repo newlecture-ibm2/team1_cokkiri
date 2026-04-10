@@ -9,6 +9,7 @@ import { ArrowLeft, ChevronDown, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { messageFromBffResponse } from "@/lib/bff-error-message";
 import { LoginRequiredModal } from "@/components/shared/LoginRequiredModal";
+import { AccessDeniedModal } from "@/components/shared/AccessDeniedModal";
 import { LOGIN_REQUIRED_MESSAGE } from "@/lib/auth-messages";
 import { plainTextFromHtml } from "@/lib/post-html";
 import type { ApiResponse } from "@/types/api";
@@ -45,6 +46,7 @@ export function NewVocForm() {
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const [showLoginModal, setShowLoginModal] = useState(false);
+  const [showAccessDenied, setShowAccessDenied] = useState(false);
   const [showCancelModal, setShowCancelModal] = useState(false);
 
   function submit(e: React.FormEvent) {
@@ -90,6 +92,10 @@ export function NewVocForm() {
           setShowLoginModal(true);
           return;
         }
+        if (res.status === 403) {
+          setShowAccessDenied(true);
+          return;
+        }
         let json: ApiResponse<{ vocId: number } | null>;
         try {
           json = await res.json();
@@ -119,6 +125,7 @@ export function NewVocForm() {
   return (
     <form onSubmit={submit} className="mx-auto max-w-2xl space-y-10">
       <LoginRequiredModal isOpen={showLoginModal} onClose={() => setShowLoginModal(false)} />
+      <AccessDeniedModal isOpen={showAccessDenied} onClose={() => setShowAccessDenied(false)} />
       <Link
         href="/profile/vocs?tab=list"
         className="group inline-flex items-center gap-2 font-black text-xs uppercase tracking-[0.3em] text-secondary transition-colors hover:text-foreground"
