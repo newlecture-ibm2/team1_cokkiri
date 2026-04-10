@@ -48,6 +48,20 @@ public interface PaymentJpaRepository extends JpaRepository<PaymentEntity, Long>
     List<PaymentEntity> findByBillingDateBetween(LocalDate from, LocalDate to);
 
     /**
+     * 특정 계약에 대해 특정 년/월에 청구된 이력이 있는지 확인
+     */
+    @org.springframework.data.jpa.repository.Query("SELECT COUNT(p) > 0 FROM PaymentEntity p " +
+            "WHERE p.contract.contractId = :contractId " +
+            "AND p.type = :type " +
+            "AND EXTRACT(YEAR FROM p.billingDate) = :year " +
+            "AND EXTRACT(MONTH FROM p.billingDate) = :month")
+    boolean existsByContractAndTypeAndMonth(
+            @org.springframework.data.repository.query.Param("contractId") Long contractId,
+            @org.springframework.data.repository.query.Param("type") PaymentType type,
+            @org.springframework.data.repository.query.Param("year") int year,
+            @org.springframework.data.repository.query.Param("month") int month);
+
+    /**
      * 특정 유형 + 상태 결제 목록
      */
     List<PaymentEntity> findByTypeAndStatus(PaymentType type, PaymentStatus status);

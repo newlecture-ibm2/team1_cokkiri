@@ -9,4 +9,5 @@ public interface PaymentRepositoryPort {
     Optional<Payment> findById(Long paymentId);
     List<Payment> findAll();
     List<Payment> findByUserId(Long userId);
+    boolean existsByContractAndMonth(Long contractId, com.coliving.admin.payment.model.PaymentType type, int year, int month);
 }
