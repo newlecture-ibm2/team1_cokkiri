@@ -6,6 +6,7 @@ import { Profile } from "../_types/profile";
 import { UserRound } from "lucide-react";
 import { motion } from "framer-motion";
 import { PasswordChangeModal } from "./password-change-modal";
+import { WithdrawModal } from "./withdraw-modal";
 
 export default function ProfileInfo() {
   const [profile, setProfile] = useState<Profile | null>(null);
@@ -13,6 +14,7 @@ export default function ProfileInfo() {
   const [error, setError] = useState<string | null>(null);
   
   const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
+  const [isWithdrawModalOpen, setIsWithdrawModalOpen] = useState(false);
 
   useEffect(() => {
     let isMounted = true;
@@ -149,12 +151,25 @@ export default function ProfileInfo() {
           >
             비밀번호 변경
           </motion.button>
+          <motion.button 
+            whileHover={{ scale: 1.02, y: -2 }}
+            whileTap={{ scale: 0.98 }}
+            onClick={() => setIsWithdrawModalOpen(true)}
+            className="rounded-none border border-red-900/20 bg-transparent px-8 py-4 text-red-800 transition-colors hover:bg-red-900/5 hover:border-red-900/40 text-xs font-black uppercase tracking-[0.2em] ml-auto"
+          >
+            회원 탈퇴
+          </motion.button>
         </div>
       </div>
 
       <PasswordChangeModal 
         isOpen={isPasswordModalOpen} 
         onClose={() => setIsPasswordModalOpen(false)} 
+      />
+
+      <WithdrawModal
+        isOpen={isWithdrawModalOpen}
+        onClose={() => setIsWithdrawModalOpen(false)}
       />
     </motion.div>
   );
