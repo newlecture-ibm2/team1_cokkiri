@@ -177,6 +177,15 @@ public class ContractEntity extends BaseEntity {
         this.status = ContractStatus.CANCELLED;
     }
 
+    public void updateContractInfo(LocalDate startDate, LocalDate endDate,
+                                    BigDecimal monthlyRent, BigDecimal deposit, String specialTerms) {
+        this.startDate = startDate;
+        this.endDate = endDate;
+        this.monthlyRent = monthlyRent;
+        this.deposit = deposit;
+        this.specialTerms = specialTerms;
+    }
+
     // ── 연관관계 편의 메서드 ──
     public void addPayment(PaymentEntity payment) {
         this.payments.add(payment);

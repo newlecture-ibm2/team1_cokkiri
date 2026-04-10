@@ -29,10 +29,21 @@ public class AdminContractPersistenceAdapter implements AdminContractRepositoryP
     @Override
     public List<AdminContractListResult> findPendingContracts() {
         List<ContractEntity> pendingContracts = contractJpaRepository.findByStatus(ContractStatus.PENDING);
-        return fetchList(pendingContracts);
+        return toResultList(pendingContracts);
     }
 
-    private List<AdminContractListResult> fetchList(List<ContractEntity> contracts) {
+    @Override
+    public List<AdminContractListResult> findAllContracts(ContractStatus status) {
+        List<ContractEntity> contracts;
+        if (status != null) {
+            contracts = contractJpaRepository.findByStatus(status);
+        } else {
+            contracts = contractJpaRepository.findAll();
+        }
+        return toResultList(contracts);
+    }
+
+    private List<AdminContractListResult> toResultList(List<ContractEntity> contracts) {
         if (contracts.isEmpty()) return Collections.emptyList();
 
         List<Long> userIds = contracts.stream().map(ContractEntity::getUserId).distinct().collect(Collectors.toList());
@@ -51,12 +62,18 @@ public class AdminContractPersistenceAdapter implements AdminContractRepositoryP
                         .spaceId(c.getSpaceId())
                         .spaceName(spaceNames.getOrDefault(c.getSpaceId(), "Unknown"))
                         .status(c.getStatus())
+                        .origin(c.getOrigin())
                         .desiredStartDate(c.getDesiredStartDate())
                         .desiredDurationMonths(c.getDesiredDurationMonths())
                         .address(c.getAddress())
                         .bankAccount(c.getBankAccount())
                         .usagePurpose(c.getUsagePurpose())
                         .requestNote(c.getRequestNote())
+                        .startDate(c.getStartDate())
+                        .endDate(c.getEndDate())
+                        .monthlyRent(c.getMonthlyRent())
+                        .deposit(c.getDeposit())
+                        .specialTerms(c.getSpecialTerms())
                         .createdAt(c.getCreatedAt())
                         .build())
                 .collect(Collectors.toList());
