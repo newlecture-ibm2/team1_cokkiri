@@ -4,6 +4,14 @@
 // ui-guideline: Moss & Aloe 디자인 시스템, 시맨틱 클래스만 사용
 
 import { motion } from "framer-motion";
+import {
+  WashingMachine,
+  Coffee,
+  BookOpen,
+  Dumbbell,
+  Building2,
+  type LucideIcon,
+} from "lucide-react";
 import type { Facility } from "../_types";
 
 const STATUS_MAP: Record<string, { label: string; dot: string; border: string }> = {
@@ -24,18 +32,18 @@ const STATUS_MAP: Record<string, { label: string; dot: string; border: string }>
   },
 };
 
-const FACILITY_ICONS: Record<string, string> = {
-  세탁실: "🫧",
-  라운지: "☕",
-  회의실: "📋",
-  헬스장: "💪",
-};
+const FACILITY_ICON_MAP: Array<{ key: string; icon: LucideIcon }> = [
+  { key: "세탁실", icon: WashingMachine },
+  { key: "라운지", icon: Coffee },
+  { key: "회의실", icon: BookOpen },
+  { key: "헬스장", icon: Dumbbell },
+];
 
-function getFacilityIcon(name: string): string {
-  for (const [key, icon] of Object.entries(FACILITY_ICONS)) {
+function getFacilityIcon(name: string): LucideIcon {
+  for (const { key, icon } of FACILITY_ICON_MAP) {
     if (name.includes(key)) return icon;
   }
-  return "🏠";
+  return Building2;
 }
 
 interface FacilityCardProps {
@@ -47,7 +55,7 @@ interface FacilityCardProps {
 
 export function FacilityCard({ facility, selected, onSelect, index }: FacilityCardProps) {
   const status = STATUS_MAP[facility.status] ?? STATUS_MAP.AVAILABLE;
-  const icon = getFacilityIcon(facility.name);
+  const Icon = getFacilityIcon(facility.name);
   const [openTime, closeTime] = facility.operatingHours?.split("-") ?? ["?", "?"];
 
   return (
@@ -72,7 +80,11 @@ export function FacilityCard({ facility, selected, onSelect, index }: FacilityCa
       />
 
       {/* 아이콘 */}
-      <div className="text-3xl">{icon}</div>
+      <div className={`${
+        selected ? "text-primary-foreground/90" : "text-primary"
+      }`}>
+        <Icon size={28} strokeWidth={1.5} />
+      </div>
 
       {/* 시설명 */}
       <p className={`mt-3 text-sm font-bold tracking-tight ${
@@ -92,7 +104,10 @@ export function FacilityCard({ facility, selected, onSelect, index }: FacilityCa
       <div className={`mt-3 flex items-center gap-3 text-[10px] font-semibold ${
         selected ? "text-primary-foreground/80" : "text-muted-foreground"
       }`}>
-        <span>👤 {facility.maxCapacity}명</span>
+        <span className="flex items-center gap-1">
+          <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          {facility.maxCapacity}명
+        </span>
         {facility.usageFee > 0 && (
           <span>₩{facility.usageFee.toLocaleString()}/시간</span>
         )}
