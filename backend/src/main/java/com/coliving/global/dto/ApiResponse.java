@@ -49,4 +49,13 @@ public class ApiResponse<T> {
                 .errorCode(code.name())
                 .build();
     }
+
+    public static <T> ApiResponse<T> error(ErrorCode code, T data) {
+        return ApiResponse.<T>builder()
+                .success(false)
+                .message(code.getMessage())
+                .errorCode(code.name())
+                .data(data)
+                .build();
+    }
 }

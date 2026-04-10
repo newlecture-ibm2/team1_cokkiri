@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { apiFetch, ApiError } from '@/lib/api';
 import { Button } from '@/components/ui/button';
@@ -29,6 +29,34 @@ export default function RegisterForm() {
   const [isDateWidgetOpen, setIsDateWidgetOpen] = useState(false);
   const [dateWidgetStep, setDateWidgetStep] = useState<'YEAR' | 'MONTH' | 'DAY'>('YEAR');
   const [tempDate, setTempDate] = useState({ year: 2000, month: 1, day: 1 });
+
+  const genderRef = useRef<HTMLDivElement>(null);
+  const dateRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (genderRef.current && !genderRef.current.contains(e.target as Node)) {
+        setIsGenderOpen(false);
+      }
+      if (dateRef.current && !dateRef.current.contains(e.target as Node)) {
+        setIsDateWidgetOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  useEffect(() => {
+    let timeoutId: NodeJS.Timeout;
+    if (globalError) {
+      timeoutId = setTimeout(() => {
+        setGlobalError(null);
+      }, 5000);
+    }
+    return () => {
+      if (timeoutId) clearTimeout(timeoutId);
+    };
+  }, [globalError]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     let { name, value } = e.target;
@@ -65,12 +93,40 @@ export default function RegisterForm() {
     if (globalError) setGlobalError(null);
   };
 
+  const handleBlur = (e: React.FocusEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    let error = '';
+
+    if (name === 'loginId') {
+      if (!value) error = "아이디를 입력해주세요.";
+      else if (value.length < 4 || value.length > 50 || !/^[a-zA-Z0-9]+$/.test(value)) error = "아이디는 4~50자의 영문자와 숫자로만 구성되어야 합니다.";
+    } else if (name === 'password') {
+      if (!value) error = "비밀번호를 입력해주세요.";
+      else if (value.length < 8 || !/^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]+$/.test(value)) error = "비밀번호는 영문자, 숫자, 특수문자를 포함해 8자 이상이어야 합니다.";
+    } else if (name === 'passwordConfirm') {
+      if (!value) error = "비밀번호 확인을 입력해주세요.";
+      else if (value !== formData.password) error = "비밀번호가 일치하지 않습니다.";
+    } else if (name === 'name') {
+      if (!value) error = "이름을 입력해주세요.";
+      else if (value.length < 2 || value.length > 50) error = "이름은 2~50자로 입력해주세요.";
+    } else if (name === 'email') {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!value) error = "이메일을 입력해주세요.";
+      else if (!emailRegex.test(value)) error = "올바른 이메일 형식이 아닙니다.";
+    } else if (name === 'phone') {
+      if (!value) error = "연락처를 입력해주세요.";
+      else if (!/^(02-\d{3,4}-\d{4}|0\d{2}-\d{3,4}-\d{4})$/.test(value)) error = "올바른 연락처 형식이 아닙니다.";
+    }
+
+    if (error) {
+      setFieldErrors(prev => ({ ...prev, [name]: error }));
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setGlobalError(null);
     setFieldErrors({});
-
-    const errors: Record<string, string> = {};
 
     let finalBirthDate = formData.birthDate;
     if (finalBirthDate.includes('-')) {
@@ -78,46 +134,6 @@ export default function RegisterForm() {
       if (parts.length === 3) {
         finalBirthDate = parts[0].slice(2) + parts[1] + parts[2];
       }
-    }
-
-    if (!formData.loginId) errors.loginId = "아이디를 입력해주세요.";
-    else if (formData.loginId.length < 4 || formData.loginId.length > 50 || !/^[a-zA-Z0-9]+$/.test(formData.loginId)) {
-      errors.loginId = "아이디는 4~50자의 영문자와 숫자로만 구성되어야 합니다.";
-    }
-
-    if (!formData.password) errors.password = "비밀번호를 입력해주세요.";
-    else if (formData.password.length < 8 || !/^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]+$/.test(formData.password)) {
-      errors.password = "비밀번호는 영문자, 숫자, 특수문자를 포함해 8자 이상이어야 합니다.";
-    }
-
-    if (!formData.passwordConfirm) errors.passwordConfirm = "비밀번호 확인을 입력해주세요.";
-    else if (formData.password !== formData.passwordConfirm) {
-      errors.passwordConfirm = "비밀번호가 일치하지 않습니다.";
-    }
-
-    if (!formData.name) errors.name = "이름을 입력해주세요.";
-    else if (formData.name.length < 2 || formData.name.length > 50) {
-      errors.name = "이름은 2~50자로 입력해주세요.";
-    }
-
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!formData.email) errors.email = "이메일을 입력해주세요.";
-    else if (!emailRegex.test(formData.email)) {
-      errors.email = "올바른 이메일 형식이 아닙니다.";
-    }
-
-    if (finalBirthDate && !/^\d{6}$/.test(finalBirthDate)) {
-      errors.birthDate = "생년월일은 올바른 날짜로 입력해주세요.";
-    }
-
-    if (formData.phone && !/^(02-\d{3,4}-\d{4}|0\d{2}-\d{3,4}-\d{4})$/.test(formData.phone)) {
-      errors.phone = "올바른 연락처 형식이 아닙니다.";
-    }
-
-    if (Object.keys(errors).length > 0) {
-      setFieldErrors(errors);
-      setGlobalError("입력 정보를 다시 확인해주세요.");
-      return;
     }
 
     try {
@@ -135,7 +151,16 @@ export default function RegisterForm() {
       }, 1500);
     } catch (err) {
       if (err instanceof ApiError) {
-        setGlobalError(err.message);
+        if (err.errorCode === 'VALIDATION_ERROR') {
+          if (err.data && typeof err.data === 'object' && Object.keys(err.data).length > 0) {
+            setFieldErrors(err.data);
+            setGlobalError("입력 정보를 다시 확인해주세요.");
+          } else {
+            setGlobalError(err.message);
+          }
+        } else {
+          setGlobalError(err.message);
+        }
       } else {
         setGlobalError('알 수 없는 오류가 발생했습니다.');
       }
@@ -184,17 +209,24 @@ export default function RegisterForm() {
       animate="visible"
       onSubmit={handleSubmit} 
       className="flex flex-col gap-10"
+      noValidate
     >
       <AnimatePresence>
         {globalError && (
           <motion.div 
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
-            exit={{ opacity: 0, height: 0 }}
-            className="overflow-hidden"
+            initial={{ opacity: 0, y: 50, x: "-50%" }}
+            animate={{ opacity: 1, y: 0, x: "-50%" }}
+            exit={{ opacity: 0, y: 50, x: "-50%" }}
+            className="fixed bottom-12 left-1/2 z-[100] shadow-2xl w-[90%] max-w-sm rounded-[1rem] overflow-hidden bg-red-950/90 backdrop-blur-xl border border-red-500/30"
           >
-            <div className="flex items-center gap-3 rounded-2xl bg-red-500/10 p-4 text-sm font-medium text-red-600 mb-6">
-              <AlertCircle className="h-5 w-5 shrink-0" />
+            <motion.div 
+              initial={{ width: "0%" }} 
+              animate={{ width: "100%" }} 
+              transition={{ duration: 5, ease: "linear" }}
+              className="h-[3px] bg-red-500/80"
+            />
+            <div className="flex items-center justify-center gap-3 px-6 py-4 text-sm font-medium tracking-tight text-red-100">
+              <AlertCircle className="h-5 w-5 shrink-0 text-red-400" />
               <p>{globalError}</p>
             </div>
           </motion.div>
@@ -202,64 +234,65 @@ export default function RegisterForm() {
       </AnimatePresence>
 
       <motion.div variants={itemVariants} className="space-y-10">
-        <div>
+        <div className="relative">
           <label className={labelClasses}>LOGIN ID *</label>
-          <input name="loginId" value={formData.loginId} onChange={handleChange} className={getInputClasses(!!fieldErrors.loginId)} placeholder="아이디를 입력하세요 (4자 이상)" />
-          {fieldErrors.loginId && <p className="text-red-500 text-xs mt-2 font-medium">{fieldErrors.loginId}</p>}
+          <input name="loginId" value={formData.loginId} onChange={handleChange} onBlur={handleBlur} className={getInputClasses(!!fieldErrors.loginId)} placeholder="아이디를 입력하세요 (4자 이상)" />
+          {fieldErrors.loginId && <p className="absolute top-full left-0 mt-1.5 text-red-500 text-xs font-medium leading-tight">{fieldErrors.loginId}</p>}
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
-          <div>
+          <div className="relative">
             <label className={labelClasses}>PASSWORD *</label>
-            <input name="password" type="password" value={formData.password} onChange={handleChange} className={getInputClasses(!!fieldErrors.password)} placeholder="비밀번호" />
-            <p className="text-primary/40 text-xs mt-2 font-medium tracking-tight">8자 이상, 영문+숫자+특수문자 조합</p>
-            {fieldErrors.password && <p className="text-red-500 text-xs mt-2 font-medium">{fieldErrors.password}</p>}
+            <input name="password" type="password" value={formData.password} onChange={handleChange} onBlur={handleBlur} className={getInputClasses(!!fieldErrors.password)} placeholder="비밀번호" />
+            {fieldErrors.password ? (
+              <p className="absolute top-full left-0 mt-1.5 text-red-500 text-xs font-medium leading-tight">{fieldErrors.password}</p>
+            ) : (
+              <p className="absolute top-full left-0 mt-1.5 text-primary/40 text-[11px] font-medium tracking-tight">8자 이상, 영문+숫자+특수문자 조합</p>
+            )}
           </div>
-          <div>
+          <div className="relative">
             <label className={labelClasses}>CONFIRM PASSWORD *</label>
-            <input name="passwordConfirm" type="password" value={formData.passwordConfirm} onChange={handleChange} className={getInputClasses(!!fieldErrors.passwordConfirm)} placeholder="비밀번호 재입력" />
-            {fieldErrors.passwordConfirm && <p className="text-red-500 text-xs mt-2 font-medium">{fieldErrors.passwordConfirm}</p>}
+            <input name="passwordConfirm" type="password" value={formData.passwordConfirm} onChange={handleChange} onBlur={handleBlur} className={getInputClasses(!!fieldErrors.passwordConfirm)} placeholder="비밀번호 재입력" />
+            {fieldErrors.passwordConfirm && <p className="absolute top-full left-0 mt-1.5 text-red-500 text-xs font-medium leading-tight">{fieldErrors.passwordConfirm}</p>}
           </div>
         </div>
       </motion.div>
 
       <motion.div variants={itemVariants} className="space-y-10">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
-          <div>
+          <div className="relative">
             <label className={labelClasses}>FULL NAME *</label>
-            <input name="name" value={formData.name} onChange={handleChange} className={getInputClasses(!!fieldErrors.name)} placeholder="이름을 입력하세요" />
-            {fieldErrors.name && <p className="text-red-500 text-xs mt-2 font-medium">{fieldErrors.name}</p>}
+            <input name="name" value={formData.name} onChange={handleChange} onBlur={handleBlur} className={getInputClasses(!!fieldErrors.name)} placeholder="이름을 입력하세요" />
+            {fieldErrors.name && <p className="absolute top-full left-0 mt-1.5 text-red-500 text-xs font-medium leading-tight">{fieldErrors.name}</p>}
           </div>
-          <div>
+          <div className="relative">
             <label className={labelClasses}>EMAIL ADDRESS *</label>
-            <input name="email" type="email" value={formData.email} onChange={handleChange} className={getInputClasses(!!fieldErrors.email)} placeholder="cokkiri@example.com" />
-            {fieldErrors.email && <p className="text-red-500 text-xs mt-2 font-medium">{fieldErrors.email}</p>}
+            <input name="email" type="email" value={formData.email} onChange={handleChange} onBlur={handleBlur} className={getInputClasses(!!fieldErrors.email)} placeholder="cokkiri@example.com" />
+            {fieldErrors.email && <p className="absolute top-full left-0 mt-1.5 text-red-500 text-xs font-medium leading-tight">{fieldErrors.email}</p>}
           </div>
         </div>
 
-        <div>
-          <label className={labelClasses}>PHONE NUMBER</label>
-          <input name="phone" value={formData.phone} onChange={handleChange} className={getInputClasses(!!fieldErrors.phone)} placeholder="010-0000-0000" />
-          {fieldErrors.phone && <p className="text-red-500 text-xs mt-2 font-medium">{fieldErrors.phone}</p>}
+        <div className="relative">
+          <label className={labelClasses}>PHONE NUMBER *</label>
+          <input name="phone" value={formData.phone} onChange={handleChange} onBlur={handleBlur} className={getInputClasses(!!fieldErrors.phone)} placeholder="010-0000-0000" />
+          {fieldErrors.phone && <p className="absolute top-full left-0 mt-1.5 text-red-500 text-xs font-medium leading-tight">{fieldErrors.phone}</p>}
         </div>
       </motion.div>
 
       <motion.div variants={itemVariants} className="space-y-10">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
-          <div className="col-span-1 md:col-span-1 relative flex flex-col justify-end z-20">
+          <div className="col-span-1 md:col-span-1 relative flex flex-col justify-end z-20" ref={genderRef}>
              <label className={labelClasses}>M/F</label>
              <div 
-               onClick={() => setIsGenderOpen(!isGenderOpen)}
+               onClick={() => {
+                 setIsGenderOpen(!isGenderOpen);
+                 setIsDateWidgetOpen(false);
+               }}
                className={`${getInputClasses(false)} cursor-pointer flex justify-between items-center`}
              >
                <span>{formData.gender === 'MALE' ? 'MALE (남성)' : 'FEMALE (여성)'}</span>
                <motion.span animate={{ rotate: isGenderOpen ? 180 : 0 }} className="text-[10px] text-primary/40">▼</motion.span>
              </div>
-             
-             {/* Backdrop to close when clicking outside */}
-             {isGenderOpen && (
-               <div className="fixed inset-0 z-40" onClick={() => setIsGenderOpen(false)} />
-             )}
              
              <AnimatePresence>
                {isGenderOpen && (
@@ -290,12 +323,13 @@ export default function RegisterForm() {
                )}
              </AnimatePresence>
           </div>
-          <div className="col-span-1 md:col-span-1 flex flex-col justify-end relative z-30">
+          <div className="col-span-1 md:col-span-1 flex flex-col justify-end relative z-30" ref={dateRef}>
             <label className={labelClasses}>BIRTH DATE</label>
             <div 
               onClick={() => {
-                setIsDateWidgetOpen(true);
+                setIsDateWidgetOpen(!isDateWidgetOpen);
                 setDateWidgetStep('YEAR');
+                setIsGenderOpen(false);
               }}
               className={`${getInputClasses(!!fieldErrors.birthDate)} cursor-pointer flex items-center justify-between`}
             >
@@ -304,11 +338,6 @@ export default function RegisterForm() {
                </span>
             </div>
             
-            {/* Backdrop to close date widget */}
-            {isDateWidgetOpen && (
-               <div className="fixed inset-0 z-40" onClick={() => setIsDateWidgetOpen(false)} />
-            )}
-
             <AnimatePresence>
               {isDateWidgetOpen && (
                 <motion.div 
@@ -361,7 +390,7 @@ export default function RegisterForm() {
                  </motion.div>
               )}
             </AnimatePresence>
-            {fieldErrors.birthDate && <p className="text-red-500 text-xs mt-2 font-medium">{fieldErrors.birthDate}</p>}
+            {fieldErrors.birthDate && <p className="absolute top-full left-0 mt-1.5 text-red-500 text-xs font-medium leading-tight">{fieldErrors.birthDate}</p>}
           </div>
           <div className="col-span-1 md:col-span-1 flex flex-col justify-end">
             <label className={labelClasses}>NATION</label>
