@@ -9,18 +9,21 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import com.coliving.common.profile.adapter.in.web.dto.req.UpdatePasswordRequestDto;
+import com.coliving.common.profile.adapter.in.web.dto.req.WithdrawRequestDto;
 import com.coliving.common.profile.application.command.UpdatePasswordCommand;
+import com.coliving.common.profile.application.command.WithdrawCommand;
 import com.coliving.common.profile.application.port.in.UpdatePasswordUseCase;
+import com.coliving.common.profile.application.port.in.WithdrawUseCase;
 import com.coliving.common.auth.application.port.in.LogoutUseCase;
 import jakarta.validation.Valid;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/users/me")
@@ -28,6 +31,7 @@ public class ProfileController {
 
     private final GetProfileUseCase getProfileUseCase;
     private final UpdatePasswordUseCase updatePasswordUseCase;
+    private final WithdrawUseCase withdrawUseCase;
     private final LogoutUseCase logoutUseCase;
 
     @GetMapping
@@ -70,5 +74,31 @@ public class ProfileController {
         }
 
         return ApiResponse.ok(null, "비밀번호가 성공적으로 변경되었습니다. 다시 로그인해주세요.");
+    }
+
+    @DeleteMapping
+    public ApiResponse<Void> withdrawUser(
+            @Valid @RequestBody WithdrawRequestDto request,
+            @RequestHeader(value = "Authorization", required = false) String authorizationHeader) {
+
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || authentication.getPrincipal() == null) {
+            throw new BusinessException(ErrorCode.FORBIDDEN);
+        }
+
+        Long userId = Long.parseLong(authentication.getPrincipal().toString());
+
+        WithdrawCommand command = WithdrawCommand.builder()
+                .password(request.getPassword())
+                .build();
+
+        withdrawUseCase.withdraw(userId, command);
+
+        if (StringUtils.hasText(authorizationHeader) && authorizationHeader.startsWith("Bearer ")) {
+            String accessToken = authorizationHeader.substring(7);
+            logoutUseCase.logout(accessToken);
+        }
+
+        return ApiResponse.ok(null, "성공적으로 탈퇴 처리되었습니다. 그동안 이용해주셔서 감사합니다.");
     }
 }

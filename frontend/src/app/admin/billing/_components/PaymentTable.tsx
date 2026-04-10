@@ -42,6 +42,7 @@ export default function PaymentTable({ initialPayments }: PaymentTableProps) {
         <thead className="bg-[#2C3424] text-[#DADED8] uppercase text-[10px] font-black tracking-widest">
           <tr>
             <th className="px-6 py-4">ID</th>
+            <th className="px-6 py-4">유저</th>
             <th className="px-6 py-4">유형</th>
             <th className="px-6 py-4">금액</th>
             <th className="px-6 py-4">상태</th>
@@ -54,6 +55,10 @@ export default function PaymentTable({ initialPayments }: PaymentTableProps) {
           {payments.map((payment) => (
             <tr key={payment.paymentId} className="hover:bg-moss/10 transition-colors">
               <td className="px-6 py-4 font-mono text-sm">{payment.paymentId}</td>
+              <td className="px-6 py-4 text-sm">
+                <div className="font-bold">{payment.userName || '-'}</div>
+                <div className="text-[10px] text-muted-foreground">{payment.loginId}</div>
+              </td>
               <td className="px-6 py-4">
                 <Badge variant="outline" className="bg-white/50">{payment.type}</Badge>
               </td>
@@ -89,7 +94,7 @@ export default function PaymentTable({ initialPayments }: PaymentTableProps) {
           ))}
           {payments.length === 0 && (
             <tr>
-              <td colSpan={7} className="px-6 py-12 text-center text-muted-foreground">
+              <td colSpan={8} className="px-6 py-12 text-center text-muted-foreground">
                 결제 내역이 없습니다.
               </td>
             </tr>

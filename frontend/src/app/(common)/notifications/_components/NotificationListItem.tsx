@@ -27,7 +27,8 @@ export function NotificationListItem({ item }: { item: NotificationItem }) {
   const isRead = readLocally || item.isRead;
 
   const handleClick = async () => {
-    // 1. 읽음 처리 후 배지·인박스 갱신 신호 (이동 전에 완료)
+    // 1. 읽음 처리: router.refresh()는 "현재 URL"의 RSC만 갱신합니다.
+    //    invalidate만 지연 실행하면 그사이 router.push로 다른 페이지로 나가 알림 페이지는 갱신되지 않습니다.
     if (!isRead) {
       try {
         const res = await fetch(`/api/notifications/${item.notificationId}/read`, {
@@ -37,6 +38,9 @@ export function NotificationListItem({ item }: { item: NotificationItem }) {
         if (res.ok) {
           setReadLocally(true);
           invalidateNotificationsUnreadCount();
+          router.refresh();
+          // Flight/RSC 페이로드가 돌아올 때까지 잠깐 대기 후 이동 (refresh는 Promise를 반환하지 않음)
+          await new Promise((r) => setTimeout(r, 400));
         }
       } catch {
         /* ignore */
@@ -128,13 +132,16 @@ export function NotificationListItem({ item }: { item: NotificationItem }) {
         </div>
         <div className="shrink-0 flex flex-col items-end gap-2 text-right">
           <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
-            {new Date(item.createdAt).toLocaleDateString()}
+            {(() => {
+              const d = new Date(item.createdAt);
+              return `${d.getFullYear()}. ${d.getMonth() + 1}. ${d.getDate()}.`;
+            })()}
           </span>
           <span className="text-[10px] font-black uppercase tracking-widest opacity-20">
-            {new Date(item.createdAt).toLocaleTimeString([], {
-              hour: "2-digit",
-              minute: "2-digit",
-            })}
+            {(() => {
+              const d = new Date(item.createdAt);
+              return `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
+            })()}
           </span>
         </div>
       </div>

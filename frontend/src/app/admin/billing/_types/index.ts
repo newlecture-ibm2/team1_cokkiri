@@ -3,6 +3,8 @@ export interface Payment {
   contractId?: number;
   reservationId?: number;
   userId: number;
+  userName?: string;
+  loginId?: string;
   type: 'RENT' | 'MAINTENANCE' | 'FACILITY';
   amount: number;
   status: 'UNPAID' | 'PENDING' | 'PAID';
