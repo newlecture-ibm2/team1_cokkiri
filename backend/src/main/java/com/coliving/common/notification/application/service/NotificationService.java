@@ -113,6 +113,11 @@ public class NotificationService implements NotificationUseCase, CreateNotificat
                     command.getReferenceType(),
                     command.getReferenceId()
             );
+            if (saved == null) {
+                return CreateNotificationResult.builder()
+                        .notificationId(null)
+                        .build();
+            }
             eventPublisher.publishEvent(new NotificationCreatedEvent(saved));
 
             return CreateNotificationResult.builder()
