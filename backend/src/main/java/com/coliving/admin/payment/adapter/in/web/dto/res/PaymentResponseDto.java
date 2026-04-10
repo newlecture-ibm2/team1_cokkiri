@@ -18,6 +18,8 @@ public class PaymentResponseDto {
     private Long contractId;
     private Long reservationId;
     private Long userId;
+    private String userName;
+    private String loginId;
     private PaymentType type;
     private BigDecimal amount;
     private PaymentStatus status;
@@ -32,6 +34,8 @@ public class PaymentResponseDto {
                 .contractId(payment.getContractId())
                 .reservationId(payment.getReservationId())
                 .userId(payment.getUserId())
+                .userName(payment.getUserName())
+                .loginId(payment.getLoginId())
                 .type(payment.getType())
                 .amount(payment.getAmount())
                 .status(payment.getStatus())

@@ -13,6 +13,8 @@ public class Payment {
     private Long contractId;
     private Long reservationId;
     private Long userId;
+    private String userName;
+    private String loginId;
     private PaymentType type;
     private BigDecimal amount;
     private PaymentStatus status;
@@ -59,6 +61,22 @@ public class Payment {
 
     public void setUserId(Long userId) {
         this.userId = userId;
+    }
+
+    public String getUserName() {
+        return userName;
+    }
+
+    public void setUserName(String userName) {
+        this.userName = userName;
+    }
+
+    public String getLoginId() {
+        return loginId;
+    }
+
+    public void setLoginId(String loginId) {
+        this.loginId = loginId;
     }
 
     public PaymentType getType() {

@@ -267,26 +267,40 @@ public class AdminContractService implements AdminContractUseCase {
                 ContractEntity contract = repositoryPort.findById(command.getContractId())
                                 .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND));
 
-                if (contract.getStatus() != ContractStatus.PENDING) {
+                // PENDING, APPROVED, ACTIVE 상태인 경우에만 반려 가능
+                if (contract.getStatus() != ContractStatus.PENDING && 
+                    contract.getStatus() != ContractStatus.APPROVED &&
+                    contract.getStatus() != ContractStatus.ACTIVE) {
                         throw new BusinessException(ErrorCode.INVALID_STATUS);
                 }
 
+                ContractStatus oldStatus = contract.getStatus();
                 contract.reject(adminId, command.getRejectedReason());
 
                 repositoryPort.save(contract);
+
+                // 만약 ACTIVE 상태였다면 공간 및 유저 역할 복원 (Terminate와 유사)
+                if (oldStatus == ContractStatus.ACTIVE) {
+                        SpaceEntity space = spaceJpaRepository.findById(contract.getSpaceId())
+                                        .orElseThrow(() -> new BusinessException(ErrorCode.SPACE_NOT_FOUND));
+                        space.changeStatus(SpaceStatus.AVAILABLE);
+                        spaceJpaRepository.save(space);
+
+                        demoteUserIfNoActiveContract(contract.getUserId());
+                }
 
                 // 알림 생성: 계약 반려
                 notificationRepositoryPort.create(
                                 contract.getUserId(),
                                 NotificationType.CONTRACT_REJECTED,
-                                "입주 신청이 반려되었습니다.",
+                                "계약이 반려(종료)되었습니다.",
                                 String.format("반려 사유: %s", command.getRejectedReason()),
                                 ReferenceType.CONTRACT,
                                 contract.getContractId());
 
                 return AdminContractResult.builder()
                                 .contractId(contract.getContractId())
-                                .message("계약이 반려되었습니다.")
+                                .message("계약이 반려 처리되었습니다.")
                                 .status(contract.getStatus().name())
                                 .build();
         }

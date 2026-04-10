@@ -86,6 +86,10 @@ public class PaymentPersistenceAdapter implements PaymentRepositoryPort {
         domain.setContractId(entity.getContract() != null ? entity.getContract().getContractId() : null);
         domain.setReservationId(entity.getReservationId());
         domain.setUserId(entity.getUserId());
+        if (entity.getUser() != null) {
+            domain.setUserName(entity.getUser().getName());
+            domain.setLoginId(entity.getUser().getLoginId());
+        }
         domain.setType(entity.getType());
         domain.setAmount(entity.getAmount());
         domain.setStatus(entity.getStatus());

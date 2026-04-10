@@ -38,6 +38,10 @@ public class PaymentEntity extends BaseEntity {
     @Column(name = "reservation_id")
     private Long reservationId;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", insertable = false, updatable = false)
+    private com.coliving.common.auth.adapter.out.jpa.UserEntity user;
+
     @Column(name = "user_id", nullable = false)
     private Long userId;
 
