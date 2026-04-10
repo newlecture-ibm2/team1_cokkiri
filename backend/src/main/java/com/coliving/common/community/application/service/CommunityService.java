@@ -15,6 +15,7 @@ import com.coliving.common.notification.application.port.in.CreateNotificationUs
 import com.coliving.common.notification.model.NotificationType;
 import com.coliving.common.notification.model.ReferenceType;
 import com.coliving.admin.user.application.port.out.AdminUserRepositoryPort;
+import com.coliving.admin.user.application.result.AdminUserResult;
 import com.coliving.common.auth.model.UserRole;
 import com.coliving.common.auth.model.UserStatus;
 import org.springframework.data.domain.Pageable;
@@ -148,18 +149,35 @@ public class CommunityService implements CommunityUseCase {
     }
 
     private void notifyAllResidentsOfNotice(Post post, String title) {
-        adminUserRepositoryPort.findUsers(UserRole.USER, UserStatus.ACTIVE.name(), null, null, Pageable.unpaged())
-                .getContent()
-                .forEach(user -> {
-                    createNotificationUseCase.create(CreateNotificationCommand.builder()
-                            .userId(user.getId())
-                            .type(NotificationType.COMMUNITY_NOTICE)
-                            .title(title)
-                            .message(String.format("「%s」 공지사항이 등록되었습니다.", post.getTitle()))
-                            .referenceType(ReferenceType.COMMUNITY)
-                            .referenceId(post.getPostId())
-                            .build());
-                });
+        if (post == null) return;
+
+        try {
+            // USER + RESIDENT 모두에게 알림 전송
+            for (UserRole role : List.of(UserRole.USER, UserRole.RESIDENT)) {
+                Page<AdminUserResult> userPage = adminUserRepositoryPort.findUsers(
+                        role, UserStatus.ACTIVE.name(), null, null, Pageable.unpaged());
+                if (userPage == null || userPage.getContent() == null) {
+                    continue;
+                }
+
+                for (AdminUserResult user : userPage.getContent()) {
+                    try {
+                        createNotificationUseCase.create(CreateNotificationCommand.builder()
+                                .userId(user.getId())
+                                .type(NotificationType.COMMUNITY_NOTICE)
+                                .title(title)
+                                .message(String.format("「%s」 공지사항이 등록되었습니다.", post.getTitle()))
+                                .referenceType(ReferenceType.COMMUNITY)
+                                .referenceId(post.getPostId())
+                                .build());
+                    } catch (Exception e) {
+                        // 개별 알림 실패는 무시 — 게시글 등록에 영향 없음
+                    }
+                }
+            }
+        } catch (Exception e) {
+            // 알림 전체 실패해도 공지사항 등록은 반드시 성공해야 함
+        }
     }
 
     @Override
