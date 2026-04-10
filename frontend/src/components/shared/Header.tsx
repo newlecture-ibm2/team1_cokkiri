@@ -23,6 +23,7 @@ const navItems: NavItem[] = [
     children: [
       { name: "Living", path: "/rooms" },
       { name: "Experience", path: "/experience" },
+      { name: "Floor", path: "/floor" },
       { name: "Stay", path: "/facilities" },
     ],
   },
