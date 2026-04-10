@@ -3,6 +3,8 @@
 import { motion } from "framer-motion";
 import type { ControlLogItem } from "../_types";
 
+/* ── 상수 매핑 ── */
+
 const DEVICE_ICONS: Record<string, string> = {
   DOOR_LOCK: "🔒",
   LIGHT: "💡",
@@ -25,10 +27,12 @@ const COMMAND_LABELS: Record<string, string> = {
   SET_MODE: "모드 변경",
 };
 
+/* ── 유틸 ── */
+
 function formatDateTime(iso: string): { date: string; time: string } {
   const d = new Date(iso);
   const date = `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, "0")}.${String(d.getDate()).padStart(2, "0")}`;
-  const time = `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}:${String(d.getSeconds()).padStart(2, "0")}`;
+  const time = `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
   return { date, time };
 }
 
@@ -47,21 +51,29 @@ function formatParams(params: string | null): string | null {
   }
 }
 
+/* ── 타입 ── */
+
 interface ControlLogTimelineProps {
   logs: ControlLogItem[];
   isLoading: boolean;
 }
 
+/* ── 메인 컴포넌트 ── */
+
 export default function ControlLogTimeline({ logs, isLoading }: ControlLogTimelineProps) {
+  // 스켈레톤 로딩
   if (isLoading && logs.length === 0) {
     return (
-      <div className="space-y-4">
+      <div className="space-y-3">
         {[...Array(5)].map((_, i) => (
-          <div key={i} className="animate-pulse flex gap-4 p-4 rounded-2xl bg-[var(--secondary)]/20">
-            <div className="w-10 h-10 rounded-full bg-[var(--secondary)]/40" />
-            <div className="flex-1 space-y-2">
-              <div className="h-4 w-1/3 rounded bg-[var(--secondary)]/40" />
-              <div className="h-3 w-2/3 rounded bg-[var(--secondary)]/40" />
+          <div key={i} className="animate-pulse rounded-[2rem] border border-border bg-surface p-5">
+            <div className="flex items-center gap-4">
+              <div className="w-10 h-10 rounded-full bg-muted/30 flex-shrink-0" />
+              <div className="flex-1 space-y-2">
+                <div className="h-3.5 w-1/3 rounded-lg bg-muted/30" />
+                <div className="h-3 w-2/3 rounded-lg bg-muted/20" />
+              </div>
+              <div className="w-16 h-6 rounded-xl bg-muted/20" />
             </div>
           </div>
         ))}
@@ -69,12 +81,15 @@ export default function ControlLogTimeline({ logs, isLoading }: ControlLogTimeli
     );
   }
 
+  // 빈 상태
   if (logs.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center py-20 text-[var(--muted)]">
-        <span className="text-5xl mb-4">📋</span>
-        <p className="text-lg font-medium">제어 이력이 없습니다</p>
-        <p className="text-sm mt-1">기기를 제어하면 이력이 여기에 표시됩니다</p>
+      <div className="rounded-[2rem] border border-border bg-surface p-12 text-center">
+        <p className="text-4xl">📋</p>
+        <p className="mt-4 text-sm font-semibold text-primary">제어 이력이 없습니다</p>
+        <p className="mt-1 text-xs text-muted-foreground">
+          기기를 제어하면 이력이 여기에 표시됩니다
+        </p>
       </div>
     );
   }
@@ -90,95 +105,114 @@ export default function ControlLogTimeline({ logs, isLoading }: ControlLogTimeli
   return (
     <div className="space-y-8">
       {Array.from(grouped.entries()).map(([date, items]) => (
-        <div key={date}>
-          {/* 날짜 헤더 */}
-          <div className="sticky top-0 z-10 bg-[var(--background)]/90 backdrop-blur-sm pb-2 mb-3">
-            <span className="text-xs font-black uppercase tracking-[0.3em] text-[var(--muted)] bg-[var(--background)] px-3 py-1 rounded-full border border-[var(--secondary)]">
+        <section key={date}>
+          {/* ── 날짜 헤더 ── */}
+          <div className="sticky top-0 z-10 pb-3 mb-1">
+            <span className="inline-block text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground bg-background px-4 py-1.5 rounded-full border border-border shadow-sm">
               {date}
             </span>
           </div>
 
-          {/* 타임라인 */}
-          <div className="relative pl-8">
-            {/* 세로 타임라인 선 */}
-            <div className="absolute left-3 top-2 bottom-2 w-[2px] bg-[var(--secondary)]/40" />
-
-            {items.map((log, index) => {
-              const { time } = formatDateTime(log.createdAt);
-              const icon = DEVICE_ICONS[log.deviceTypeCode ?? ""] ?? "⚡";
-              const commandLabel = COMMAND_LABELS[log.command] ?? log.command;
-              const paramText = formatParams(log.commandParams);
-              const isSuccess = log.result === "SUCCESS";
-
-              return (
-                <motion.div
-                  key={log.controlLogId}
-                  initial={{ opacity: 0, x: -10 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: index * 0.03 }}
-                  className="relative mb-4 last:mb-0"
-                >
-                  {/* 타임라인 점 */}
-                  <div
-                    className={`absolute -left-5 top-3 w-3 h-3 rounded-full border-2 ${
-                      isSuccess
-                        ? "bg-[var(--accent)] border-[var(--accent)]"
-                        : "bg-red-400 border-red-400"
-                    }`}
-                  />
-
-                  {/* 카드 */}
-                  <div className="bg-white rounded-2xl p-4 border border-[var(--secondary)]/30 hover:border-[var(--accent)]/50 transition-colors">
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="flex items-center gap-3 min-w-0">
-                        <span className="text-2xl flex-shrink-0">{icon}</span>
-                        <div className="min-w-0">
-                          <p className="font-semibold text-[var(--primary)] text-sm truncate">
-                            {log.deviceName}
-                            <span className="font-normal text-[var(--muted)] ml-2">
-                              {commandLabel}
-                            </span>
-                          </p>
-                          <p className="text-xs text-[var(--muted)] mt-0.5">
-                            {log.spaceName}
-                            <span className="mx-1.5">·</span>
-                            {log.spaceType === "PRIVATE" ? "개인" : "공용"}
-                            {log.deviceTypeName && (
-                              <>
-                                <span className="mx-1.5">·</span>
-                                {log.deviceTypeName}
-                              </>
-                            )}
-                          </p>
-                          {paramText && (
-                            <p className="text-xs text-[var(--accent)] mt-1">{paramText}</p>
-                          )}
-                          {!isSuccess && log.errorMessage && (
-                            <p className="text-xs text-red-500 mt-1">⚠ {log.errorMessage}</p>
-                          )}
-                        </div>
-                      </div>
-
-                      <div className="flex flex-col items-end flex-shrink-0">
-                        <span className="text-xs text-[var(--muted)] font-mono">{time}</span>
-                        <span
-                          className={`mt-1 text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full ${
-                            isSuccess
-                              ? "bg-[var(--accent)]/10 text-[var(--accent)]"
-                              : "bg-red-50 text-red-500"
-                          }`}
-                        >
-                          {isSuccess ? "성공" : "실패"}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                </motion.div>
-              );
-            })}
+          {/* ── 로그 카드 리스트 ── */}
+          <div className="space-y-2.5">
+            {items.map((log, index) => (
+              <LogCard key={log.controlLogId} log={log} index={index} />
+            ))}
           </div>
-        </div>
+        </section>
       ))}
     </div>
+  );
+}
+
+/* ── 로그 카드 (하위 컴포넌트) ── */
+
+function LogCard({ log, index }: { log: ControlLogItem; index: number }) {
+  const { time } = formatDateTime(log.createdAt);
+  const icon = DEVICE_ICONS[log.deviceTypeCode ?? ""] ?? "⚡";
+  const commandLabel = COMMAND_LABELS[log.command] ?? log.command;
+  const paramText = formatParams(log.commandParams);
+  const isSuccess = log.result === "SUCCESS";
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: index * 0.03 }}
+      className={`group relative rounded-[2rem] border p-5 transition-all duration-200 hover:shadow-md ${
+        isSuccess
+          ? "border-border bg-surface hover:border-accent/40"
+          : "border-red-300/40 bg-red-50/30 hover:border-red-400/60"
+      }`}
+    >
+      <div className="flex items-start gap-4">
+        {/* 아이콘 */}
+        <div
+          className={`flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center text-lg ${
+            isSuccess ? "bg-accent/10" : "bg-red-100"
+          }`}
+        >
+          {icon}
+        </div>
+
+        {/* 본문 */}
+        <div className="flex-1 min-w-0">
+          <div className="flex items-baseline gap-2">
+            <p className="text-sm font-bold tracking-tight text-primary truncate">
+              {log.deviceName}
+            </p>
+            <span className="text-xs font-medium text-muted-foreground flex-shrink-0">
+              {commandLabel}
+            </span>
+          </div>
+
+          <div className="flex items-center gap-1.5 mt-1 flex-wrap">
+            <span className="text-[10px] font-black uppercase tracking-[0.15em] text-muted-foreground">
+              {log.spaceType === "PRIVATE" ? "개인" : "공용"}
+            </span>
+            <span className="text-[10px] text-muted-foreground/50">·</span>
+            <span className="text-[10px] font-medium text-muted-foreground">
+              {log.spaceName}
+            </span>
+            {log.deviceTypeName && (
+              <>
+                <span className="text-[10px] text-muted-foreground/50">·</span>
+                <span className="text-[10px] font-medium text-muted-foreground">
+                  {log.deviceTypeName}
+                </span>
+              </>
+            )}
+          </div>
+
+          {/* 파라미터 */}
+          {paramText && (
+            <p className="text-[11px] font-semibold text-accent mt-1.5">
+              {paramText}
+            </p>
+          )}
+
+          {/* 에러 메시지 */}
+          {!isSuccess && log.errorMessage && (
+            <p className="text-[11px] font-medium text-red-500 mt-1.5">
+              ⚠ {log.errorMessage}
+            </p>
+          )}
+        </div>
+
+        {/* 우측: 시간 + 결과 배지 */}
+        <div className="flex flex-col items-end gap-1.5 flex-shrink-0">
+          <span className="text-[11px] font-mono font-medium text-muted-foreground">{time}</span>
+          <span
+            className={`text-[9px] font-black uppercase tracking-wider px-2.5 py-1 rounded-full ${
+              isSuccess
+                ? "bg-accent/10 text-accent"
+                : "bg-red-100 text-red-500"
+            }`}
+          >
+            {isSuccess ? "SUCCESS" : "FAILURE"}
+          </span>
+        </div>
+      </div>
+    </motion.div>
   );
 }
