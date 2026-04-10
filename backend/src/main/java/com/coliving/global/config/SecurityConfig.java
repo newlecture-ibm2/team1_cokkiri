@@ -28,6 +28,9 @@ public class SecurityConfig {
     /** 일반 회원·입주자·관리자 공통 (JWT role 클레임과 동일) */
     private static final String[] MEMBER_ROLES = {"USER", "RESIDENT", "ADMIN"};
 
+    /** 입주자·관리자만 (게시판·민원·댓글 CUD) */
+    private static final String[] RESIDENT_ADMIN_ROLES = {"RESIDENT", "ADMIN"};
+
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
@@ -69,19 +72,19 @@ public class SecurityConfig {
                                 "/api/reservations/**", "/api/control-logs/**")
                         .hasAnyRole("RESIDENT", "ADMIN")
 
-                        // --- VOC: 로그인 회원만 (본인 민원만 서비스 레이어에서 제한) ---
-                        .requestMatchers("/api/vocs/**").hasAnyRole(MEMBER_ROLES)
-                        // VOC 본문 이미지·첨부 파일 (회원 전용)
-                        .requestMatchers(HttpMethod.GET, "/api/files/voc/**").hasAnyRole(MEMBER_ROLES)
+                        // --- VOC: 입주자·관리자만 (본인 민원만 서비스 레이어에서 추가 제한) ---
+                        .requestMatchers("/api/vocs/**").hasAnyRole(RESIDENT_ADMIN_ROLES)
+                        // VOC 본문 이미지·첨부 파일 (입주자·관리자만)
+                        .requestMatchers(HttpMethod.GET, "/api/files/voc/**").hasAnyRole(RESIDENT_ADMIN_ROLES)
 
-                        // --- 알림: 로그인 회원만 ---
+                        // --- 알림: 로그인 회원 전체 (USER 포함) ---
                         .requestMatchers("/api/notifications/**").hasAnyRole(MEMBER_ROLES)
 
-                        // --- 댓글: /api/comments/** (게시글 댓글 등록은 아래 /api/posts/** 규칙에 포함) ---
-                        .requestMatchers("/api/comments/**").hasAnyRole(MEMBER_ROLES)
+                        // --- 댓글: 입주자·관리자만 ---
+                        .requestMatchers("/api/comments/**").hasAnyRole(RESIDENT_ADMIN_ROLES)
 
                         // --- 커뮤니티: 글 작성·수정·삭제, 좋아요, 에디터 이미지 업로드 (GET은 위에서 이미 permitAll) ---
-                        .requestMatchers("/api/posts/**").hasAnyRole(MEMBER_ROLES)
+                        .requestMatchers("/api/posts/**").hasAnyRole(RESIDENT_ADMIN_ROLES)
 
                         // --- 그 외 API ---
                         .anyRequest().authenticated())
