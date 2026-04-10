@@ -27,13 +27,13 @@ interface Props {
 export default function DeviceStatusBySpace({ data, isLoading }: Props) {
   if (isLoading) {
     return (
-      <div className="animate-pulse h-[250px] bg-[var(--secondary)]/20 rounded-xl" />
+      <div className="animate-pulse h-[250px] bg-muted/20 rounded-xl" />
     );
   }
 
   if (data.length === 0) {
     return (
-      <div className="flex items-center justify-center h-[250px] text-[var(--muted)] text-sm">
+      <div className="flex items-center justify-center h-[250px] text-muted-foreground text-sm">
         등록된 기기가 없습니다
       </div>
     );
@@ -120,7 +120,7 @@ export default function DeviceStatusBySpace({ data, isLoading }: Props) {
       <div className="mt-2 text-right">
         <Link
           href="/admin/monitoring"
-          className="text-xs font-semibold text-[var(--accent)] hover:underline underline-offset-4 transition-colors"
+          className="text-xs font-semibold text-[#768064] hover:underline underline-offset-4 transition-colors"
         >
           상세 모니터링 →
         </Link>
