@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { invalidateNotificationsUnreadCount } from "@/lib/notifications-events";
 
 type NotificationItem = {
@@ -17,21 +17,30 @@ type NotificationItem = {
 
 export function NotificationListItem({ item }: { item: NotificationItem }) {
   const router = useRouter();
-  const [isRead, setIsRead] = useState(item.isRead);
+  /** 서버가 잠깐 늦게 따라올 때 로컬 읽음을 덮어쓰지 않도록 낙관적 플래그만 사용 */
+  const [readLocally, setReadLocally] = useState(false);
+
+  useEffect(() => {
+    setReadLocally(false);
+  }, [item.notificationId]);
+
+  const isRead = readLocally || item.isRead;
 
   const handleClick = async () => {
-    // 1. 읽음 처리 (비동기로 진행하되 페이지 이동을 막지 않음)
+    // 1. 읽음 처리 후 배지·인박스 갱신 신호 (이동 전에 완료)
     if (!isRead) {
-      fetch(`/api/notifications/${item.notificationId}/read`, { method: "PATCH" })
-        .then((res) => {
-          if (res.ok) {
-            setIsRead(true);
-            invalidateNotificationsUnreadCount();
-          }
-        })
-        .catch(() => {
-          /* ignore */
+      try {
+        const res = await fetch(`/api/notifications/${item.notificationId}/read`, {
+          method: "PATCH",
+          credentials: "include",
         });
+        if (res.ok) {
+          setReadLocally(true);
+          invalidateNotificationsUnreadCount();
+        }
+      } catch {
+        /* ignore */
+      }
     }
 
     // 2. 경로 설정로직 최적화 (대소문자 무관하게 체크)

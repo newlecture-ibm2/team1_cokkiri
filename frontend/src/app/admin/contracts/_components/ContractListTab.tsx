@@ -14,6 +14,8 @@ import {
   Clock,
   Ban,
   Loader2,
+  XCircle,
+  CheckCircle2,
 } from "lucide-react";
 
 interface Contract {
@@ -86,6 +88,28 @@ export function ContractListTab({ refreshKey, onRefresh }: Props) {
     spaceName: string;
     userName: string;
   } | null>(null);
+
+  // Reject Modal
+  const [rejectModal, setRejectModal] = useState<{
+    id: number;
+    spaceName: string;
+    userName: string;
+  } | null>(null);
+  const [rejectReason, setRejectReason] = useState("");
+
+  // Approve Modal
+  const [approveModal, setApproveModal] = useState<{
+    id: number;
+    spaceName: string;
+    userName: string;
+  } | null>(null);
+  const [approveForm, setApproveForm] = useState({
+    startDate: "",
+    endDate: "",
+    monthlyRent: "",
+    deposit: "",
+    specialTerms: "",
+  });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -175,6 +199,68 @@ export function ContractListTab({ refreshKey, onRefresh }: Props) {
     }
   };
 
+  // ── Reject ──
+
+  const handleReject = async () => {
+    if (!rejectModal || !rejectReason.trim()) return;
+    setIsSubmitting(true);
+    try {
+      const res = await fetch(`/api/admin/contracts/${rejectModal.id}/reject`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ rejectedReason: rejectReason }),
+      });
+      const result = await res.json();
+      if (result.success) {
+        setRejectModal(null);
+        setRejectReason("");
+        onRefresh();
+      } else {
+        alert(result.message || "반려에 실패했습니다.");
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  // ── Approve ──
+
+  const handleApprove = async () => {
+    if (!approveModal) return;
+    if (!approveForm.startDate || !approveForm.endDate || !approveForm.monthlyRent || !approveForm.deposit) {
+      alert("시작일, 종료일, 월세, 보증금은 필수 입력입니다.");
+      return;
+    }
+    setIsSubmitting(true);
+    try {
+      const res = await fetch(`/api/admin/contracts/${approveModal.id}/approve`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          startDate: approveForm.startDate,
+          endDate: approveForm.endDate,
+          monthlyRent: Number(approveForm.monthlyRent),
+          deposit: Number(approveForm.deposit),
+          specialTerms: approveForm.specialTerms || null,
+        }),
+      });
+      const result = await res.json();
+      if (result.success) {
+        setApproveModal(null);
+        setApproveForm({ startDate: "", endDate: "", monthlyRent: "", deposit: "", specialTerms: "" });
+        onRefresh();
+      } else {
+        alert(result.message || "승인에 실패했습니다.");
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   // ── Filter ──
 
   const filtered = contracts.filter((c) => {
@@ -200,11 +286,12 @@ export function ContractListTab({ refreshKey, onRefresh }: Props) {
   return (
     <>
       {/* ── Stats ── */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
         {[
           { label: "전체", value: contracts.length, color: "text-primary" },
           { label: "계약 중", value: contracts.filter((c) => c.status === "ACTIVE").length, color: "text-accent" },
           { label: "심사 중", value: contracts.filter((c) => c.status === "PENDING").length, color: "text-blue-600" },
+          { label: "임시저장", value: contracts.filter((c) => c.status === "DRAFT").length, color: "text-gray-500" },
           { label: "만료/해지", value: contracts.filter((c) => c.status === "EXPIRED" || c.status === "TERMINATED").length, color: "text-red-600" },
         ].map((s) => (
           <div key={s.label} className="p-6 bg-white rounded-2xl border border-primary/5 shadow-sm">
@@ -376,6 +463,44 @@ export function ContractListTab({ refreshKey, onRefresh }: Props) {
                           >
                             <Edit3 className="w-4 h-4" />
                           </button>
+                        )}
+                        {c.status === "PENDING" && (
+                          <>
+                            <button
+                              onClick={() => {
+                                setApproveModal({
+                                  id: c.contractId,
+                                  spaceName: c.spaceName,
+                                  userName: c.userName,
+                                });
+                                setApproveForm({
+                                  startDate: "",
+                                  endDate: "",
+                                  monthlyRent: "",
+                                  deposit: "",
+                                  specialTerms: "",
+                                });
+                              }}
+                              className="p-2 rounded-lg hover:bg-green-50 text-muted hover:text-green-600 transition-colors"
+                              title="승인"
+                            >
+                              <CheckCircle2 className="w-4 h-4" />
+                            </button>
+                            <button
+                              onClick={() => {
+                                setRejectModal({
+                                  id: c.contractId,
+                                  spaceName: c.spaceName,
+                                  userName: c.userName,
+                                });
+                                setRejectReason("");
+                              }}
+                              className="p-2 rounded-lg hover:bg-red-50 text-muted hover:text-red-600 transition-colors"
+                              title="반려"
+                            >
+                              <XCircle className="w-4 h-4" />
+                            </button>
+                          </>
                         )}
                         {c.status === "ACTIVE" && (
                           <>
@@ -571,6 +696,156 @@ export function ContractListTab({ refreshKey, onRefresh }: Props) {
                     확인
                   </button>
                 </div>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* ── Reject Modal ── */}
+      <AnimatePresence>
+        {rejectModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-black/40 backdrop-blur-sm">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              className="bg-white w-full max-w-md rounded-[2.5rem] shadow-2xl overflow-hidden"
+            >
+              <div className="p-8">
+                <div className="w-16 h-16 rounded-full mx-auto mb-6 flex items-center justify-center bg-red-50 text-red-600">
+                  <XCircle className="w-8 h-8" />
+                </div>
+                <h3 className="text-2xl font-black uppercase tracking-tighter mb-2 text-center">신청 반려</h3>
+                <p className="text-sm font-bold text-muted leading-relaxed mb-1 text-center">
+                  <strong className="text-primary">{rejectModal.userName}</strong>{" / "}
+                  <strong className="text-primary">{rejectModal.spaceName}</strong>
+                </p>
+                <p className="text-xs text-muted mb-6 text-center">
+                  신청을 반려합니다. 반려 사유를 필수로 입력해 주세요.
+                </p>
+                <div className="flex flex-col gap-2 mb-6">
+                  <label className="text-[10px] font-black uppercase tracking-widest">반려 사유</label>
+                  <textarea
+                    value={rejectReason}
+                    onChange={(e) => setRejectReason(e.target.value)}
+                    placeholder="반려 사유를 입력하세요..."
+                    className="bg-primary/[0.03] p-4 rounded-xl text-sm font-medium h-28 focus:ring-2 ring-accent outline-none resize-none border border-primary/5"
+                  />
+                </div>
+                <div className="flex gap-4">
+                  <button
+                    onClick={() => setRejectModal(null)}
+                    className="flex-1 px-6 py-4 bg-primary/5 text-[10px] font-black uppercase tracking-widest rounded-full hover:bg-primary/10 transition-colors"
+                  >
+                    취소
+                  </button>
+                  <button
+                    onClick={handleReject}
+                    disabled={isSubmitting || !rejectReason.trim()}
+                    className="flex-1 px-6 py-4 bg-red-600 text-white text-[10px] font-black uppercase tracking-widest rounded-full hover:bg-red-700 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+                  >
+                    {isSubmitting && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
+                    반려
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* ── Approve Modal ── */}
+      <AnimatePresence>
+        {approveModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-black/40 backdrop-blur-sm">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              className="bg-white w-full max-w-xl rounded-[2.5rem] shadow-2xl overflow-hidden flex flex-col"
+            >
+              <div className="p-8 pb-4 border-b border-primary/10 flex items-center justify-between">
+                <div>
+                  <p className="text-[10px] font-black tracking-widest uppercase text-accent mb-1">Approve Application</p>
+                  <h2 className="text-2xl font-black uppercase tracking-tighter">신청 승인</h2>
+                </div>
+                <button onClick={() => setApproveModal(null)} className="w-10 h-10 rounded-full hover:bg-muted/30 flex items-center justify-center">
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              <div className="p-8 pb-4">
+                <p className="text-sm font-bold text-muted mb-6">
+                  <strong className="text-primary">{approveModal.userName}</strong>{" / "}
+                  <strong className="text-primary">{approveModal.spaceName}</strong> — 계약 조건을 확정하세요.
+                </p>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="flex flex-col gap-2">
+                    <label className="text-[10px] font-black uppercase tracking-widest">시작일 *</label>
+                    <input
+                      type="date"
+                      value={approveForm.startDate}
+                      onChange={(e) => setApproveForm({ ...approveForm, startDate: e.target.value })}
+                      className="bg-primary/[0.03] p-4 rounded-xl text-sm font-bold focus:ring-2 ring-accent outline-none border border-primary/5"
+                    />
+                  </div>
+                  <div className="flex flex-col gap-2">
+                    <label className="text-[10px] font-black uppercase tracking-widest">종료일 *</label>
+                    <input
+                      type="date"
+                      value={approveForm.endDate}
+                      onChange={(e) => setApproveForm({ ...approveForm, endDate: e.target.value })}
+                      className="bg-primary/[0.03] p-4 rounded-xl text-sm font-bold focus:ring-2 ring-accent outline-none border border-primary/5"
+                    />
+                  </div>
+                  <div className="flex flex-col gap-2">
+                    <label className="text-[10px] font-black uppercase tracking-widest">월세 *</label>
+                    <input
+                      type="number"
+                      value={approveForm.monthlyRent}
+                      onChange={(e) => setApproveForm({ ...approveForm, monthlyRent: e.target.value })}
+                      placeholder="예: 500000"
+                      className="bg-primary/[0.03] p-4 rounded-xl text-sm font-bold focus:ring-2 ring-accent outline-none border border-primary/5"
+                    />
+                  </div>
+                  <div className="flex flex-col gap-2">
+                    <label className="text-[10px] font-black uppercase tracking-widest">보증금 *</label>
+                    <input
+                      type="number"
+                      value={approveForm.deposit}
+                      onChange={(e) => setApproveForm({ ...approveForm, deposit: e.target.value })}
+                      placeholder="예: 5000000"
+                      className="bg-primary/[0.03] p-4 rounded-xl text-sm font-bold focus:ring-2 ring-accent outline-none border border-primary/5"
+                    />
+                  </div>
+                </div>
+                <div className="flex flex-col gap-2 mt-4">
+                  <label className="text-[10px] font-black uppercase tracking-widest">특약 사항</label>
+                  <textarea
+                    value={approveForm.specialTerms}
+                    onChange={(e) => setApproveForm({ ...approveForm, specialTerms: e.target.value })}
+                    placeholder="특약 조건을 입력하세요 (선택)..."
+                    className="bg-primary/[0.03] p-4 rounded-xl text-sm font-medium h-24 focus:ring-2 ring-accent outline-none resize-none border border-primary/5"
+                  />
+                </div>
+              </div>
+
+              <div className="p-8 pt-4 border-t border-primary/10 flex gap-4">
+                <button
+                  onClick={() => setApproveModal(null)}
+                  className="flex-1 px-6 py-4 bg-primary/5 text-[10px] font-black uppercase tracking-widest rounded-full hover:bg-primary/10 transition-colors"
+                >
+                  취소
+                </button>
+                <button
+                  onClick={handleApprove}
+                  disabled={isSubmitting}
+                  className="flex-1 px-6 py-4 bg-accent text-white text-[10px] font-black uppercase tracking-widest rounded-full hover:bg-primary transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+                >
+                  {isSubmitting && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
+                  승인
+                </button>
               </div>
             </motion.div>
           </div>
