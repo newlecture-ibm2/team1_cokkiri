@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { invalidateNotificationsUnreadCount } from "@/lib/notifications-events";
 
 type NotificationItem = {
@@ -19,19 +19,22 @@ export function NotificationListItem({ item }: { item: NotificationItem }) {
   const router = useRouter();
   const [isRead, setIsRead] = useState(item.isRead);
 
+  useEffect(() => {
+    setIsRead(item.isRead);
+  }, [item.isRead, item.notificationId]);
+
   const handleClick = async () => {
-    // 1. 읽음 처리 (비동기로 진행하되 페이지 이동을 막지 않음)
+    // 1. 읽음 처리 후 RSC·배지와 맞추기 (이동 전에 서버 반영·캐시 무효화)
     if (!isRead) {
-      fetch(`/api/notifications/${item.notificationId}/read`, { method: "PATCH" })
-        .then((res) => {
-          if (res.ok) {
-            setIsRead(true);
-            invalidateNotificationsUnreadCount();
-          }
-        })
-        .catch(() => {
-          /* ignore */
-        });
+      try {
+        const res = await fetch(`/api/notifications/${item.notificationId}/read`, { method: "PATCH" });
+        if (res.ok) {
+          setIsRead(true);
+          invalidateNotificationsUnreadCount();
+        }
+      } catch {
+        /* ignore */
+      }
     }
 
     // 2. 경로 설정로직 최적화 (대소문자 무관하게 체크)
