@@ -1,0 +1,112 @@
+> Task :compileJava UP-TO-DATE
+> Task :processResources UP-TO-DATE
+> Task :classes UP-TO-DATE
+> Task :compileTestJava UP-TO-DATE
+> Task :processTestResources UP-TO-DATE
+> Task :testClasses UP-TO-DATE
+OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
+
+> Task :test
+
+SecurityRoleCoverageTest > testVocApiUser() FAILED
+    java.lang.AssertionError at SecurityRoleCoverageTest.java:30
+
+2026-04-10T15:35:14.687+09:00  INFO 18672 --- [ionShutdownHook] j.LocalContainerEntityManagerFactoryBean : Closing JPA EntityManagerFactory for persistence unit 'default'
+2026-04-10T15:35:14.688+09:00 DEBUG 18672 --- [ionShutdownHook] org.hibernate.SQL                        : 
+    drop table if exists comments cascade 
+Hibernate: 
+    drop table if exists comments cascade 
+2026-04-10T15:35:14.690+09:00 DEBUG 18672 --- [ionShutdownHook] org.hibernate.SQL                        : 
+    drop table if exists common_space_details cascade 
+Hibernate: 
+    drop table if exists common_space_details cascade 
+2026-04-10T15:35:14.691+09:00 DEBUG 18672 --- [ionShutdownHook] org.hibernate.SQL                        : 
+    drop table if exists contracts cascade 
+Hibernate: 
+    drop table if exists contracts cascade 
+2026-04-10T15:35:14.692+09:00 DEBUG 18672 --- [ionShutdownHook] org.hibernate.SQL                        : 
+    drop table if exists control_logs cascade 
+Hibernate: 
+    drop table if exists control_logs cascade 
+2026-04-10T15:35:14.692+09:00 DEBUG 18672 --- [ionShutdownHook] org.hibernate.SQL                        : 
+    drop table if exists device_types cascade 
+Hibernate: 
+    drop table if exists device_types cascade 
+2026-04-10T15:35:14.693+09:00 DEBUG 18672 --- [ionShutdownHook] org.hibernate.SQL                        : 
+    drop table if exists devices cascade 
+Hibernate: 
+    drop table if exists devices cascade 
+2026-04-10T15:35:14.694+09:00 DEBUG 18672 --- [ionShutdownHook] org.hibernate.SQL                        : 
+    drop table if exists notifications cascade 
+Hibernate: 
+    drop table if exists notifications cascade 
+2026-04-10T15:35:14.694+09:00 DEBUG 18672 --- [ionShutdownHook] org.hibernate.SQL                        : 
+    drop table if exists payments cascade 
+Hibernate: 
+    drop table if exists payments cascade 
+2026-04-10T15:35:14.696+09:00 DEBUG 18672 --- [ionShutdownHook] org.hibernate.SQL                        : 
+    drop table if exists post_likes cascade 
+Hibernate: 
+    drop table if exists post_likes cascade 
+2026-04-10T15:35:14.696+09:00 DEBUG 18672 --- [ionShutdownHook] org.hibernate.SQL                        : 
+    drop table if exists posts cascade 
+Hibernate: 
+    drop table if exists posts cascade 
+2026-04-10T15:35:14.697+09:00 DEBUG 18672 --- [ionShutdownHook] org.hibernate.SQL                        : 
+    drop table if exists private_space_details cascade 
+Hibernate: 
+    drop table if exists private_space_details cascade 
+2026-04-10T15:35:14.697+09:00 DEBUG 18672 --- [ionShutdownHook] org.hibernate.SQL                        : 
+    drop table if exists refresh_tokens cascade 
+Hibernate: 
+    drop table if exists refresh_tokens cascade 
+2026-04-10T15:35:14.698+09:00 DEBUG 18672 --- [ionShutdownHook] org.hibernate.SQL                        : 
+    drop table if exists reservations cascade 
+Hibernate: 
+    drop table if exists reservations cascade 
+2026-04-10T15:35:14.699+09:00 DEBUG 18672 --- [ionShutdownHook] org.hibernate.SQL                        : 
+    drop table if exists role_change_logs cascade 
+Hibernate: 
+    drop table if exists role_change_logs cascade 
+2026-04-10T15:35:14.700+09:00 DEBUG 18672 --- [ionShutdownHook] org.hibernate.SQL                        : 
+    drop table if exists room_types cascade 
+Hibernate: 
+    drop table if exists room_types cascade 
+2026-04-10T15:35:14.700+09:00 DEBUG 18672 --- [ionShutdownHook] org.hibernate.SQL                        : 
+    drop table if exists space_images cascade 
+Hibernate: 
+    drop table if exists space_images cascade 
+2026-04-10T15:35:14.701+09:00 DEBUG 18672 --- [ionShutdownHook] org.hibernate.SQL                        : 
+    drop table if exists spaces cascade 
+Hibernate: 
+    drop table if exists spaces cascade 
+2026-04-10T15:35:14.703+09:00 DEBUG 18672 --- [ionShutdownHook] org.hibernate.SQL                        : 
+    drop table if exists token_blacklists cascade 
+Hibernate: 
+    drop table if exists token_blacklists cascade 
+2026-04-10T15:35:14.703+09:00 DEBUG 18672 --- [ionShutdownHook] org.hibernate.SQL                        : 
+    drop table if exists users cascade 
+Hibernate: 
+    drop table if exists users cascade 
+2026-04-10T15:35:14.704+09:00 DEBUG 18672 --- [ionShutdownHook] org.hibernate.SQL                        : 
+    drop table if exists vocs cascade 
+Hibernate: 
+    drop table if exists vocs cascade 
+2026-04-10T15:35:14.705+09:00  INFO 18672 --- [ionShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown initiated...
+2026-04-10T15:35:14.707+09:00  INFO 18672 --- [ionShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown completed.
+
+> Task :test FAILED
+
+16 tests completed, 1 failed
+
+FAILURE: Build failed with an exception.
+
+* What went wrong:
+Execution failed for task ':test'.
+> There were failing tests. See the report at: file:///C:/Users/hi/Desktop/cokkiri_project/project/team1_cokkiri/backend/build/reports/tests/test/index.html
+
+* Try:
+> Run with --scan to get full insights.
+
+BUILD FAILED in 14s
+5 actionable tasks: 1 executed, 4 up-to-date

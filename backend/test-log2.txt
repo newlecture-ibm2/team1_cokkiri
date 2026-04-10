@@ -1,0 +1,446 @@
+> Task :compileJava UP-TO-DATE
+> Task :processResources UP-TO-DATE
+> Task :classes UP-TO-DATE
+> Task :compileTestJava UP-TO-DATE
+> Task :processTestResources UP-TO-DATE
+> Task :testClasses UP-TO-DATE
+OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
+
+> Task :test
+
+AdminReservationControllerTest > 예약을 반려 처리할 수 있다 FAILED
+    java.lang.IllegalStateException at DefaultCacheAwareContextLoaderDelegate.java:180
+        Caused by: org.springframework.beans.factory.UnsatisfiedDependencyException at ConstructorResolver.java:795
+            Caused by: org.springframework.beans.factory.NoSuchBeanDefinitionException at DefaultListableBeanFactory.java:1894
+
+AdminReservationControllerTest > 관리자가 모든 예약 내역을 조회할 수 있다 FAILED
+    java.lang.IllegalStateException at DefaultCacheAwareContextLoaderDelegate.java:145
+
+AdminReservationControllerTest > 새로운 예약을 승인 상태로 변경할 수 있다 FAILED
+    java.lang.IllegalStateException at DefaultCacheAwareContextLoaderDelegate.java:145
+
+ReservationControllerTest > 정상적인 예약 요청 시 200 응답과 함께 reservationId를 반환한다 FAILED
+    java.lang.AssertionError at ReservationControllerTest.java:81
+
+ReservationControllerTest > 중복 예약 발생 시 409 Conflict 에러 응답을 반환한다 FAILED
+    java.lang.AssertionError at ReservationControllerTest.java:100
+
+ReservationControllerTest > 예약 취소 API POST /api/reservations/{id}/cancel 호출 시 200을 반환한다 FAILED
+    java.lang.AssertionError at ReservationControllerTest.java:135
+
+ReservationControllerTest > 본인의 예약 내역을 GET /api/reservations/my 로 조회할 수 있다 FAILED
+    java.lang.AssertionError at ReservationControllerTest.java:121
+
+ReservationCommandServiceTest > 정상적인 시간 범위와 중복이 없을 경우 예약을 성공하고 ID를 반환한다. FAILED
+    java.lang.NullPointerException at ReservationCommandServiceTest.java:132
+
+ReservationCommandServiceTest > 선택한 시간에 이미 승인된 다른 예약이 있다면 예약 신청을 거절(Exception)한다. FAILED
+    java.lang.AssertionError at ReservationCommandServiceTest.java:156
+
+ReservationEntityTest > 완료(complete) 테스트 > APPROVED → COMPLETED 전환 성공 FAILED
+    java.lang.IllegalStateException at ReservationEntityTest.java:214
+
+ReservationEntityTest > 완료(complete) 테스트 > PENDING 상태에서 완료 시 예외 발생 FAILED
+    org.opentest4j.AssertionFailedError at ReservationEntityTest.java:225
+
+ReservationEntityTest > 취소(cancel) 테스트 > APPROVED → CANCELLED 전환 성공 FAILED
+    java.lang.IllegalStateException at ReservationEntityTest.java:178
+
+ReservationEntityTest > 취소(cancel) 테스트 > COMPLETED 상태에서 취소 시 예외 발생 FAILED
+    java.lang.IllegalStateException at ReservationEntityTest.java:189
+
+ReservationEntityTest > 승인(approve) 테스트 > PENDING → APPROVED 전환 성공, approvedBy 설정 FAILED
+    java.lang.IllegalStateException at ReservationEntityTest.java:120
+
+ReservationEntityTest > 승인(approve) 테스트 > COMPLETED 상태에서 승인 시 예외 발생 FAILED
+    java.lang.IllegalStateException at ReservationEntityTest.java:153
+
+ReservationEntityTest > 승인(approve) 테스트 > APPROVED 상태에서 승인 시 예외 발생 FAILED
+    java.lang.IllegalStateException at ReservationEntityTest.java:133
+
+ReservationEntityTest > Builder 생성 테스트 > 예약 생성 시 PENDING 상태, user/space 매핑, approvedBy null FAILED
+    org.opentest4j.MultipleFailuresError at ReservationEntityTest.java:99
+        Caused by: org.opentest4j.AssertionFailedError at ReservationEntityTest.java:100
+
+ReservationJpaRepositoryTest > 활성 예약 확인 테스트 > 시간 범위 내 → 활성 예약 존재 (true) FAILED
+    java.lang.IllegalStateException at ReservationJpaRepositoryTest.java:270
+
+ReservationJpaRepositoryTest > 활성 예약 확인 테스트 > 시간 범위 외 → 활성 예약 없음 (false) FAILED
+    java.lang.IllegalStateException at ReservationJpaRepositoryTest.java:284
+
+ReservationJpaRepositoryTest > 중복 예약 체크 테스트 > 경계값 연속 → 중복 아님 (false) FAILED
+    java.lang.IllegalStateException at ReservationJpaRepositoryTest.java:237
+
+ReservationJpaRepositoryTest > 중복 예약 체크 테스트 > PENDING 상태 예약은 중복 체크에서 제외 (false) FAILED
+    org.opentest4j.AssertionFailedError at ReservationJpaRepositoryTest.java:257
+
+ReservationJpaRepositoryTest > 중복 예약 체크 테스트 > 시간 겹침 → 중복으로 판정 (true) FAILED
+    java.lang.IllegalStateException at ReservationJpaRepositoryTest.java:221
+
+ReservationJpaRepositoryTest > 시설별 조회 테스트 > 특정 시설의 APPROVED 예약만 조회 FAILED
+    java.lang.IllegalStateException at ReservationJpaRepositoryTest.java:197
+
+ReservationJpaRepositoryTest > 사용자별 조회 테스트 > 상태 필터링 조회: PENDING/APPROVED만 반환 FAILED
+    java.lang.IllegalStateException at ReservationJpaRepositoryTest.java:157
+
+ReservationJpaRepositoryTest > 기본 CRUD 테스트 > 저장 시 ID 자동 생성 및 초기 상태 PENDING FAILED
+    org.opentest4j.MultipleFailuresError at ReservationJpaRepositoryTest.java:136
+        Caused by: org.opentest4j.AssertionFailedError at ReservationJpaRepositoryTest.java:138
+
+2026-04-10T15:37:04.450+09:00  INFO 15964 --- [ionShutdownHook] j.LocalContainerEntityManagerFactoryBean : Closing JPA EntityManagerFactory for persistence unit 'default'
+2026-04-10T15:37:04.451+09:00 DEBUG 15964 --- [ionShutdownHook] org.hibernate.SQL                        : 
+    drop table if exists comments cascade 
+Hibernate: 
+    drop table if exists comments cascade 
+2026-04-10T15:37:04.452+09:00 DEBUG 15964 --- [ionShutdownHook] org.hibernate.SQL                        : 
+    drop table if exists common_space_details cascade 
+Hibernate: 
+    drop table if exists common_space_details cascade 
+2026-04-10T15:37:04.452+09:00 DEBUG 15964 --- [ionShutdownHook] org.hibernate.SQL                        : 
+    drop table if exists contracts cascade 
+Hibernate: 
+    drop table if exists contracts cascade 
+2026-04-10T15:37:04.452+09:00 DEBUG 15964 --- [ionShutdownHook] org.hibernate.SQL                        : 
+    drop table if exists control_logs cascade 
+Hibernate: 
+    drop table if exists control_logs cascade 
+2026-04-10T15:37:04.453+09:00 DEBUG 15964 --- [ionShutdownHook] org.hibernate.SQL                        : 
+    drop table if exists device_types cascade 
+Hibernate: 
+    drop table if exists device_types cascade 
+2026-04-10T15:37:04.453+09:00 DEBUG 15964 --- [ionShutdownHook] org.hibernate.SQL                        : 
+    drop table if exists devices cascade 
+Hibernate: 
+    drop table if exists devices cascade 
+2026-04-10T15:37:04.453+09:00 DEBUG 15964 --- [ionShutdownHook] org.hibernate.SQL                        : 
+    drop table if exists notifications cascade 
+Hibernate: 
+    drop table if exists notifications cascade 
+2026-04-10T15:37:04.454+09:00 DEBUG 15964 --- [ionShutdownHook] org.hibernate.SQL                        : 
+    drop table if exists payments cascade 
+Hibernate: 
+    drop table if exists payments cascade 
+2026-04-10T15:37:04.454+09:00 DEBUG 15964 --- [ionShutdownHook] org.hibernate.SQL                        : 
+    drop table if exists post_likes cascade 
+Hibernate: 
+    drop table if exists post_likes cascade 
+2026-04-10T15:37:04.454+09:00 DEBUG 15964 --- [ionShutdownHook] org.hibernate.SQL                        : 
+    drop table if exists posts cascade 
+Hibernate: 
+    drop table if exists posts cascade 
+2026-04-10T15:37:04.454+09:00 DEBUG 15964 --- [ionShutdownHook] org.hibernate.SQL                        : 
+    drop table if exists private_space_details cascade 
+Hibernate: 
+    drop table if exists private_space_details cascade 
+2026-04-10T15:37:04.454+09:00 DEBUG 15964 --- [ionShutdownHook] org.hibernate.SQL                        : 
+    drop table if exists refresh_tokens cascade 
+Hibernate: 
+    drop table if exists refresh_tokens cascade 
+2026-04-10T15:37:04.455+09:00 DEBUG 15964 --- [ionShutdownHook] org.hibernate.SQL                        : 
+    drop table if exists reservations cascade 
+Hibernate: 
+    drop table if exists reservations cascade 
+2026-04-10T15:37:04.456+09:00 DEBUG 15964 --- [ionShutdownHook] org.hibernate.SQL                        : 
+    drop table if exists role_change_logs cascade 
+Hibernate: 
+    drop table if exists role_change_logs cascade 
+2026-04-10T15:37:04.456+09:00 DEBUG 15964 --- [ionShutdownHook] org.hibernate.SQL                        : 
+    drop table if exists room_types cascade 
+Hibernate: 
+    drop table if exists room_types cascade 
+2026-04-10T15:37:04.456+09:00 DEBUG 15964 --- [ionShutdownHook] org.hibernate.SQL                        : 
+    drop table if exists space_images cascade 
+Hibernate: 
+    drop table if exists space_images cascade 
+2026-04-10T15:37:04.456+09:00 DEBUG 15964 --- [ionShutdownHook] org.hibernate.SQL                        : 
+    drop table if exists spaces cascade 
+Hibernate: 
+    drop table if exists spaces cascade 
+2026-04-10T15:37:04.456+09:00 DEBUG 15964 --- [ionShutdownHook] org.hibernate.SQL                        : 
+    drop table if exists token_blacklists cascade 
+Hibernate: 
+    drop table if exists token_blacklists cascade 
+2026-04-10T15:37:04.457+09:00 DEBUG 15964 --- [ionShutdownHook] org.hibernate.SQL                        : 
+    drop table if exists users cascade 
+Hibernate: 
+    drop table if exists users cascade 
+2026-04-10T15:37:04.458+09:00 DEBUG 15964 --- [ionShutdownHook] org.hibernate.SQL                        : 
+    drop table if exists vocs cascade 
+Hibernate: 
+    drop table if exists vocs cascade 
+2026-04-10T15:37:04.459+09:00  INFO 15964 --- [ionShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown initiated...
+2026-04-10T15:37:04.460+09:00  INFO 15964 --- [ionShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown completed.
+2026-04-10T15:37:04.461+09:00  INFO 15964 --- [ionShutdownHook] j.LocalContainerEntityManagerFactoryBean : Closing JPA EntityManagerFactory for persistence unit 'default'
+2026-04-10T15:37:04.462+09:00 DEBUG 15964 --- [ionShutdownHook] org.hibernate.SQL                        : 
+    drop table if exists comments cascade 
+Hibernate: 
+    drop table if exists comments cascade 
+2026-04-10T15:37:04.462+09:00 DEBUG 15964 --- [ionShutdownHook] org.hibernate.SQL                        : 
+    drop table if exists common_space_details cascade 
+Hibernate: 
+    drop table if exists common_space_details cascade 
+2026-04-10T15:37:04.463+09:00 DEBUG 15964 --- [ionShutdownHook] org.hibernate.SQL                        : 
+    drop table if exists contracts cascade 
+Hibernate: 
+    drop table if exists contracts cascade 
+2026-04-10T15:37:04.463+09:00 DEBUG 15964 --- [ionShutdownHook] org.hibernate.SQL                        : 
+    drop table if exists control_logs cascade 
+Hibernate: 
+    drop table if exists control_logs cascade 
+2026-04-10T15:37:04.463+09:00 DEBUG 15964 --- [ionShutdownHook] org.hibernate.SQL                        : 
+    drop table if exists device_types cascade 
+Hibernate: 
+    drop table if exists device_types cascade 
+2026-04-10T15:37:04.463+09:00 DEBUG 15964 --- [ionShutdownHook] org.hibernate.SQL                        : 
+    drop table if exists devices cascade 
+Hibernate: 
+    drop table if exists devices cascade 
+2026-04-10T15:37:04.463+09:00 DEBUG 15964 --- [ionShutdownHook] org.hibernate.SQL                        : 
+    drop table if exists notifications cascade 
+Hibernate: 
+    drop table if exists notifications cascade 
+2026-04-10T15:37:04.465+09:00 DEBUG 15964 --- [ionShutdownHook] org.hibernate.SQL                        : 
+    drop table if exists payments cascade 
+Hibernate: 
+    drop table if exists payments cascade 
+2026-04-10T15:37:04.465+09:00 DEBUG 15964 --- [ionShutdownHook] org.hibernate.SQL                        : 
+    drop table if exists post_likes cascade 
+Hibernate: 
+    drop table if exists post_likes cascade 
+2026-04-10T15:37:04.466+09:00 DEBUG 15964 --- [ionShutdownHook] org.hibernate.SQL                        : 
+    drop table if exists posts cascade 
+Hibernate: 
+    drop table if exists posts cascade 
+2026-04-10T15:37:04.466+09:00 DEBUG 15964 --- [ionShutdownHook] org.hibernate.SQL                        : 
+    drop table if exists private_space_details cascade 
+Hibernate: 
+    drop table if exists private_space_details cascade 
+2026-04-10T15:37:04.466+09:00 DEBUG 15964 --- [ionShutdownHook] org.hibernate.SQL                        : 
+    drop table if exists refresh_tokens cascade 
+Hibernate: 
+    drop table if exists refresh_tokens cascade 
+2026-04-10T15:37:04.466+09:00 DEBUG 15964 --- [ionShutdownHook] org.hibernate.SQL                        : 
+    drop table if exists reservations cascade 
+Hibernate: 
+    drop table if exists reservations cascade 
+2026-04-10T15:37:04.466+09:00 DEBUG 15964 --- [ionShutdownHook] org.hibernate.SQL                        : 
+    drop table if exists role_change_logs cascade 
+Hibernate: 
+    drop table if exists role_change_logs cascade 
+2026-04-10T15:37:04.467+09:00 DEBUG 15964 --- [ionShutdownHook] org.hibernate.SQL                        : 
+    drop table if exists room_types cascade 
+Hibernate: 
+    drop table if exists room_types cascade 
+2026-04-10T15:37:04.467+09:00 DEBUG 15964 --- [ionShutdownHook] org.hibernate.SQL                        : 
+    drop table if exists space_images cascade 
+Hibernate: 
+    drop table if exists space_images cascade 
+2026-04-10T15:37:04.467+09:00 DEBUG 15964 --- [ionShutdownHook] org.hibernate.SQL                        : 
+    drop table if exists spaces cascade 
+Hibernate: 
+    drop table if exists spaces cascade 
+2026-04-10T15:37:04.468+09:00 DEBUG 15964 --- [ionShutdownHook] org.hibernate.SQL                        : 
+    drop table if exists token_blacklists cascade 
+Hibernate: 
+    drop table if exists token_blacklists cascade 
+2026-04-10T15:37:04.468+09:00 DEBUG 15964 --- [ionShutdownHook] org.hibernate.SQL                        : 
+    drop table if exists users cascade 
+Hibernate: 
+    drop table if exists users cascade 
+2026-04-10T15:37:04.468+09:00 DEBUG 15964 --- [ionShutdownHook] org.hibernate.SQL                        : 
+    drop table if exists vocs cascade 
+Hibernate: 
+    drop table if exists vocs cascade 
+2026-04-10T15:37:04.469+09:00  INFO 15964 --- [ionShutdownHook] j.LocalContainerEntityManagerFactoryBean : Closing JPA EntityManagerFactory for persistence unit 'default'
+2026-04-10T15:37:04.469+09:00 DEBUG 15964 --- [ionShutdownHook] org.hibernate.SQL                        : 
+    drop table if exists comments cascade 
+Hibernate: 
+    drop table if exists comments cascade 
+2026-04-10T15:37:04.470+09:00 DEBUG 15964 --- [ionShutdownHook] org.hibernate.SQL                        : 
+    drop table if exists post_likes cascade 
+Hibernate: 
+    drop table if exists post_likes cascade 
+2026-04-10T15:37:04.470+09:00 DEBUG 15964 --- [ionShutdownHook] org.hibernate.SQL                        : 
+    drop table if exists posts cascade 
+Hibernate: 
+    drop table if exists posts cascade 
+2026-04-10T15:37:04.485+09:00  INFO 15964 --- [ionShutdownHook] j.LocalContainerEntityManagerFactoryBean : Closing JPA EntityManagerFactory for persistence unit 'default'
+2026-04-10T15:37:04.485+09:00 DEBUG 15964 --- [ionShutdownHook] org.hibernate.SQL                        : 
+    drop table if exists comments cascade 
+Hibernate: 
+    drop table if exists comments cascade 
+2026-04-10T15:37:04.485+09:00 DEBUG 15964 --- [ionShutdownHook] org.hibernate.SQL                        : 
+    drop table if exists common_space_details cascade 
+Hibernate: 
+    drop table if exists common_space_details cascade 
+2026-04-10T15:37:04.485+09:00 DEBUG 15964 --- [ionShutdownHook] org.hibernate.SQL                        : 
+    drop table if exists contracts cascade 
+Hibernate: 
+    drop table if exists contracts cascade 
+2026-04-10T15:37:04.485+09:00 DEBUG 15964 --- [ionShutdownHook] org.hibernate.SQL                        : 
+    drop table if exists control_logs cascade 
+Hibernate: 
+    drop table if exists control_logs cascade 
+2026-04-10T15:37:04.486+09:00 DEBUG 15964 --- [ionShutdownHook] org.hibernate.SQL                        : 
+    drop table if exists device_types cascade 
+Hibernate: 
+    drop table if exists device_types cascade 
+2026-04-10T15:37:04.486+09:00 DEBUG 15964 --- [ionShutdownHook] org.hibernate.SQL                        : 
+    drop table if exists devices cascade 
+Hibernate: 
+    drop table if exists devices cascade 
+2026-04-10T15:37:04.486+09:00 DEBUG 15964 --- [ionShutdownHook] org.hibernate.SQL                        : 
+    drop table if exists notifications cascade 
+Hibernate: 
+    drop table if exists notifications cascade 
+2026-04-10T15:37:04.486+09:00 DEBUG 15964 --- [ionShutdownHook] org.hibernate.SQL                        : 
+    drop table if exists payments cascade 
+Hibernate: 
+    drop table if exists payments cascade 
+2026-04-10T15:37:04.486+09:00 DEBUG 15964 --- [ionShutdownHook] org.hibernate.SQL                        : 
+    drop table if exists post_likes cascade 
+Hibernate: 
+    drop table if exists post_likes cascade 
+2026-04-10T15:37:04.486+09:00 DEBUG 15964 --- [ionShutdownHook] org.hibernate.SQL                        : 
+    drop table if exists posts cascade 
+Hibernate: 
+    drop table if exists posts cascade 
+2026-04-10T15:37:04.486+09:00 DEBUG 15964 --- [ionShutdownHook] org.hibernate.SQL                        : 
+    drop table if exists private_space_details cascade 
+Hibernate: 
+    drop table if exists private_space_details cascade 
+2026-04-10T15:37:04.486+09:00 DEBUG 15964 --- [ionShutdownHook] org.hibernate.SQL                        : 
+    drop table if exists refresh_tokens cascade 
+Hibernate: 
+    drop table if exists refresh_tokens cascade 
+2026-04-10T15:37:04.486+09:00 DEBUG 15964 --- [ionShutdownHook] org.hibernate.SQL                        : 
+    drop table if exists reservations cascade 
+Hibernate: 
+    drop table if exists reservations cascade 
+2026-04-10T15:37:04.486+09:00 DEBUG 15964 --- [ionShutdownHook] org.hibernate.SQL                        : 
+    drop table if exists role_change_logs cascade 
+Hibernate: 
+    drop table if exists role_change_logs cascade 
+2026-04-10T15:37:04.486+09:00 DEBUG 15964 --- [ionShutdownHook] org.hibernate.SQL                        : 
+    drop table if exists room_types cascade 
+Hibernate: 
+    drop table if exists room_types cascade 
+2026-04-10T15:37:04.486+09:00 DEBUG 15964 --- [ionShutdownHook] org.hibernate.SQL                        : 
+    drop table if exists space_images cascade 
+Hibernate: 
+    drop table if exists space_images cascade 
+2026-04-10T15:37:04.486+09:00 DEBUG 15964 --- [ionShutdownHook] org.hibernate.SQL                        : 
+    drop table if exists spaces cascade 
+Hibernate: 
+    drop table if exists spaces cascade 
+2026-04-10T15:37:04.486+09:00 DEBUG 15964 --- [ionShutdownHook] org.hibernate.SQL                        : 
+    drop table if exists token_blacklists cascade 
+Hibernate: 
+    drop table if exists token_blacklists cascade 
+2026-04-10T15:37:04.486+09:00 DEBUG 15964 --- [ionShutdownHook] org.hibernate.SQL                        : 
+    drop table if exists users cascade 
+Hibernate: 
+    drop table if exists users cascade 
+2026-04-10T15:37:04.486+09:00 DEBUG 15964 --- [ionShutdownHook] org.hibernate.SQL                        : 
+    drop table if exists vocs cascade 
+Hibernate: 
+    drop table if exists vocs cascade 
+2026-04-10T15:37:04.487+09:00  INFO 15964 --- [ionShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-2 - Shutdown initiated...
+2026-04-10T15:37:04.488+09:00  INFO 15964 --- [ionShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-2 - Shutdown completed.
+2026-04-10T15:37:04.490+09:00  INFO 15964 --- [ionShutdownHook] j.LocalContainerEntityManagerFactoryBean : Closing JPA EntityManagerFactory for persistence unit 'default'
+2026-04-10T15:37:04.491+09:00 DEBUG 15964 --- [ionShutdownHook] org.hibernate.SQL                        : 
+    drop table if exists comments cascade 
+Hibernate: 
+    drop table if exists comments cascade 
+2026-04-10T15:37:04.491+09:00 DEBUG 15964 --- [ionShutdownHook] org.hibernate.SQL                        : 
+    drop table if exists common_space_details cascade 
+Hibernate: 
+    drop table if exists common_space_details cascade 
+2026-04-10T15:37:04.492+09:00 DEBUG 15964 --- [ionShutdownHook] org.hibernate.SQL                        : 
+    drop table if exists contracts cascade 
+Hibernate: 
+    drop table if exists contracts cascade 
+2026-04-10T15:37:04.492+09:00 DEBUG 15964 --- [ionShutdownHook] org.hibernate.SQL                        : 
+    drop table if exists control_logs cascade 
+Hibernate: 
+    drop table if exists control_logs cascade 
+2026-04-10T15:37:04.492+09:00 DEBUG 15964 --- [ionShutdownHook] org.hibernate.SQL                        : 
+    drop table if exists device_types cascade 
+Hibernate: 
+    drop table if exists device_types cascade 
+2026-04-10T15:37:04.492+09:00 DEBUG 15964 --- [ionShutdownHook] org.hibernate.SQL                        : 
+    drop table if exists devices cascade 
+Hibernate: 
+    drop table if exists devices cascade 
+2026-04-10T15:37:04.492+09:00 DEBUG 15964 --- [ionShutdownHook] org.hibernate.SQL                        : 
+    drop table if exists notifications cascade 
+Hibernate: 
+    drop table if exists notifications cascade 
+2026-04-10T15:37:04.492+09:00 DEBUG 15964 --- [ionShutdownHook] org.hibernate.SQL                        : 
+    drop table if exists payments cascade 
+Hibernate: 
+    drop table if exists payments cascade 
+2026-04-10T15:37:04.493+09:00 DEBUG 15964 --- [ionShutdownHook] org.hibernate.SQL                        : 
+    drop table if exists post_likes cascade 
+Hibernate: 
+    drop table if exists post_likes cascade 
+2026-04-10T15:37:04.493+09:00 DEBUG 15964 --- [ionShutdownHook] org.hibernate.SQL                        : 
+    drop table if exists posts cascade 
+Hibernate: 
+    drop table if exists posts cascade 
+2026-04-10T15:37:04.493+09:00 DEBUG 15964 --- [ionShutdownHook] org.hibernate.SQL                        : 
+    drop table if exists private_space_details cascade 
+Hibernate: 
+    drop table if exists private_space_details cascade 
+2026-04-10T15:37:04.493+09:00 DEBUG 15964 --- [ionShutdownHook] org.hibernate.SQL                        : 
+    drop table if exists refresh_tokens cascade 
+Hibernate: 
+    drop table if exists refresh_tokens cascade 
+2026-04-10T15:37:04.494+09:00 DEBUG 15964 --- [ionShutdownHook] org.hibernate.SQL                        : 
+    drop table if exists reservations cascade 
+Hibernate: 
+    drop table if exists reservations cascade 
+2026-04-10T15:37:04.494+09:00 DEBUG 15964 --- [ionShutdownHook] org.hibernate.SQL                        : 
+    drop table if exists role_change_logs cascade 
+Hibernate: 
+    drop table if exists role_change_logs cascade 
+2026-04-10T15:37:04.494+09:00 DEBUG 15964 --- [ionShutdownHook] org.hibernate.SQL                        : 
+    drop table if exists room_types cascade 
+Hibernate: 
+    drop table if exists room_types cascade 
+2026-04-10T15:37:04.494+09:00 DEBUG 15964 --- [ionShutdownHook] org.hibernate.SQL                        : 
+    drop table if exists space_images cascade 
+Hibernate: 
+    drop table if exists space_images cascade 
+2026-04-10T15:37:04.495+09:00 DEBUG 15964 --- [ionShutdownHook] org.hibernate.SQL                        : 
+    drop table if exists spaces cascade 
+Hibernate: 
+    drop table if exists spaces cascade 
+2026-04-10T15:37:04.495+09:00 DEBUG 15964 --- [ionShutdownHook] org.hibernate.SQL                        : 
+    drop table if exists token_blacklists cascade 
+Hibernate: 
+    drop table if exists token_blacklists cascade 
+2026-04-10T15:37:04.495+09:00 DEBUG 15964 --- [ionShutdownHook] org.hibernate.SQL                        : 
+    drop table if exists users cascade 
+Hibernate: 
+    drop table if exists users cascade 
+2026-04-10T15:37:04.495+09:00 DEBUG 15964 --- [ionShutdownHook] org.hibernate.SQL                        : 
+    drop table if exists vocs cascade 
+Hibernate: 
+    drop table if exists vocs cascade 
+
+> Task :test FAILED
+
+84 tests completed, 25 failed
+
+FAILURE: Build failed with an exception.
+
+* What went wrong:
+Execution failed for task ':test'.
+> There were failing tests. See the report at: file:///C:/Users/hi/Desktop/cokkiri_project/project/team1_cokkiri/backend/build/reports/tests/test/index.html
+
+* Try:
+> Run with --scan to get full insights.
+
+BUILD FAILED in 26s
+5 actionable tasks: 1 executed, 4 up-to-date
