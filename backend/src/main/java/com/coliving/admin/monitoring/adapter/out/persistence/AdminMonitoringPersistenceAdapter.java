@@ -115,6 +115,7 @@ public class AdminMonitoringPersistenceAdapter implements AdminMonitoringReposit
         StringBuilder sql = new StringBuilder("""
                 SELECT COUNT(*)
                 FROM control_logs cl
+                JOIN devices d ON cl.device_id = d.device_id
                 WHERE cl.deleted_at IS NULL
                 """);
 
@@ -135,6 +136,9 @@ public class AdminMonitoringPersistenceAdapter implements AdminMonitoringReposit
         if (command.userId() != null) {
             sql.append(" AND cl.user_id = :userId");
         }
+        if (command.spaceId() != null) {
+            sql.append(" AND d.space_id = :spaceId");
+        }
         if (command.result() != null) {
             sql.append(" AND cl.result = :result");
         }
@@ -152,6 +156,9 @@ public class AdminMonitoringPersistenceAdapter implements AdminMonitoringReposit
         }
         if (command.userId() != null) {
             query.setParameter("userId", command.userId());
+        }
+        if (command.spaceId() != null) {
+            query.setParameter("spaceId", command.spaceId());
         }
         if (command.result() != null) {
             query.setParameter("result", command.result());

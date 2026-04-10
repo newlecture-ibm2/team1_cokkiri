@@ -8,6 +8,7 @@ import DeviceTypeCommandChart from "./_components/DeviceTypeCommandChart";
 import DailyTrendChart from "./_components/DailyTrendChart";
 import ErrorTrendChart from "./_components/ErrorTrendChart";
 import ErrorDeviceTable from "./_components/ErrorDeviceTable";
+import ControlLogTable from "./_components/ControlLogTable";
 import { fetchDeviceErrors, fetchEnergyStats } from "./_api";
 import type { DeviceErrorStats, EnergyStatsResponse } from "./_types";
 
@@ -209,6 +210,22 @@ export default function MonitoringPage() {
           )}
         </h2>
         <ErrorDeviceTable data={errors} isLoading={isLoading} />
+      </motion.div>
+
+      {/* ─── ROW 7: 제어 이력 테이블 ─── */}
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.45 }}
+        className="bg-white rounded-2xl p-6 border border-[var(--secondary)]/30 mt-8"
+      >
+        <h2 className="text-lg font-bold text-[var(--primary)] mb-1">
+          기기 제어 이력
+        </h2>
+        <p className="text-xs text-[var(--muted)] mb-4">
+          모든 공간의 기기 제어 로그를 조회하고, 호실이나 공용시설로 필터링할 수 있습니다
+        </p>
+        <ControlLogTable />
       </motion.div>
     </motion.div>
   );

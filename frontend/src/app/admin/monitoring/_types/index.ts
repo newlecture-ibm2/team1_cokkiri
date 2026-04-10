@@ -45,3 +45,34 @@ export interface SpaceDeviceStatus {
   status: "ONLINE" | "OFFLINE" | "ERROR";
   count: number;
 }
+
+export interface ControlLog {
+  controlLogId: number;
+  deviceId: number;
+  deviceName: string;
+  deviceTypeName: string;
+  spaceName: string;
+  userId: number | null;
+  userName: string | null;
+  actorType: string;
+  command: string;
+  commandParams: string | null;
+  result: "SUCCESS" | "FAILURE";
+  errorMessage: string | null;
+  correlationId: string | null;
+  createdAt: string;
+}
+
+export interface ControlLogPage {
+  content: ControlLog[];
+  page: number;
+  size: number;
+  totalElements: number;
+  totalPages: number;
+}
+
+export interface SpaceOption {
+  spaceId: number;
+  name: string;
+  type: "PRIVATE" | "COMMON";
+}
