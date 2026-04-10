@@ -61,7 +61,7 @@ export function GridCanvas({
       {/* 백그라운드 이미지 레이어 (격자 뒤) */}
       {blueprintUrl && (
         <div
-          className="absolute inset-0 z-0 pointer-events-none bg-center bg-no-repeat bg-cover"
+          className="absolute inset-0 z-0 pointer-events-none bg-center bg-no-repeat bg-contain"
           style={{
             backgroundImage: `url(${blueprintUrl})`,
             opacity: blueprintOpacity,

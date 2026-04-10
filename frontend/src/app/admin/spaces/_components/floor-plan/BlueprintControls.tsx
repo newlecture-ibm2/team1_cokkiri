@@ -41,14 +41,19 @@ export function BlueprintControls({
       />
 
       {!blueprintUrl ? (
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => fileInputRef.current?.click()}
-          className="flex items-center gap-2"
-        >
-          <Upload className="w-4 h-4" /> 도면 업로드
-        </Button>
+        <div className="flex items-center gap-4">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => fileInputRef.current?.click()}
+            className="flex items-center gap-2"
+          >
+            <Upload className="w-4 h-4" /> 도면 업로드
+          </Button>
+          <span className="text-[10px] opacity-40 tracking-tight">
+            권장 비율 3:2 (예: 1200×800px). 비율이 다르면 여백이 생길 수 있습니다.
+          </span>
+        </div>
       ) : (
         <div className="flex items-center gap-6 flex-1">
           <Button

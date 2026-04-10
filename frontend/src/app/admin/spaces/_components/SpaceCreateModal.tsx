@@ -132,7 +132,7 @@ export default function SpaceCreateModal({
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
               />
             </div>
-            
+
             <div className="col-span-2 sm:col-span-1">
               <label className="block text-sm font-bold mb-2">유형</label>
               <select
@@ -169,11 +169,10 @@ export default function SpaceCreateModal({
                 <button
                   type="button"
                   onClick={() => setFormData({ ...formData, isReservable: !formData.isReservable })}
-                  className={`w-full px-4 py-3 rounded-2xl font-bold tracking-tight transition-all duration-300 border ${
-                    formData.isReservable
+                  className={`w-full px-4 py-3 rounded-2xl font-bold tracking-tight transition-all duration-300 border ${formData.isReservable
                       ? 'bg-[var(--color-accent)] text-white border-[var(--color-accent)]'
                       : 'bg-[var(--color-muted)] text-[var(--foreground)]/60 border-transparent'
-                  }`}
+                    }`}
                 >
                   {formData.isReservable ? '✓ 예약제 (시설 예약 필요)' : '자유 이용 (예약 불필요)'}
                 </button>
@@ -223,7 +222,7 @@ export default function SpaceCreateModal({
 
             <div className="col-span-2 border-t border-[var(--color-border)] pt-4 mt-2">
               <label className="block text-sm font-bold mb-2">이미지 업로드 (드래그 앤 드롭)</label>
-              <div 
+              <div
                 onDragOver={handleDragOver}
                 onDrop={handleDrop}
                 onClick={() => fileInputRef.current?.click()}
@@ -250,12 +249,12 @@ export default function SpaceCreateModal({
           </div>
 
           <div className="flex justify-end pt-4">
-            <button 
+            <button
               onClick={submit}
               disabled={isSubmitting || !formData.name}
               className="group relative px-6 py-3 rounded-2xl text-[var(--background)] bg-[var(--foreground)] hover:bg-[var(--foreground)]/90 font-black tracking-tighter disabled:opacity-50 transition overflow-hidden"
             >
-               {isSubmitting ? '진행 중...' : '공간 등록 완료'}
+              {isSubmitting ? '진행 중...' : '공간 등록 완료'}
             </button>
           </div>
         </motion.div>

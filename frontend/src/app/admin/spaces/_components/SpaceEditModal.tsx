@@ -46,7 +46,7 @@ export default function SpaceEditModal({ isOpen, space, onClose, onUpdated }: Sp
     setIsSubmitting(true);
     try {
       await updateSpace(space.spaceId, formData);
-      
+
       for (const [idx, file] of newFiles.entries()) {
         await uploadSpaceImage(space.spaceId, file, !formData.images?.length && idx === 0);
       }
@@ -172,11 +172,10 @@ export default function SpaceEditModal({ isOpen, space, onClose, onUpdated }: Sp
                 <button
                   type="button"
                   onClick={() => setFormData({ ...formData, isReservable: !formData.isReservable })}
-                  className={`w-full px-4 py-3 rounded-2xl font-bold tracking-tight transition-all duration-300 border ${
-                    formData.isReservable
+                  className={`w-full px-4 py-3 rounded-2xl font-bold tracking-tight transition-all duration-300 border ${formData.isReservable
                       ? 'bg-[var(--color-accent)] text-white border-[var(--color-accent)]'
                       : 'bg-[var(--color-muted)] text-[var(--foreground)]/60 border-transparent'
-                  }`}
+                    }`}
                 >
                   {formData.isReservable ? '✓ 예약제 (시설 예약 필요)' : '자유 이용 (예약 불필요)'}
                 </button>
@@ -332,7 +331,7 @@ export default function SpaceEditModal({ isOpen, space, onClose, onUpdated }: Sp
             {/* 이미지 관리 */}
             <div className="mt-6 border-t border-[var(--color-border)] pt-4">
               <label className="block text-sm font-bold mb-2">이미지 관리</label>
-              
+
               {/* 기존 이미지 */}
               {formData.images && formData.images.length > 0 && (
                 <div className="mb-4">
@@ -355,7 +354,7 @@ export default function SpaceEditModal({ isOpen, space, onClose, onUpdated }: Sp
               )}
 
               {/* 새 이미지 드래그앤드롭 업로드 */}
-              <div 
+              <div
                 onDragOver={handleDragOver}
                 onDrop={handleDrop}
                 onClick={() => fileInputRef.current?.click()}
@@ -365,7 +364,7 @@ export default function SpaceEditModal({ isOpen, space, onClose, onUpdated }: Sp
                 <p className="text-sm font-bold tracking-tighter cursor-pointer">여기를 클릭하거나 파일을 끌어다 놓아 새 이미지를 추가하세요</p>
                 <input type="file" multiple className="hidden" ref={fileInputRef} onChange={handleFileChange} />
               </div>
-              
+
               {/* 새 이미지 미리보기 */}
               {newFiles.length > 0 && (
                 <div className="flex flex-wrap gap-3">
