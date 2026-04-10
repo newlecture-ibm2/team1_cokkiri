@@ -14,6 +14,8 @@ export default function DeviceHistoryPage() {
   const [page, setPage] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
   const [totalElements, setTotalElements] = useState(0);
+  const [successCount, setSuccessCount] = useState(0);
+  const [failureCount, setFailureCount] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
   const [filters, setFilters] = useState<ControlLogFilters>({});
   const [error, setError] = useState<string | null>(null);
@@ -33,6 +35,11 @@ export default function DeviceHistoryPage() {
           setPage(data.page);
           setTotalPages(data.totalPages);
           setTotalElements(data.totalElements);
+          // 첫 페이지 요청 시에만 전체 통계 갱신 (백엔드 집계)
+          if (!append) {
+            setSuccessCount(data.successCount ?? 0);
+            setFailureCount(data.failureCount ?? 0);
+          }
         }
       } catch (err) {
         setError(err instanceof Error ? err.message : "이력을 불러오지 못했습니다.");
@@ -76,9 +83,7 @@ export default function DeviceHistoryPage() {
     return () => observerRef.current?.disconnect();
   }, [isLoading, page, totalPages, filters, loadLogs]);
 
-  /* ── 통계 요약 ── */
-  const successCount = logs.filter((l) => l.result === "SUCCESS").length;
-  const failureCount = logs.filter((l) => l.result === "FAILURE").length;
+  /* ── 통계 요약 (백엔드 전체 집계 기준) ── */
 
   return (
     <motion.div

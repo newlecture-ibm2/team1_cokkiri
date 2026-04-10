@@ -17,4 +17,6 @@ public interface ControlLogJpaRepository extends JpaRepository<ControlLogEntity,
     List<ControlLogEntity> findByDeviceId(Long deviceId);
 
     boolean existsByDeviceId(Long deviceId);
+
+    long countByUserIdAndResult(Long userId, ControlResult result);
 }

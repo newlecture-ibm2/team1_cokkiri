@@ -13,6 +13,7 @@ export default function ControlLogTable() {
   const [spaceId, setSpaceId] = useState<number | undefined>();
   const [resultFilter, setResultFilter] = useState<string | undefined>();
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const pageSize = 10;
 
   // 공간 목록 로드
@@ -27,6 +28,7 @@ export default function ControlLogTable() {
   // 이력 로드
   const loadLogs = useCallback(async () => {
     setIsLoading(true);
+    setError(null);
     try {
       const data = await fetchControlLogs({
         spaceId,
@@ -39,7 +41,9 @@ export default function ControlLogTable() {
         setTotalElements(data.totalElements);
         setTotalPages(data.totalPages);
       }
-    } catch (_e) {
+    } catch (e: unknown) {
+      console.error("[ControlLogTable] API Error:", e);
+      setError(e instanceof Error ? e.message : "제어 이력을 불러오지 못했습니다");
       setLogs([]);
     } finally {
       setIsLoading(false);
@@ -73,6 +77,19 @@ export default function ControlLogTable() {
 
   return (
     <div>
+      {/* 에러 표시 */}
+      {error && (
+        <div className="bg-red-50 text-red-600 rounded-xl p-4 mb-4 text-sm">
+          ⚠ {error}
+          <button
+            onClick={() => loadLogs()}
+            className="ml-3 underline text-xs"
+          >
+            다시 시도
+          </button>
+        </div>
+      )}
+
       {/* 필터 바 */}
       <div className="flex flex-wrap gap-3 mb-4">
         <select
