@@ -34,6 +34,14 @@ export interface SpaceDTO {
   operatingHours?: string;
   isReservable?: boolean;
   usageFee?: number;
+  // Position (평면도 배치용)
+  positionX?: number;
+  positionY?: number;
+  positionW?: number;
+  positionH?: number;
+
+  // Device Error (모니터링 오버레이용)
+  hasDeviceError?: boolean;
 
   // Images
   images?: {
@@ -42,6 +50,16 @@ export interface SpaceDTO {
     imageType: string;
     isThumbnail: boolean;
   }[];
+}
+
+/** 응답의 중첩 구조에서 roomTypeName 안전 추출 */
+export function extractRoomTypeName(space: SpaceDTO): string | undefined {
+  // Backend 응답이 중첩 구조(privateDetail.roomTypeName)인 경우 대응
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const nested = (space as any).privateDetail as
+    | { roomTypeName?: string }
+    | undefined;
+  return space.roomTypeName || nested?.roomTypeName;
 }
 
 export const fetchSpaces = async (params?: { type?: string; status?: string }) => {
@@ -59,6 +77,15 @@ export const fetchSpaces = async (params?: { type?: string; status?: string }) =
     }));
   }
   return res;
+};
+
+export const updateSpaceLayout = async (
+  positions: { spaceId: number; positionX: number; positionY: number; positionW?: number; positionH?: number }[],
+) => {
+  return await apiFetch<void>('/admin/spaces/layout', {
+    method: 'PUT',
+    body: JSON.stringify({ positions }),
+  });
 };
 
 export const createSpace = async (data: SpaceDTO & Record<string, any>) => {

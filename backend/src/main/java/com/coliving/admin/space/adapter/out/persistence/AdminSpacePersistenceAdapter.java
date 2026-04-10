@@ -62,6 +62,8 @@ public class AdminSpacePersistenceAdapter implements AdminSpaceRepositoryPort {
                 .description(adminSpace.getDescription())
                 .positionX(adminSpace.getPositionX())
                 .positionY(adminSpace.getPositionY())
+                .positionW(adminSpace.getPositionW())
+                .positionH(adminSpace.getPositionH())
                 .build();
 
         SpaceEntity savedSpace = spaceJpaRepository.save(entity);
@@ -105,7 +107,17 @@ public class AdminSpacePersistenceAdapter implements AdminSpaceRepositoryPort {
 
     @Override
     public void updatePositions(List<AdminSpace> spaces) {
-        throw new UnsupportedOperationException("Space 배치 수정 기능은 feat/59 이후 범위입니다.");
+        for (AdminSpace adminSpace : spaces) {
+            SpaceEntity entity = spaceJpaRepository.findById(adminSpace.getSpaceId())
+                    .orElseThrow(() -> new BusinessException(ErrorCode.SPACE_NOT_FOUND));
+            entity.updatePosition(
+                    adminSpace.getPositionX(),
+                    adminSpace.getPositionY(),
+                    adminSpace.getPositionW(),
+                    adminSpace.getPositionH()
+            );
+            spaceJpaRepository.save(entity);
+        }
     }
 
     // === Detail 생성/수정 ===
@@ -187,7 +199,10 @@ public class AdminSpacePersistenceAdapter implements AdminSpaceRepositoryPort {
                 .amenities(parseAmenities(entity.getAmenities()))
                 .description(entity.getDescription())
                 .positionX(entity.getPositionX())
-                .positionY(entity.getPositionY());
+                .positionY(entity.getPositionY())
+                .positionW(entity.getPositionW())
+                .positionH(entity.getPositionH())
+                .hasDeviceError(entity.getHasDeviceError());
 
         if (entity.getPrivateDetail() != null) {
             builder.privateDetail(AdminSpace.PrivateSpaceDetail.builder()

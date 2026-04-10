@@ -120,6 +120,14 @@ PW재입력→검증: ACTIVE계약없음+미납금없음→확인모달→개인
 ### 2.6 내계약조회 | USR-CTR-02 | Should — 상태,호실,기간,임대료,보증금,체결일. 활성계약없으면 "계약없음"+방둘러보기안내
 ### 2.7 활동이력 | USR-HST-01 | Should — 탭: 신청이력/계약이력/게시글이력/댓글이력. 각 최신순 정렬. 백엔드 집계 시 **`GET /api/users/me/history`**(Query: `type`, `p`, `s`) 등 단일·분할 API로 제공 가능 — `api-specification.md` §2.6, `03-backend-architecture.md` §5-1 참조
 
+### 2.8 공용시설 소개 | USR-EXP-01 | Should | 🔓Public
+표시: 공용시설 목록(이미지,공간명,운영시간,수용인원,예약가능여부), 상세(이미지갤러리,시설스펙,운영정보)
+API: `GET /api/experience`, `GET /api/experience/{spaceId}` — 예약 가능 여부 무관 전체 공용시설 조회
+
+### 2.9 사용자용 평면도 | USR-FLR-01 | Should | 🔓Public
+층별 공간 현황을 시각적으로 확인하는 인터랙티브 뷰어(읽기 전용). 공간 블록 클릭 시 상세 페이지 이동(PRIVATE→`/rooms/{id}`, COMMON→`/experience/{id}`)
+API: `GET /api/floors` — 층 목록+공간 블록+어노테이션+배경 이미지(민감 정보 제외)
+
 ---
 
 ## 3. RESIDENT 기능
