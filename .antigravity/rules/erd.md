@@ -3,7 +3,7 @@ trigger: always_on
 ---
 
 # ERD (압축본)
-PostgreSQL 기준 | 20개 테이블 | PK:`{테이블}_id` | FK:참조PK명동일 | 모든테이블 soft delete(`deleted_at`)
+PostgreSQL 기준 | 21개 테이블 | PK:`{테이블}_id` | FK:참조PK명동일 | 모든테이블 soft delete(`deleted_at`)
 v2.0: BOOKING+CONTRACT합병, SPACE상속패턴분리, JSONB통합(첨부/링크), PK/FK네이밍통일
 
 ## 1. 테이블 정의
@@ -78,12 +78,18 @@ JSONB형식: attachments=[{file_url,file_name,file_size}], links=[{url}]
 ### token_blacklists
 `token_blacklist_id(PK), token_jti(UK), expires_at, reason, created_at, updated_at, deleted_at`
 
+### floor_plans — 층별 배경 설계도 + 비공간 요소 (평면도 v2)
+`floor_plan_id(PK), floor(UK,INTEGER), blueprint_url(VARCHAR,nullable), blueprint_opacity(NUMERIC(3,2) DEFAULT 0.30), annotations(JSONB DEFAULT '[]'), created_at, updated_at, deleted_at`
+JSONB형식: annotations=[{label, icon_type(DOOR/STAIRS/GARDEN/ELEVATOR/RESTROOM/CUSTOM), position_x, position_y, position_w, position_h, color}]
+> FK 없음. `spaces.floor` 정수값과 논리적 연결만 존재. 기존 JSONB 패턴(posts.attachments 등)과 동일한 설계.
+
 ---
 
 ## 2. 관계
 
 USERS→1:N: CONTRACT, RESERVATION, POST, COMMENT, POST_LIKE, VOC, CONTROL_LOG, PAYMENT, ROLE_CHANGE_LOG, REFRESH_TOKEN, NOTIFICATION
 SPACE→1:1: PRIVATE_SPACE_DETAIL, COMMON_SPACE_DETAIL | SPACE→1:N: SPACE_IMAGE, DEVICE, CONTRACT, RESERVATION
+FLOOR_PLANS: FK 없음, `floor` 정수값으로 SPACE와 논리적 연결 (층당 1행, UK)
 ROOM_TYPE→1:N: PRIVATE_SPACE_DETAIL
 DEVICE_TYPE→1:N: DEVICE | DEVICE→1:N: CONTROL_LOG
 CONTRACT→1:N: PAYMENT, ROLE_CHANGE_LOG | RESERVATION→1:N: PAYMENT
@@ -146,3 +152,4 @@ ADMIN_INITIATED: →ACTIVE→EXPIRED/TERMINATED (신청필드 NULL가능)
 | NOTIFICATION | user_id+is_read+created_at | 미읽은알림 |
 | REFRESH_TOKEN | user_id, token(UK) | 토큰조회 |
 | TOKEN_BLACKLISTS | token_jti(UK), expires_at | 블랙리스트조회,정리 |
+| FLOOR_PLANS | floor(UK) | 층별 1:1 조회 |

@@ -25,6 +25,9 @@ public class AdminSpaceResponseDto {
     private String description;
     private Integer positionX;
     private Integer positionY;
+    private Integer positionW;
+    private Integer positionH;
+    private Boolean hasDeviceError;
 
     private PrivateDetailDto privateDetail;
     private CommonDetailDto commonDetail;
@@ -74,7 +77,10 @@ public class AdminSpaceResponseDto {
                 .amenities(result.getAmenities())
                 .description(result.getDescription())
                 .positionX(result.getPositionX())
-                .positionY(result.getPositionY());
+                .positionY(result.getPositionY())
+                .positionW(result.getPositionW())
+                .positionH(result.getPositionH())
+                .hasDeviceError(result.getHasDeviceError());
 
         if (result.getPrivateDetail() != null) {
             builder.privateDetail(PrivateDetailDto.builder()
