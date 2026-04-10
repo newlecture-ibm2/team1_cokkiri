@@ -132,13 +132,16 @@ export function NotificationListItem({ item }: { item: NotificationItem }) {
         </div>
         <div className="shrink-0 flex flex-col items-end gap-2 text-right">
           <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
-            {new Date(item.createdAt).toLocaleDateString()}
+            {(() => {
+              const d = new Date(item.createdAt);
+              return `${d.getFullYear()}. ${d.getMonth() + 1}. ${d.getDate()}.`;
+            })()}
           </span>
           <span className="text-[10px] font-black uppercase tracking-widest opacity-20">
-            {new Date(item.createdAt).toLocaleTimeString([], {
-              hour: "2-digit",
-              minute: "2-digit",
-            })}
+            {(() => {
+              const d = new Date(item.createdAt);
+              return `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
+            })()}
           </span>
         </div>
       </div>
