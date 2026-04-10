@@ -23,7 +23,7 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
-public class AdminPaymentService implements ApprovePaymentUseCase, ViewPaymentListUseCase {
+public class AdminPaymentService implements ApprovePaymentUseCase, ViewPaymentListUseCase, CreatePaymentUseCase {
 
     private final PaymentRepositoryPort paymentRepositoryPort;
     private final CreateNotificationUseCase createNotificationUseCase;
@@ -61,6 +61,21 @@ public class AdminPaymentService implements ApprovePaymentUseCase, ViewPaymentLi
         }
 
         return saved;
+    }
+
+    @Override
+    @Transactional
+    public Payment createPayment(CreatePaymentCommand command) {
+        Payment payment = new Payment();
+        payment.setContractId(command.getContractId());
+        payment.setReservationId(command.getReservationId());
+        payment.setUserId(command.getUserId());
+        payment.setType(command.getType());
+        payment.setAmount(command.getAmount());
+        payment.setStatus(command.getStatus());
+        payment.setBillingDate(command.getBillingDate() != null ? command.getBillingDate() : LocalDate.now());
+
+        return paymentRepositoryPort.save(payment);
     }
 
     @Override

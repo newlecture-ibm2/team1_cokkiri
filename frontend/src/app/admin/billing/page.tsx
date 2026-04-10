@@ -4,43 +4,64 @@ import { useEffect, useState } from 'react';
 import { apiFetch, ApiError } from '@/lib/api';
 import PaymentTable from './_components/PaymentTable';
 import { Payment, PaymentListResponse } from './_types';
+import { CreatePaymentModal } from './_components/CreatePaymentModal';
+import { Plus } from 'lucide-react';
 
 export default function BillingPage() {
   const [payments, setPayments] = useState<Payment[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const fetchPayments = async () => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      const result = await apiFetch<PaymentListResponse>('/admin/payments');
+      setPayments(result.data?.payments || []);
+    } catch (err) {
+      if (err instanceof ApiError) {
+        setError(err.message);
+      } else {
+        setError('결제 목록을 불러오는 중 오류가 발생했습니다.');
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchPayments = async () => {
-      try {
-        setIsLoading(true);
-        setError(null);
-        const result = await apiFetch<PaymentListResponse>('/admin/payments');
-        setPayments(result.data?.payments || []);
-      } catch (err) {
-        if (err instanceof ApiError) {
-          setError(err.message);
-        } else {
-          setError('결제 목록을 불러오는 중 오류가 발생했습니다.');
-        }
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
     fetchPayments();
   }, []);
 
   return (
     <div className="p-6 md:p-12 lg:px-24">
-      <header className="mb-12">
-        <h1 className="text-[12vw] md:text-[6vw] font-black tracking-tighter uppercase leading-[0.85] text-primary">
-          Billing <span className="text-accent">Management</span>
-        </h1>
-        <p className="mt-4 text-muted text-lg font-medium tracking-tight uppercase">
-          Review and approve payment records
-        </p>
+      <header className="mb-12 flex flex-col md:flex-row md:items-end justify-between gap-6">
+        <div>
+          <h1 className="text-[12vw] md:text-[6vw] font-black tracking-tighter uppercase leading-[0.85] text-primary">
+            Billing <span className="text-accent">Management</span>
+          </h1>
+          <p className="mt-4 text-muted text-lg font-medium tracking-tight uppercase">
+            Review and approve payment records
+          </p>
+        </div>
+        <button
+          onClick={() => setIsModalOpen(true)}
+          className="group flex items-center gap-3 px-8 py-4 bg-primary text-background rounded-full font-black uppercase tracking-widest text-[10px] hover:bg-accent transition-all hover:scale-[1.05] active:scale-[0.95] shadow-xl shadow-primary/20"
+        >
+          <Plus className="w-4 h-4" />
+          Create Payment
+        </button>
       </header>
+
+      <CreatePaymentModal 
+        isOpen={isModalOpen} 
+        onClose={() => setIsModalOpen(false)} 
+        onSuccess={() => {
+          setIsModalOpen(false);
+          fetchPayments();
+        }}
+      />
 
       <section>
         {isLoading ? (

@@ -105,6 +105,7 @@ public class AdminContractService implements AdminContractUseCase {
                                 .userId(user.getUserId())
                                 .spaceId(space.getSpaceId())
                                 .spaceName(space.getName())
+                                .monthlyRent(contract.getMonthlyRent())
                                 .newStatus(contract.getStatus())
                                 .message("관리자에 의해 계약이 등록되었습니다.")
                                 .build());
