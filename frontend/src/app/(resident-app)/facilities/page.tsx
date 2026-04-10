@@ -5,6 +5,7 @@
 // ui-guideline: Moss & Aloe Editorial 스타일
 
 import { useState, useEffect, useCallback } from "react";
+import { useSearchParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { FacilityCard } from "./_components/FacilityCard";
 import { WeeklyTimetable } from "./_components/WeeklyTimetable";
@@ -13,6 +14,9 @@ import type { Facility } from "./_types";
 import { ApiError } from "@/lib/api";
 
 export default function FacilitiesPage() {
+  const searchParams = useSearchParams();
+  const initialSpaceId = searchParams.get("spaceId");
+
   const [facilities, setFacilities] = useState<Facility[]>([]);
   const [selected, setSelected] = useState<Facility | null>(null);
   const [loading, setLoading] = useState(true);
@@ -25,8 +29,11 @@ export default function FacilitiesPage() {
       const res = await fetchFacilities();
       const data = res.data ?? [];
       setFacilities(data);
-      // 첫 예약 가능 시설 자동 선택
-      const first = data.find((f) => f.isReservable) ?? data[0] ?? null;
+      // spaceId 쿼리 파라미터가 있으면 해당 시설 자동 선택, 없으면 첫 예약 가능 시설
+      const targeted = initialSpaceId
+        ? data.find((f) => String(f.spaceId) === initialSpaceId)
+        : null;
+      const first = targeted ?? data.find((f) => f.isReservable) ?? data[0] ?? null;
       setSelected(first);
     } catch (e) {
       if (e instanceof ApiError) setError(e.message);
