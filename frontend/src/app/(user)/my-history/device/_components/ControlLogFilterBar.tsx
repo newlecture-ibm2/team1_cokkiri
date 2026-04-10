@@ -4,7 +4,6 @@ import { useState, useEffect } from "react";
 import type { ControlLogFilters, DeviceTypeOption } from "../_types";
 import { fetchDeviceTypes } from "../_api";
 
-
 const SPACE_TYPES = [
   { value: "", label: "전체" },
   { value: "PRIVATE", label: "개인 공간" },
@@ -77,11 +76,11 @@ export default function ControlLogFilterBar({ onFilterChange }: ControlLogFilter
   }
 
   return (
-    <div className="bg-[var(--background)] rounded-2xl p-5 mb-6 border border-[var(--secondary)]">
-      {/* 기간 필터 */}
-      <div className="mb-4">
-        <label className="block text-xs font-black uppercase tracking-[0.3em] text-[var(--muted)] mb-2">
-          기간
+    <div className="rounded-[2rem] border border-border bg-surface p-6 space-y-5">
+      {/* ── 기간 필터 ── */}
+      <div>
+        <label className="block text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground mb-2.5">
+          Period
         </label>
         <div className="flex flex-wrap gap-2 mb-3">
           {PERIODS.map((period) => (
@@ -91,10 +90,10 @@ export default function ControlLogFilterBar({ onFilterChange }: ControlLogFilter
                 setActivePeriod(period.days);
                 applyFilters({ periodDays: period.days });
               }}
-              className={`px-3 py-1.5 rounded-xl text-sm font-medium transition-colors ${
+              className={`px-4 py-1.5 rounded-xl text-xs font-bold tracking-tight transition-all duration-200 ${
                 activePeriod === period.days
-                  ? "bg-[var(--primary)] text-[var(--background)]"
-                  : "bg-[var(--secondary)]/30 text-[var(--muted)] hover:bg-[var(--accent)] hover:text-white"
+                  ? "bg-primary text-primary-foreground shadow-sm"
+                  : "bg-muted/20 text-muted-foreground hover:bg-accent hover:text-white"
               }`}
             >
               {period.label}
@@ -110,9 +109,9 @@ export default function ControlLogFilterBar({ onFilterChange }: ControlLogFilter
               setActivePeriod(-1);
               applyFilters({ startDate: e.target.value });
             }}
-            className="px-3 py-1.5 rounded-xl border border-[var(--secondary)] bg-white text-sm text-[var(--primary)]"
+            className="px-3 py-1.5 rounded-xl border border-border bg-background text-xs font-medium text-primary focus:outline-none focus:ring-2 focus:ring-accent/30"
           />
-          <span className="text-[var(--muted)] text-sm">~</span>
+          <span className="text-muted-foreground text-xs font-bold">—</span>
           <input
             type="date"
             value={endDate}
@@ -121,16 +120,16 @@ export default function ControlLogFilterBar({ onFilterChange }: ControlLogFilter
               setActivePeriod(-1);
               applyFilters({ endDate: e.target.value });
             }}
-            className="px-3 py-1.5 rounded-xl border border-[var(--secondary)] bg-white text-sm text-[var(--primary)]"
+            className="px-3 py-1.5 rounded-xl border border-border bg-background text-xs font-medium text-primary focus:outline-none focus:ring-2 focus:ring-accent/30"
           />
         </div>
       </div>
 
-      {/* 공간/기기/결과 필터 */}
-      <div className="flex flex-wrap gap-4">
+      {/* ── 드롭다운 필터 ── */}
+      <div className="grid grid-cols-3 gap-3">
         <div>
-          <label className="block text-xs font-black uppercase tracking-[0.3em] text-[var(--muted)] mb-1">
-            공간
+          <label className="block text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground mb-1.5">
+            Space
           </label>
           <select
             value={spaceType}
@@ -138,7 +137,7 @@ export default function ControlLogFilterBar({ onFilterChange }: ControlLogFilter
               setSpaceType(e.target.value);
               applyFilters({ spaceType: e.target.value });
             }}
-            className="px-3 py-1.5 rounded-xl border border-[var(--secondary)] bg-white text-sm text-[var(--primary)]"
+            className="w-full px-3 py-2 rounded-xl border border-border bg-background text-xs font-medium text-primary focus:outline-none focus:ring-2 focus:ring-accent/30"
           >
             {SPACE_TYPES.map((opt) => (
               <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -147,8 +146,8 @@ export default function ControlLogFilterBar({ onFilterChange }: ControlLogFilter
         </div>
 
         <div>
-          <label className="block text-xs font-black uppercase tracking-[0.3em] text-[var(--muted)] mb-1">
-            기기 종류
+          <label className="block text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground mb-1.5">
+            Device Type
           </label>
           <select
             value={deviceTypeCode}
@@ -156,7 +155,7 @@ export default function ControlLogFilterBar({ onFilterChange }: ControlLogFilter
               setDeviceTypeCode(e.target.value);
               applyFilters({ deviceTypeCode: e.target.value });
             }}
-            className="px-3 py-1.5 rounded-xl border border-[var(--secondary)] bg-white text-sm text-[var(--primary)]"
+            className="w-full px-3 py-2 rounded-xl border border-border bg-background text-xs font-medium text-primary focus:outline-none focus:ring-2 focus:ring-accent/30"
           >
             <option value="">전체</option>
             {deviceTypes.map((opt) => (
@@ -166,8 +165,8 @@ export default function ControlLogFilterBar({ onFilterChange }: ControlLogFilter
         </div>
 
         <div>
-          <label className="block text-xs font-black uppercase tracking-[0.3em] text-[var(--muted)] mb-1">
-            결과
+          <label className="block text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground mb-1.5">
+            Result
           </label>
           <select
             value={result}
@@ -175,7 +174,7 @@ export default function ControlLogFilterBar({ onFilterChange }: ControlLogFilter
               setResult(e.target.value);
               applyFilters({ result: e.target.value });
             }}
-            className="px-3 py-1.5 rounded-xl border border-[var(--secondary)] bg-white text-sm text-[var(--primary)]"
+            className="w-full px-3 py-2 rounded-xl border border-border bg-background text-xs font-medium text-primary focus:outline-none focus:ring-2 focus:ring-accent/30"
           >
             {RESULTS.map((opt) => (
               <option key={opt.value} value={opt.value}>{opt.label}</option>

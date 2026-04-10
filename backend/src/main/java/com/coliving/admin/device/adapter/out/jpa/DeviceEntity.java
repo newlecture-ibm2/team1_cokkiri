@@ -56,7 +56,7 @@ public class DeviceEntity extends BaseEntity {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false, length = 20)
-    private DeviceStatus status = DeviceStatus.OFFLINE;
+    private DeviceStatus status = DeviceStatus.ONLINE;
 
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "current_state", columnDefinition = "jsonb")
@@ -82,7 +82,7 @@ public class DeviceEntity extends BaseEntity {
         this.modelName = modelName;
         this.macAddress = macAddress;
         this.mockEndpoint = mockEndpoint;
-        this.status = status != null ? status : DeviceStatus.OFFLINE;
+        this.status = status != null ? status : DeviceStatus.ONLINE;
         this.currentState = currentState != null ? currentState : "{}";
         this.isActive = isActive != null ? isActive : true;
         this.installedAt = installedAt;

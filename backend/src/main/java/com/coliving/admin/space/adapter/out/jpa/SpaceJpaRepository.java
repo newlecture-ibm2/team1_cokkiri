@@ -45,23 +45,20 @@ public interface SpaceJpaRepository extends JpaRepository<SpaceEntity, Long> {
                     "WHERE s.type = :type")
     Page<SpaceEntity> findByType(@Param("type") SpaceType type, Pageable pageable);
 
-    @Query(value = "SELECT s.* FROM spaces s " +
-                    "LEFT JOIN private_space_details pd ON s.space_id = pd.space_id AND pd.deleted_at IS NULL " +
+    @Query(value = "SELECT s FROM SpaceEntity s " +
+                    "JOIN FETCH s.privateDetail pd " +
                     "WHERE s.type = 'PRIVATE' " +
-                    "AND s.deleted_at IS NULL " +
-                    "AND (CAST(:roomTypeId AS BIGINT) IS NULL OR pd.room_type_id = CAST(:roomTypeId AS BIGINT)) " +
-                    "AND (CAST(:minRent AS NUMERIC) IS NULL OR pd.monthly_rent >= CAST(:minRent AS NUMERIC)) " +
-                    "AND (CAST(:maxRent AS NUMERIC) IS NULL OR pd.monthly_rent <= CAST(:maxRent AS NUMERIC)) " +
-                    "AND (CAST(:floor AS INTEGER) IS NULL OR s.floor = CAST(:floor AS INTEGER))",
-            countQuery = "SELECT COUNT(*) FROM spaces s " +
-                    "LEFT JOIN private_space_details pd ON s.space_id = pd.space_id AND pd.deleted_at IS NULL " +
+                    "AND (:roomTypeId IS NULL OR pd.roomType.id = :roomTypeId) " +
+                    "AND (:minRent IS NULL OR pd.monthlyRent >= :minRent) " +
+                    "AND (:maxRent IS NULL OR pd.monthlyRent <= :maxRent) " +
+                    "AND (:floor IS NULL OR s.floor = :floor)",
+            countQuery = "SELECT COUNT(s) FROM SpaceEntity s " +
+                    "JOIN s.privateDetail pd " +
                     "WHERE s.type = 'PRIVATE' " +
-                    "AND s.deleted_at IS NULL " +
-                    "AND (CAST(:roomTypeId AS BIGINT) IS NULL OR pd.room_type_id = CAST(:roomTypeId AS BIGINT)) " +
-                    "AND (CAST(:minRent AS NUMERIC) IS NULL OR pd.monthly_rent >= CAST(:minRent AS NUMERIC)) " +
-                    "AND (CAST(:maxRent AS NUMERIC) IS NULL OR pd.monthly_rent <= CAST(:maxRent AS NUMERIC)) " +
-                    "AND (CAST(:floor AS INTEGER) IS NULL OR s.floor = CAST(:floor AS INTEGER))",
-            nativeQuery = true)
+                    "AND (:roomTypeId IS NULL OR pd.roomType.id = :roomTypeId) " +
+                    "AND (:minRent IS NULL OR pd.monthlyRent >= :minRent) " +
+                    "AND (:maxRent IS NULL OR pd.monthlyRent <= :maxRent) " +
+                    "AND (:floor IS NULL OR s.floor = :floor)")
     Page<SpaceEntity> findRoomsWithFilter(
             @Param("roomTypeId") Long roomTypeId,
             @Param("minRent") BigDecimal minRent,

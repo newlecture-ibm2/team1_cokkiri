@@ -50,6 +50,7 @@ src/main/java/com/coliving/
 ├── user/                            # 일반 유저 유스케이스
 │   ├── room/                        # 방(공간) 둘러보기
 │   ├── contract/                    # 개인 공간 계약 신청
+│   ├── experience/                  # 공용시설 소개 (Public)
 │   └── history/                     # 내 활동 이력 및 신청 목록
 ├── resident/                        # 입주자 유스케이스
 │   ├── device/                      # 본인 방/공용 공간 기기 제어

@@ -32,8 +32,8 @@ public class IotClientConfig {
                 .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 2_000)     // 연결 타임아웃 2초
                 .responseTimeout(Duration.ofSeconds(5))                  // 응답 타임아웃 5초
                 .doOnConnected(conn -> conn
-                        .addHandlerLast(new ReadTimeoutHandler(5, TimeUnit.SECONDS))
-                        .addHandlerLast(new WriteTimeoutHandler(5, TimeUnit.SECONDS))
+                        .addHandlerLast("readTimeout", new ReadTimeoutHandler(5, TimeUnit.SECONDS))
+                        .addHandlerLast("writeTimeout", new WriteTimeoutHandler(5, TimeUnit.SECONDS))
                 );
 
         return WebClient.builder()

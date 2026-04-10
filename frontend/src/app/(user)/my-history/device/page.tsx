@@ -76,55 +76,87 @@ export default function DeviceHistoryPage() {
     return () => observerRef.current?.disconnect();
   }, [isLoading, page, totalPages, filters, loadLogs]);
 
+  /* ── 통계 요약 ── */
+  const successCount = logs.filter((l) => l.result === "SUCCESS").length;
+  const failureCount = logs.filter((l) => l.result === "FAILURE").length;
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4 }}
-      className="max-w-[900px] mx-auto px-6 py-8"
+      className="space-y-8 px-6 pt-16 md:px-12 md:pt-32"
     >
-      {/* 헤더 */}
-      <div className="mb-8">
-        <h1 className="text-3xl font-black tracking-tighter text-[var(--primary)]">
+      {/* ── 헤더 (my-devices 스타일) ── */}
+      <header className="space-y-2">
+        <p className="font-black text-xs uppercase tracking-[0.3em] text-muted-foreground">
+          Control Logs
+        </p>
+        <h1 className="text-3xl font-black tracking-tighter text-primary md:text-4xl">
           기기 제어 이력
         </h1>
-        <p className="text-sm text-[var(--muted)] mt-1">
-          내 기기 제어 기록을 시간순으로 확인할 수 있습니다
-          {totalElements > 0 && (
-            <span className="ml-2 text-[var(--accent)] font-semibold">
-              총 {totalElements}건
-            </span>
-          )}
+        <p className="text-sm font-medium tracking-tight text-muted-foreground text-balance">
+          내 기기 제어 기록을 시간순으로 확인하세요.
         </p>
-      </div>
+      </header>
 
-      {/* 필터 바 */}
+      {/* ── 통계 카드 ── */}
+      {totalElements > 0 && (
+        <div className="grid grid-cols-3 gap-3">
+          <div className="rounded-[2rem] border border-border bg-surface p-4 text-center">
+            <p className="text-2xl font-black tracking-tighter text-primary">{totalElements}</p>
+            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground mt-1">
+              전체
+            </p>
+          </div>
+          <div className="rounded-[2rem] border border-green-400/30 bg-green-50/50 p-4 text-center">
+            <p className="text-2xl font-black tracking-tighter text-green-600">{successCount}</p>
+            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-green-600/60 mt-1">
+              성공
+            </p>
+          </div>
+          <div className="rounded-[2rem] border border-red-400/30 bg-red-50/50 p-4 text-center">
+            <p className="text-2xl font-black tracking-tighter text-red-500">{failureCount}</p>
+            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-red-500/60 mt-1">
+              실패
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* ── 필터 바 ── */}
       <ControlLogFilterBar onFilterChange={handleFilterChange} />
 
-      {/* 에러 */}
+      {/* ── 에러 ── */}
       {error && (
-        <div className="bg-red-50 text-red-600 rounded-2xl p-4 mb-6 text-sm">
-          ⚠ {error}
+        <div className="rounded-[2rem] border border-destructive/30 bg-destructive/10 p-6 text-center">
+          <p className="text-sm font-medium text-destructive">⚠ {error}</p>
+          <button
+            onClick={() => loadLogs(0, filters, false)}
+            className="mt-3 rounded-xl bg-primary px-4 py-2 text-xs font-bold text-primary-foreground"
+          >
+            다시 시도
+          </button>
         </div>
       )}
 
-      {/* 타임라인 */}
+      {/* ── 타임라인 ── */}
       <ControlLogTimeline logs={logs} isLoading={isLoading} />
 
-      {/* 무한 스크롤 sentinel */}
+      {/* ── 무한 스크롤 sentinel ── */}
       <div ref={sentinelRef} className="h-4" />
 
-      {/* 로딩 표시 */}
+      {/* ── 로딩 표시 ── */}
       {isLoading && logs.length > 0 && (
         <div className="flex justify-center py-6">
-          <div className="w-6 h-6 border-2 border-[var(--accent)] border-t-transparent rounded-full animate-spin" />
+          <div className="w-6 h-6 border-2 border-accent border-t-transparent rounded-full animate-spin" />
         </div>
       )}
 
-      {/* 끝 표시 */}
+      {/* ── 끝 표시 ── */}
       {!isLoading && logs.length > 0 && page + 1 >= totalPages && (
-        <p className="text-center text-sm text-[var(--muted)] py-6">
-          모든 이력을 불러왔습니다
+        <p className="text-center text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground py-8">
+          All logs loaded
         </p>
       )}
     </motion.div>
