@@ -16,6 +16,9 @@ import { DEFAULT_LAYOUT } from '../../_types/layout';
 import { FloorSelector } from './FloorSelector';
 import { GridCanvas } from './GridCanvas';
 import { SpaceBlock } from './SpaceBlock';
+import { BlueprintControls } from './BlueprintControls';
+import { AnnotationControls } from './AnnotationControls';
+import { AnnotationBlock } from './AnnotationBlock';
 
 /** 드래그 중 격자 스냅 Modifier */
 function createSnapModifier(gridSize: number): Modifier {
@@ -43,7 +46,15 @@ export function FloorPlanEditor() {
     loading,
     saving,
     dirty,
+    saveAll,
     saveMessage,
+    floorPlan,
+    updateBlueprintOpacity,
+    handleUploadBlueprint,
+    handleDeleteBlueprint,
+    addAnnotation,
+    updateAnnotation,
+    removeAnnotation,
   } = useFloorPlan();
 
   const [cellSize, setCellSize] = useState(0);
@@ -62,23 +73,45 @@ export function FloorPlanEditor() {
   const handleDragEnd = useCallback(
     (event: DragEndEvent) => {
       const { active, delta } = event;
-      const block = blocks.find((b) => b.spaceId === active.id);
-      if (!block || cellSize === 0) return;
+      if (cellSize === 0) return;
 
-      const newGridX = clamp(
-        block.gridX + Math.round(delta.x / cellSize),
-        0,
-        DEFAULT_LAYOUT.columns - block.gridW,
-      );
-      const newGridY = clamp(
-        block.gridY + Math.round(delta.y / cellSize),
-        0,
-        DEFAULT_LAYOUT.rows - block.gridH,
-      );
+      const type = active.data.current?.type;
 
-      updateBlockPosition(block.spaceId, newGridX, newGridY);
+      if (type === 'ANNOTATION') {
+        const idStr = String(active.id).replace('anno-', '');
+        const anno = floorPlan?.annotations.find((a) => a.id === idStr);
+        if (!anno) return;
+
+        const newGridX = clamp(
+          anno.positionX + Math.round(delta.x / cellSize),
+          0,
+          DEFAULT_LAYOUT.columns - anno.positionW,
+        );
+        const newGridY = clamp(
+          anno.positionY + Math.round(delta.y / cellSize),
+          0,
+          DEFAULT_LAYOUT.rows - anno.positionH,
+        );
+        updateAnnotation(idStr, { positionX: newGridX, positionY: newGridY });
+      } else {
+        const block = blocks.find((b) => b.spaceId === active.id);
+        if (!block) return;
+
+        const newGridX = clamp(
+          block.gridX + Math.round(delta.x / cellSize),
+          0,
+          DEFAULT_LAYOUT.columns - block.gridW,
+        );
+        const newGridY = clamp(
+          block.gridY + Math.round(delta.y / cellSize),
+          0,
+          DEFAULT_LAYOUT.rows - block.gridH,
+        );
+
+        updateBlockPosition(block.spaceId, newGridX, newGridY);
+      }
     },
-    [blocks, cellSize, updateBlockPosition],
+    [blocks, cellSize, updateBlockPosition, floorPlan, updateAnnotation],
   );
 
   const handleResizeEnd = useCallback(
@@ -126,7 +159,7 @@ export function FloorPlanEditor() {
         />
 
         <button
-          onClick={saveLayout}
+          onClick={saveAll}
           disabled={!dirty || saving}
           className={`flex items-center gap-2 px-6 py-3 rounded-full font-black text-sm tracking-tight transition-all duration-300
             ${dirty
@@ -166,15 +199,38 @@ export function FloorPlanEditor() {
         </AnimatePresence>
       </div>
 
+      {/* 도면 관리 및 어노테이션 도구 */}
+      <BlueprintControls
+        blueprintUrl={floorPlan?.blueprintUrl || null}
+        blueprintOpacity={floorPlan?.blueprintOpacity ?? 0.3}
+        onUpload={handleUploadBlueprint}
+        onDelete={handleDeleteBlueprint}
+        onOpacityChange={updateBlueprintOpacity}
+      />
+      <AnnotationControls onAddAnnotation={addAnnotation} />
+
       {/* 도면 격자 */}
       <DndContext
         sensors={sensors}
         modifiers={[snapModifier]}
         onDragEnd={handleDragEnd}
       >
-        <GridCanvas onCellSizeChange={setCellSize}>
+        <GridCanvas 
+          onCellSizeChange={setCellSize}
+          blueprintUrl={floorPlan?.blueprintUrl}
+          blueprintOpacity={floorPlan?.blueprintOpacity}
+        >
           {blocks.map((block) => (
             <SpaceBlock key={block.spaceId} block={block} cellSize={cellSize} onResizeEnd={handleResizeEnd} />
+          ))}
+          {floorPlan?.annotations.map((anno) => (
+            <AnnotationBlock
+              key={anno.id}
+              annotation={anno}
+              cellSize={cellSize}
+              onRemove={removeAnnotation}
+              onUpdate={updateAnnotation}
+            />
           ))}
         </GridCanvas>
       </DndContext>

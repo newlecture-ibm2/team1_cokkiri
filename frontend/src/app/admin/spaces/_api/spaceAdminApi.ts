@@ -176,3 +176,40 @@ export const deleteRoomType = async (roomTypeId: number) => {
     method: 'DELETE',
   });
 };
+
+// ===== Floor Plan (평면도 배경/어노테이션) API =====
+
+import type { FloorPlanData, FloorAnnotation } from '../_types/layout';
+
+export const fetchFloorPlan = async (floor: number): Promise<ApiResponse<FloorPlanData>> => {
+  return await apiFetch<FloorPlanData>(`/admin/floors/${floor}/plan`);
+};
+
+export const updateFloorPlan = async (
+  floor: number,
+  data: { blueprintOpacity: number; annotations: FloorAnnotation[] }
+) => {
+  return await apiFetch<FloorPlanData>(`/admin/floors/${floor}/plan`, {
+    method: 'PUT',
+    body: JSON.stringify(data),
+  });
+};
+
+export const uploadBlueprint = async (floor: number, file: File): Promise<ApiResponse<FloorPlanData>> => {
+  const formData = new FormData();
+  formData.append('file', file);
+
+  const res = await fetch(`/api/admin/floors/${floor}/plan/blueprint`, {
+    method: 'POST',
+    body: formData,
+    credentials: 'include',
+  });
+  if (!res.ok) throw new Error('Failed to upload blueprint');
+  return res.json();
+};
+
+export const deleteBlueprint = async (floor: number) => {
+  return await apiFetch<void>(`/admin/floors/${floor}/plan/blueprint`, {
+    method: 'DELETE',
+  });
+};
