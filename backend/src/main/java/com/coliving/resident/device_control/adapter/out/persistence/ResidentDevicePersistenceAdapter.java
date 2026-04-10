@@ -39,9 +39,10 @@ public class ResidentDevicePersistenceAdapter implements ResidentDeviceRepositor
         Object[] spaceInfo = findSpaceInfo(spaceId);
         String spaceName = spaceInfo != null ? (String) spaceInfo[0] : null;
         String spaceType = spaceInfo != null ? (String) spaceInfo[1] : null;
+        Integer spaceFloor = spaceInfo != null && spaceInfo[2] != null ? ((Number) spaceInfo[2]).intValue() : null;
 
         return deviceJpaRepository.findBySpaceIdAndIsActiveTrue(spaceId).stream()
-                .map(entity -> toModel(entity, spaceName, spaceType))
+                .map(entity -> toModel(entity, spaceName, spaceType, spaceFloor))
                 .toList();
     }
 
@@ -55,7 +56,7 @@ public class ResidentDevicePersistenceAdapter implements ResidentDeviceRepositor
         @SuppressWarnings("unchecked")
         List<Object[]> commonSpaces = entityManager
                 .createNativeQuery(
-                        "SELECT s.space_id, s.name, s.type FROM spaces s " +
+                        "SELECT s.space_id, s.name, s.type, s.floor FROM spaces s " +
                         "WHERE s.type = 'COMMON' AND s.deleted_at IS NULL")
                 .getResultList();
 
@@ -64,17 +65,18 @@ public class ResidentDevicePersistenceAdapter implements ResidentDeviceRepositor
         }
 
         // 공간 정보 Map 구성 (N+1 방지)
-        Map<Long, String[]> spaceInfoMap = new HashMap<>();
+        Map<Long, Object[]> spaceInfoMap = new HashMap<>();
         for (Object[] row : commonSpaces) {
             Long spaceId = ((Number) row[0]).longValue();
-            spaceInfoMap.put(spaceId, new String[]{(String) row[1], (String) row[2]});
+            spaceInfoMap.put(spaceId, new Object[]{row[1], row[2], row[3]});
         }
 
         return spaceInfoMap.keySet().stream()
                 .flatMap(spaceId -> deviceJpaRepository.findBySpaceIdAndIsActiveTrue(spaceId).stream()
                         .map(entity -> {
-                            String[] info = spaceInfoMap.get(spaceId);
-                            return toModel(entity, info[0], info[1]);
+                            Object[] info = spaceInfoMap.get(spaceId);
+                            Integer floor = info[2] != null ? ((Number) info[2]).intValue() : null;
+                            return toModel(entity, (String) info[0], (String) info[1], floor);
                         }))
                 .toList();
     }
@@ -85,7 +87,8 @@ public class ResidentDevicePersistenceAdapter implements ResidentDeviceRepositor
             Object[] spaceInfo = findSpaceInfo(entity.getSpaceId());
             return toModel(entity,
                     spaceInfo != null ? (String) spaceInfo[0] : null,
-                    spaceInfo != null ? (String) spaceInfo[1] : null);
+                    spaceInfo != null ? (String) spaceInfo[1] : null,
+                    spaceInfo != null && spaceInfo[2] != null ? ((Number) spaceInfo[2]).intValue() : null);
         });
     }
 
@@ -166,13 +169,21 @@ public class ResidentDevicePersistenceAdapter implements ResidentDeviceRepositor
                 deviceId, userId, command, result);
     }
 
+    @Override
+    public void updateCurrentState(Long deviceId, String currentState) {
+        deviceJpaRepository.findById(deviceId).ifPresent(device -> {
+            device.updateCurrentState(currentState);
+            deviceJpaRepository.save(device);
+        });
+    }
+
     // ── 헬퍼: 공간 정보(name, type) 단건 조회 ──
 
     private Object[] findSpaceInfo(Long spaceId) {
         @SuppressWarnings("unchecked")
         List<Object[]> resultList = entityManager
                 .createNativeQuery(
-                        "SELECT s.name, s.type FROM spaces s " +
+                        "SELECT s.name, s.type, s.floor FROM spaces s " +
                         "WHERE s.space_id = :spaceId AND s.deleted_at IS NULL")
                 .setParameter("spaceId", spaceId)
                 .getResultList();
@@ -181,12 +192,13 @@ public class ResidentDevicePersistenceAdapter implements ResidentDeviceRepositor
 
     // ── Entity → 도메인 모델 변환 ──
 
-    private ResidentDevice toModel(DeviceEntity entity, String spaceName, String spaceType) {
+    private ResidentDevice toModel(DeviceEntity entity, String spaceName, String spaceType, Integer spaceFloor) {
         return new ResidentDevice(
                 entity.getDeviceId(),
                 entity.getSpaceId(),
                 spaceName,
                 spaceType,
+                spaceFloor,
                 entity.getDeviceType().getCode(),
                 entity.getDeviceType().getName(),
                 entity.getDeviceType().getUiType(),

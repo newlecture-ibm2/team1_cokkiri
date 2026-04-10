@@ -8,6 +8,8 @@ import java.time.OffsetDateTime;
 public record AdminDevice(
         Long deviceId,
         Long spaceId,
+        String spaceName,
+        Integer spaceFloor,
         Long deviceTypeId,
         String deviceTypeCode,
         String deviceTypeName,

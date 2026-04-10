@@ -18,10 +18,18 @@ export default function DevicesPage() {
             기기 관리
           </h1>
           <p className="text-sm font-medium tracking-tight text-muted-foreground text-balance">
-            등록된 기기의 상태 변경, 활성화/비활성화, 삭제를 관리합니다.
+            등록된 기기의 활성화/비활성화, 제어, 수정, 삭제를 관리합니다.
           </p>
         </div>
         <div className="flex gap-3">
+          <Link
+            href="/admin/monitoring"
+            className="inline-flex items-center gap-2 whitespace-nowrap rounded-xl border border-border px-5 py-3
+              text-xs font-bold uppercase tracking-[0.2em] text-primary
+              transition-colors duration-200 hover:bg-muted"
+          >
+            📊 기기 모니터링
+          </Link>
           <Link
             href="/admin/devices/types"
             className="inline-flex items-center gap-2 whitespace-nowrap rounded-xl border border-border px-5 py-3

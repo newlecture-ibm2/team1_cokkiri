@@ -1,14 +1,19 @@
 package com.coliving.admin.monitoring.application.service;
 
+import com.coliving.admin.monitoring.adapter.in.web.dto.res.AdminControlLogResponseDto;
 import com.coliving.admin.monitoring.adapter.in.web.dto.res.ControlFrequencyResponseDto;
 import com.coliving.admin.monitoring.adapter.in.web.dto.res.DeviceErrorStatsResponseDto;
 import com.coliving.admin.monitoring.adapter.in.web.dto.res.DeviceStatusSummaryResponseDto;
+import com.coliving.admin.monitoring.adapter.in.web.dto.res.SpaceDeviceStatusResponseDto;
+import com.coliving.admin.monitoring.application.command.AdminControlLogListCommand;
 import com.coliving.admin.monitoring.application.port.in.AdminMonitoringUseCase;
 import com.coliving.admin.monitoring.application.port.out.AdminMonitoringRepositoryPort;
+import com.coliving.admin.monitoring.application.result.AdminControlLogPageResult;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -67,6 +72,78 @@ public class AdminMonitoringService implements AdminMonitoringUseCase {
                 .map(row -> new ControlFrequencyResponseDto(
                         row[0].toString(),                  // date
                         ((Number) row[1]).longValue()        // count
+                ))
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public AdminControlLogPageResult getControlLogs(AdminControlLogListCommand command) {
+        List<Object[]> rows = monitoringRepositoryPort.findControlLogs(command);
+        long totalElements = monitoringRepositoryPort.countControlLogs(command);
+        int totalPages = (int) Math.ceil((double) totalElements / command.size());
+
+        List<AdminControlLogResponseDto> content = rows.stream()
+                .map(row -> new AdminControlLogResponseDto(
+                        ((Number) row[0]).longValue(),                       // controlLogId
+                        ((Number) row[1]).longValue(),                       // deviceId
+                        (String) row[2],                                     // deviceName
+                        (String) row[3],                                     // deviceTypeName
+                        (String) row[4],                                     // spaceName
+                        ((Number) row[5]).longValue(),                       // userId
+                        (String) row[6],                                     // userName
+                        (String) row[7],                                     // actorType
+                        (String) row[8],                                     // command
+                        row[9] != null ? row[9].toString() : null,           // commandParams
+                        (String) row[10],                                    // result
+                        row[11] != null ? (String) row[11] : null,           // errorMessage
+                        row[12] != null ? (String) row[12] : null,           // correlationId
+                        row[13] != null ? ((OffsetDateTime) row[13]) : null  // createdAt
+                ))
+                .collect(Collectors.toList());
+
+        return new AdminControlLogPageResult(content, command.page(), command.size(), totalElements, totalPages);
+    }
+
+    @Override
+    public List<ControlFrequencyResponseDto> getControlFrequencyBySpaceType() {
+        return monitoringRepositoryPort.countControlBySpaceType().stream()
+                .map(row -> {
+                    String type = (String) row[0];
+                    String label = "PRIVATE".equals(type) ? "개인 공간" : "공용 공간";
+                    return new ControlFrequencyResponseDto(label, ((Number) row[1]).longValue());
+                })
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<ControlFrequencyResponseDto> getControlFrequencyByCommand() {
+        return monitoringRepositoryPort.countControlByCommand().stream()
+                .map(row -> new ControlFrequencyResponseDto(
+                        (String) row[0],
+                        ((Number) row[1]).longValue()
+                ))
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<ControlFrequencyResponseDto> getDailyErrorFrequency() {
+        return monitoringRepositoryPort.countDailyErrors().stream()
+                .map(row -> new ControlFrequencyResponseDto(
+                        row[0].toString(),
+                        ((Number) row[1]).longValue()
+                ))
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<SpaceDeviceStatusResponseDto> getDeviceStatusBySpace() {
+        return monitoringRepositoryPort.findDeviceStatusBySpace().stream()
+                .map(row -> new SpaceDeviceStatusResponseDto(
+                        (String) row[0],                   // spaceName
+                        (String) row[1],                   // spaceType
+                        (String) row[2],                   // deviceTypeName
+                        (String) row[3],                   // status
+                        ((Number) row[4]).longValue()       // count
                 ))
                 .collect(Collectors.toList());
     }

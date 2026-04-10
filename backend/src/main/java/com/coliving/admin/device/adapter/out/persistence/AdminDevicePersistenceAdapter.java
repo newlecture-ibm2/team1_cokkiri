@@ -1,6 +1,7 @@
 package com.coliving.admin.device.adapter.out.persistence;
 
 import com.coliving.admin.device.adapter.out.jpa.*;
+import com.coliving.admin.device.application.command.AdminDeviceListCommand;
 import com.coliving.admin.device.application.port.out.AdminDeviceRepositoryPort;
 import com.coliving.admin.device.model.AdminDevice;
 import com.coliving.admin.device.model.DeviceStatus;
@@ -86,10 +87,35 @@ public class AdminDevicePersistenceAdapter implements AdminDeviceRepositoryPort 
 
     @Override
     public List<AdminDevice> findAll() {
-        return deviceJpaRepository.findAll().stream()
-                .map(this::toModel)
+        List<DeviceEntity> entities = deviceJpaRepository.findAll();
+        Map<Long, Object[]> spaceInfoMap = fetchSpaceInfoMap(entities);
+        return entities.stream()
+                .map(e -> toModel(e, spaceInfoMap.get(e.getSpaceId())))
                 .toList();
     }
+
+    @Override
+    public List<AdminDevice> findAll(AdminDeviceListCommand command) {
+        List<DeviceEntity> all = deviceJpaRepository.findAll();
+        List<DeviceEntity> filtered = all.stream()
+                .filter(d -> command.spaceId() == null || d.getSpaceId().equals(command.spaceId()))
+                .filter(d -> command.deviceTypeId() == null || d.getDeviceType().getDeviceTypeId().equals(command.deviceTypeId()))
+                .filter(d -> command.status() == null || d.getStatus().name().equals(command.status()))
+                .filter(d -> command.isActive() == null || d.getIsActive().equals(command.isActive()))
+                .sorted((a, b) -> {
+                    if (b.getCreatedAt() == null && a.getCreatedAt() == null) return 0;
+                    if (b.getCreatedAt() == null) return -1;
+                    if (a.getCreatedAt() == null) return 1;
+                    return b.getCreatedAt().compareTo(a.getCreatedAt());
+                })
+                .toList();
+
+        Map<Long, Object[]> spaceInfoMap = fetchSpaceInfoMap(filtered);
+        return filtered.stream()
+                .map(e -> toModel(e, spaceInfoMap.get(e.getSpaceId())))
+                .toList();
+    }
+
 
     @Override
     public void updateActive(Long deviceId, boolean isActive) {
@@ -185,10 +211,27 @@ public class AdminDevicePersistenceAdapter implements AdminDeviceRepositoryPort 
                 deviceId, userId, command, result);
     }
 
+    @Override
+    public void updateCurrentState(Long deviceId, String currentState) {
+        deviceJpaRepository.findById(deviceId).ifPresent(device -> {
+            device.updateCurrentState(currentState);
+            deviceJpaRepository.save(device);
+        });
+    }
+
     private AdminDevice toModel(DeviceEntity entity) {
+        return toModel(entity, findSpaceInfo(entity.getSpaceId()));
+    }
+
+    private AdminDevice toModel(DeviceEntity entity, Object[] spaceInfo) {
+        String spaceName = spaceInfo != null ? (String) spaceInfo[0] : null;
+        Integer spaceFloor = spaceInfo != null && spaceInfo[1] != null ? ((Number) spaceInfo[1]).intValue() : null;
+
         return new AdminDevice(
                 entity.getDeviceId(),
                 entity.getSpaceId(),
+                spaceName,
+                spaceFloor,
                 entity.getDeviceType().getDeviceTypeId(),
                 entity.getDeviceType().getCode(),
                 entity.getDeviceType().getName(),
@@ -204,5 +247,31 @@ public class AdminDevicePersistenceAdapter implements AdminDeviceRepositoryPort 
                 entity.getCreatedAt(),
                 entity.getUpdatedAt()
         );
+    }
+
+    private Object[] findSpaceInfo(Long spaceId) {
+        var resultList = entityManager
+                .createNativeQuery("SELECT s.name, s.floor FROM spaces s WHERE s.space_id = :spaceId AND s.deleted_at IS NULL")
+                .setParameter("spaceId", spaceId)
+                .getResultList();
+        if (resultList.isEmpty()) return null;
+        return (Object[]) resultList.get(0);
+    }
+
+    private Map<Long, Object[]> fetchSpaceInfoMap(List<DeviceEntity> entities) {
+        if (entities.isEmpty()) return Map.of();
+        List<Long> spaceIds = entities.stream().map(DeviceEntity::getSpaceId).distinct().toList();
+        var resultList = entityManager
+                .createNativeQuery("SELECT s.space_id, s.name, s.floor FROM spaces s WHERE s.space_id IN :spaceIds AND s.deleted_at IS NULL")
+                .setParameter("spaceIds", spaceIds)
+                .getResultList();
+        
+        Map<Long, Object[]> map = new java.util.HashMap<>();
+        for (Object row : resultList) {
+            Object[] cols = (Object[]) row;
+            Long spaceId = ((Number) cols[0]).longValue();
+            map.put(spaceId, new Object[]{ cols[1], cols[2] });
+        }
+        return map;
     }
 }

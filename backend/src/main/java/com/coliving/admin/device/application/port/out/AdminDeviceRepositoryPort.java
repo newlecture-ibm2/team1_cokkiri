@@ -1,5 +1,6 @@
 package com.coliving.admin.device.application.port.out;
 
+import com.coliving.admin.device.application.command.AdminDeviceListCommand;
 import com.coliving.admin.device.model.AdminDevice;
 
 import java.util.List;
@@ -16,6 +17,9 @@ public interface AdminDeviceRepositoryPort {
     Optional<AdminDevice> findById(Long deviceId);
 
     List<AdminDevice> findAll();
+
+    /** 필터+정렬 기기 목록 조회 (페이징은 Controller에서 처리) */
+    List<AdminDevice> findAll(AdminDeviceListCommand command);
 
     boolean existsByMacAddress(String macAddress);
 
@@ -43,4 +47,7 @@ public interface AdminDeviceRepositoryPort {
     void saveControlLog(Long deviceId, Long userId, String actorType,
                         String command, Map<String, Object> commandParams,
                         String result, String errorMessage, String correlationId);
+
+    /** 기기 제어 성공 후 current_state(JSONB) 업데이트 */
+    void updateCurrentState(Long deviceId, String currentState);
 }

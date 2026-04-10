@@ -1,44 +1,60 @@
-import { NextRequest, NextResponse } from "next/server";
-import { headers } from "next/headers";
+import { NextRequest, NextResponse } from 'next/server';
+import Redis from 'ioredis';
+
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
+
+const BACKEND_URL = process.env.INTERNAL_BACKEND_URL || 'http://localhost:8080';
+const redis = new Redis(process.env.REDIS_URL || 'redis://localhost:6379/0');
 
 /**
- * 알림 읽음 처리 프록시 API (BFF)
- * PATCH /api/notifications/[id]/read -> PATCH Java: /notifications/[id]/read
+ * 알림 읽음 처리 프록시 (BFF)
+ * PATCH /api/notifications/[id]/read → 백엔드 PATCH /api/notifications/[id]/read
  */
 export async function PATCH(
-  request: NextRequest,
+  req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params;
-  const h = await headers();
-  const cookie = h.get("cookie") ?? "";
 
-  // JAVA 백엔드 주소 (개발/운영 환경 가변)
-  const backendUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080/api";
-  
+  // ── Redis에서 JWT 가져오기 ──
+  const sessionId = req.cookies.get('session_id')?.value;
+  let accessToken: string | null = null;
+
+  if (sessionId) {
+    try {
+      accessToken = await redis.get(`session:${sessionId}:access`);
+    } catch (err) {
+      console.error('[Notification Read] Redis read error:', err);
+    }
+  }
+
+  if (!accessToken) {
+    return NextResponse.json(
+      { success: false, message: '인증이 필요합니다.', errorCode: 'UNAUTHORIZED' },
+      { status: 401 }
+    );
+  }
+
+  // ── 백엔드 프록시 ──
   try {
-    const res = await fetch(`${backendUrl}/notifications/${id}/read`, {
-      method: "PATCH",
+    const backendRes = await fetch(`${BACKEND_URL}/api/notifications/${id}/read`, {
+      method: 'PATCH',
       headers: {
-        "Content-Type": "application/json",
-        "cookie": cookie
-      }
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${accessToken}`,
+      },
     });
 
-    if (!res.ok) {
-      return NextResponse.json(
-        { success: false, message: "백엔드 알림 상태 업데이트 실패" },
-        { status: res.status }
-      );
-    }
+    const text = await backendRes.text();
+    const data = text ? JSON.parse(text) : { success: true };
 
-    const data = await res.json();
-    return NextResponse.json(data);
-  } catch (error) {
-    console.error("Marker-as-read BFF Error:", error);
+    return NextResponse.json(data, { status: backendRes.status });
+  } catch (error: any) {
+    console.error('[Notification Read] Backend fetch failed:', error.message || error);
     return NextResponse.json(
-      { success: false, message: "BFF 내부 서버 오류" },
-      { status: 500 }
+      { success: false, message: '백엔드 서비스가 응답하지 않습니다.', errorCode: 'SERVICE_UNAVAILABLE' },
+      { status: 503 }
     );
   }
 }

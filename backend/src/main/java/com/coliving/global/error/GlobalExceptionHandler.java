@@ -26,7 +26,7 @@ public class GlobalExceptionHandler {
         log.warn("BusinessException: {}", e.getMessage());
         return ResponseEntity
                 .status(errorCode.getStatus())
-                .body(ApiResponse.error(errorCode));
+                .body(ApiResponse.error(errorCode, e.getMessage()));
     }
 
     /**
