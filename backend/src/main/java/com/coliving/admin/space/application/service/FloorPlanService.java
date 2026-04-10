@@ -80,7 +80,7 @@ public class FloorPlanService implements FloorPlanUseCase {
     public FloorPlanResult uploadBlueprint(Integer floor, MultipartFile file) {
         // 파일 저장 (기존 FileStoragePort 재사용)
         String fileName = fileStoragePort.storeFile(FLOOR_PLAN_STORAGE_ID, file);
-        String blueprintUrl = "/uploads/spaces/" + FLOOR_PLAN_STORAGE_ID + "/" + fileName;
+        String blueprintUrl = "/api/uploads/spaces/" + FLOOR_PLAN_STORAGE_ID + "/" + fileName;
 
         // 기존 도면이 있으면 이전 파일 삭제
         FloorPlan existing = floorPlanRepositoryPort.findByFloor(floor).orElse(null);

@@ -17,7 +17,8 @@ public class FloorAnnotation {
 
     private String id;          // 프론트에서 생성하는 UUID
     private String label;
-    private String iconType;    // DOOR, STAIRS, GARDEN, ELEVATOR, RESTROOM, CUSTOM
+    private String iconType;    // DOOR, STAIRS, GARDEN, ELEVATOR, RESTROOM, CUSTOM 등 (annotation_types.code)
+    private String iconName;    // Lucide 아이콘 이름 (예: DoorOpen, ArrowUpDown)
     private Integer positionX;
     private Integer positionY;
     private Integer positionW;

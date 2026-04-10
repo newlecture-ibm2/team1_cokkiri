@@ -69,14 +69,21 @@ public class LocalFileStorageAdapter implements FileStoragePort {
 
     @Override
     public void deleteFile(String path) {
-        // 경로에서 상대 파일 위치 추출 후 삭제 로직
         try {
-            if (path != null && path.startsWith("/uploads/spaces/")) {
-                Path targetPath = this.fileStorageLocation.getParent().resolve(path.substring(1)).normalize();
-                Files.deleteIfExists(targetPath);
+            if (path != null) {
+                String relativePath = null;
+                if (path.startsWith("/api/uploads/spaces/")) {
+                    relativePath = path.substring("/api/uploads/spaces/".length());
+                } else if (path.startsWith("/uploads/spaces/")) {
+                    relativePath = path.substring("/uploads/spaces/".length());
+                }
+                
+                if (relativePath != null) {
+                    Path targetPath = this.fileStorageLocation.resolve(relativePath).normalize();
+                    Files.deleteIfExists(targetPath);
+                }
             }
         } catch (IOException e) {
-            // 로깅 후 무시하거나 예외 전파
             System.err.println("파일 삭제 실패: " + path);
         }
     }

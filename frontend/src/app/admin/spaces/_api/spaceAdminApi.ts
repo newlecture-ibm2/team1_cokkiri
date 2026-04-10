@@ -213,3 +213,31 @@ export const deleteBlueprint = async (floor: number) => {
     method: 'DELETE',
   });
 };
+
+// ===== Annotation Type (어노테이션 유형) API =====
+
+import type { AnnotationType } from '../_types/layout';
+
+export const fetchAnnotationTypes = async (): Promise<ApiResponse<AnnotationType[]>> => {
+  return await apiFetch<AnnotationType[]>('/admin/annotation-types');
+};
+
+export const createAnnotationType = async (data: { code: string; name: string; iconName: string; defaultColor?: string }) => {
+  return await apiFetch<AnnotationType>('/admin/annotation-types', {
+    method: 'POST',
+    body: JSON.stringify(data),
+  });
+};
+
+export const updateAnnotationType = async (id: number, data: { name: string; iconName: string; defaultColor?: string }) => {
+  return await apiFetch<AnnotationType>(`/admin/annotation-types/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify(data),
+  });
+};
+
+export const deleteAnnotationType = async (id: number) => {
+  return await apiFetch<void>(`/admin/annotation-types/${id}`, {
+    method: 'DELETE',
+  });
+};

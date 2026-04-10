@@ -19,6 +19,19 @@ public class WebConfig implements WebMvcConfigurer {
                 .allowCredentials(true);
     }
 
+    @org.springframework.beans.factory.annotation.Value("${app.upload.dir:/uploads/spaces}")
+    private String uploadDir;
+
+    @Override
+    public void addResourceHandlers(org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry registry) {
+        String physicalPath = java.nio.file.Paths.get(uploadDir).toAbsolutePath().normalize().toString();
+        if (!physicalPath.endsWith(java.io.File.separator)) {
+            physicalPath += java.io.File.separator;
+        }
+        registry.addResourceHandler("/api/uploads/spaces/**")
+                .addResourceLocations("file:" + physicalPath);
+    }
+
     @Override
     public void addFormatters(FormatterRegistry registry) {
         registry.addConverterFactory(new StringToEnumConverterFactory());
