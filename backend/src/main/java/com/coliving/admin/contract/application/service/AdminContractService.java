@@ -136,6 +136,15 @@ public class AdminContractService implements AdminContractUseCase {
 
                 repositoryPort.save(contract);
 
+                // 계약 수정 알림을 해당 사용자에게 발송
+                notificationRepositoryPort.create(
+                                contract.getUserId(),
+                                NotificationType.CONTRACT_UPDATED,
+                                "계약 정보가 변경되었습니다",
+                                "관리자에 의해 계약 조건(기간, 금액 등)이 변경되었습니다. 내 계약 정보를 확인해 주세요.",
+                                ReferenceType.CONTRACT,
+                                contract.getContractId());
+
                 return AdminContractResult.builder()
                                 .contractId(contract.getContractId())
                                 .message("계약 정보가 수정되었습니다.")

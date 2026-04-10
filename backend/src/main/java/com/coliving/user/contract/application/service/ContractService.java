@@ -3,7 +3,9 @@ package com.coliving.user.contract.application.service;
 import com.coliving.admin.space.application.port.out.AdminSpaceRepositoryPort;
 import com.coliving.admin.space.model.AdminSpace;
 import com.coliving.admin.user.application.port.out.AdminUserRepositoryPort;
+import com.coliving.admin.user.application.result.AdminUserResult;
 import com.coliving.common.auth.model.UserRole;
+import com.coliving.common.auth.model.UserStatus;
 import com.coliving.common.notification.application.port.out.NotificationRepositoryPort;
 import com.coliving.common.notification.model.NotificationType;
 import com.coliving.common.notification.model.ReferenceType;
@@ -22,12 +24,16 @@ import com.coliving.user.contract.model.ContractOrigin;
 import com.coliving.user.contract.model.ContractStatus;
 import com.coliving.admin.space.model.SpaceStatus;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional
@@ -157,7 +163,37 @@ public class ContractService implements ContractUseCase {
         }
 
         Contract saved = contractRepositoryPort.save(contract);
+
+        // 관리자 전원에게 신규 입주 신청 알림
+        notifyAllAdminsOfContractSubmission(saved);
+
         return ContractResult.success(saved.getContractId(), "계약 신청이 완료되었습니다.");
+    }
+
+    private void notifyAllAdminsOfContractSubmission(Contract contract) {
+        try {
+            Page<AdminUserResult> adminPage = adminUserRepositoryPort.findUsers(
+                    UserRole.ADMIN, UserStatus.ACTIVE.name(), null, null, Pageable.unpaged());
+            if (adminPage == null || adminPage.getContent() == null) {
+                return;
+            }
+            for (AdminUserResult admin : adminPage.getContent()) {
+                try {
+                    notificationRepositoryPort.create(
+                            admin.getId(),
+                            NotificationType.CONTRACT_SUBMITTED,
+                            "새로운 입주 신청이 접수되었습니다",
+                            String.format("호실 ID [%d]에 대한 입주 신청이 접수되었습니다. 확인해 주세요.",
+                                    contract.getSpaceId()),
+                            ReferenceType.CONTRACT,
+                            contract.getContractId());
+                } catch (Exception e) {
+                    log.warn("관리자 계약 신청 알림 실패 adminId={}: {}", admin.getId(), e.getMessage());
+                }
+            }
+        } catch (Exception e) {
+            log.error("계약 신청 관리자 알림 팬아웃 실패 contractId={}: {}", contract.getContractId(), e.getMessage());
+        }
     }
 
     @Override
