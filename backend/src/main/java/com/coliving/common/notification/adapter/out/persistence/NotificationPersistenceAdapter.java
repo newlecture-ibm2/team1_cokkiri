@@ -57,8 +57,9 @@ public class NotificationPersistenceAdapter implements NotificationRepositoryPor
         }
 
         try {
-            // 중복 방어: 이미 동일한 알림이 있는지 1차 확인
-            if (exists(userId, type, referenceType, referenceId)) {
+            // 댓글 알림은 같은 글(postId)에 여러 번 와야 하므로 (user,type,ref) exists 로 막지 않음
+            if (type != NotificationType.COMMUNITY_COMMENT
+                    && exists(userId, type, referenceType, referenceId)) {
                 log.info("Notification already exists for user: {}, type: {}, refId: {}", userId, type, referenceId);
                 return null;
             }
