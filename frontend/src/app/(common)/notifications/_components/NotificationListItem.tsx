@@ -47,11 +47,11 @@ export function NotificationListItem({ item }: { item: NotificationItem }) {
           targetPath = `/profile/vocs/${refId}`;
         }
       } else if (refType === "CONTRACT") {
-        targetPath = `/profile/contracts`; // 계약 상세 페이지가 생기면 `/profile/contracts/${refId}`로 변경 예정
+        targetPath = `/my-contracts`; 
       } else if (refType === "RESERVATION") {
-        targetPath = `/profile/reservations`;
+        targetPath = `/my-history/reservation`;
       } else if (refType === "PAYMENT") {
-        targetPath = `/profile/payments`;
+        targetPath = `/my-payments`;
       }
     }
 
