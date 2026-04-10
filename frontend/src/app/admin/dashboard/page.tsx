@@ -20,13 +20,15 @@ export default function DashboardPage() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    let mounted = true;
+
     async function load() {
       setIsLoading(true);
 
       // 각 API 독립 호출 — 하나 실패해도 나머지 표시
       try {
         const energy = await fetchDashboardEnergy();
-        if (energy) {
+        if (mounted && energy) {
           setStatusSummary(energy.statusSummary);
         }
       } catch (_e) {
@@ -35,16 +37,20 @@ export default function DashboardPage() {
 
       try {
         const logs = await fetchDashboardRecentLogs();
-        if (logs) {
+        if (mounted && logs) {
           setRecentLogs(logs.content || []);
         }
       } catch (_e) {
         // 로그 API 실패 시 빈 상태 유지
       }
 
-      setIsLoading(false);
+      if (mounted) setIsLoading(false);
     }
     load();
+
+    return () => {
+      mounted = false;
+    };
   }, []);
 
   return (
