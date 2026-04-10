@@ -95,7 +95,7 @@ export default function ControlLogTable() {
         <select
           value={spaceId ?? ""}
           onChange={(e) => handleSpaceChange(e.target.value)}
-          className="px-3 py-2 rounded-xl border border-[var(--secondary)] bg-white text-sm text-[var(--primary)] focus:ring-2 focus:ring-[var(--accent)] focus:outline-none min-w-[180px]"
+          className="px-3 py-2 rounded-xl border border-border bg-background text-sm text-foreground focus:ring-2 focus:ring-[#768064] focus:outline-none min-w-[180px]"
         >
           <option value="">전체 공간</option>
           <optgroup label="개인 공간">
@@ -121,45 +121,45 @@ export default function ControlLogTable() {
         <select
           value={resultFilter ?? ""}
           onChange={(e) => handleResultChange(e.target.value)}
-          className="px-3 py-2 rounded-xl border border-[var(--secondary)] bg-white text-sm text-[var(--primary)] focus:ring-2 focus:ring-[var(--accent)] focus:outline-none"
+          className="px-3 py-2 rounded-xl border border-border bg-background text-sm text-foreground focus:ring-2 focus:ring-[#768064] focus:outline-none"
         >
           <option value="">전체 결과</option>
           <option value="SUCCESS">SUCCESS</option>
           <option value="FAILURE">FAILURE</option>
         </select>
 
-        <span className="flex items-center text-xs text-[var(--muted)] ml-auto">
+        <span className="flex items-center text-xs text-muted-foreground ml-auto">
           총 {totalElements.toLocaleString()}건
         </span>
       </div>
 
       {/* 테이블 */}
-      <div className="overflow-x-auto rounded-xl border border-[var(--secondary)]/40">
+      <div className="overflow-x-auto rounded-xl border border-border">
         <table className="w-full text-sm">
           <thead>
-            <tr className="bg-[var(--background)] text-left">
-              <th className="px-4 py-3 font-semibold text-[var(--primary)]">일시</th>
-              <th className="px-4 py-3 font-semibold text-[var(--primary)]">공간</th>
-              <th className="px-4 py-3 font-semibold text-[var(--primary)]">기기</th>
-              <th className="px-4 py-3 font-semibold text-[var(--primary)]">명령</th>
-              <th className="px-4 py-3 font-semibold text-[var(--primary)]">실행자</th>
-              <th className="px-4 py-3 font-semibold text-[var(--primary)]">결과</th>
+            <tr className="bg-muted/20 text-left">
+              <th className="px-4 py-3 font-semibold text-foreground">일시</th>
+              <th className="px-4 py-3 font-semibold text-foreground">공간</th>
+              <th className="px-4 py-3 font-semibold text-foreground">기기</th>
+              <th className="px-4 py-3 font-semibold text-foreground">명령</th>
+              <th className="px-4 py-3 font-semibold text-foreground">실행자</th>
+              <th className="px-4 py-3 font-semibold text-foreground">결과</th>
             </tr>
           </thead>
           <tbody>
             {isLoading ? (
               Array.from({ length: 5 }).map((_, i) => (
-                <tr key={i} className="border-t border-[var(--secondary)]/20">
+                <tr key={i} className="border-t border-border/40">
                   {Array.from({ length: 6 }).map((_, j) => (
                     <td key={j} className="px-4 py-3">
-                      <div className="animate-pulse h-4 bg-[var(--secondary)]/20 rounded" />
+                      <div className="animate-pulse h-4 bg-muted/20 rounded" />
                     </td>
                   ))}
                 </tr>
               ))
             ) : logs.length === 0 ? (
               <tr>
-                <td colSpan={6} className="px-4 py-12 text-center text-[var(--muted)]">
+                <td colSpan={6} className="px-4 py-12 text-center text-muted-foreground">
                   제어 이력이 없습니다
                 </td>
               </tr>
@@ -167,28 +167,28 @@ export default function ControlLogTable() {
               logs.map((log) => (
                 <tr
                   key={log.controlLogId}
-                  className="border-t border-[var(--secondary)]/20 hover:bg-[var(--background)]/50 transition-colors"
+                  className="border-t border-border/40 hover:bg-muted/10 transition-colors"
                 >
-                  <td className="px-4 py-3 text-[var(--muted)] whitespace-nowrap">
+                  <td className="px-4 py-3 text-muted-foreground whitespace-nowrap">
                     {formatDate(log.createdAt)}
                   </td>
-                  <td className="px-4 py-3 text-[var(--primary)] font-medium">
+                  <td className="px-4 py-3 text-foreground font-medium">
                     {log.spaceName}
                   </td>
                   <td className="px-4 py-3">
-                    <div className="text-[var(--primary)]">{log.deviceName}</div>
-                    <div className="text-xs text-[var(--muted)]">{log.deviceTypeName}</div>
+                    <div className="text-foreground">{log.deviceName}</div>
+                    <div className="text-xs text-muted-foreground">{log.deviceTypeName}</div>
                   </td>
                   <td className="px-4 py-3">
-                    <span className="inline-block px-2 py-0.5 rounded-lg bg-[var(--background)] text-xs font-mono font-semibold text-[var(--primary)]">
+                    <span className="inline-block px-2 py-0.5 rounded-lg bg-background text-xs font-mono font-semibold text-foreground">
                       {log.command}
                     </span>
                   </td>
-                  <td className="px-4 py-3 text-[var(--muted)]">
+                  <td className="px-4 py-3 text-muted-foreground">
                     <span className={`text-xs font-medium px-1.5 py-0.5 rounded ${
                       log.actorType === "ADMIN"
-                        ? "bg-[var(--accent)]/10 text-[var(--accent)]"
-                        : "bg-[var(--secondary)]/20 text-[var(--muted)]"
+                        ? "bg-[#768064]/10 text-[#768064]"
+                        : "bg-muted/20 text-muted-foreground"
                     }`}>
                       {log.actorType}
                     </span>
@@ -198,8 +198,8 @@ export default function ControlLogTable() {
                   </td>
                   <td className="px-4 py-3">
                     {log.result === "SUCCESS" ? (
-                      <span className="inline-flex items-center gap-1 text-xs font-semibold text-[var(--accent)]">
-                        <span className="w-1.5 h-1.5 rounded-full bg-[var(--accent)]" />
+                      <span className="inline-flex items-center gap-1 text-xs font-semibold text-[#768064]">
+                        <span className="w-1.5 h-1.5 rounded-full bg-[#768064]" />
                         성공
                       </span>
                     ) : (
@@ -222,17 +222,17 @@ export default function ControlLogTable() {
           <button
             onClick={() => setPage((p) => Math.max(0, p - 1))}
             disabled={page === 0}
-            className="px-3 py-1.5 rounded-lg text-sm border border-[var(--secondary)] bg-white text-[var(--primary)] disabled:opacity-30 hover:bg-[var(--background)] transition-colors"
+            className="px-3 py-1.5 rounded-lg text-sm border border-border bg-background text-foreground disabled:opacity-30 hover:bg-muted/10 transition-colors"
           >
             이전
           </button>
-          <span className="text-sm text-[var(--muted)]">
+          <span className="text-sm text-muted-foreground">
             {page + 1} / {totalPages}
           </span>
           <button
             onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
             disabled={page >= totalPages - 1}
-            className="px-3 py-1.5 rounded-lg text-sm border border-[var(--secondary)] bg-white text-[var(--primary)] disabled:opacity-30 hover:bg-[var(--background)] transition-colors"
+            className="px-3 py-1.5 rounded-lg text-sm border border-border bg-background text-foreground disabled:opacity-30 hover:bg-muted/10 transition-colors"
           >
             다음
           </button>

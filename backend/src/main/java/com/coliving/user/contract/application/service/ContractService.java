@@ -43,7 +43,7 @@ public class ContractService implements ContractUseCase {
     private final AdminUserRepositoryPort adminUserRepositoryPort;
     private final AdminSpaceRepositoryPort adminSpaceRepositoryPort;
     private final JwtTokenProvider jwtTokenProvider;
-    private final NotificationRepositoryPort notificationRepositoryPort;
+    private final org.springframework.context.ApplicationEventPublisher eventPublisher;
 
     @Override
     @Transactional(readOnly = true)
@@ -164,37 +164,13 @@ public class ContractService implements ContractUseCase {
 
         Contract saved = contractRepositoryPort.save(contract);
 
-        // 관리자 전원에게 신규 입주 신청 알림
-        notifyAllAdminsOfContractSubmission(saved);
+        // 이벤트 발행 (관리자 알림 팬아웃 등은 수신 측에서 처리)
+        eventPublisher.publishEvent(new com.coliving.user.contract.application.event.ContractSubmittedEvent(saved));
 
         return ContractResult.success(saved.getContractId(), "계약 신청이 완료되었습니다.");
     }
 
-    private void notifyAllAdminsOfContractSubmission(Contract contract) {
-        try {
-            Page<AdminUserResult> adminPage = adminUserRepositoryPort.findUsers(
-                    UserRole.ADMIN, UserStatus.ACTIVE.name(), null, null, Pageable.unpaged());
-            if (adminPage == null || adminPage.getContent() == null) {
-                return;
-            }
-            for (AdminUserResult admin : adminPage.getContent()) {
-                try {
-                    notificationRepositoryPort.create(
-                            admin.getId(),
-                            NotificationType.CONTRACT_SUBMITTED,
-                            "새로운 입주 신청이 접수되었습니다",
-                            String.format("호실 ID [%d]에 대한 입주 신청이 접수되었습니다. 확인해 주세요.",
-                                    contract.getSpaceId()),
-                            ReferenceType.CONTRACT,
-                            contract.getContractId());
-                } catch (Exception e) {
-                    log.warn("관리자 계약 신청 알림 실패 adminId={}: {}", admin.getId(), e.getMessage());
-                }
-            }
-        } catch (Exception e) {
-            log.error("계약 신청 관리자 알림 팬아웃 실패 contractId={}: {}", contract.getContractId(), e.getMessage());
-        }
-    }
+    // 도메인 이벤트 위임으로 인해 직접적인 팬아웃 로직 삭제
 
     @Override
     public ContractSignResult signContract(Long userId, ContractSignCommand command) {
@@ -244,14 +220,15 @@ public class ContractService implements ContractUseCase {
                 userId, UserRole.RESIDENT.name(), contract.getContractId(), contract.getSpaceId());
         String refreshToken = jwtTokenProvider.createRefreshToken(userId);
 
-        // 8. 알림 생성
-        notificationRepositoryPort.create(
-                userId,
-                NotificationType.CONTRACT_ACTIVATED,
-                "계약이 체결되었습니다.",
-                "입주를 축하합니다! 호실 정보와 IoT 기기를 확인해 보세요.",
-                ReferenceType.CONTRACT,
-                contract.getContractId());
+        // 8. 알림 이벤트 발행
+        eventPublisher.publishEvent(com.coliving.admin.contract.application.event.ContractStatusChangedByAdminEvent.builder()
+                .contractId(contract.getContractId())
+                .userId(userId)
+                .spaceId(contract.getSpaceId())
+                .spaceName(space.getName())
+                .newStatus(ContractStatus.ACTIVE)
+                .message("계약이 성공적으로 체결되었습니다.")
+                .build());
 
         return ContractSignResult.builder()
                 .contractId(contract.getContractId())

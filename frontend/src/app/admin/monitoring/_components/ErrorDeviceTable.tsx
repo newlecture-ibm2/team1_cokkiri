@@ -4,8 +4,8 @@ import type { DeviceErrorStats } from "../_types";
 
 const STATUS_BADGES: Record<string, { label: string; className: string }> = {
   ERROR: { label: "장애", className: "bg-red-50 text-red-600" },
-  ONLINE: { label: "정상", className: "bg-[var(--accent)]/10 text-[var(--accent)]" },
-  OFFLINE: { label: "오프라인", className: "bg-[var(--secondary)]/30 text-[var(--muted)]" },
+  ONLINE: { label: "정상", className: "bg-[#768064]/10 text-[#768064]" },
+  OFFLINE: { label: "오프라인", className: "bg-muted/20 text-muted-foreground" },
 };
 
 interface ErrorDeviceTableProps {
@@ -18,7 +18,7 @@ export default function ErrorDeviceTable({ data, isLoading }: ErrorDeviceTablePr
     return (
       <div className="space-y-3">
         {[...Array(5)].map((_, i) => (
-          <div key={i} className="animate-pulse h-12 rounded-xl bg-[var(--secondary)]/20" />
+          <div key={i} className="animate-pulse h-12 rounded-xl bg-muted/20" />
         ))}
       </div>
     );
@@ -26,7 +26,7 @@ export default function ErrorDeviceTable({ data, isLoading }: ErrorDeviceTablePr
 
   if (data.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center py-16 text-[var(--muted)]">
+      <div className="flex flex-col items-center justify-center py-16 text-muted-foreground">
         <span className="text-4xl mb-3">✅</span>
         <p className="font-medium">장애 기기가 없습니다</p>
         <p className="text-sm mt-1">모든 기기가 정상 작동 중입니다</p>
@@ -38,20 +38,20 @@ export default function ErrorDeviceTable({ data, isLoading }: ErrorDeviceTablePr
     <div className="overflow-x-auto">
       <table className="w-full text-sm">
         <thead>
-          <tr className="border-b border-[var(--secondary)]/40">
-            <th className="text-left py-3 px-4 text-xs font-black uppercase tracking-[0.2em] text-[var(--muted)]">
+          <tr className="border-b border-border">
+            <th className="text-left py-3 px-4 text-xs font-black uppercase tracking-[0.2em] text-muted-foreground">
               기기명
             </th>
-            <th className="text-left py-3 px-4 text-xs font-black uppercase tracking-[0.2em] text-[var(--muted)]">
+            <th className="text-left py-3 px-4 text-xs font-black uppercase tracking-[0.2em] text-muted-foreground">
               종류
             </th>
-            <th className="text-left py-3 px-4 text-xs font-black uppercase tracking-[0.2em] text-[var(--muted)]">
+            <th className="text-left py-3 px-4 text-xs font-black uppercase tracking-[0.2em] text-muted-foreground">
               설치 공간
             </th>
-            <th className="text-center py-3 px-4 text-xs font-black uppercase tracking-[0.2em] text-[var(--muted)]">
+            <th className="text-center py-3 px-4 text-xs font-black uppercase tracking-[0.2em] text-muted-foreground">
               상태
             </th>
-            <th className="text-center py-3 px-4 text-xs font-black uppercase tracking-[0.2em] text-[var(--muted)]">
+            <th className="text-center py-3 px-4 text-xs font-black uppercase tracking-[0.2em] text-muted-foreground">
               에러 횟수
             </th>
           </tr>
@@ -62,15 +62,15 @@ export default function ErrorDeviceTable({ data, isLoading }: ErrorDeviceTablePr
             return (
               <tr
                 key={device.deviceId}
-                className="border-b border-[var(--secondary)]/20 hover:bg-[var(--secondary)]/10 transition-colors"
+                className="border-b border-border/40 hover:bg-muted/10 transition-colors"
               >
-                <td className="py-3 px-4 font-semibold text-[var(--primary)]">
+                <td className="py-3 px-4 font-semibold text-foreground">
                   {device.deviceName}
                 </td>
-                <td className="py-3 px-4 text-[var(--muted)]">
+                <td className="py-3 px-4 text-muted-foreground">
                   {device.deviceTypeName}
                 </td>
-                <td className="py-3 px-4 text-[var(--muted)]">
+                <td className="py-3 px-4 text-muted-foreground">
                   {device.spaceName}
                 </td>
                 <td className="py-3 px-4 text-center">

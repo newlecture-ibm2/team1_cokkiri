@@ -34,17 +34,9 @@ export default function LoginForm() {
         const { role } = response.data.user;
         login(response.data.user);
         
-        // Redirect based on role
-        if (role === 'ADMIN') {
-          router.push('/admin/dashboard');
-          router.refresh();
-        } else if (role === 'RESIDENT') {
-          router.push('/my-room'); // actually resident-app logic might default to facilities or my-devices, but we can just do /
-          router.refresh();
-        } else {
-          router.push('/rooms');
-          router.refresh();
-        }
+        // Redirect to main page after success
+        router.push('/');
+        router.refresh();
       }
     } catch (err) {
       if (err instanceof ApiError) {

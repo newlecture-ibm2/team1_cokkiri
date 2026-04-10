@@ -8,6 +8,7 @@ import com.coliving.common.notification.model.NotificationType;
 import com.coliving.common.notification.model.ReferenceType;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
@@ -23,6 +24,7 @@ public class CommentPostedNotificationListener {
     private final CommentRepositoryPort commentRepositoryPort;
     private final CreateNotificationUseCase createNotificationUseCase;
 
+    @Async("notificationExecutor")
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void onCommentPosted(CommentPostedEvent event) {
         if (event == null || event.getPostId() == null || event.getActorId() == null) {

@@ -57,13 +57,13 @@ export default function PaymentTable({ initialPayments }: PaymentTableProps) {
               <td className="px-6 py-4 font-mono text-sm">{payment.paymentId}</td>
               <td className="px-6 py-4 text-sm">
                 <div className="font-bold">{payment.userName || '-'}</div>
-                <div className="text-[10px] text-muted-foreground">{payment.loginId}</div>
+                <div className="text-[10px] text-muted-foreground">{payment.loginId || '-'}</div>
               </td>
               <td className="px-6 py-4">
                 <Badge variant="outline" className="bg-white/50">{payment.type}</Badge>
               </td>
               <td className="px-6 py-4 font-bold">
-                {payment.amount.toLocaleString()}원
+                {Number(payment.amount || 0).toLocaleString()}원
               </td>
               <td className="px-6 py-4">
                 <Badge 

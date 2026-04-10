@@ -158,44 +158,11 @@ public class CommunityService implements CommunityUseCase {
     private void notifyAllResidentsOfNotice(Post post, String title) {
         if (post == null) return;
 
-        log.info("Starting notice notification fan-out for post: {}", post.getPostId());
-        int successCount = 0;
-        int totalUsers = 0;
-
-        try {
-            // USER + RESIDENT 모두에게 알림 전송
-            for (UserRole role : List.of(UserRole.USER, UserRole.RESIDENT)) {
-                // Pageable.unpaged()가 일부 환경에서 오동작할 수 있으므로 명시적 큰 사이즈 부여 고려 가능
-                Page<AdminUserResult> userPage = adminUserRepositoryPort.findUsers(
-                        role, UserStatus.ACTIVE.name(), null, null, PageRequest.of(0, 1000));
-                
-                if (userPage == null || userPage.getContent() == null) {
-                    log.warn("No active users found for role: {}", role);
-                    continue;
-                }
-
-                totalUsers += userPage.getContent().size();
-                for (AdminUserResult user : userPage.getContent()) {
-                    try {
-                        createNotificationUseCase.create(CreateNotificationCommand.builder()
-                                .userId(user.getId())
-                                .type(NotificationType.COMMUNITY_NOTICE)
-                                .title(title)
-                                .message(String.format("「%s」 공지사항이 등록되었습니다.", post.getTitle()))
-                                .referenceType(ReferenceType.COMMUNITY)
-                                .referenceId(post.getPostId())
-                                .build());
-                        successCount++;
-                    } catch (Exception e) {
-                        log.error("Failed to send notice notification to user: {}", user.getId(), e);
-                    }
-                }
-            }
-            log.info("Notice notification fan-out completed. Success: {}/{}, PostId: {}", 
-                    successCount, totalUsers, post.getPostId());
-        } catch (Exception e) {
-            log.error("Critical failure during notice notification fan-out for post: {}", post.getPostId(), e);
-        }
+        // 대량 알림(팬아웃)은 비동기 리스너로 위임
+        eventPublisher.publishEvent(com.coliving.common.community.application.event.NoticePublishedEvent.builder()
+                .postId(post.getPostId())
+                .title(post.getTitle())
+                .build());
     }
 
     @Override
