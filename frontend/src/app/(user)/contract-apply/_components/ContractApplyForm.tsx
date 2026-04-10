@@ -289,19 +289,32 @@ export default function ContractApplyForm() {
           desiredStartDate: formData.desiredStartDate,
           desiredDurationMonths: Number(formData.desiredDurationMonths),
           usagePurpose: formData.usagePurpose,
-          requestNote: formData.requestNote,
+          requestNote: formData.requestNote || "",
           address: formData.address,
           bankAccount: formData.bankAccount,
           privacyAgreed: formData.privacyAgreed
         })
       });
 
-      if (!response.ok) throw new Error("Submission failed");
+      if (!response.ok) {
+        // Try to parse backend error for a better message
+        let errorMsg = "신청 처리 중 오류가 발생했습니다.";
+        try {
+          const errBody = await response.json();
+          if (errBody.message) errorMsg = errBody.message;
+        } catch { /* ignore parse errors */ }
+
+        if (response.status === 401) {
+          setError("로그인이 만료되었습니다. 다시 로그인해주세요.");
+          return;
+        }
+        throw new Error(errorMsg);
+      }
 
       localStorage.removeItem(`contract_draft_${spaceId}`);
       setStep(5);
-    } catch (err) {
-      setError("신청 도중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.");
+    } catch (err: any) {
+      setError(err.message || "신청 도중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.");
     } finally {
       setIsSubmitting(false);
     }
