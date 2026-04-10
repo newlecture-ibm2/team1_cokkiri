@@ -1,5 +1,6 @@
 package com.coliving.common.notification.adapter.in.web.dto.res;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -14,6 +15,7 @@ public class NotificationItemResponseDto {
     private final String message;
     private final String referenceType;
     private final Long referenceId;
+    @JsonProperty("isRead")
     private final boolean isRead;
     private final OffsetDateTime createdAt;
 }
