@@ -26,6 +26,13 @@ export function NotificationsInboxRefreshClient() {
 
     scheduleRefresh(450);
 
+    const onInvalidate = () => {
+      scheduleRefresh(100);
+    };
+
+    const NOTIFICATIONS_UNREAD_INVALIDATE = "cokkiri:notifications-unread-invalidate";
+    window.addEventListener(NOTIFICATIONS_UNREAD_INVALIDATE, onInvalidate);
+
     const onVisible = () => {
       if (document.visibilityState === "visible") scheduleRefresh(320);
     };
@@ -39,6 +46,7 @@ export function NotificationsInboxRefreshClient() {
 
     return () => {
       if (idle) clearTimeout(idle);
+      window.removeEventListener(NOTIFICATIONS_UNREAD_INVALIDATE, onInvalidate);
       document.removeEventListener("visibilitychange", onVisible);
       window.removeEventListener("pageshow", onPageShow);
     };

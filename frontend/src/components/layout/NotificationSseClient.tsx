@@ -74,10 +74,21 @@ export default function NotificationSseClient() {
 
     const eventSource = new EventSource("/api/notifications/stream", { withCredentials: true });
 
+    eventSource.onopen = () => {
+      console.log("[SSE] Connection established.");
+    };
+
+    eventSource.onerror = (err) => {
+      console.error("[SSE] Connection error or closed. EventSource will retry automatically.", err);
+    };
+
     const onNotification = (event: MessageEvent) => {
       try {
         const payload = JSON.parse(event.data) as NotificationEventPayload;
         if (!mounted) return;
+
+        // 실시간 알림 센터 동기화를 위해 전역 시그널 발행
+        import("@/lib/notifications-events").then((m) => m.invalidateNotificationsUnreadCount());
 
         setUnreadCount((prev) => prev + (payload.isRead ? 0 : 1));
         setToasts((prev) => {
@@ -89,8 +100,8 @@ export default function NotificationSseClient() {
           if (!mounted) return;
           setToasts((prev) => prev.filter((t) => t.id !== payload.notificationId));
         }, 4500);
-      } catch {
-        // Ignore malformed SSE payload.
+      } catch (e) {
+        console.warn("[SSE] Failed to parse notification payload:", e);
       }
     };
 
