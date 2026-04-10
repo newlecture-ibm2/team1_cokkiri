@@ -27,23 +27,28 @@ export default function DashboardPage() {
   useEffect(() => {
     async function load() {
       setIsLoading(true);
+
+      // 각 API 독립 호출 — 하나 실패해도 나머지 표시
       try {
-        const [energy, logs] = await Promise.all([
-          fetchDashboardEnergy(),
-          fetchDashboardRecentLogs(),
-        ]);
+        const energy = await fetchDashboardEnergy();
         if (energy) {
           setStatusSummary(energy.statusSummary);
           setSpaceStatus(energy.deviceStatusBySpace || []);
         }
+      } catch (_e) {
+        // 에너지 API 실패 시 빈 상태 유지
+      }
+
+      try {
+        const logs = await fetchDashboardRecentLogs();
         if (logs) {
           setRecentLogs(logs.content || []);
         }
       } catch (_e) {
-        // 에러 시 빈 상태 유지
-      } finally {
-        setIsLoading(false);
+        // 로그 API 실패 시 빈 상태 유지
       }
+
+      setIsLoading(false);
     }
     load();
   }, []);

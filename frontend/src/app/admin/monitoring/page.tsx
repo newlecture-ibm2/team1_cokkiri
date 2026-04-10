@@ -22,18 +22,27 @@ export default function MonitoringPage() {
     async function loadData() {
       setIsLoading(true);
       setError(null);
+      const errors: string[] = [];
+
+      // 각 API를 독립 호출 — 하나 실패해도 나머지 표시
       try {
-        const [errorsRes, energyRes] = await Promise.all([
-          fetchDeviceErrors(),
-          fetchEnergyStats(),
-        ]);
+        const errorsRes = await fetchDeviceErrors();
         if (errorsRes.data) setErrors(errorsRes.data);
+      } catch (err) {
+        errors.push("장애 기기");
+      }
+
+      try {
+        const energyRes = await fetchEnergyStats();
         if (energyRes.data) setEnergyData(energyRes.data);
       } catch (err) {
-        setError(err instanceof Error ? err.message : "데이터를 불러오지 못했습니다.");
-      } finally {
-        setIsLoading(false);
+        errors.push("에너지 통계");
       }
+
+      if (errors.length > 0) {
+        setError(`${errors.join(", ")} 데이터를 불러오지 못했습니다.`);
+      }
+      setIsLoading(false);
     }
     loadData();
   }, []);
