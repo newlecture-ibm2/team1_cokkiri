@@ -17,19 +17,25 @@ type NotificationItem = {
 
 export function NotificationListItem({ item }: { item: NotificationItem }) {
   const router = useRouter();
-  const [isRead, setIsRead] = useState(item.isRead);
+  /** 서버가 잠깐 늦게 따라올 때 로컬 읽음을 덮어쓰지 않도록 낙관적 플래그만 사용 */
+  const [readLocally, setReadLocally] = useState(false);
 
   useEffect(() => {
-    setIsRead(item.isRead);
-  }, [item.isRead, item.notificationId]);
+    setReadLocally(false);
+  }, [item.notificationId]);
+
+  const isRead = readLocally || item.isRead;
 
   const handleClick = async () => {
-    // 1. 읽음 처리 후 RSC·배지와 맞추기 (이동 전에 서버 반영·캐시 무효화)
+    // 1. 읽음 처리 후 배지·인박스 갱신 신호 (이동 전에 완료)
     if (!isRead) {
       try {
-        const res = await fetch(`/api/notifications/${item.notificationId}/read`, { method: "PATCH" });
+        const res = await fetch(`/api/notifications/${item.notificationId}/read`, {
+          method: "PATCH",
+          credentials: "include",
+        });
         if (res.ok) {
-          setIsRead(true);
+          setReadLocally(true);
           invalidateNotificationsUnreadCount();
         }
       } catch {

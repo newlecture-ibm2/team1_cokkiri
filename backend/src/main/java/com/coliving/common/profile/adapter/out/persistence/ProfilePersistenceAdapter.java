@@ -35,6 +35,17 @@ public class ProfilePersistenceAdapter implements ProfileRepositoryPort {
         userJpaRepository.save(user);
     }
 
+    @Override
+    public void withdrawUser(Long userId) {
+        UserEntity user = userJpaRepository.findById(userId)
+                .orElseThrow(() -> new com.coliving.global.error.BusinessException(com.coliving.global.error.ErrorCode.ACCOUNT_NOT_FOUND));
+        
+        user.updateProfile("탈퇴한 사용자", "탈퇴한 사용자", "탈퇴한 사용자", null);
+        user.deactivate();
+        user.softDelete();
+        userJpaRepository.save(user);
+    }
+
     private ProfileResponseDto toResponseDto(UserEntity user) {
         return ProfileResponseDto.builder()
                 .id(user.getUserId())

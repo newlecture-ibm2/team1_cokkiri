@@ -10,14 +10,23 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.coliving.common.profile.application.command.UpdatePasswordCommand;
+import com.coliving.common.profile.application.command.WithdrawCommand;
 import com.coliving.common.profile.application.port.in.UpdatePasswordUseCase;
+import com.coliving.common.profile.application.port.in.WithdrawUseCase;
+import com.coliving.admin.payment.adapter.out.jpa.PaymentJpaRepository;
+import com.coliving.admin.payment.model.PaymentStatus;
+import com.coliving.user.contract.adapter.out.jpa.ContractJpaRepository;
+import com.coliving.user.contract.model.ContractStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-public class ProfileService implements GetProfileUseCase, UpdatePasswordUseCase {
+public class ProfileService implements GetProfileUseCase, UpdatePasswordUseCase, WithdrawUseCase {
 
     private final ProfileRepositoryPort profileRepositoryPort;
+    private final ContractJpaRepository contractJpaRepository;
+    private final PaymentJpaRepository paymentJpaRepository;
     private final PasswordEncoder passwordEncoder;
 
     @Override
@@ -49,5 +58,24 @@ public class ProfileService implements GetProfileUseCase, UpdatePasswordUseCase 
         }
 
         profileRepositoryPort.updatePassword(userId, passwordEncoder.encode(command.getNewPassword()));
+    }
+
+    @Override
+    @Transactional
+    public void withdraw(Long userId, WithdrawCommand command) {
+        String currentHash = profileRepositoryPort.getPasswordHash(userId);
+        if (!passwordEncoder.matches(command.getPassword(), currentHash)) {
+            throw new BusinessException(ErrorCode.INVALID_PASSWORD);
+        }
+
+        if (!contractJpaRepository.findByUserIdAndStatus(userId, ContractStatus.ACTIVE).isEmpty()) {
+            throw new BusinessException(ErrorCode.ACTIVE_CONTRACT_EXISTS, "활성 계약이 존재하여 탈퇴할 수 없습니다.");
+        }
+
+        if (!paymentJpaRepository.findByUserIdAndStatus(userId, PaymentStatus.UNPAID).isEmpty()) {
+            throw new BusinessException(ErrorCode.UNPAID_PAYMENT_EXISTS, "미납된 결제가 존재하여 탈퇴할 수 없습니다.");
+        }
+
+        profileRepositoryPort.withdrawUser(userId);
     }
 }
