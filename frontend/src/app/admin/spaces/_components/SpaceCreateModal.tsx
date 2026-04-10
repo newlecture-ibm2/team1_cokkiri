@@ -132,7 +132,7 @@ export default function SpaceCreateModal({
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
               />
             </div>
-            
+
             <div className="col-span-2 sm:col-span-1">
               <label className="block text-sm font-bold mb-2">유형</label>
               <select
@@ -162,22 +162,77 @@ export default function SpaceCreateModal({
               </div>
             )}
 
+            {/* PRIVATE 상세 필드 */}
+            {formData.type === 'PRIVATE' && (
+              <>
+                <div className="col-span-1">
+                  <label className="block text-sm font-bold mb-2">보증금</label>
+                  <input type="number" className="w-full px-4 py-3 rounded-2xl bg-[var(--color-muted)] outline-none" value={formData.deposit ?? ''} onChange={(e) => setFormData({ ...formData, deposit: e.target.value ? Number(e.target.value) : undefined })} />
+                </div>
+                <div className="col-span-1">
+                  <label className="block text-sm font-bold mb-2">월세</label>
+                  <input type="number" className="w-full px-4 py-3 rounded-2xl bg-[var(--color-muted)] outline-none" value={formData.monthlyRent ?? ''} onChange={(e) => setFormData({ ...formData, monthlyRent: e.target.value ? Number(e.target.value) : undefined })} />
+                </div>
+                <div className="col-span-1">
+                  <label className="block text-sm font-bold mb-2">관리비</label>
+                  <input type="number" className="w-full px-4 py-3 rounded-2xl bg-[var(--color-muted)] outline-none" value={formData.maintenanceFee ?? ''} onChange={(e) => setFormData({ ...formData, maintenanceFee: e.target.value ? Number(e.target.value) : undefined })} />
+                </div>
+                <div className="col-span-1">
+                  <label className="block text-sm font-bold mb-2">방 수</label>
+                  <input type="number" className="w-full px-4 py-3 rounded-2xl bg-[var(--color-muted)] outline-none" value={formData.roomCount ?? ''} onChange={(e) => setFormData({ ...formData, roomCount: e.target.value ? Number(e.target.value) : undefined })} />
+                </div>
+                <div className="col-span-1">
+                  <label className="block text-sm font-bold mb-2">욕실 수</label>
+                  <input type="number" className="w-full px-4 py-3 rounded-2xl bg-[var(--color-muted)] outline-none" value={formData.bathroomCount ?? ''} onChange={(e) => setFormData({ ...formData, bathroomCount: e.target.value ? Number(e.target.value) : undefined })} />
+                </div>
+                <div className="col-span-1">
+                  <label className="block text-sm font-bold mb-2">방향</label>
+                  <select className="w-full px-4 py-3 rounded-2xl bg-[var(--color-muted)] outline-none" value={formData.direction ?? ''} onChange={(e) => setFormData({ ...formData, direction: e.target.value || undefined })}>
+                    <option value="">선택</option>
+                    <option value="남">남</option>
+                    <option value="북">북</option>
+                    <option value="동">동</option>
+                    <option value="서">서</option>
+                  </select>
+                </div>
+                <div className="col-span-2">
+                  <label className="flex items-center gap-2 text-sm font-bold cursor-pointer">
+                    <input type="checkbox" checked={formData.parkingAvailable ?? false} onChange={(e) => setFormData({ ...formData, parkingAvailable: e.target.checked })} className="rounded" />
+                    주차 가능
+                  </label>
+                </div>
+              </>
+            )}
+
             {/* 예약 가능 여부 (COMMON만) */}
             {formData.type === 'COMMON' && (
-              <div className="col-span-2 sm:col-span-1">
-                <label className="block text-sm font-bold mb-2">예약 가능 여부</label>
-                <button
-                  type="button"
-                  onClick={() => setFormData({ ...formData, isReservable: !formData.isReservable })}
-                  className={`w-full px-4 py-3 rounded-2xl font-bold tracking-tight transition-all duration-300 border ${
-                    formData.isReservable
-                      ? 'bg-[var(--color-accent)] text-white border-[var(--color-accent)]'
-                      : 'bg-[var(--color-muted)] text-[var(--foreground)]/60 border-transparent'
-                  }`}
-                >
-                  {formData.isReservable ? '✓ 예약제 (시설 예약 필요)' : '자유 이용 (예약 불필요)'}
-                </button>
-              </div>
+              <>
+                <div className="col-span-2 sm:col-span-1">
+                  <label className="block text-sm font-bold mb-2">예약 가능 여부</label>
+                  <button
+                    type="button"
+                    onClick={() => setFormData({ ...formData, isReservable: !formData.isReservable })}
+                    className={`w-full px-4 py-3 rounded-2xl font-bold tracking-tight transition-all duration-300 border ${formData.isReservable
+                        ? 'bg-[var(--color-accent)] text-white border-[var(--color-accent)]'
+                        : 'bg-[var(--color-muted)] text-[var(--foreground)]/60 border-transparent'
+                      }`}
+                  >
+                    {formData.isReservable ? '✓ 예약제 (시설 예약 필요)' : '자유 이용 (예약 불필요)'}
+                  </button>
+                </div>
+                <div className="col-span-1">
+                  <label className="block text-sm font-bold mb-2">최대 수용 인원</label>
+                  <input type="number" className="w-full px-4 py-3 rounded-2xl bg-[var(--color-muted)] outline-none" value={formData.maxCapacity ?? ''} onChange={(e) => setFormData({ ...formData, maxCapacity: e.target.value ? Number(e.target.value) : undefined })} />
+                </div>
+                <div className="col-span-1">
+                  <label className="block text-sm font-bold mb-2">운영 시간</label>
+                  <input type="text" className="w-full px-4 py-3 rounded-2xl bg-[var(--color-muted)] outline-none" placeholder="예: 06:00-23:00" value={formData.operatingHours ?? ''} onChange={(e) => setFormData({ ...formData, operatingHours: e.target.value })} />
+                </div>
+                <div className="col-span-1">
+                  <label className="block text-sm font-bold mb-2">이용 요금</label>
+                  <input type="number" className="w-full px-4 py-3 rounded-2xl bg-[var(--color-muted)] outline-none" value={formData.usageFee ?? ''} onChange={(e) => setFormData({ ...formData, usageFee: e.target.value ? Number(e.target.value) : undefined })} />
+                </div>
+              </>
             )}
             <div className="col-span-1">
               <label className="block text-sm font-bold mb-2">해당 층</label>
@@ -223,7 +278,7 @@ export default function SpaceCreateModal({
 
             <div className="col-span-2 border-t border-[var(--color-border)] pt-4 mt-2">
               <label className="block text-sm font-bold mb-2">이미지 업로드 (드래그 앤 드롭)</label>
-              <div 
+              <div
                 onDragOver={handleDragOver}
                 onDrop={handleDrop}
                 onClick={() => fileInputRef.current?.click()}
@@ -250,12 +305,12 @@ export default function SpaceCreateModal({
           </div>
 
           <div className="flex justify-end pt-4">
-            <button 
+            <button
               onClick={submit}
               disabled={isSubmitting || !formData.name}
               className="group relative px-6 py-3 rounded-2xl text-[var(--background)] bg-[var(--foreground)] hover:bg-[var(--foreground)]/90 font-black tracking-tighter disabled:opacity-50 transition overflow-hidden"
             >
-               {isSubmitting ? '진행 중...' : '공간 등록 완료'}
+              {isSubmitting ? '진행 중...' : '공간 등록 완료'}
             </button>
           </div>
         </motion.div>

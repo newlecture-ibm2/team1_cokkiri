@@ -18,7 +18,7 @@ interface ErrorTrendChartProps {
 export default function ErrorTrendChart({ data }: ErrorTrendChartProps) {
   if (data.length === 0) {
     return (
-      <div className="flex items-center justify-center h-[300px] text-[var(--muted)]">
+      <div className="flex items-center justify-center h-[300px] text-muted-foreground">
         최근 30일 에러 이력이 없습니다
       </div>
     );
@@ -32,7 +32,7 @@ export default function ErrorTrendChart({ data }: ErrorTrendChartProps) {
 
   return (
     <div>
-      <h3 className="text-sm font-black uppercase tracking-[0.3em] text-[var(--muted)] mb-4">
+      <h3 className="text-sm font-black uppercase tracking-[0.3em] text-muted-foreground mb-4">
         일별 에러 추이 (최근 30일)
       </h3>
       <ResponsiveContainer width="100%" height={300}>

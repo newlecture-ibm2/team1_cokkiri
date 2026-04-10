@@ -69,6 +69,8 @@ public class JacksonConfig {
         return new ObjectMapper()
                 .registerModule(javaTimeModule)
                 // LocalDate 등을 [2026,5,1] 배열이 아닌 "2026-05-01" 문자열로 직렬화
-                .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+                .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
+                // 모든 날짜/시간 직렬화·역직렬화 시 Asia/Seoul(KST) 기준
+                .setTimeZone(java.util.TimeZone.getTimeZone("Asia/Seoul"));
     }
 }

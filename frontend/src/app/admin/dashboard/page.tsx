@@ -3,7 +3,6 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import DeviceStatusCards from "./_components/DeviceStatusCards";
-import DeviceStatusBySpace from "./_components/DeviceStatusBySpace";
 import RecentControlLogs from "./_components/RecentControlLogs";
 import {
   fetchDashboardEnergy,
@@ -11,16 +10,12 @@ import {
 } from "./_api";
 import type {
   DashboardDeviceStatus,
-  DashboardSpaceDeviceStatus,
   DashboardControlLog,
 } from "./_api";
 
 export default function DashboardPage() {
   const [statusSummary, setStatusSummary] =
     useState<DashboardDeviceStatus | null>(null);
-  const [spaceStatus, setSpaceStatus] = useState<DashboardSpaceDeviceStatus[]>(
-    []
-  );
   const [recentLogs, setRecentLogs] = useState<DashboardControlLog[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -33,7 +28,6 @@ export default function DashboardPage() {
         const energy = await fetchDashboardEnergy();
         if (energy) {
           setStatusSummary(energy.statusSummary);
-          setSpaceStatus(energy.deviceStatusBySpace || []);
         }
       } catch (_e) {
         // 에너지 API 실패 시 빈 상태 유지
@@ -61,11 +55,14 @@ export default function DashboardPage() {
       className="max-w-[1400px] mx-auto"
     >
       {/* 페이지 헤더 */}
-      <div className="mb-8">
-        <h1 className="text-3xl font-black tracking-tighter text-[var(--primary)]">
-          대시보드
+      <div className="mb-12">
+        <p className="text-muted-foreground text-[10px] font-black tracking-[0.35em] uppercase">
+          Admin · Dashboard
+        </p>
+        <h1 className="text-[12vw] leading-[0.85] font-black tracking-tighter text-[#2C3424] uppercase md:text-[6vw] mt-4">
+          Dash<span className="text-[#768064]">board</span>
         </h1>
-        <p className="text-sm text-[var(--muted)] mt-1">
+        <p className="max-w-2xl text-base font-medium tracking-tight text-balance text-[#4C583E] md:text-lg mt-5">
           코리빙 시설 운영 현황을 한눈에 확인합니다
         </p>
       </div>
@@ -75,8 +72,8 @@ export default function DashboardPage() {
           ══════════════════════════════════════════════ */}
       <section>
         <div className="flex items-center gap-2 mb-4">
-          <div className="w-2 h-2 rounded-full bg-[var(--accent)] animate-pulse" />
-          <h2 className="text-lg font-bold text-[var(--primary)]">
+          <div className="w-2 h-2 rounded-full bg-[#768064] animate-pulse" />
+          <h2 className="text-lg font-black tracking-tighter text-foreground">
             실시간 기기 현황
           </h2>
         </div>
@@ -91,29 +88,16 @@ export default function DashboardPage() {
           <DeviceStatusCards data={statusSummary} isLoading={isLoading} />
         </motion.div>
 
-        {/* ROW 2: 공간별 기기 상태 */}
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-          className="bg-white rounded-2xl p-6 border border-[var(--secondary)]/30 mb-6"
-        >
-          <h3 className="text-sm font-bold text-[var(--primary)] mb-3">
-            공간별 기기 상태
-          </h3>
-          <DeviceStatusBySpace data={spaceStatus} isLoading={isLoading} />
-        </motion.div>
-
-        {/* ROW 3: 최근 제어 이력 */}
+        {/* ROW 2: 최근 제어 이력 */}
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3 }}
-          className="bg-white rounded-2xl p-6 border border-[var(--secondary)]/30"
+          className="border-border bg-background rounded-[2rem] border p-6 shadow-sm"
         >
-          <h3 className="text-sm font-bold text-[var(--primary)] mb-3">
+          <h3 className="text-sm font-black tracking-tight text-foreground mb-3">
             최근 기기 제어 이력
-            <span className="ml-2 text-xs font-normal text-[var(--muted)]">
+            <span className="ml-2 text-xs font-normal text-muted-foreground">
               최신 30건
             </span>
           </h3>

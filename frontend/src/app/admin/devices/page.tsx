@@ -9,15 +9,15 @@ export const metadata = {
 export default function DevicesPage() {
   return (
     <div className="space-y-8">
-      <header className="flex items-end justify-between gap-4">
-        <div className="space-y-2">
-          <p className="font-black text-xs uppercase tracking-[0.3em] text-muted-foreground">
-            IoT Devices
+      <header>
+        <div className="mb-10">
+          <p className="text-muted-foreground text-[10px] font-black tracking-[0.35em] uppercase">
+            Admin · IoT Devices
           </p>
-          <h1 className="text-3xl font-black tracking-tighter text-primary md:text-4xl">
-            기기 관리
+          <h1 className="text-[12vw] leading-[0.85] font-black tracking-tighter text-[#2C3424] uppercase md:text-[6vw] mt-4">
+            Device <span className="text-[#768064]">Control</span>
           </h1>
-          <p className="text-sm font-medium tracking-tight text-muted-foreground text-balance">
+          <p className="max-w-2xl text-base font-medium tracking-tight text-balance text-[#4C583E] md:text-lg mt-5">
             등록된 기기의 활성화/비활성화, 제어, 수정, 삭제를 관리합니다.
           </p>
         </div>

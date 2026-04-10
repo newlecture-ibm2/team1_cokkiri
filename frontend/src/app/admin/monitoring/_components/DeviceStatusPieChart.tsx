@@ -30,7 +30,7 @@ export default function DeviceStatusPieChart({ data }: DeviceStatusPieChartProps
 
   if (chartData.length === 0) {
     return (
-      <div className="flex items-center justify-center h-[300px] text-[var(--muted)]">
+      <div className="flex items-center justify-center h-[300px] text-muted-foreground">
         등록된 기기가 없습니다
       </div>
     );
