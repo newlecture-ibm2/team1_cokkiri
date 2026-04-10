@@ -1,11 +1,11 @@
 import Link from "next/link";
-import { Bell, FileText, Layout, ArrowRight } from "lucide-react";
+import { Bell, FileText, ArrowRight } from "lucide-react";
 import { LOGIN_REQUIRED_MESSAGE } from "@/lib/auth-messages";
 import { LoginRequiredGate } from "@/components/shared/LoginRequiredGate";
 import { PaginationBar } from "@/app/(common)/community/_components/PaginationBar";
 import { bffGet } from "./_api/bff-server";
-import { MotionEnter } from "@/app/(common)/community/_components/MotionEnter";
 import { NotificationListItem } from "./_components/NotificationListItem";
+import { NotificationsInboxRefreshClient } from "./_components/NotificationsInboxRefreshClient";
 
 type ApiResponse<T> = {
   success: boolean;
@@ -38,6 +38,8 @@ type SearchParams = Promise<{ p?: string; s?: string; is_read?: string }>;
 export const metadata = {
   title: "알림 센터 | CoKkiri",
 };
+
+export const dynamic = "force-dynamic";
 
 export default async function NotificationsPage({ searchParams }: { searchParams: SearchParams }) {
   const sp = await searchParams;
@@ -78,6 +80,7 @@ export default async function NotificationsPage({ searchParams }: { searchParams
 
   return (
     <>
+      <NotificationsInboxRefreshClient />
       {/* Editorial Header */}
       <header className="mb-20">
         <div className="flex flex-col gap-6">
