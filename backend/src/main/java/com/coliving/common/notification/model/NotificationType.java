@@ -1,10 +1,12 @@
 package com.coliving.common.notification.model;
 
 public enum NotificationType {
+    CONTRACT_SUBMITTED,
     CONTRACT_APPROVED,
     CONTRACT_REJECTED,
     CONTRACT_ACTIVATED,
     CONTRACT_EXPIRED,
+    CONTRACT_UPDATED,
     RESERVATION_APPROVED,
     RESERVATION_PENDING,
     RESERVATION_REJECTED,
