@@ -38,5 +38,8 @@ spring:
 server:
   port: 8080
 
+mock-iot:
+  base-url: ${MOCK_IOT_URL:http://mock-iot:8000}
+
 springdoc:
   swagger-ui.path: /swagger-ui.html

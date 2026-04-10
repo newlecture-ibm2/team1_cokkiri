@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useRouter } from "next/navigation";
 import { fetchMyDevices, controlDevice } from "../_api";
 import type { MyDevice } from "../_types";
 import { ApiError } from "@/lib/api";
@@ -29,6 +30,7 @@ const DEVICE_ICONS: Record<string, string> = {
 /* ── 컴포넌트 ── */
 
 export function DeviceGrid() {
+  const router = useRouter();
   const [devices, setDevices] = useState<MyDevice[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -41,6 +43,12 @@ export function DeviceGrid() {
   // Toast 피드백
   const [feedback, setFeedback] = useState<string | null>(null);
   const [feedbackType, setFeedbackType] = useState<"success" | "error">("success");
+
+  // 예약 안내 모달
+  const [reservationModal, setReservationModal] = useState<{
+    open: boolean;
+    device: MyDevice | null;
+  }>({ open: false, device: null });
 
   const loadDevices = useCallback(async () => {
     try {
@@ -80,6 +88,12 @@ export function DeviceGrid() {
   };
 
   const handleToggle = async (device: MyDevice) => {
+    // 공용 기기는 제어 차단 → 예약 안내 모달 표시
+    if (device.spaceType === "COMMON") {
+      setReservationModal({ open: true, device });
+      return;
+    }
+
     // 상태 검증
     if (device.status !== "ONLINE") return;
 
@@ -126,6 +140,13 @@ export function DeviceGrid() {
         forceUpdate((n) => n + 1);
       }, COOLDOWN_MS);
     }
+  };
+
+  // 예약 페이지로 이동
+  const handleGoToReservation = () => {
+    const spaceId = reservationModal.device?.spaceId;
+    setReservationModal({ open: false, device: null });
+    router.push(spaceId ? `/facilities?spaceId=${spaceId}` : "/facilities");
   };
 
   /* ── 기기 분류 ── */
@@ -194,6 +215,65 @@ export function DeviceGrid() {
         )}
       </AnimatePresence>
 
+      {/* ── 예약 안내 모달 ── */}
+      <AnimatePresence>
+        {reservationModal.open && reservationModal.device && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm px-6"
+            onClick={() => setReservationModal({ open: false, device: null })}
+          >
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 10 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 10 }}
+              className="w-full max-w-sm rounded-[2rem] border border-border bg-background p-8 shadow-2xl"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* 아이콘 */}
+              <div className="flex justify-center mb-4">
+                <div className="w-14 h-14 rounded-full bg-accent/10 flex items-center justify-center text-3xl">
+                  📅
+                </div>
+              </div>
+
+              {/* 제목 */}
+              <h3 className="text-center text-lg font-black tracking-tighter text-primary">
+                예약이 필요합니다
+              </h3>
+
+              {/* 설명 */}
+              <p className="text-center text-sm text-muted-foreground mt-2 leading-relaxed">
+                <span className="font-bold text-primary">{reservationModal.device.spaceName}</span>의{" "}
+                <span className="font-bold text-primary">{reservationModal.device.name}</span>은(는)
+                공용 시설 기기입니다.
+              </p>
+              <p className="text-center text-sm text-muted-foreground mt-1">
+                해당 시설을 <span className="font-semibold text-accent">예약한 시간대</span>에만 제어할 수 있습니다.
+              </p>
+
+              {/* 버튼 */}
+              <div className="flex gap-3 mt-6">
+                <button
+                  onClick={() => setReservationModal({ open: false, device: null })}
+                  className="flex-1 rounded-xl border border-border bg-surface py-2.5 text-sm font-bold text-muted-foreground transition-colors hover:bg-muted/20"
+                >
+                  닫기
+                </button>
+                <button
+                  onClick={handleGoToReservation}
+                  className="flex-1 rounded-xl bg-primary py-2.5 text-sm font-bold text-primary-foreground transition-colors hover:bg-accent"
+                >
+                  예약하러 가기
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* 개인 공간 기기 */}
       {privateDevices.length > 0 && (
         <section>
@@ -254,6 +334,7 @@ function DeviceCard({
   isCooldown: boolean;
   onToggle: (device: MyDevice) => void;
 }) {
+  const isCommon = device.spaceType === "COMMON";
   const status = STATUS_MAP[device.status] ?? STATUS_MAP.OFFLINE;
   const icon = DEVICE_ICONS[device.deviceTypeCode] ?? "📱";
 
@@ -263,25 +344,32 @@ function DeviceCard({
   } catch { /* ignore */ }
   const isPowerOn = currentState.power === true || currentState.power === "ON";
 
+  // 공용 기기: 회색 계열 스타일 (제어 불가)
+  const cardColor = isCommon
+    ? "border-border bg-muted/10 opacity-75"
+    : status.color;
+
+  const dotColor = isCommon ? "bg-gray-400" : status.dot;
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: idx * 0.05 }}
       className={`group relative cursor-pointer rounded-[2rem] border p-5 transition-all
-        duration-200 hover:shadow-md ${status.color}
+        duration-200 hover:shadow-md ${cardColor}
         ${isControlling ? "animate-pulse pointer-events-none" : ""}
         ${isCooldown ? "opacity-70 pointer-events-none" : ""}`}
       onClick={() => onToggle(device)}
     >
       {/* 상태 점 */}
-      <span className={`absolute right-4 top-4 h-2.5 w-2.5 rounded-full ${status.dot}`} />
+      <span className={`absolute right-4 top-4 h-2.5 w-2.5 rounded-full ${dotColor}`} />
 
       {/* 아이콘 */}
-      <div className="text-3xl">{icon}</div>
+      <div className={`text-3xl ${isCommon ? "grayscale opacity-60" : ""}`}>{icon}</div>
 
       {/* 기기명 */}
-      <p className="mt-3 text-sm font-bold tracking-tight text-primary">
+      <p className={`mt-3 text-sm font-bold tracking-tight ${isCommon ? "text-muted-foreground" : "text-primary"}`}>
         {device.name}
       </p>
 
@@ -300,8 +388,8 @@ function DeviceCard({
         {device.deviceTypeName}
       </p>
 
-      {/* 전원 상태 토글 */}
-      {device.status === "ONLINE" && (
+      {/* ── 개인 기기: 전원 토글 ── */}
+      {!isCommon && device.status === "ONLINE" && (
         <div className="mt-3 flex items-center gap-2">
           <div
             className={`relative h-5 w-9 rounded-full transition-colors duration-200
@@ -319,11 +407,21 @@ function DeviceCard({
         </div>
       )}
 
-      {/* 오프라인/에러 표시 */}
-      {device.status !== "ONLINE" && (
+      {/* ── 개인 기기: 오프라인/에러 표시 ── */}
+      {!isCommon && device.status !== "ONLINE" && (
         <p className="mt-3 text-[10px] font-semibold text-muted-foreground">
           {status.label}
         </p>
+      )}
+
+      {/* ── 공용 기기: 제어 불가 라벨 ── */}
+      {isCommon && (
+        <div className="mt-3 flex items-center gap-1.5">
+          <span className="inline-block w-1.5 h-1.5 rounded-full bg-gray-400" />
+          <span className="text-[10px] font-bold text-muted-foreground">
+            예약 후 이용 가능
+          </span>
+        </div>
       )}
     </motion.div>
   );
