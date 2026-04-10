@@ -87,17 +87,22 @@ public class PaymentPersistenceAdapter implements PaymentRepositoryPort {
     private List<Payment> mapEntitiesToDomainWithUsers(List<PaymentEntity> entities) {
         Set<Long> userIds = entities.stream()
                 .map(PaymentEntity::getUserId)
+                .filter(java.util.Objects::nonNull)
                 .collect(Collectors.toSet());
         
-        Map<Long, com.coliving.common.auth.adapter.out.jpa.UserEntity> userMap = 
-                userJpaRepository.findAllById(userIds).stream()
+        Map<Long, com.coliving.common.auth.adapter.out.jpa.UserEntity> userMap = java.util.Collections.emptyMap();
+        if (!userIds.isEmpty()) {
+            userMap = userJpaRepository.findAllById(userIds).stream()
+                        .filter(u -> u.getUserId() != null)
                         .collect(Collectors.toMap(
                                 com.coliving.common.auth.adapter.out.jpa.UserEntity::getUserId, 
                                 u -> u
                         ));
+        }
 
+        final Map<Long, com.coliving.common.auth.adapter.out.jpa.UserEntity> finalUserMap = userMap;
         return entities.stream()
-                .map(e -> mapToDomain(e, userMap.get(e.getUserId())))
+                .map(e -> mapToDomain(e, finalUserMap.get(e.getUserId())))
                 .collect(Collectors.toList());
     }
 
