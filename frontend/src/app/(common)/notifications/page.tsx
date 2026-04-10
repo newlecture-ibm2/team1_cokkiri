@@ -1,11 +1,11 @@
 import Link from "next/link";
-import { Bell, FileText, Layout, ArrowRight } from "lucide-react";
+import { Bell, FileText, ArrowRight } from "lucide-react";
 import { LOGIN_REQUIRED_MESSAGE } from "@/lib/auth-messages";
 import { LoginRequiredGate } from "@/components/shared/LoginRequiredGate";
 import { PaginationBar } from "@/app/(common)/community/_components/PaginationBar";
 import { bffGet } from "./_api/bff-server";
-import { MotionEnter } from "@/app/(common)/community/_components/MotionEnter";
 import { NotificationListItem } from "./_components/NotificationListItem";
+import { NotificationsInboxRefreshClient } from "./_components/NotificationsInboxRefreshClient";
 
 type ApiResponse<T> = {
   success: boolean;
@@ -38,6 +38,8 @@ type SearchParams = Promise<{ p?: string; s?: string; is_read?: string }>;
 export const metadata = {
   title: "알림 센터 | CoKkiri",
 };
+
+export const dynamic = "force-dynamic";
 
 export default async function NotificationsPage({ searchParams }: { searchParams: SearchParams }) {
   const sp = await searchParams;
@@ -78,6 +80,7 @@ export default async function NotificationsPage({ searchParams }: { searchParams
 
   return (
     <>
+      <NotificationsInboxRefreshClient />
       {/* Editorial Header */}
       <header className="mb-20">
         <div className="flex flex-col gap-6">
@@ -108,8 +111,18 @@ export default async function NotificationsPage({ searchParams }: { searchParams
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-20">
           {[
-            { label: "TOTAL MESSAGES", value: totalCount.toString().padStart(2, '0'), icon: FileText, desc: "전체 수신 알림" },
-            { label: "UNREAD IN PAGE", value: unreadCount.toString().padStart(2, '0'), icon: Bell, desc: "현재 페이지 미확인" }
+            {
+              label: "TOTAL MESSAGES",
+              value: totalCount.toString().padStart(2, "0"),
+              icon: FileText,
+              desc: "필터 기준 전체 알림 수",
+            },
+            {
+              label: "UNREAD ON PAGE",
+              value: unreadCount.toString().padStart(2, "0"),
+              icon: Bell,
+              desc: "이 페이지에만 표시된 미읽음 (전체 미읽음은 하단 플로팅 배지)",
+            },
           ].map((stat, i) => (
             <div key={i} className="group bg-white p-10 rounded-[2.5rem] border border-primary/5 shadow-2xl shadow-primary/5 hover:border-accent/30 transition-all">
               <div className="flex items-start justify-between mb-8">
@@ -128,20 +141,27 @@ export default async function NotificationsPage({ searchParams }: { searchParams
       </div>
 
       {/* Filters */}
-      <div className="flex items-center gap-10 overflow-x-auto border-b border-primary/10 pb-8 mb-12">
+      <div className="mb-12 space-y-4 border-b border-primary/10 pb-8">
+        <p className="text-xs font-medium text-muted-foreground">
+          카드 왼쪽 강조선·<span className="font-semibold text-accent">미읽음</span> 뱃지가 있는 알림은 아직 확인하지 않은 메시지입니다. 탭을 눌러 목록을 좁힐 수 있습니다.
+        </p>
+        <div className="flex flex-wrap items-center gap-6 overflow-x-auto">
           {[
-            { label: "ALL", href: "/notifications", active: !isRead },
-            { label: "UNREAD", href: "/notifications?is_read=false", active: isRead === "false" },
-            { label: "READ", href: "/notifications?is_read=true", active: isRead === "true" }
+            { label: "전체", href: "/notifications", active: !isRead },
+            { label: "미읽음만", href: "/notifications?is_read=false", active: isRead === "false" },
+            { label: "읽음만", href: "/notifications?is_read=true", active: isRead === "true" },
           ].map((tab) => (
             <Link
               key={tab.label}
               href={tab.href}
-              className={`shrink-0 pb-2 text-[10px] font-black uppercase tracking-[0.3em] transition-all border-b-2 ${tab.active ? "text-accent border-accent" : "text-muted-foreground opacity-40 hover:opacity-100 border-transparent"}`}
+              className={`shrink-0 pb-2 text-xs font-black uppercase tracking-[0.2em] transition-all border-b-2 ${
+                tab.active ? "text-accent border-accent" : "text-muted-foreground opacity-50 hover:opacity-100 border-transparent"
+              }`}
             >
               {tab.label}
             </Link>
           ))}
+        </div>
       </div>
 
       {error && (

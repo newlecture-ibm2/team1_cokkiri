@@ -207,18 +207,36 @@ export default function ContractApplyForm() {
   const saveDraft = useCallback(async (data: ContractFormData, isManual: boolean = false) => {
     if (isManual) setIsSaving(true);
     try {
-      await fetch('/api/contracts/draft', {
+      // Create a copy to modify for the request
+      const requestData = {
+        ...data,
+        spaceId: Number(spaceId),
+        // Convert empty strings to null for backend date parsing
+        desiredStartDate: data.desiredStartDate === "" ? null : data.desiredStartDate,
+      };
+
+      const res = await fetch('/api/contracts/draft', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...data, spaceId: Number(spaceId), contractId: data.contractId })
-      }).catch(err => console.warn("API Draft save error, check backend."));
+        body: JSON.stringify(requestData)
+      });
 
-      localStorage.setItem(`contract_draft_${spaceId}`, JSON.stringify(data));
-      setLastSaved(new Date());
+      if (res.ok) {
+        const result = await res.json();
+        // Update contractId if it was newly created on the server
+        if (result.success && result.data && !data.contractId) {
+          setFormData(prev => ({ ...prev, contractId: result.data }));
+        }
+        
+        localStorage.setItem(`contract_draft_${spaceId}`, JSON.stringify(data));
+        setLastSaved(new Date());
 
-      if (isManual) {
-        setShowToast(true);
-        setTimeout(() => setShowToast(false), 3000);
+        if (isManual) {
+          setShowToast(true);
+          setTimeout(() => setShowToast(false), 3000);
+        }
+      } else {
+        console.warn("API Draft save error: ", res.status);
       }
     } catch (err) {
       console.error("Draft save failed", err);
@@ -290,8 +308,8 @@ export default function ContractApplyForm() {
   const steps = [
     { title: "SCHEDULE", icon: Calendar },
     { title: "DETAILS", icon: Home },
-    { title: "PAYMENT", icon: CreditCard },
-    { title: "AGREEMENT", icon: ShieldCheck }
+    { title: "AGREEMENT", icon: ShieldCheck },
+    { title: "PAYMENT", icon: CreditCard }
   ];
 
   return (
@@ -543,7 +561,61 @@ export default function ContractApplyForm() {
                   <div className="space-y-4">
                     <span className="text-[10px] font-black uppercase tracking-[0.4em] text-accent">STEP 03</span>
                     <h2 className="text-5xl font-black text-primary tracking-tighter uppercase leading-[0.85]">
-                      BILLING &<br />REFUND
+                      REVIEW &<br />AGREEMENT
+                    </h2>
+                    <p className="text-lg font-medium tracking-tight opacity-50">
+                      원활한 입주를 위해 아래 약관 및 서약서 내용을 확인해 주세요.
+                    </p>
+                  </div>
+
+                  <div className="space-y-4 pt-4">
+                    <label className="flex items-center gap-6 p-8 bg-primary/5 rounded-[2rem] cursor-pointer group transition-all hover:bg-primary/10">
+                      <input
+                        type="checkbox"
+                        name="privacyAgreed"
+                        checked={formData.privacyAgreed}
+                        onChange={handleInputChange}
+                        disabled={isReadOnly}
+                        className="w-8 h-8 rounded-full border-primary/20 text-accent focus:ring-0 disabled:opacity-50"
+                      />
+                      <span className="text-[10px] font-black tracking-[0.3em] uppercase">개인정보 수집 및 이용 동의 (필수)</span>
+                    </label>
+                    <label className="flex items-center gap-6 p-8 bg-primary/5 rounded-[2rem] cursor-pointer group transition-all hover:bg-primary/10">
+                      <input
+                        type="checkbox"
+                        name="termsAgreed"
+                        checked={formData.termsAgreed}
+                        onChange={handleInputChange}
+                        disabled={isReadOnly}
+                        className="w-8 h-8 rounded-full border-primary/20 text-accent focus:ring-0 disabled:opacity-50"
+                      />
+                      <span className="text-[10px] font-black tracking-[0.3em] uppercase">주의사항 확인 및 입주 서약 (필수)</span>
+                    </label>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <button type="button" onClick={prevStep} className="py-8 border-2 border-primary/10 text-primary rounded-full font-black tracking-[0.2em] transition-all hover:bg-primary/5">
+                      GO BACK
+                    </button>
+                    <button type="button" onClick={nextStep} disabled={!formData.privacyAgreed || !formData.termsAgreed} className="py-8 bg-primary hover:bg-accent text-background rounded-full font-black tracking-[0.2em] transition-all disabled:opacity-20">
+                      NEXT STEP
+                    </button>
+                  </div>
+                </motion.div>
+              )}
+
+              {step === 4 && (
+                <motion.div
+                  key="step4"
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -20 }}
+                  className="space-y-12"
+                >
+                  <div className="space-y-4">
+                    <span className="text-[10px] font-black uppercase tracking-[0.4em] text-accent">FINAL STEP</span>
+                    <h2 className="text-5xl font-black text-primary tracking-tighter uppercase leading-[0.85]">
+                      BILLING &<br />PAYMENT
                     </h2>
                   </div>
 
@@ -609,7 +681,6 @@ export default function ContractApplyForm() {
                     </div>
                   </div>
 
-                  {/* Credit Card Payment via PortOne */}
                   <AnimatePresence mode="wait">
                     {paymentMethod === "card" && !paymentComplete && (
                       <motion.div
@@ -647,15 +718,10 @@ export default function ContractApplyForm() {
                               <><CreditCard className="w-5 h-5" /> PAY WITH CARD</>
                             )}
                           </button>
-
-                          <p className="text-[9px] font-bold tracking-tight text-center opacity-40">
-                            포트원(PortOne) 보안 결제창으로 이동합니다. 카드 정보는 안전하게 처리됩니다.
-                          </p>
                         </div>
                       </motion.div>
                     )}
 
-                    {/* Virtual Account Info */}
                     {paymentMethod === "transfer" && virtualAccount && !paymentComplete && (
                       <motion.div
                         key="transfer-info"
@@ -675,20 +741,12 @@ export default function ContractApplyForm() {
                               { label: "은행", value: virtualAccount.bank },
                               { label: "계좌번호", value: virtualAccount.account },
                               { label: "예금주", value: virtualAccount.holder },
-                              { label: "입금 기한", value: (() => { const d = new Date(); d.setDate(d.getDate() + 3); return d.toLocaleDateString("ko-KR", { year: "numeric", month: "long", day: "numeric" }) + " 23:59까지"; })() },
                             ].map((item) => (
                               <div key={item.label} className="flex items-center justify-between">
                                 <span className="text-[10px] font-black tracking-[0.2em] uppercase text-primary/40">{item.label}</span>
                                 <span className="text-sm font-black tracking-tight text-primary">{item.value}</span>
                               </div>
                             ))}
-                          </div>
-
-                          <div className="p-4 bg-orange-50 rounded-xl border border-orange-100">
-                            <p className="text-[10px] font-bold text-orange-700 tracking-tight leading-relaxed">
-                              ⚠️ 위 가상계좌로 보증금을 입금해주세요. 기한 내 미입금 시 계좌가 만료됩니다.
-                              입금 확인 후 자동으로 결제 완료 처리됩니다.
-                            </p>
                           </div>
 
                           <button
@@ -702,7 +760,6 @@ export default function ContractApplyForm() {
                       </motion.div>
                     )}
 
-                    {/* Payment Complete */}
                     {paymentComplete && (
                       <motion.div
                         key="payment-done"
@@ -719,57 +776,6 @@ export default function ContractApplyForm() {
                     )}
                   </AnimatePresence>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <button type="button" onClick={prevStep} className="py-8 border-2 border-primary/10 text-primary rounded-full font-black tracking-[0.2em] transition-all hover:bg-primary/5">
-                      GO BACK
-                    </button>
-                    <button type="button" onClick={nextStep} disabled={!formData.bankAccount} className="py-8 bg-primary hover:bg-accent text-background rounded-full font-black tracking-[0.2em] transition-all disabled:opacity-20">
-                      NEXT STEP
-                    </button>
-                  </div>
-                </motion.div>
-              )}
-
-              {step === 4 && (
-                <motion.div
-                  key="step4"
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -20 }}
-                  className="space-y-12"
-                >
-                  <div className="space-y-4">
-                    <span className="text-[10px] font-black uppercase tracking-[0.4em] text-accent">FINAL STEP</span>
-                    <h2 className="text-5xl font-black text-primary tracking-tighter uppercase leading-[0.85]">
-                      REVIEW &<br />SUBMIT
-                    </h2>
-                  </div>
-
-                  <div className="space-y-4 pt-4">
-                    <label className="flex items-center gap-6 p-8 bg-primary/5 rounded-[2rem] cursor-pointer group transition-all hover:bg-primary/10">
-                      <input
-                        type="checkbox"
-                        name="privacyAgreed"
-                        checked={formData.privacyAgreed}
-                        onChange={handleInputChange}
-                        disabled={isReadOnly}
-                        className="w-8 h-8 rounded-full border-primary/20 text-accent focus:ring-0 disabled:opacity-50"
-                      />
-                      <span className="text-[10px] font-black tracking-[0.3em] uppercase">개인정보 수집 및 이용 동의 (필수)</span>
-                    </label>
-                    <label className="flex items-center gap-6 p-8 bg-primary/5 rounded-[2rem] cursor-pointer group transition-all hover:bg-primary/10">
-                      <input
-                        type="checkbox"
-                        name="termsAgreed"
-                        checked={formData.termsAgreed}
-                        onChange={handleInputChange}
-                        disabled={isReadOnly}
-                        className="w-8 h-8 rounded-full border-primary/20 text-accent focus:ring-0 disabled:opacity-50"
-                      />
-                      <span className="text-[10px] font-black tracking-[0.3em] uppercase">주의사항 확인 및 입주 서약 (필수)</span>
-                    </label>
-                  </div>
-
                   {error && (
                     <div className="p-6 bg-rose-50 text-rose-600 text-[10px] font-black tracking-[0.2em] rounded-2xl flex items-center gap-4">
                       <AlertCircle className="w-5 h-5" /> {error.toUpperCase()}
@@ -782,12 +788,16 @@ export default function ContractApplyForm() {
                     </button>
                     <button
                       type="submit"
-                      disabled={isReadOnly || isSubmitting || !formData.privacyAgreed || !formData.termsAgreed}
-                      className="py-8 bg-primary text-background rounded-full font-black tracking-[0.2em] flex justify-center items-center gap-4 hover:bg-accent transition-all disabled:opacity-20"
+                      disabled={isReadOnly || isSubmitting || !formData.privacyAgreed || !formData.termsAgreed || (paymentMethod !== null && !paymentComplete)}
+                      className="py-8 bg-primary hover:bg-accent text-background rounded-full font-black tracking-[0.2em] transition-all flex justify-center items-center gap-4 disabled:opacity-20 shadow-xl shadow-primary/10"
                     >
-                      {isSubmitting ? <Loader2 className="w-6 h-6 animate-spin" /> :
-                        isReadOnly ? <><ShieldCheck className="w-5 h-5" /> ALREADY SUBMITTED</> :
-                          <>SUBMIT APPLICATION <Send className="w-5 h-5" /></>}
+                      {isSubmitting ? (
+                        <>SUBMITTING... <Loader2 className="w-5 h-5 animate-spin" /></>
+                      ) : isReadOnly ? (
+                        <>ALREADY SUBMITTED <ShieldCheck className="w-5 h-5" /></>
+                      ) : (
+                        <>SUBMIT APPLICATION <Send className="w-5 h-5" /></>
+                      )}
                     </button>
                   </div>
                 </motion.div>

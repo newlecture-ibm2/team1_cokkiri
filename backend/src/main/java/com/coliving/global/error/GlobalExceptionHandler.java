@@ -24,6 +24,11 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ApiResponse<?>> handleBusinessException(BusinessException e) {
         ErrorCode errorCode = e.getErrorCode();
         log.warn("BusinessException: {}", e.getMessage());
+        if (e.getErrors() != null && !e.getErrors().isEmpty()) {
+            return ResponseEntity
+                    .status(errorCode.getStatus())
+                    .body(ApiResponse.error(errorCode, e.getErrors()));
+        }
         return ResponseEntity
                 .status(errorCode.getStatus())
                 .body(ApiResponse.error(errorCode, e.getMessage()));
@@ -52,7 +57,7 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<ApiResponse<?>> handleValidationException(MethodArgumentNotValidException e) {
+    public ResponseEntity<ApiResponse<Map<String, String>>> handleValidationException(MethodArgumentNotValidException e) {
         Map<String, String> errors = new HashMap<>();
         for (FieldError fieldError : e.getBindingResult().getFieldErrors()) {
             errors.put(fieldError.getField(), fieldError.getDefaultMessage());
@@ -60,7 +65,7 @@ public class GlobalExceptionHandler {
         log.warn("Validation failed: {}", errors);
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
-                .body(ApiResponse.error(ErrorCode.VALIDATION_ERROR));
+                .body(ApiResponse.error(ErrorCode.VALIDATION_ERROR, errors));
     }
 
     @ExceptionHandler(AccessDeniedException.class)

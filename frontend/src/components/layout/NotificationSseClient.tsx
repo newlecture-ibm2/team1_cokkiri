@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { Bell } from "lucide-react";
 import { useAuthStore } from "@/store/useAuthStore";
+import { NOTIFICATIONS_UNREAD_INVALIDATE } from "@/lib/notifications-events";
 
 type NotificationEventPayload = {
   notificationId: number;
@@ -66,6 +67,11 @@ export default function NotificationSseClient() {
       void fetchUnreadCount();
     }, 60000);
 
+    const onUnreadInvalidate = () => {
+      void fetchUnreadCount();
+    };
+    window.addEventListener(NOTIFICATIONS_UNREAD_INVALIDATE, onUnreadInvalidate);
+
     const eventSource = new EventSource("/api/notifications/stream", { withCredentials: true });
 
     const onNotification = (event: MessageEvent) => {
@@ -96,6 +102,7 @@ export default function NotificationSseClient() {
 
     return () => {
       mounted = false;
+      window.removeEventListener(NOTIFICATIONS_UNREAD_INVALIDATE, onUnreadInvalidate);
       window.clearInterval(unreadResyncTimer);
       eventSource.removeEventListener("notification", onNotification as EventListener);
       eventSource.removeEventListener("connected", onConnected as EventListener);
