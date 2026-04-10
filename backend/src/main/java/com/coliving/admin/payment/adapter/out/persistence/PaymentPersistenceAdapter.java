@@ -96,7 +96,8 @@ public class PaymentPersistenceAdapter implements PaymentRepositoryPort {
                         .filter(u -> u.getUserId() != null)
                         .collect(Collectors.toMap(
                                 com.coliving.common.auth.adapter.out.jpa.UserEntity::getUserId, 
-                                u -> u
+                                u -> u,
+                                (existing, replacement) -> existing // Handle duplicates gracefully
                         ));
         }
 
