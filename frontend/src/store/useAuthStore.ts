@@ -19,14 +19,17 @@ export const useAuthStore = create<AuthState>((set) => ({
   login: (user: User) => set({ isLoggedIn: true, user }),
 
   logout: async () => {
+    // 즉시 클라이언트 상태 초기화로 로그아웃/로그인 반복 시 상태 꼬임 방지
+    set({ isLoggedIn: false, user: null, isLoading: true });
+    
     try {
       // 프록시를 통해 백엔드의 로그아웃 API 호출 (Refresh Token 만료 등 처리)
       await apiFetch('/auth/logout', { method: 'POST' });
     } catch (error) {
       console.error('로그아웃 요청 실패:', error);
     } finally {
-      // 서버 상태와 관계없이 클라이언트 상태(Zustand) 초기화
-      set({ isLoggedIn: false, user: null });
+      // 서버 상태 처리 완료 후 로딩 상태 해제 및 리다이렉트
+      set({ isLoading: false });
       if (typeof window !== 'undefined' && window.location.pathname !== '/') {
         window.location.href = '/';
       }
