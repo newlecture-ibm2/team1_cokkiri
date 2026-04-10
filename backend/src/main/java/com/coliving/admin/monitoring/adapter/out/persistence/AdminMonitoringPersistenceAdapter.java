@@ -194,6 +194,20 @@ public class AdminMonitoringPersistenceAdapter implements AdminMonitoringReposit
     }
 
     @Override
+    public List<Object[]> countControlByDeviceTypeAndCommand() {
+        return em.createNativeQuery("""
+                SELECT dt.name, cl.command, COUNT(cl.control_log_id)
+                FROM control_logs cl
+                JOIN devices d ON cl.device_id = d.device_id
+                JOIN device_types dt ON d.device_type_id = dt.device_type_id
+                WHERE cl.deleted_at IS NULL AND d.deleted_at IS NULL
+                GROUP BY dt.name, cl.command
+                ORDER BY dt.name, COUNT(cl.control_log_id) DESC
+                """)
+                .getResultList();
+    }
+
+    @Override
     public List<Object[]> countDailyErrors() {
         return em.createNativeQuery("""
                 SELECT DATE(cl.created_at) AS error_date, COUNT(*)

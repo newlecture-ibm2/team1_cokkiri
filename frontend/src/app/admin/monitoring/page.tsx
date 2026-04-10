@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import SpaceDeviceStatusChart from "./_components/SpaceDeviceStatusChart";
 import ControlFrequencyBarChart from "./_components/ControlFrequencyBarChart";
+import DeviceTypeCommandChart from "./_components/DeviceTypeCommandChart";
 import DailyTrendChart from "./_components/DailyTrendChart";
 import ErrorTrendChart from "./_components/ErrorTrendChart";
 import ErrorDeviceTable from "./_components/ErrorDeviceTable";
@@ -115,59 +116,41 @@ export default function MonitoringPage() {
         ) : null}
       </motion.div>
 
-      {/* ─── ROW 2: 종류별 + 공간별 제어 빈도 ─── */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.15 }}
-          className="bg-white rounded-2xl p-6 border border-[var(--secondary)]/30"
-        >
-          <h2 className="text-lg font-bold text-[var(--primary)] mb-4">
-            기기 종류별 제어 빈도
-          </h2>
-          {energyData ? (
-            <ControlFrequencyBarChart data={energyData.frequencyByType} title="" />
-          ) : isLoading ? (
-            <div className="animate-pulse h-[300px] bg-[var(--secondary)]/20 rounded-xl" />
-          ) : null}
-        </motion.div>
-
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-          className="bg-white rounded-2xl p-6 border border-[var(--secondary)]/30"
-        >
-          <h2 className="text-lg font-bold text-[var(--primary)] mb-4">
-            공간별 제어 빈도
-          </h2>
-          <p className="text-xs text-[var(--muted)] -mt-2 mb-4">
-            개인 공간과 공용 공간의 기기 제어 횟수 비교
-          </p>
-          {energyData ? (
-            <ControlFrequencyBarChart data={energyData.frequencyBySpaceType} title="" />
-          ) : isLoading ? (
-            <div className="animate-pulse h-[300px] bg-[var(--secondary)]/20 rounded-xl" />
-          ) : null}
-        </motion.div>
-      </div>
-
-      {/* ─── ROW 3: 명령별 제어 빈도 ─── */}
+      {/* ─── ROW 2: 기기 종류별 명령 제어 빈도 (교차 집계) ─── */}
       <motion.div
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.25 }}
+        transition={{ delay: 0.15 }}
         className="bg-white rounded-2xl p-6 border border-[var(--secondary)]/30 mb-8"
       >
         <h2 className="text-lg font-bold text-[var(--primary)] mb-1">
-          명령별 제어 빈도
+          기기 종류별 명령 제어 빈도
         </h2>
         <p className="text-xs text-[var(--muted)] mb-4">
-          ON, OFF, SET_TEMP 등 수행된 동작별 횟수
+          각 기기 종류에서 수행된 명령(ON, OFF, SET_TEMP 등) 횟수를 비교합니다
         </p>
         {energyData ? (
-          <ControlFrequencyBarChart data={energyData.frequencyByCommand} title="" />
+          <DeviceTypeCommandChart data={energyData.frequencyByDeviceTypeAndCommand} />
+        ) : isLoading ? (
+          <div className="animate-pulse h-[300px] bg-[var(--secondary)]/20 rounded-xl" />
+        ) : null}
+      </motion.div>
+
+      {/* ─── ROW 3: 공간별 제어 빈도 ─── */}
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.2 }}
+        className="bg-white rounded-2xl p-6 border border-[var(--secondary)]/30 mb-8"
+      >
+        <h2 className="text-lg font-bold text-[var(--primary)] mb-1">
+          공간별 제어 빈도
+        </h2>
+        <p className="text-xs text-[var(--muted)] mb-4">
+          개인 공간과 공용 공간의 기기 제어 횟수 비교
+        </p>
+        {energyData ? (
+          <ControlFrequencyBarChart data={energyData.frequencyBySpaceType} title="" />
         ) : isLoading ? (
           <div className="animate-pulse h-[300px] bg-[var(--secondary)]/20 rounded-xl" />
         ) : null}

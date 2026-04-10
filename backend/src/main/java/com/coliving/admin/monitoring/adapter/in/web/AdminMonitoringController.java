@@ -3,6 +3,7 @@ package com.coliving.admin.monitoring.adapter.in.web;
 import com.coliving.admin.monitoring.adapter.in.web.dto.res.ControlFrequencyResponseDto;
 import com.coliving.admin.monitoring.adapter.in.web.dto.res.DeviceErrorStatsResponseDto;
 import com.coliving.admin.monitoring.adapter.in.web.dto.res.DeviceStatusSummaryResponseDto;
+import com.coliving.admin.monitoring.adapter.in.web.dto.res.DeviceTypeCommandFrequencyResponseDto;
 import com.coliving.admin.monitoring.adapter.in.web.dto.res.SpaceDeviceStatusResponseDto;
 import com.coliving.admin.monitoring.application.command.AdminControlLogListCommand;
 import com.coliving.admin.monitoring.application.port.in.AdminMonitoringUseCase;
@@ -47,19 +48,21 @@ public class AdminMonitoringController {
         List<ControlFrequencyResponseDto> daily = monitoringUseCase.getDailyControlFrequency();
         List<ControlFrequencyResponseDto> bySpaceType = monitoringUseCase.getControlFrequencyBySpaceType();
         List<ControlFrequencyResponseDto> byCommand = monitoringUseCase.getControlFrequencyByCommand();
+        List<DeviceTypeCommandFrequencyResponseDto> byTypeAndCommand = monitoringUseCase.getControlFrequencyByDeviceTypeAndCommand();
         List<ControlFrequencyResponseDto> dailyErrors = monitoringUseCase.getDailyErrorFrequency();
 
         var deviceStatusBySpace = monitoringUseCase.getDeviceStatusBySpace();
 
-        Map<String, Object> data = Map.of(
-                "statusSummary", statusSummary,
-                "frequencyByType", byType,
-                "dailyFrequency", daily,
-                "frequencyBySpaceType", bySpaceType,
-                "frequencyByCommand", byCommand,
-                "dailyErrorFrequency", dailyErrors,
-                "deviceStatusBySpace", deviceStatusBySpace
-        );
+        Map<String, Object> data = new java.util.HashMap<>();
+        data.put("statusSummary", statusSummary);
+        data.put("frequencyByType", byType);
+        data.put("dailyFrequency", daily);
+        data.put("frequencyBySpaceType", bySpaceType);
+        data.put("frequencyByCommand", byCommand);
+        data.put("frequencyByDeviceTypeAndCommand", byTypeAndCommand);
+        data.put("dailyErrorFrequency", dailyErrors);
+        data.put("deviceStatusBySpace", deviceStatusBySpace);
+
         return ResponseEntity.ok(ApiResponse.ok(data));
     }
 

@@ -14,6 +14,12 @@ export interface ControlFrequency {
   count: number;
 }
 
+export interface DeviceTypeCommandFrequency {
+  deviceTypeName: string;
+  command: string;
+  count: number;
+}
+
 export interface DeviceStatusSummary {
   totalDevices: number;
   onlineCount: number;
@@ -27,6 +33,7 @@ export interface EnergyStatsResponse {
   dailyFrequency: ControlFrequency[];
   frequencyBySpaceType: ControlFrequency[];
   frequencyByCommand: ControlFrequency[];
+  frequencyByDeviceTypeAndCommand: DeviceTypeCommandFrequency[];
   dailyErrorFrequency: ControlFrequency[];
   deviceStatusBySpace: SpaceDeviceStatus[];
 }
