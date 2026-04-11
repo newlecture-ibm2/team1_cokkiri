@@ -278,9 +278,6 @@ export function DeviceControlPanel({
               {key}
             </span>
             {cmds.map((cmd) => {
-              const isActive =
-                cmd.stateValue !== undefined &&
-                currentState[cmd.stateKey] === cmd.stateValue;
               const wasFired = firedCommands.has(cmd.command);
               return (
                 <motion.button
@@ -294,7 +291,7 @@ export function DeviceControlPanel({
                       params[cmd.stateKey] = cmd.stateValue;
                     }
                     executeControl(cmd.command, params);
-                    // 일회성 실행 피드백: 2.5초 후 해제
+                    // 일회성 실행 피드백: 2초 후 해제
                     setFiredCommands((prev) => new Set(prev).add(cmd.command));
                     setTimeout(() => {
                       setFiredCommands((prev) => {
@@ -302,15 +299,15 @@ export function DeviceControlPanel({
                         next.delete(cmd.command);
                         return next;
                       });
-                    }, 2500);
+                    }, 2000);
                   }}
                   className={`rounded-lg border px-2.5 py-1 text-xs font-bold transition-colors disabled:opacity-50
-                    ${isActive || wasFired
+                    ${wasFired
                       ? "border-accent/40 bg-accent/15 text-accent"
                       : "border-transparent bg-transparent text-primary hover:bg-muted/20"
                     }`}
                 >
-                  {wasFired ? "✓ " : isActive ? "● " : ""}{cmd.label}
+                  {wasFired ? "✓ " : ""}{cmd.label}
                 </motion.button>
               );
             })}

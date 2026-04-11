@@ -8,9 +8,9 @@ import { ApiError } from "@/lib/api";
 
 /** 명령 추가 드롭다운 (토글 제외 — 토글은 전용 버튼으로 쌍 추가) */
 const UI_TYPE_OPTIONS = [
-  { value: "slider", label: "슬라이더 (밝기/온도)" },
-  { value: "select", label: "선택 (모드)" },
-  { value: "button", label: "버튼 (시작/정지/재시작)" },
+  { value: "slider", label: "슬라이더 — 수치 조절" },
+  { value: "select", label: "선택 — 드롭다운 목록" },
+  { value: "button", label: "버튼 — 개별 동작 실행" },
 ];
 
 const EMPTY_COMMAND: DeviceCommand = {
@@ -354,7 +354,7 @@ export function DeviceTypeManager() {
               <div className="rounded-lg border border-accent/20 bg-accent/5 px-4 py-3 text-[11px] leading-relaxed text-muted-foreground">
                 <p className="font-bold text-primary mb-1">💡 명령어 등록 가이드</p>
                 <ul className="list-disc list-inside space-y-0.5">
-                  <li><strong>토글</strong>: ON/OFF 쌍으로 등록되며, 하나의 스위치로 표시됩니다.</li>
+                  <li><strong>토글</strong>: ON/OFF 쌍으로 등록되며, 하나의 스위치로 표시됩니다. (같은 상태 키를 자동 공유)</li>
                   <li><strong>명령</strong>: 슬라이더/선택/버튼 등 개별 제어를 추가합니다.</li>
                   <li><strong>상태 키</strong>가 같은 명령어끼리 하나의 제어로 묶입니다.</li>
                 </ul>
@@ -443,7 +443,7 @@ export function DeviceTypeManager() {
                                 className="w-full rounded-lg border border-border bg-surface px-2 py-1.5 text-sm font-mono
                                   text-primary placeholder:text-muted-foreground/40 focus:outline-none focus:ring-1 focus:ring-ring/40"
                               />
-                              <p className="text-[9px] text-muted-foreground/60">기기 상태에서 제어할 항목</p>
+                              <p className="text-[9px] text-muted-foreground/60">같은 키 = 하나의 제어로 묶임</p>
                             </div>
                           </div>
 
