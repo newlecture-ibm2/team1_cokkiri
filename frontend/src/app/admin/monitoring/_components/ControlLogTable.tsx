@@ -75,6 +75,19 @@ export default function ControlLogTable() {
     });
   };
 
+  const formatParams = (params: string | null): string => {
+    if (!params) return "";
+    try {
+      const obj = JSON.parse(params);
+      if (typeof obj !== "object" || obj === null) return params;
+      return Object.entries(obj)
+        .map(([k, v]) => `${k}: ${v}`)
+        .join(", ");
+    } catch {
+      return params;
+    }
+  };
+
   return (
     <div>
       {/* 에러 표시 */}
@@ -164,10 +177,14 @@ export default function ControlLogTable() {
                 </td>
               </tr>
             ) : (
-              logs.map((log) => (
+              logs.map((log) => {
+                const paramText = formatParams(log.commandParams);
+                return (
                 <tr
                   key={log.controlLogId}
-                  className="border-t border-border/40 hover:bg-muted/10 transition-colors"
+                  className={`border-t hover:bg-muted/10 transition-colors ${
+                    log.result === "FAILURE" ? "border-red-200/40 bg-red-50/20" : "border-border/40"
+                  }`}
                 >
                   <td className="px-4 py-3 text-muted-foreground whitespace-nowrap">
                     {formatDate(log.createdAt)}
@@ -183,14 +200,19 @@ export default function ControlLogTable() {
                     <span className="inline-block px-2 py-0.5 rounded-lg bg-background text-xs font-semibold text-foreground">
                       {log.commandLabel || log.command}
                     </span>
+                    {paramText && (
+                      <div className="mt-0.5 text-[10px] text-muted-foreground font-mono">
+                        {paramText}
+                      </div>
+                    )}
                   </td>
                   <td className="px-4 py-3 text-muted-foreground">
                     <span className={`text-xs font-medium px-1.5 py-0.5 rounded ${
                       log.actorType === "ADMIN"
-                        ? "bg-[#768064]/10 text-[#768064]"
+                        ? "bg-accent/10 text-accent"
                         : "bg-muted/20 text-muted-foreground"
                     }`}>
-                      {log.actorType}
+                      {log.actorType === "ADMIN" ? "관리자" : "입주자"}
                     </span>
                     {log.userName && (
                       <span className="ml-1 text-xs">{log.userName}</span>
@@ -198,19 +220,28 @@ export default function ControlLogTable() {
                   </td>
                   <td className="px-4 py-3">
                     {log.result === "SUCCESS" ? (
-                      <span className="inline-flex items-center gap-1 text-xs font-semibold text-[#768064]">
-                        <span className="w-1.5 h-1.5 rounded-full bg-[#768064]" />
+                      <span className="inline-flex items-center gap-1 text-xs font-semibold text-accent">
+                        <span className="w-1.5 h-1.5 rounded-full bg-accent" />
                         성공
                       </span>
                     ) : (
-                      <span className="inline-flex items-center gap-1 text-xs font-semibold text-red-500">
-                        <span className="w-1.5 h-1.5 rounded-full bg-red-500" />
-                        실패
-                      </span>
+                      <div>
+                        <span className="inline-flex items-center gap-1 text-xs font-semibold text-red-500">
+                          <span className="w-1.5 h-1.5 rounded-full bg-red-500" />
+                          실패
+                        </span>
+                        {log.errorMessage && (
+                          <div className="mt-0.5 text-[10px] text-red-400 max-w-[200px] truncate" title={log.errorMessage}>
+                            {log.errorMessage}
+                          </div>
+                        )}
+                      </div>
                     )}
                   </td>
                 </tr>
-              ))
+                );
+              })
+
             )}
           </tbody>
         </table>
