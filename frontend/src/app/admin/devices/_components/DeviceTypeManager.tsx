@@ -459,13 +459,16 @@ export function DeviceTypeManager() {
                       <input
                         type="text"
                         placeholder="COOL,HEAT,DRY,FAN"
-                        value={cmd.options?.join(",") ?? ""}
-                        onChange={(e) =>
+                        defaultValue={cmd.options?.join(", ") ?? ""}
+                        onBlur={(e) =>
                           updateCommand(idx, "options", e.target.value.split(",").map((s) => s.trim()).filter(Boolean))
                         }
                         className="w-full rounded-lg border border-border bg-surface px-2 py-1.5 text-sm font-mono
                           text-primary placeholder:text-muted-foreground/40 focus:outline-none focus:ring-1 focus:ring-ring/40"
                       />
+                      <p className="text-[9px] text-muted-foreground/60">
+                        쉼표(,)로 항목을 구분하세요. 입력 후 바깥을 클릭하면 적용됩니다.
+                      </p>
                     </div>
                   )}
                 </motion.div>

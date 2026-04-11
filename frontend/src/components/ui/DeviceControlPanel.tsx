@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { motion } from "framer-motion";
 
 /**
@@ -103,10 +103,19 @@ export function DeviceControlPanel({
   const commands = parseCommands(commandsJson);
   const [busy, setBusy] = useState(false);
 
-  let currentState: Record<string, unknown> = {};
+  let parsedState: Record<string, unknown> = {};
   try {
-    currentState = JSON.parse(currentStateJson || "{}");
+    parsedState = JSON.parse(currentStateJson || "{}");
   } catch { /* ignore */ }
+
+  // 슬라이더 드래그 중 즉각 반응을 위한 로컬 상태
+  const [localState, setLocalState] = useState<Record<string, unknown>>(parsedState);
+  useEffect(() => {
+    setLocalState(parsedState);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentStateJson]);
+
+  const currentState = localState;
 
   const { togglePairs, others } = groupTogglePairs(commands);
 
@@ -117,7 +126,8 @@ export function DeviceControlPanel({
       try {
         await onControl(command, params);
         // Optimistic: merge
-        const newState = { ...currentState, ...params };
+        const newState = { ...localState, ...params };
+        setLocalState(newState);
         onStateChange?.(newState);
       } finally {
         setBusy(false);
@@ -199,8 +209,7 @@ export function DeviceControlPanel({
                 disabled={disabled}
                 onChange={(e) => {
                   const newVal = Number(e.target.value);
-                  const params = { [cmd.stateKey]: newVal };
-                  onStateChange?.({ ...currentState, ...params });
+                  setLocalState((prev) => ({ ...prev, [cmd.stateKey]: newVal }));
                 }}
                 onMouseUp={(e) => {
                   const newVal = Number((e.target as HTMLInputElement).value);
@@ -253,26 +262,33 @@ export function DeviceControlPanel({
       {/* ── 버튼 ── */}
       {others
         .filter((cmd) => cmd.uiType === "button")
-        .map((cmd) => (
-          <motion.button
-            key={`btn-${cmd.command}`}
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.97 }}
-            disabled={disabled}
-            onClick={() => {
-              const params: Record<string, unknown> = {};
-              if (cmd.stateValue !== undefined) {
-                params[cmd.stateKey] = cmd.stateValue;
-              }
-              executeControl(cmd.command, params);
-            }}
-            className="rounded-xl border border-border bg-muted/10 px-3 py-1.5
-              text-xs font-bold text-primary transition-colors hover:bg-muted/20
-              disabled:opacity-50"
-          >
-            {cmd.label}
-          </motion.button>
-        ))}
+        .map((cmd) => {
+          const isActive =
+            cmd.stateValue !== undefined &&
+            currentState[cmd.stateKey] === cmd.stateValue;
+          return (
+            <motion.button
+              key={`btn-${cmd.command}`}
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.97 }}
+              disabled={disabled}
+              onClick={() => {
+                const params: Record<string, unknown> = {};
+                if (cmd.stateValue !== undefined) {
+                  params[cmd.stateKey] = cmd.stateValue;
+                }
+                executeControl(cmd.command, params);
+              }}
+              className={`rounded-xl border px-3 py-1.5 text-xs font-bold transition-colors disabled:opacity-50
+                ${isActive
+                  ? "border-accent/40 bg-accent/15 text-accent ring-1 ring-accent/20"
+                  : "border-border bg-muted/10 text-primary hover:bg-muted/20"
+                }`}
+            >
+              {isActive && "● "}{cmd.label}
+            </motion.button>
+          );
+        })}
     </div>
   );
 }
