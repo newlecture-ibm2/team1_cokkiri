@@ -235,6 +235,7 @@ public class AdminDevicePersistenceAdapter implements AdminDeviceRepositoryPort 
                 entity.getDeviceType().getDeviceTypeId(),
                 entity.getDeviceType().getCode(),
                 entity.getDeviceType().getName(),
+                entity.getDeviceType().getCommands(),
                 entity.getName(),
                 entity.getModelName(),
                 entity.getMacAddress(),
@@ -273,5 +274,12 @@ public class AdminDevicePersistenceAdapter implements AdminDeviceRepositoryPort 
             map.put(spaceId, new Object[]{ cols[1], cols[2] });
         }
         return map;
+    }
+
+    @Override
+    public String findDeviceTypeCommandsById(Long deviceTypeId) {
+        return deviceTypeJpaRepository.findById(deviceTypeId)
+                .map(DeviceTypeEntity::getCommands)
+                .orElse(null);
     }
 }

@@ -35,6 +35,7 @@ const navItems: NavItem[] = [
     children: [
       { name: "Notification", path: "/notifications" },
       { name: "Profile", path: "/profile" },
+      { name: "My Devices", path: "/my-devices" },
       { name: "My Reservations", path: "/my-history/reservation" },
       { name: "My VOC", path: "/profile/vocs" },
       { name: "My Contracts", path: "/my-contracts" },
@@ -236,10 +237,10 @@ export function Header() {
                                     onClick={
                                       child.name === "Logout"
                                         ? async (e) => {
-                                            e.preventDefault();
-                                            await logout();
-                                            setDesktopOpenMenu(null);
-                                          }
+                                          e.preventDefault();
+                                          await logout();
+                                          setDesktopOpenMenu(null);
+                                        }
                                         : undefined
                                     }
                                     className={subLinkClass(
@@ -415,10 +416,10 @@ export function Header() {
                                         onClick={
                                           child.name === "Logout"
                                             ? async (e) => {
-                                                e.preventDefault();
-                                                await logout();
-                                                setIsMobileMenuOpen(false);
-                                              }
+                                              e.preventDefault();
+                                              await logout();
+                                              setIsMobileMenuOpen(false);
+                                            }
                                             : () => setIsMobileMenuOpen(false)
                                         }
                                         className={cn(

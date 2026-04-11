@@ -2,6 +2,7 @@ package com.coliving.infra.iot;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 
@@ -46,6 +47,82 @@ public final class DeviceStateUtil {
         }
 
         return toJson(state);
+    }
+
+    /**
+     * device_types.commands JSON에서 초기 current_state를 자동 생성합니다.
+     *
+     * <p>각 command의 uiType에 따라 기본값을 결정합니다:
+     * <ul>
+     *   <li><b>toggle</b>: OFF 쪽 command의 stateValue (두 번째 항목 우선)</li>
+     *   <li><b>slider</b>: min 값 (없으면 0)</li>
+     *   <li><b>select</b>: options의 첫 번째 값</li>
+     *   <li><b>button</b>: stateValue (있으면 적용)</li>
+     * </ul>
+     *
+     * @param commandsJson device_types.commands JSON 문자열
+     * @return 초기 current_state JSON 문자열
+     */
+    public static String buildInitialState(String commandsJson) {
+        if (commandsJson == null || commandsJson.isBlank()) {
+            return "{}";
+        }
+
+        Map<String, Object> initialState = new HashMap<>();
+
+        try {
+            JsonNode root = MAPPER.readTree(commandsJson);
+            if (!root.isArray()) return "{}";
+
+            // stateKey별 처음 만나는 값을 기본값으로 설정
+            // toggle은 두 번째(OFF쪽)가 덮어쓰므로 자연스럽게 OFF 기본
+            for (JsonNode cmd : root) {
+                String stateKey = cmd.has("stateKey") ? cmd.get("stateKey").asText() : null;
+                if (stateKey == null || stateKey.isBlank()) continue;
+
+                String uiType = cmd.has("uiType") ? cmd.get("uiType").asText() : "toggle";
+
+                switch (uiType) {
+                    case "toggle" -> {
+                        // stateValue가 있으면 적용 (배열 순서상 OFF가 뒤에 오면 최종적으로 OFF)
+                        if (cmd.has("stateValue")) {
+                            JsonNode sv = cmd.get("stateValue");
+                            initialState.put(stateKey, nodeToValue(sv));
+                        }
+                    }
+                    case "slider" -> {
+                        int min = cmd.has("min") ? cmd.get("min").asInt(0) : 0;
+                        initialState.putIfAbsent(stateKey, min);
+                    }
+                    case "select" -> {
+                        if (cmd.has("options") && cmd.get("options").isArray() && !cmd.get("options").isEmpty()) {
+                            initialState.putIfAbsent(stateKey, cmd.get("options").get(0).asText());
+                        }
+                    }
+                    case "button" -> {
+                        if (cmd.has("stateValue")) {
+                            initialState.putIfAbsent(stateKey, nodeToValue(cmd.get("stateValue")));
+                        }
+                    }
+                    default -> { /* 알 수 없는 uiType — 무시 */ }
+                }
+            }
+        } catch (JsonProcessingException e) {
+            log.warn("commands JSON 파싱 실패, 빈 초기 상태 반환: {}", commandsJson, e);
+            return "{}";
+        }
+
+        return toJson(initialState);
+    }
+
+    /**
+     * JsonNode를 적절한 Java 타입으로 변환합니다.
+     */
+    private static Object nodeToValue(JsonNode node) {
+        if (node.isBoolean()) return node.asBoolean();
+        if (node.isInt()) return node.asInt();
+        if (node.isDouble()) return node.asDouble();
+        return node.asText();
     }
 
     /**

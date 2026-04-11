@@ -21,7 +21,6 @@ export function DeviceRegisterForm() {
     modelName: "",
     macAddress: "",
     mockEndpoint: "",
-    currentState: "",
   });
 
   const loadDeviceTypes = useCallback(async () => {
@@ -95,13 +94,7 @@ export function DeviceRegisterForm() {
     if (form.mockEndpoint && !isValidUrl(form.mockEndpoint)) {
       newErrors.mockEndpoint = "올바른 URL 형식이 아닙니다";
     }
-    if (form.currentState && form.currentState.trim()) {
-      try {
-        JSON.parse(form.currentState);
-      } catch {
-        newErrors.currentState = "유효한 JSON 형식이 아닙니다";
-      }
-    }
+
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -146,7 +139,6 @@ export function DeviceRegisterForm() {
         modelName: "",
         macAddress: "",
         mockEndpoint: "",
-        currentState: "",
       });
     } catch (err) {
       if (err instanceof ApiError) {
@@ -355,31 +347,7 @@ export function DeviceRegisterForm() {
         </div>
       </fieldset>
 
-      {/* ── 초기 상태 (선택) ── */}
-      <fieldset className="space-y-6">
-        <legend className="font-black text-xs uppercase tracking-[0.3em] text-muted-foreground mb-4">
-          초기 상태 (선택)
-        </legend>
 
-        <div className="space-y-2">
-          <label htmlFor="current-state" className="block text-sm font-semibold text-primary">
-            초기 상태 (JSON)
-          </label>
-          <textarea
-            id="current-state"
-            placeholder='{"power":"OFF","temperature":22}'
-            value={form.currentState ?? ""}
-            onChange={(e) => handleChange("currentState", e.target.value)}
-            rows={3}
-            className={`w-full rounded-xl border px-4 py-3 text-sm font-medium text-primary font-mono
-              bg-surface placeholder:text-muted-foreground/50 transition-all duration-200
-              focus:outline-none focus:ring-2 focus:ring-ring/40 resize-y
-              ${errors.currentState ? "border-destructive ring-1 ring-destructive/30" : "border-border hover:border-secondary"}`}
-          />
-          <p className="text-xs text-muted-foreground pl-1">기기의 초기 상태를 JSON 형식으로 입력합니다. 비워두면 빈 상태({})로 시작됩니다.</p>
-          {errors.currentState && <p className="text-xs font-medium text-destructive pl-1">{errors.currentState}</p>}
-        </div>
-      </fieldset>
 
       {/* 제출 버튼 */}
       <motion.button

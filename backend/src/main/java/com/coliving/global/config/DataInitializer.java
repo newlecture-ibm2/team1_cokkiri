@@ -201,7 +201,7 @@ public class DataInitializer implements ApplicationRunner {
                 .orElseGet(() -> deviceTypeJpaRepository.save(DeviceTypeEntity.builder()
                         .code("LIGHT")
                         .name("조명")
-                        .commands("{\"ON\":{},\"OFF\":{}}")
+                        .commands("[{\"command\":\"ON\",\"uiType\":\"toggle\",\"stateKey\":\"power\",\"stateValue\":\"ON\",\"label\":\"전원 켜기\"},{\"command\":\"OFF\",\"uiType\":\"toggle\",\"stateKey\":\"power\",\"stateValue\":\"OFF\",\"label\":\"전원 끄기\"},{\"command\":\"SET_BRIGHTNESS\",\"uiType\":\"slider\",\"stateKey\":\"brightness\",\"min\":0,\"max\":100,\"unit\":\"%\",\"label\":\"밝기 조절\"}]")
                         .uiType("toggle")
                         .isSystemDefault(true)
                         .build()));
@@ -210,7 +210,7 @@ public class DataInitializer implements ApplicationRunner {
             deviceTypeJpaRepository.save(DeviceTypeEntity.builder()
                     .code("DOOR_LOCK")
                     .name("도어락")
-                    .commands("{\"LOCK\":{},\"UNLOCK\":{}}")
+                    .commands("[{\"command\":\"LOCK\",\"uiType\":\"toggle\",\"stateKey\":\"locked\",\"stateValue\":true,\"label\":\"잠금\"},{\"command\":\"UNLOCK\",\"uiType\":\"toggle\",\"stateKey\":\"locked\",\"stateValue\":false,\"label\":\"잠금 해제\"}]")
                     .uiType("toggle")
                     .isSystemDefault(true)
                     .build());

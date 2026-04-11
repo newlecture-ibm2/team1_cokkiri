@@ -12,6 +12,7 @@ import {
 } from "../_api";
 import type { AdminDevice, UpdateDeviceRequest, Space } from "../_types";
 import { ApiError } from "@/lib/api";
+import { DeviceControlPanel } from "@/components/ui/DeviceControlPanel";
 
 /* ── 상수 ── */
 
@@ -124,35 +125,23 @@ export function DeviceListTable() {
   };
 
   /**
-   * 기기 제어 토글 (ADM-DEV-04)
-   * - Throttle: controllingId 잠금 + 쿨다운 방어
-   * - 성공 시 토스트 + 목록 재조회
-   * - MockIoT 지연 시 피드백 토스트
+   * 기기 제어 (ADM-DEV-04) — DeviceControlPanel 콜백
+   * commands 기반 동적 UI에서 호출됨
    */
-  const handleControl = async (device: AdminDevice) => {
-    // 오프라인/에러 기기 제어 불가
-    if (device.status !== "ONLINE") return;
-    // 비활성 기기 제어 불가
-    if (!device.isActive) return;
-    // Throttle: 제어 진행 중이면 무시
+  const handleControl = async (
+    deviceId: number,
+    deviceName: string,
+    command: string,
+    params: Record<string, unknown>
+  ) => {
     if (controllingId !== null) return;
-    // Throttle: 쿨다운 중이면 무시
-    if (cooldownRef.current.has(device.deviceId)) return;
+    if (cooldownRef.current.has(deviceId)) return;
 
-    setControllingId(device.deviceId);
+    setControllingId(deviceId);
 
     try {
-      // 현재 전원 상태 파싱
-      let currentState: Record<string, unknown> = {};
-      try {
-        currentState = JSON.parse(device.currentState || "{}");
-      } catch { /* ignore */ }
-
-      const isPowerOn = currentState.power === true || currentState.power === "ON";
-      const command = isPowerOn ? "OFF" : "ON";
-
-      await controlAdminDevice(device.deviceId, { command });
-      setSuccess(`"${device.name}" ${command} 제어 완료`);
+      await controlAdminDevice(deviceId, { command, params });
+      setSuccess(`"${deviceName}" ${command} 제어 완료`);
       loadDevices();
     } catch (err) {
       if (err instanceof ApiError) setError(err.message);
@@ -161,10 +150,10 @@ export function DeviceListTable() {
       setControllingId(null);
 
       // Throttle 쿨다운 적용
-      cooldownRef.current.add(device.deviceId);
+      cooldownRef.current.add(deviceId);
       forceUpdate((n) => n + 1);
       setTimeout(() => {
-        cooldownRef.current.delete(device.deviceId);
+        cooldownRef.current.delete(deviceId);
         forceUpdate((n) => n + 1);
       }, CONTROL_COOLDOWN_MS);
     }
@@ -291,13 +280,6 @@ export function DeviceListTable() {
                     const isThisControlling = controllingId === device.deviceId;
                     const isCooldown = cooldownRef.current.has(device.deviceId);
 
-                    // 전원 상태 파싱
-                    let currentState: Record<string, unknown> = {};
-                    try {
-                      currentState = JSON.parse(device.currentState || "{}");
-                    } catch { /* ignore */ }
-                    const isPowerOn = currentState.power === true || currentState.power === "ON";
-
                     const canControl = device.status === "ONLINE" && device.isActive;
 
                     return (
@@ -347,34 +329,17 @@ export function DeviceListTable() {
                           </div>
                         </td>
 
-                        {/* 제어 토글 (ADM-DEV-04) */}
+                        {/* 제어 패널 (ADM-DEV-04) — commands 기반 동적 UI */}
                         <td className="px-5 py-3">
                           {canControl ? (
-                            <button
-                              onClick={() => handleControl(device)}
+                            <DeviceControlPanel
+                              commandsJson={device.deviceTypeCommands ?? "[]"}
+                              currentStateJson={device.currentState}
                               disabled={isThisControlling || isCooldown}
-                              className={`group relative flex items-center gap-2 rounded-xl px-3 py-1.5
-                                text-xs font-bold transition-all duration-200
-                                ${isThisControlling ? "animate-pulse opacity-60" : ""}
-                                ${isCooldown ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}
-                                ${isPowerOn
-                                  ? "border border-accent/40 bg-accent/10 text-accent hover:bg-accent/20"
-                                  : "border border-border bg-muted/20 text-muted-foreground hover:bg-muted/30"
-                                }`}
-                            >
-                              {/* 토글 스위치 */}
-                              <div
-                                className={`relative h-4 w-7 rounded-full transition-colors duration-200
-                                  ${isPowerOn ? "bg-accent" : "bg-muted/40"}`}
-                              >
-                                <span
-                                  className={`absolute top-0.5 left-0.5 h-3 w-3 rounded-full bg-white shadow
-                                    transition-transform duration-200
-                                    ${isPowerOn ? "translate-x-3" : "translate-x-0"}`}
-                                />
-                              </div>
-                              <span>{isPowerOn ? "ON" : "OFF"}</span>
-                            </button>
+                              onControl={async (cmd, params) => {
+                                await handleControl(device.deviceId, device.name, cmd, params);
+                              }}
+                            />
                           ) : (
                             <span className="text-[10px] font-medium text-muted-foreground">
                               {!device.isActive ? "비활성" : device.status === "OFFLINE" ? "오프라인" : "에러"}

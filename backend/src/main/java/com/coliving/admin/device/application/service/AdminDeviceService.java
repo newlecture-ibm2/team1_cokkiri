@@ -46,19 +46,22 @@ public class AdminDeviceService implements CreateAdminDeviceUseCase, AdminDevice
             validateDoorLockSpaceType(command.spaceId(), command.deviceTypeId());
         }
 
+        // commands에서 초기 current_state 자동 생성
+        String commandsJson = adminDeviceRepositoryPort.findDeviceTypeCommandsById(command.deviceTypeId());
+        String initialState = DeviceStateUtil.buildInitialState(commandsJson);
+
         AdminDevice device = new AdminDevice(
                 null,
                 command.spaceId(),
                 null, null,   // spaceName, spaceFloor — PersistenceAdapter에서 채움
                 command.deviceTypeId(),
-                null, null,
+                null, null, null, // deviceTypeCode, Name, Commands — PersistenceAdapter에서 채움
                 command.name(),
                 command.modelName(),
                 command.macAddress(),
                 command.mockEndpoint(),
                 "ONLINE",
-                command.currentState() != null && !command.currentState().isBlank()
-                        ? command.currentState() : "{}",
+                initialState,
                 true,
                 null, null, null, null
         );

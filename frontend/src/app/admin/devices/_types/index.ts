@@ -9,6 +9,19 @@ export interface DeviceType {
   updatedAt: string;
 }
 
+/** 구조화된 명령어 정의 (device_types.commands JSONB 내부 구조) */
+export interface DeviceCommand {
+  command: string;
+  uiType: "toggle" | "slider" | "select" | "button";
+  stateKey: string;
+  label: string;
+  stateValue?: unknown;
+  min?: number;
+  max?: number;
+  unit?: string;
+  options?: string[];
+}
+
 export interface SaveDeviceTypeRequest {
   code: string;
   name: string;
@@ -23,7 +36,6 @@ export interface CreateDeviceRequest {
   modelName: string;
   macAddress: string;
   mockEndpoint: string;
-  currentState?: string;
 }
 
 export interface CreateDeviceResponse {
@@ -66,6 +78,7 @@ export interface AdminDevice {
   deviceTypeId: number;
   deviceTypeCode: string;
   deviceTypeName: string;
+  deviceTypeCommands: string;
   name: string;
   modelName: string;
   macAddress: string;

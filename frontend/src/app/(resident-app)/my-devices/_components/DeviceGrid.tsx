@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { fetchMyDevices, controlDevice } from "../_api";
 import type { MyDevice } from "../_types";
 import { ApiError } from "@/lib/api";
+import { DeviceControlPanel } from "@/components/ui/DeviceControlPanel";
 
 /* ── 상수 ── */
 
@@ -87,7 +88,11 @@ export function DeviceGrid() {
     setFeedback(msg);
   };
 
-  const handleToggle = async (device: MyDevice) => {
+  const handleControl = async (
+    device: MyDevice,
+    command: string,
+    params: Record<string, unknown>
+  ) => {
     // 공용 기기는 제어 차단 → 예약 안내 모달 표시
     if (device.spaceType === "COMMON") {
       setReservationModal({ open: true, device });
@@ -96,32 +101,24 @@ export function DeviceGrid() {
 
     // 상태 검증
     if (device.status !== "ONLINE") return;
-
-    // Throttle: 제어 진행 중이면 무시
     if (controllingId !== null) return;
-
-    // Throttle: 쿨다운 중이면 무시
     if (cooldownRef.current.has(device.deviceId)) return;
 
     setControllingId(device.deviceId);
 
     try {
-      // 현재 상태 파싱
+      await controlDevice(device.deviceId, { command, params });
+
+      // Optimistic UI: 로컬 상태 즉시 반영
       let currentState: Record<string, unknown> = {};
       try {
         currentState = JSON.parse(device.currentState || "{}");
       } catch { /* ignore */ }
-
-      const isPowerOn = currentState.power === true || currentState.power === "ON";
-      const command = isPowerOn ? "OFF" : "ON";
-
-      await controlDevice(device.deviceId, { command });
-
-      // Optimistic UI: 로컬 상태 즉시 반영
+      const newState = { ...currentState, ...params };
       setDevices((prev) =>
         prev.map((d) =>
           d.deviceId === device.deviceId
-            ? { ...d, currentState: JSON.stringify({ ...currentState, power: command }) }
+            ? { ...d, currentState: JSON.stringify(newState) }
             : d
         )
       );
@@ -289,7 +286,7 @@ export function DeviceGrid() {
                 idx={idx}
                 isControlling={controllingId === device.deviceId}
                 isCooldown={cooldownRef.current.has(device.deviceId)}
-                onToggle={handleToggle}
+                onControl={handleControl}
               />
             ))}
           </div>
@@ -310,7 +307,7 @@ export function DeviceGrid() {
                 idx={idx}
                 isControlling={controllingId === device.deviceId}
                 isCooldown={cooldownRef.current.has(device.deviceId)}
-                onToggle={handleToggle}
+                onControl={handleControl}
               />
             ))}
           </div>
@@ -327,23 +324,17 @@ function DeviceCard({
   idx,
   isControlling,
   isCooldown,
-  onToggle,
+  onControl,
 }: {
   device: MyDevice;
   idx: number;
   isControlling: boolean;
   isCooldown: boolean;
-  onToggle: (device: MyDevice) => void;
+  onControl: (device: MyDevice, command: string, params: Record<string, unknown>) => void;
 }) {
   const isCommon = device.spaceType === "COMMON";
   const status = STATUS_MAP[device.status] ?? STATUS_MAP.OFFLINE;
   const icon = DEVICE_ICONS[device.deviceTypeCode] ?? "📱";
-
-  let currentState: Record<string, unknown> = {};
-  try {
-    currentState = JSON.parse(device.currentState || "{}");
-  } catch { /* ignore */ }
-  const isPowerOn = currentState.power === true || currentState.power === "ON";
 
   // 공용 기기: 회색 계열 스타일 (제어 불가)
   const cardColor = isCommon
@@ -357,11 +348,10 @@ function DeviceCard({
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: idx * 0.05 }}
-      className={`group relative cursor-pointer rounded-[2rem] border p-5 transition-all
+      className={`group relative rounded-[2rem] border p-5 transition-all
         duration-200 hover:shadow-md ${cardColor}
         ${isControlling ? "animate-pulse pointer-events-none" : ""}
         ${isCooldown ? "opacity-70 pointer-events-none" : ""}`}
-      onClick={() => onToggle(device)}
     >
       {/* 상태 점 */}
       <span className={`absolute right-4 top-4 h-2.5 w-2.5 rounded-full ${dotColor}`} />
@@ -389,22 +379,17 @@ function DeviceCard({
         {device.deviceTypeName}
       </p>
 
-      {/* ── 개인 기기: 전원 토글 ── */}
+      {/* ── 개인 기기: commands 기반 동적 제어 UI ── */}
       {!isCommon && device.status === "ONLINE" && (
-        <div className="mt-3 flex items-center gap-2">
-          <div
-            className={`relative h-5 w-9 rounded-full transition-colors duration-200
-              ${isPowerOn ? "bg-accent" : "bg-muted/40"}`}
-          >
-            <span
-              className={`absolute top-0.5 left-0.5 h-4 w-4 rounded-full bg-white shadow
-                transition-transform duration-200
-                ${isPowerOn ? "translate-x-4" : "translate-x-0"}`}
-            />
-          </div>
-          <span className="text-[10px] font-semibold text-muted-foreground">
-            {isPowerOn ? "ON" : "OFF"}
-          </span>
+        <div className="mt-3" onClick={(e) => e.stopPropagation()}>
+          <DeviceControlPanel
+            commandsJson={device.commands ?? "[]"}
+            currentStateJson={device.currentState}
+            disabled={isControlling || isCooldown}
+            onControl={async (cmd, params) => {
+              onControl(device, cmd, params);
+            }}
+          />
         </div>
       )}
 
