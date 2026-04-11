@@ -9,6 +9,7 @@ export interface ControlLogItem {
   spaceType: string | null;
   actorType: string;
   command: string;
+  commandLabel: string | null;
   commandParams: string | null;
   result: "SUCCESS" | "FAILURE";
   errorMessage: string | null;

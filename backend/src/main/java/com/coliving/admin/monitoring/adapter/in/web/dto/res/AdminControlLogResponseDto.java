@@ -15,6 +15,7 @@ public record AdminControlLogResponseDto(
         String userName,
         String actorType,
         String command,
+        String commandLabel,
         String commandParams,
         String result,
         String errorMessage,

@@ -180,8 +180,8 @@ export default function ControlLogTable() {
                     <div className="text-xs text-muted-foreground">{log.deviceTypeName}</div>
                   </td>
                   <td className="px-4 py-3">
-                    <span className="inline-block px-2 py-0.5 rounded-lg bg-background text-xs font-mono font-semibold text-foreground">
-                      {log.command}
+                    <span className="inline-block px-2 py-0.5 rounded-lg bg-background text-xs font-semibold text-foreground">
+                      {log.commandLabel || log.command}
                     </span>
                   </td>
                   <td className="px-4 py-3 text-muted-foreground">

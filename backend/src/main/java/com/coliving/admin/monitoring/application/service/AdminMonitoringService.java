@@ -100,6 +100,10 @@ public class AdminMonitoringService implements AdminMonitoringUseCase {
                         }
                     }
 
+                    String cmdCode = row[8] != null ? row[8].toString() : null;
+                    String commandsJson = row[14] != null ? row[14].toString() : null;
+                    String commandLabel = resolveCommandLabel(commandsJson, cmdCode);
+
                     return new AdminControlLogResponseDto(
                             ((Number) row[0]).longValue(),                                    // controlLogId
                             ((Number) row[1]).longValue(),                                    // deviceId
@@ -109,7 +113,8 @@ public class AdminMonitoringService implements AdminMonitoringUseCase {
                             row[5] != null ? ((Number) row[5]).longValue() : null,             // userId (nullable)
                             row[6] != null ? row[6].toString() : null,                        // userName
                             row[7] != null ? row[7].toString() : null,                        // actorType
-                            row[8] != null ? row[8].toString() : null,                        // command
+                            cmdCode,                                                          // command
+                            commandLabel,                                                     // commandLabel
                             row[9] != null ? row[9].toString() : null,                        // commandParams
                             row[10] != null ? row[10].toString() : null,                      // result
                             row[11] != null ? row[11].toString() : null,                      // errorMessage
@@ -120,6 +125,30 @@ public class AdminMonitoringService implements AdminMonitoringUseCase {
                 .collect(Collectors.toList());
 
         return new AdminControlLogPageResult(content, command.page(), command.size(), totalElements, totalPages);
+    }
+
+    /**
+     * device_type.commands JSON에서 해당 command 코드의 label을 찾아 반환.
+     * 매칭 실패 시 command 코드를 그대로 반환.
+     */
+    private String resolveCommandLabel(String commandsJson, String command) {
+        if (command == null) return null;
+        if (commandsJson == null || commandsJson.isBlank()) return command;
+        try {
+            com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
+            com.fasterxml.jackson.databind.JsonNode root = mapper.readTree(commandsJson);
+            if (root.isArray()) {
+                for (com.fasterxml.jackson.databind.JsonNode node : root) {
+                    if (node.has("command") && command.equals(node.get("command").asText())) {
+                        if (node.has("label") && !node.get("label").asText().isBlank()) {
+                            return node.get("label").asText();
+                        }
+                    }
+                }
+            }
+        } catch (Exception ignored) {
+        }
+        return command;
     }
 
     @Override

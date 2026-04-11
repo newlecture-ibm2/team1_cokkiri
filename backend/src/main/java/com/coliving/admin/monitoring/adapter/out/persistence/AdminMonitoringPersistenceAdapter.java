@@ -89,7 +89,8 @@ public class AdminMonitoringPersistenceAdapter implements AdminMonitoringReposit
                        dt.name AS device_type_name, s.name AS space_name,
                        cl.user_id, u.name AS user_name,
                        cl.actor_type, cl.command, cl.command_params,
-                       cl.result, cl.error_message, cl.correlation_id, cl.created_at
+                       cl.result, cl.error_message, cl.correlation_id, cl.created_at,
+                       dt.commands AS device_type_commands
                 FROM control_logs cl
                 JOIN devices d ON cl.device_id = d.device_id
                 JOIN device_types dt ON d.device_type_id = dt.device_type_id
