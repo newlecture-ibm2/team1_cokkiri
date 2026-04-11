@@ -179,7 +179,7 @@ export function DeviceListTable() {
             initial={{ opacity: 0, y: -12 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -8 }}
-            className="fixed top-4 left-1/2 -translate-x-1/2 z-50 rounded-xl border px-5 py-3 text-sm font-bold shadow-2xl"
+            className="fixed top-4 left-1/2 -translate-x-1/2 z-[200] rounded-xl border px-5 py-3 text-sm font-bold shadow-2xl"
             style={{
               backgroundColor: "#2C3424",
               color: "#ffffff",
@@ -194,7 +194,7 @@ export function DeviceListTable() {
             initial={{ opacity: 0, y: -12 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -8 }}
-            className="fixed top-4 left-1/2 -translate-x-1/2 z-50 rounded-xl border px-5 py-3 text-sm font-bold shadow-2xl"
+            className="fixed top-4 left-1/2 -translate-x-1/2 z-[200] rounded-xl border px-5 py-3 text-sm font-bold shadow-2xl"
             style={{
               backgroundColor: "#dc2626",
               color: "#ffffff",
