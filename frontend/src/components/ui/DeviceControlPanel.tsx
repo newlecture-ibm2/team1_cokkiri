@@ -260,46 +260,63 @@ export function DeviceControlPanel({
           );
         })}
 
-      {/* ── 버튼 ── */}
-      {others
-        .filter((cmd) => cmd.uiType === "button")
-        .map((cmd) => {
-          const isActive =
-            cmd.stateValue !== undefined &&
-            currentState[cmd.stateKey] === cmd.stateValue;
-          const wasFired = firedCommands.has(cmd.command);
-          return (
-            <motion.button
-              key={`btn-${cmd.command}`}
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.97 }}
-              disabled={disabled}
-              onClick={() => {
-                const params: Record<string, unknown> = {};
-                if (cmd.stateValue !== undefined) {
-                  params[cmd.stateKey] = cmd.stateValue;
-                }
-                executeControl(cmd.command, params);
-                // 일회성 실행 피드백: 2.5초 후 해제
-                setFiredCommands((prev) => new Set(prev).add(cmd.command));
-                setTimeout(() => {
-                  setFiredCommands((prev) => {
-                    const next = new Set(prev);
-                    next.delete(cmd.command);
-                    return next;
-                  });
-                }, 2500);
-              }}
-              className={`rounded-xl border px-3 py-1.5 text-xs font-bold transition-colors disabled:opacity-50
-                ${isActive || wasFired
-                  ? "border-accent/40 bg-accent/15 text-accent ring-1 ring-accent/20"
-                  : "border-border bg-muted/10 text-primary hover:bg-muted/20"
-                }`}
-            >
-              {wasFired ? "✓ " : isActive ? "● " : ""}{cmd.label}
-            </motion.button>
-          );
-        })}
+      {/* ── 버튼 (stateKey별 그룹) ── */}
+      {(() => {
+        const buttons = others.filter((cmd) => cmd.uiType === "button");
+        const groups = new Map<string, typeof buttons>();
+        for (const cmd of buttons) {
+          const arr = groups.get(cmd.stateKey) ?? [];
+          arr.push(cmd);
+          groups.set(cmd.stateKey, arr);
+        }
+        return Array.from(groups.entries()).map(([key, cmds]) => (
+          <div
+            key={`btn-group-${key}`}
+            className="flex items-center gap-1.5 rounded-xl border border-border/60 bg-muted/5 px-2 py-1.5"
+          >
+            <span className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground/50 mr-0.5">
+              {key}
+            </span>
+            {cmds.map((cmd) => {
+              const isActive =
+                cmd.stateValue !== undefined &&
+                currentState[cmd.stateKey] === cmd.stateValue;
+              const wasFired = firedCommands.has(cmd.command);
+              return (
+                <motion.button
+                  key={`btn-${cmd.command}`}
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.97 }}
+                  disabled={disabled}
+                  onClick={() => {
+                    const params: Record<string, unknown> = {};
+                    if (cmd.stateValue !== undefined) {
+                      params[cmd.stateKey] = cmd.stateValue;
+                    }
+                    executeControl(cmd.command, params);
+                    // 일회성 실행 피드백: 2.5초 후 해제
+                    setFiredCommands((prev) => new Set(prev).add(cmd.command));
+                    setTimeout(() => {
+                      setFiredCommands((prev) => {
+                        const next = new Set(prev);
+                        next.delete(cmd.command);
+                        return next;
+                      });
+                    }, 2500);
+                  }}
+                  className={`rounded-lg border px-2.5 py-1 text-xs font-bold transition-colors disabled:opacity-50
+                    ${isActive || wasFired
+                      ? "border-accent/40 bg-accent/15 text-accent"
+                      : "border-transparent bg-transparent text-primary hover:bg-muted/20"
+                    }`}
+                >
+                  {wasFired ? "✓ " : isActive ? "● " : ""}{cmd.label}
+                </motion.button>
+              );
+            })}
+          </div>
+        ));
+      })()}
     </div>
   );
 }

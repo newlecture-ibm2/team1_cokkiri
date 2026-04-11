@@ -6,8 +6,8 @@ import { fetchDeviceTypes, createDeviceType, updateDeviceType, deleteDeviceType 
 import type { DeviceType, DeviceCommand, SaveDeviceTypeRequest } from "../_types";
 import { ApiError } from "@/lib/api";
 
+/** 명령 추가 드롭다운 (토글 제외 — 토글은 전용 버튼으로 쌍 추가) */
 const UI_TYPE_OPTIONS = [
-  { value: "toggle", label: "토글 (ON/OFF)" },
   { value: "slider", label: "슬라이더 (밝기/온도)" },
   { value: "select", label: "선택 (모드)" },
   { value: "button", label: "버튼 (시작/정지/재시작)" },
@@ -15,7 +15,7 @@ const UI_TYPE_OPTIONS = [
 
 const EMPTY_COMMAND: DeviceCommand = {
   command: "",
-  uiType: "toggle",
+  uiType: "slider",
   stateKey: "",
   label: "",
 };
@@ -127,6 +127,19 @@ export function DeviceTypeManager() {
 
   // ── 명령어 동적 추가/삭제/수정 ──
 
+  /** 토글 쌍 추가 (ON/OFF 2개를 한 번에) */
+  const addTogglePair = () => {
+    setForm((prev) => ({
+      ...prev,
+      commands: [
+        ...prev.commands,
+        { command: "", uiType: "toggle" as const, stateKey: "", label: "", stateValue: true },
+        { command: "", uiType: "toggle" as const, stateKey: "", label: "", stateValue: false },
+      ],
+    }));
+  };
+
+  /** 개별 명령 추가 (slider / select / button) */
   const addCommand = () => {
     setForm((prev) => ({
       ...prev,
@@ -134,11 +147,25 @@ export function DeviceTypeManager() {
     }));
   };
 
+  /** 명령 삭제. 토글은 쌍으로 삭제 */
   const removeCommand = (index: number) => {
-    setForm((prev) => ({
-      ...prev,
-      commands: prev.commands.filter((_, i) => i !== index),
-    }));
+    const cmd = form.commands[index];
+    if (cmd.uiType === "toggle") {
+      // 같은 stateKey를 가진 토글 쌍을 함께 삭제
+      const pairKey = cmd.stateKey;
+      setForm((prev) => ({
+        ...prev,
+        commands: prev.commands.filter((c, i) => {
+          if (c.uiType === "toggle" && c.stateKey === pairKey && pairKey) return false;
+          return i !== index;
+        }),
+      }));
+    } else {
+      setForm((prev) => ({
+        ...prev,
+        commands: prev.commands.filter((_, i) => i !== index),
+      }));
+    }
   };
 
   const updateCommand = (index: number, field: keyof DeviceCommand, value: unknown) => {
@@ -146,6 +173,16 @@ export function DeviceTypeManager() {
       ...prev,
       commands: prev.commands.map((cmd, i) =>
         i === index ? { ...cmd, [field]: value } : cmd
+      ),
+    }));
+  };
+
+  /** 토글 쌍의 공유 필드(label, stateKey) 변경 시 두 명령어 동시 업데이트 */
+  const updateTogglePairShared = (pairIndices: number[], field: "label" | "stateKey", value: string) => {
+    setForm((prev) => ({
+      ...prev,
+      commands: prev.commands.map((cmd, i) =>
+        pairIndices.includes(i) ? { ...cmd, [field]: value } : cmd
       ),
     }));
   };
@@ -293,186 +330,367 @@ export function DeviceTypeManager() {
                 <p className="text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground">
                   명령어 목록
                 </p>
-                <button
-                  type="button"
-                  onClick={addCommand}
-                  className="rounded-lg bg-muted px-3 py-1 text-xs font-bold text-primary
-                    transition-colors hover:bg-secondary/30"
-                >
-                  + 명령 추가
-                </button>
+                <div className="flex gap-2">
+                  <button
+                    type="button"
+                    onClick={addTogglePair}
+                    className="rounded-lg bg-accent/10 border border-accent/30 px-3 py-1 text-xs font-bold text-accent
+                      transition-colors hover:bg-accent/20"
+                  >
+                    + 토글 추가
+                  </button>
+                  <button
+                    type="button"
+                    onClick={addCommand}
+                    className="rounded-lg bg-muted px-3 py-1 text-xs font-bold text-primary
+                      transition-colors hover:bg-secondary/30"
+                  >
+                    + 명령 추가
+                  </button>
+                </div>
+              </div>
+
+              {/* 안내 문구 */}
+              <div className="rounded-lg border border-accent/20 bg-accent/5 px-4 py-3 text-[11px] leading-relaxed text-muted-foreground">
+                <p className="font-bold text-primary mb-1">💡 명령어 등록 가이드</p>
+                <ul className="list-disc list-inside space-y-0.5">
+                  <li><strong>토글</strong>: ON/OFF 쌍으로 등록되며, 하나의 스위치로 표시됩니다.</li>
+                  <li><strong>명령</strong>: 슬라이더/선택/버튼 등 개별 제어를 추가합니다.</li>
+                  <li><strong>상태 키</strong>가 같은 명령어끼리 하나의 제어로 묶입니다.</li>
+                </ul>
               </div>
 
               {form.commands.length === 0 && (
                 <p className="rounded-lg border border-dashed border-border p-4 text-center text-xs text-muted-foreground">
-                  명령어가 없습니다. &quot;+ 명령 추가&quot; 버튼을 눌러 추가하세요.
+                  명령어가 없습니다. 위의 버튼을 눌러 추가하세요.
                 </p>
               )}
 
-              {form.commands.map((cmd, idx) => (
-                <motion.div
-                  key={idx}
-                  initial={{ opacity: 0, y: 8 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="rounded-xl border border-border bg-background p-4 space-y-3"
-                >
-                  <div className="flex items-center justify-between">
-                    <p className="text-xs font-bold text-muted-foreground">명령 {idx + 1}</p>
-                    <button
-                      type="button"
-                      onClick={() => removeCommand(idx)}
-                      className="rounded-lg px-2 py-0.5 text-xs font-bold text-destructive
-                        transition-colors hover:bg-destructive/10"
+              {(() => {
+                const rendered = new Set<number>();
+                return form.commands.map((cmd, idx) => {
+                  if (rendered.has(idx)) return null;
+
+                  // ── 토글 쌍 통합 카드 ──
+                  if (cmd.uiType === "toggle") {
+                    const pairIdx = form.commands.findIndex(
+                      (c, i) => i !== idx && c.uiType === "toggle" && !rendered.has(i)
+                        && ((c.stateKey === cmd.stateKey && cmd.stateKey) || (!c.stateKey && !cmd.stateKey))
+                    );
+                    if (pairIdx >= 0) {
+                      rendered.add(idx);
+                      rendered.add(pairIdx);
+                      const onIdx = cmd.stateValue === true || cmd.stateValue === "true" || cmd.stateValue === "ON" ? idx : pairIdx;
+                      const offIdx = onIdx === idx ? pairIdx : idx;
+                      const onCmd = form.commands[onIdx];
+                      const offCmd = form.commands[offIdx];
+                      const parseStateVal = (v: string) => {
+                        if (v === "true") return true;
+                        if (v === "false") return false;
+                        if (!isNaN(Number(v)) && v.trim() !== "") return Number(v);
+                        return v;
+                      };
+
+                      return (
+                        <motion.div
+                          key={`toggle-${idx}`}
+                          initial={{ opacity: 0, y: 8 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          className="rounded-xl border border-accent/30 bg-accent/5 p-4 space-y-4 border-l-4 border-l-accent"
+                        >
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                              <span className="rounded-full bg-accent/20 px-2 py-0.5 text-[10px] font-bold text-accent uppercase tracking-wider">
+                                토글
+                              </span>
+                              <p className="text-xs font-bold text-muted-foreground">스위치 제어</p>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => removeCommand(idx)}
+                              className="rounded-lg px-2 py-0.5 text-xs font-bold text-destructive
+                                transition-colors hover:bg-destructive/10"
+                            >
+                              ✕ 삭제
+                            </button>
+                          </div>
+
+                          {/* 공유 필드: 이름 + 상태 키 */}
+                          <div className="grid grid-cols-2 gap-3">
+                            <div className="space-y-1">
+                              <label className="text-[10px] font-semibold text-muted-foreground uppercase">
+                                이름 <span className="text-destructive">*</span>
+                              </label>
+                              <input
+                                type="text"
+                                placeholder="ex: 전원, 잠금, 동작"
+                                value={onCmd.label}
+                                onChange={(e) => updateTogglePairShared([onIdx, offIdx], "label", e.target.value)}
+                                className="w-full rounded-lg border border-border bg-surface px-2 py-1.5 text-sm
+                                  text-primary placeholder:text-muted-foreground/40 focus:outline-none focus:ring-1 focus:ring-ring/40"
+                              />
+                              <p className="text-[9px] text-muted-foreground/60">스위치 옆에 표시되는 이름</p>
+                            </div>
+                            <div className="space-y-1">
+                              <label className="text-[10px] font-semibold text-muted-foreground uppercase">
+                                상태 키 <span className="text-destructive">*</span>
+                              </label>
+                              <input
+                                type="text"
+                                placeholder="ex: power, locked"
+                                value={onCmd.stateKey}
+                                onChange={(e) => updateTogglePairShared([onIdx, offIdx], "stateKey", e.target.value)}
+                                className="w-full rounded-lg border border-border bg-surface px-2 py-1.5 text-sm font-mono
+                                  text-primary placeholder:text-muted-foreground/40 focus:outline-none focus:ring-1 focus:ring-ring/40"
+                              />
+                              <p className="text-[9px] text-muted-foreground/60">기기 상태에서 제어할 항목</p>
+                            </div>
+                          </div>
+
+                          {/* ON/OFF 양쪽 */}
+                          <div className="grid grid-cols-2 gap-3">
+                            <div className="rounded-lg border border-accent/20 bg-background p-3 space-y-2">
+                              <p className="text-[10px] font-bold text-accent uppercase tracking-wider">스위치 ON일 때</p>
+                              <div className="space-y-1">
+                                <label className="text-[9px] font-semibold text-muted-foreground">명령어</label>
+                                <input
+                                  type="text"
+                                  placeholder="ex: ON, UNLOCK"
+                                  value={onCmd.command}
+                                  onChange={(e) => updateCommand(onIdx, "command", e.target.value.toUpperCase())}
+                                  className="w-full rounded-lg border border-border bg-surface px-2 py-1.5 text-sm font-mono
+                                    text-primary placeholder:text-muted-foreground/40 focus:outline-none focus:ring-1 focus:ring-ring/40"
+                                />
+                              </div>
+                              <div className="space-y-1">
+                                <label className="text-[9px] font-semibold text-muted-foreground">상태 값</label>
+                                <input
+                                  type="text"
+                                  placeholder="ex: true"
+                                  value={onCmd.stateValue != null ? String(onCmd.stateValue) : ""}
+                                  onChange={(e) => updateCommand(onIdx, "stateValue", parseStateVal(e.target.value))}
+                                  className="w-full rounded-lg border border-border bg-surface px-2 py-1.5 text-sm font-mono
+                                    text-primary placeholder:text-muted-foreground/40 focus:outline-none focus:ring-1 focus:ring-ring/40"
+                                />
+                              </div>
+                            </div>
+                            <div className="rounded-lg border border-border bg-background p-3 space-y-2">
+                              <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">스위치 OFF일 때</p>
+                              <div className="space-y-1">
+                                <label className="text-[9px] font-semibold text-muted-foreground">명령어</label>
+                                <input
+                                  type="text"
+                                  placeholder="ex: OFF, LOCK"
+                                  value={offCmd.command}
+                                  onChange={(e) => updateCommand(offIdx, "command", e.target.value.toUpperCase())}
+                                  className="w-full rounded-lg border border-border bg-surface px-2 py-1.5 text-sm font-mono
+                                    text-primary placeholder:text-muted-foreground/40 focus:outline-none focus:ring-1 focus:ring-ring/40"
+                                />
+                              </div>
+                              <div className="space-y-1">
+                                <label className="text-[9px] font-semibold text-muted-foreground">상태 값</label>
+                                <input
+                                  type="text"
+                                  placeholder="ex: false"
+                                  value={offCmd.stateValue != null ? String(offCmd.stateValue) : ""}
+                                  onChange={(e) => updateCommand(offIdx, "stateValue", parseStateVal(e.target.value))}
+                                  className="w-full rounded-lg border border-border bg-surface px-2 py-1.5 text-sm font-mono
+                                    text-primary placeholder:text-muted-foreground/40 focus:outline-none focus:ring-1 focus:ring-ring/40"
+                                />
+                              </div>
+                            </div>
+                          </div>
+                        </motion.div>
+                      );
+                    }
+                    // 홀수 토글 (쌍 없음) — fallback
+                    rendered.add(idx);
+                  }
+
+                  // ── 개별 명령 카드 (slider / select / button) ──
+                  rendered.add(idx);
+                  // stateKey 기반 그룹 색상
+                  const nonToggleCmds = form.commands.filter((c) => c.uiType !== "toggle");
+                  const stateKeys = [...new Set(nonToggleCmds.map((c) => c.stateKey).filter(Boolean))];
+                  const colorIndex = cmd.stateKey ? stateKeys.indexOf(cmd.stateKey) : -1;
+                  const groupColors = [
+                    "border-l-blue-500", "border-l-amber-500", "border-l-rose-500",
+                    "border-l-violet-500", "border-l-cyan-500", "border-l-emerald-500",
+                  ];
+                  const groupColor = colorIndex >= 0 ? groupColors[colorIndex % groupColors.length] : "border-l-border";
+                  const sameKeyCount = nonToggleCmds.filter((c) => c.stateKey && c.stateKey === cmd.stateKey).length;
+
+                  return (
+                    <motion.div
+                      key={idx}
+                      initial={{ opacity: 0, y: 8 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className={`rounded-xl border border-border bg-background p-4 space-y-3 border-l-4 ${groupColor}`}
                     >
-                      ✕ 삭제
-                    </button>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
-                    <div className="space-y-1">
-                      <label className="text-[10px] font-semibold text-muted-foreground uppercase">
-                        명령어 <span className="text-destructive">*</span>
-                      </label>
-                      <input
-                        type="text"
-                        placeholder="ex: ON, RESTART"
-                        value={cmd.command}
-                        onChange={(e) => updateCommand(idx, "command", e.target.value.toUpperCase())}
-                        className="w-full rounded-lg border border-border bg-surface px-2 py-1.5 text-sm font-mono
-                          text-primary placeholder:text-muted-foreground/40 focus:outline-none focus:ring-1 focus:ring-ring/40"
-                      />
-                    </div>
-
-                    <div className="space-y-1">
-                      <label className="text-[10px] font-semibold text-muted-foreground uppercase">
-                        라벨 <span className="text-destructive">*</span>
-                      </label>
-                      <input
-                        type="text"
-                        placeholder="ex: 전원 켜기, 재시작"
-                        value={cmd.label}
-                        onChange={(e) => updateCommand(idx, "label", e.target.value)}
-                        className="w-full rounded-lg border border-border bg-surface px-2 py-1.5 text-sm
-                          text-primary placeholder:text-muted-foreground/40 focus:outline-none focus:ring-1 focus:ring-ring/40"
-                      />
-                    </div>
-
-                    <div className="space-y-1">
-                      <label className="text-[10px] font-semibold text-muted-foreground uppercase">
-                        UI 타입
-                      </label>
-                      <select
-                        value={cmd.uiType}
-                        onChange={(e) => updateCommand(idx, "uiType", e.target.value)}
-                        className="w-full rounded-lg border border-border bg-surface px-2 py-1.5 text-sm
-                          text-primary focus:outline-none focus:ring-1 focus:ring-ring/40"
-                      >
-                        {UI_TYPE_OPTIONS.map((opt) => (
-                          <option key={opt.value} value={opt.value}>{opt.label}</option>
-                        ))}
-                      </select>
-                    </div>
-
-                    <div className="space-y-1">
-                      <label className="text-[10px] font-semibold text-muted-foreground uppercase">
-                        상태 키 <span className="text-destructive">*</span>
-                      </label>
-                      <input
-                        type="text"
-                        placeholder="ex: power, mode"
-                        value={cmd.stateKey}
-                        onChange={(e) => updateCommand(idx, "stateKey", e.target.value)}
-                        className="w-full rounded-lg border border-border bg-surface px-2 py-1.5 text-sm font-mono
-                          text-primary placeholder:text-muted-foreground/40 focus:outline-none focus:ring-1 focus:ring-ring/40"
-                      />
-                    </div>
-                  </div>
-
-                  {/* UI 타입별 추가 필드 */}
-                  {(cmd.uiType === "toggle" || cmd.uiType === "button") && (
-                    <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
-                      <div className="space-y-1">
-                        <label className="text-[10px] font-semibold text-muted-foreground uppercase">
-                          상태 값
-                        </label>
-                        <input
-                          type="text"
-                          placeholder='ex: ON 또는 true'
-                          value={cmd.stateValue != null ? String(cmd.stateValue) : ""}
-                          onChange={(e) => {
-                            const v = e.target.value;
-                            if (v === "true") updateCommand(idx, "stateValue", true);
-                            else if (v === "false") updateCommand(idx, "stateValue", false);
-                            else if (!isNaN(Number(v)) && v.trim() !== "") updateCommand(idx, "stateValue", Number(v));
-                            else updateCommand(idx, "stateValue", v);
-                          }}
-                          className="w-full rounded-lg border border-border bg-surface px-2 py-1.5 text-sm font-mono
-                            text-primary placeholder:text-muted-foreground/40 focus:outline-none focus:ring-1 focus:ring-ring/40"
-                        />
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <p className="text-xs font-bold text-muted-foreground">명령</p>
+                          {cmd.stateKey && sameKeyCount > 1 && (
+                            <span className="rounded-full bg-muted/30 px-2 py-0.5 text-[9px] font-mono font-bold text-muted-foreground">
+                              {cmd.stateKey} 그룹
+                            </span>
+                          )}
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => removeCommand(idx)}
+                          className="rounded-lg px-2 py-0.5 text-xs font-bold text-destructive
+                            transition-colors hover:bg-destructive/10"
+                        >
+                          ✕ 삭제
+                        </button>
                       </div>
-                    </div>
-                  )}
 
-                  {cmd.uiType === "slider" && (
-                    <div className="grid grid-cols-3 gap-3">
-                      <div className="space-y-1">
-                        <label className="text-[10px] font-semibold text-muted-foreground uppercase">최소</label>
-                        <input
-                          type="number"
-                          placeholder="ex: 0"
-                          value={cmd.min ?? ""}
-                          onChange={(e) => updateCommand(idx, "min", e.target.value ? Number(e.target.value) : undefined)}
-                          className="w-full rounded-lg border border-border bg-surface px-2 py-1.5 text-sm font-mono
-                            text-primary focus:outline-none focus:ring-1 focus:ring-ring/40"
-                        />
-                      </div>
-                      <div className="space-y-1">
-                        <label className="text-[10px] font-semibold text-muted-foreground uppercase">최대</label>
-                        <input
-                          type="number"
-                          placeholder="ex: 100"
-                          value={cmd.max ?? ""}
-                          onChange={(e) => updateCommand(idx, "max", e.target.value ? Number(e.target.value) : undefined)}
-                          className="w-full rounded-lg border border-border bg-surface px-2 py-1.5 text-sm font-mono
-                            text-primary focus:outline-none focus:ring-1 focus:ring-ring/40"
-                        />
-                      </div>
-                      <div className="space-y-1">
-                        <label className="text-[10px] font-semibold text-muted-foreground uppercase">단위</label>
-                        <input
-                          type="text"
-                          placeholder="ex: ℃, %"
-                          value={cmd.unit ?? ""}
-                          onChange={(e) => updateCommand(idx, "unit", e.target.value)}
-                          className="w-full rounded-lg border border-border bg-surface px-2 py-1.5 text-sm
-                            text-primary placeholder:text-muted-foreground/40 focus:outline-none focus:ring-1 focus:ring-ring/40"
-                        />
-                      </div>
-                    </div>
-                  )}
+                      <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+                        <div className="space-y-1">
+                          <label className="text-[10px] font-semibold text-muted-foreground uppercase">
+                            명령어 <span className="text-destructive">*</span>
+                          </label>
+                          <input
+                            type="text"
+                            placeholder="ex: SET_TEMP, RESTART"
+                            value={cmd.command}
+                            onChange={(e) => updateCommand(idx, "command", e.target.value.toUpperCase())}
+                            className="w-full rounded-lg border border-border bg-surface px-2 py-1.5 text-sm font-mono
+                              text-primary placeholder:text-muted-foreground/40 focus:outline-none focus:ring-1 focus:ring-ring/40"
+                          />
+                          <p className="text-[9px] text-muted-foreground/60">IoT 기기에 전송되는 명령 코드</p>
+                        </div>
 
-                  {cmd.uiType === "select" && (
-                    <div className="space-y-1">
-                      <label className="text-[10px] font-semibold text-muted-foreground uppercase">
-                        옵션 (쉼표 구분)
-                      </label>
-                      <input
-                        type="text"
-                        placeholder="ex: COOL, HEAT, DRY, FAN"
-                        defaultValue={cmd.options?.join(", ") ?? ""}
-                        onBlur={(e) =>
-                          updateCommand(idx, "options", e.target.value.split(",").map((s) => s.trim()).filter(Boolean))
-                        }
-                        className="w-full rounded-lg border border-border bg-surface px-2 py-1.5 text-sm font-mono
-                          text-primary placeholder:text-muted-foreground/40 focus:outline-none focus:ring-1 focus:ring-ring/40"
-                      />
-                      <p className="text-[9px] text-muted-foreground/60">
-                        쉼표(,)로 항목을 구분하세요. 입력 후 바깥을 클릭하면 적용됩니다.
-                      </p>
-                    </div>
-                  )}
-                </motion.div>
-              ))}
+                        <div className="space-y-1">
+                          <label className="text-[10px] font-semibold text-muted-foreground uppercase">
+                            라벨 <span className="text-destructive">*</span>
+                          </label>
+                          <input
+                            type="text"
+                            placeholder="ex: 온도 설정, 재시작"
+                            value={cmd.label}
+                            onChange={(e) => updateCommand(idx, "label", e.target.value)}
+                            className="w-full rounded-lg border border-border bg-surface px-2 py-1.5 text-sm
+                              text-primary placeholder:text-muted-foreground/40 focus:outline-none focus:ring-1 focus:ring-ring/40"
+                          />
+                          <p className="text-[9px] text-muted-foreground/60">사용자 화면에 표시되는 이름</p>
+                        </div>
+
+                        <div className="space-y-1">
+                          <label className="text-[10px] font-semibold text-muted-foreground uppercase">
+                            UI 타입
+                          </label>
+                          <select
+                            value={cmd.uiType}
+                            onChange={(e) => updateCommand(idx, "uiType", e.target.value)}
+                            className="w-full rounded-lg border border-border bg-surface px-2 py-1.5 text-sm
+                              text-primary focus:outline-none focus:ring-1 focus:ring-ring/40"
+                          >
+                            {UI_TYPE_OPTIONS.map((opt) => (
+                              <option key={opt.value} value={opt.value}>{opt.label}</option>
+                            ))}
+                          </select>
+                        </div>
+
+                        <div className="space-y-1">
+                          <label className="text-[10px] font-semibold text-muted-foreground uppercase">
+                            상태 키 <span className="text-destructive">*</span>
+                          </label>
+                          <input
+                            type="text"
+                            placeholder="ex: temperature, mode"
+                            value={cmd.stateKey}
+                            onChange={(e) => updateCommand(idx, "stateKey", e.target.value)}
+                            className="w-full rounded-lg border border-border bg-surface px-2 py-1.5 text-sm font-mono
+                              text-primary placeholder:text-muted-foreground/40 focus:outline-none focus:ring-1 focus:ring-ring/40"
+                          />
+                          <p className="text-[9px] text-muted-foreground/60">같은 키 = 하나의 제어로 묶임</p>
+                        </div>
+                      </div>
+
+                      {/* UI 타입별 추가 필드 */}
+                      {cmd.uiType === "button" && (
+                        <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+                          <div className="space-y-1">
+                            <label className="text-[10px] font-semibold text-muted-foreground uppercase">상태 값</label>
+                            <input
+                              type="text"
+                              placeholder='ex: START 또는 true'
+                              value={cmd.stateValue != null ? String(cmd.stateValue) : ""}
+                              onChange={(e) => {
+                                const v = e.target.value;
+                                if (v === "true") updateCommand(idx, "stateValue", true);
+                                else if (v === "false") updateCommand(idx, "stateValue", false);
+                                else if (!isNaN(Number(v)) && v.trim() !== "") updateCommand(idx, "stateValue", Number(v));
+                                else updateCommand(idx, "stateValue", v);
+                              }}
+                              className="w-full rounded-lg border border-border bg-surface px-2 py-1.5 text-sm font-mono
+                                text-primary placeholder:text-muted-foreground/40 focus:outline-none focus:ring-1 focus:ring-ring/40"
+                            />
+                            <p className="text-[9px] text-muted-foreground/60">명령 실행 시 상태 키에 저장되는 값</p>
+                          </div>
+                        </div>
+                      )}
+
+                      {cmd.uiType === "slider" && (
+                        <div className="grid grid-cols-3 gap-3">
+                          <div className="space-y-1">
+                            <label className="text-[10px] font-semibold text-muted-foreground uppercase">최소</label>
+                            <input
+                              type="number"
+                              placeholder="ex: 0"
+                              value={cmd.min ?? ""}
+                              onChange={(e) => updateCommand(idx, "min", e.target.value ? Number(e.target.value) : undefined)}
+                              className="w-full rounded-lg border border-border bg-surface px-2 py-1.5 text-sm font-mono
+                                text-primary focus:outline-none focus:ring-1 focus:ring-ring/40"
+                            />
+                          </div>
+                          <div className="space-y-1">
+                            <label className="text-[10px] font-semibold text-muted-foreground uppercase">최대</label>
+                            <input
+                              type="number"
+                              placeholder="ex: 100"
+                              value={cmd.max ?? ""}
+                              onChange={(e) => updateCommand(idx, "max", e.target.value ? Number(e.target.value) : undefined)}
+                              className="w-full rounded-lg border border-border bg-surface px-2 py-1.5 text-sm font-mono
+                                text-primary focus:outline-none focus:ring-1 focus:ring-ring/40"
+                            />
+                          </div>
+                          <div className="space-y-1">
+                            <label className="text-[10px] font-semibold text-muted-foreground uppercase">단위</label>
+                            <input
+                              type="text"
+                              placeholder="ex: ℃, %"
+                              value={cmd.unit ?? ""}
+                              onChange={(e) => updateCommand(idx, "unit", e.target.value)}
+                              className="w-full rounded-lg border border-border bg-surface px-2 py-1.5 text-sm
+                                text-primary placeholder:text-muted-foreground/40 focus:outline-none focus:ring-1 focus:ring-ring/40"
+                            />
+                          </div>
+                        </div>
+                      )}
+
+                      {cmd.uiType === "select" && (
+                        <div className="space-y-1">
+                          <label className="text-[10px] font-semibold text-muted-foreground uppercase">옵션 (쉴표 구분)</label>
+                          <input
+                            type="text"
+                            placeholder="ex: COOL, HEAT, DRY, FAN"
+                            defaultValue={cmd.options?.join(", ") ?? ""}
+                            onBlur={(e) =>
+                              updateCommand(idx, "options", e.target.value.split(",").map((s) => s.trim()).filter(Boolean))
+                            }
+                            className="w-full rounded-lg border border-border bg-surface px-2 py-1.5 text-sm font-mono
+                              text-primary placeholder:text-muted-foreground/40 focus:outline-none focus:ring-1 focus:ring-ring/40"
+                          />
+                          <p className="text-[9px] text-muted-foreground/60">쉴표(,)로 구분. 입력 후 바깥을 클릭하면 적용.</p>
+                        </div>
+                      )}
+                    </motion.div>
+                  );
+                });
+              })()}
             </div>
 
             <div className="flex gap-3">
