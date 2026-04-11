@@ -9,25 +9,18 @@ export function Footer() {
 
   const footerLinks = {
     explore: [
-      { name: "Living Spaces", path: "/rooms" },
+      { name: "Living Space", path: "/rooms" },
+      { name: "Experience", path: "/experience" },
+      { name: "Stay", path: "/facilities" },
       { name: "Community", path: "/community" },
-      { name: "My VOC", path: "/profile/vocs" },
-      { name: "IoT Guide", path: "/rooms" },
     ],
-    community: [
-      { name: "Board", path: "/community" },
-      { name: "Event", path: "/" },
-      { name: "Notice", path: "/" },
-      { name: "My VOC", path: "/profile/vocs" },
-    ],
-    support: [
-      { name: "Notification", path: "/notifications" },
+    myMoment: [
       { name: "Profile", path: "/profile" },
-      { name: "Device", path: "/" },
-      { name: "Contract", path: "/" },
-      { name: "Reservation", path: "/" },
-      { name: "Concierge", path: "/profile/vocs" },
-      { name: "Terms & Privacy", path: "/community" },
+      { name: "Contract", path: "/my-contracts" },
+      { name: "Reservation", path: "/facilities" },
+      { name: "Device", path: "/my-devices" },
+      { name: "VOC", path: "/profile/vocs" },
+      { name: "Notification", path: "/notifications" },
     ],
   };
 
@@ -105,10 +98,10 @@ export function Footer() {
           </div>
           <div>
             <h5 className="mb-6 text-[13px] font-black tracking-[0.3em] text-balance text-primary/50 uppercase">
-              COMMUNITY / 02
+              MY MOMENT / 02
             </h5>
             <ul className="space-y-4">
-              {footerLinks.community.map((link) => (
+              {footerLinks.myMoment.map((link) => (
                 <li key={`${link.path}-${link.name}`}>
                   <Link
                     href={link.path}
@@ -120,24 +113,7 @@ export function Footer() {
               ))}
             </ul>
           </div>
-          <div>
-            <h5 className="mb-6 text-[13px] font-black tracking-[0.3em] text-balance text-primary/50 uppercase">
-              SUPPORT / 03
-            </h5>
-            <ul className="space-y-4">
-              {footerLinks.support.map((link) => (
-                <li key={`${link.path}-${link.name}`}>
-                  <Link
-                    href={link.path}
-                    className="text-sm font-black tracking-widest uppercase transition-colors hover:text-secondary"
-                  >
-                    {link.name}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-          <div className="col-span-2 flex flex-col items-end justify-end lg:col-span-1">
+          <div className="col-span-2 flex flex-col items-end justify-end md:col-span-1 md:col-start-3 lg:col-start-4">
             <p className="text-right text-[11px] font-black uppercase tracking-[0.4em] md:text-[14px] md:tracking-[0.5em]">
               SMART LIVING
               <br />
@@ -151,7 +127,7 @@ export function Footer() {
             © {currentYear} COKKIRI CO-LIVING PLATFORM. ALL RIGHTS RESERVED.
           </p>
           <div className="flex gap-8 text-[10px] font-black tracking-widest uppercase opacity-40">
-            <span>DESIGN BY OLHA</span>
+            <span>DESIGN BY KANG, YUN</span>
             <span>POWERED BY AI</span>
           </div>
         </div>

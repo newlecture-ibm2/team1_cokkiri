@@ -9,7 +9,11 @@ import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { useAuthStore } from "@/store/useAuthStore";
 
-type NavChild = { name: string; path: string };
+type NavChild = {
+  name: string;
+  path?: string;
+  children?: { name: string; path: string }[];
+};
 
 type NavLinkItem = { name: string; path: string };
 type NavMenuItem = { name: string; children: NavChild[] };
@@ -21,24 +25,33 @@ const navItems: NavItem[] = [
   {
     name: "Space",
     children: [
-      { name: "Living", path: "/rooms" },
-      { name: "Experience", path: "/experience" },
-      { name: "Stay", path: "/facilities" },
+      { name: "일상의 집", path: "/rooms" },
+      { name: "느낌의 여정", path: "/experience" },
+      { name: "쉼의 자리", path: "/facilities" },
     ],
   },
-  {
-    name: "Community",
-    children: [{ name: "Board", path: "/community" }],
-  },
+  { name: "Community", path: "/community" },
   {
     name: "My",
     children: [
-      { name: "Notification", path: "/notifications" },
-      { name: "Profile", path: "/profile" },
-      { name: "My Reservations", path: "/my-history/reservation" },
-      { name: "My VOC", path: "/profile/vocs" },
-      { name: "My Contracts", path: "/my-contracts" },
-      { name: "Logout", path: "#" },
+      { name: "프로필", path: "/profile" },
+      {
+        name: "나의 히스토리",
+        children: [
+          { name: "계약 내역", path: "/my-contracts" },
+          { name: "예약 내역", path: "/my-history/reservation" },
+        ],
+      },
+      {
+        name: "나의 커뮤니티",
+        children: [
+          { name: "나의 민원", path: "/my-vocs" },
+          { name: "나의 게시글", path: "/my-posts" },
+        ],
+      },
+      { name: "나의 기기", path: "/my-devices" },
+      { name: "알림", path: "/notifications" },
+      { name: "로그아웃", path: "#" },
     ],
   },
 ];
@@ -49,7 +62,11 @@ function pathActive(pathname: string, path: string) {
 }
 
 function childListActive(pathname: string, children: NavChild[]) {
-  return children.some((c) => pathActive(pathname, c.path));
+  return children.some((c) => {
+    if (c.path && pathActive(pathname, c.path)) return true;
+    if (c.children && c.children.some((sub) => pathActive(pathname, sub.path))) return true;
+    return false;
+  });
 }
 
 function itemActive(pathname: string, item: NavMenuItem) {
@@ -112,6 +129,7 @@ export function Header() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [openMobileSection, setOpenMobileSection] = useState<string | null>(null);
   const [desktopOpenMenu, setDesktopOpenMenu] = useState<string | null>(null);
+  const [desktopOpenSubMenu, setDesktopOpenSubMenu] = useState<string | null>(null);
   const { scrollY } = useScroll();
 
   useMotionValueEvent(scrollY, "change", (latest) => {
@@ -122,6 +140,7 @@ export function Header() {
     setIsMobileMenuOpen(false);
     setOpenMobileSection(null);
     setDesktopOpenMenu(null);
+    setDesktopOpenSubMenu(null);
   }, [pathname]);
 
   useEffect(() => {
@@ -137,8 +156,8 @@ export function Header() {
 
   const linkClass = (active: boolean) =>
     cn(
-      "text-base font-black tracking-widest text-primary uppercase transition-all duration-500 hover:opacity-100",
-      active ? "underline underline-offset-8 opacity-100" : "opacity-40",
+      "text-base font-black tracking-widest text-primary uppercase transition-all duration-500 hover:underline hover:underline-offset-8",
+      active ? "underline underline-offset-8 opacity-100" : "opacity-100",
     );
 
   /** `compact`: My 메뉴 등 항목이 많을 때 드롭다운 글자만 살짝 축소 */
@@ -191,8 +210,8 @@ export function Header() {
                     >
                       <span
                         className={cn(
-                          "inline-flex cursor-default items-center gap-1 text-base font-black tracking-widest text-primary uppercase transition-all duration-500",
-                          active || menuOpen ? "opacity-100" : "opacity-40 hover:opacity-100",
+                          "inline-flex cursor-default items-center gap-1 text-base font-black tracking-widest text-primary uppercase transition-all duration-500 hover:underline hover:underline-offset-8",
+                          active || menuOpen ? "underline underline-offset-8 opacity-100" : "opacity-100",
                         )}
                         tabIndex={0}
                         aria-haspopup="menu"
@@ -219,37 +238,77 @@ export function Header() {
                             animate="show"
                             exit="exit"
                           >
-                            {/*
-                              트리거와 패널 사이 margin 대신 상단 padding으로 간격을 주면,
-                              그 영역도 이 노드의 히트 박스에 포함되어 마우스 이동 시 mouseleave가 끊기지 않음.
-                            */}
                             <motion.div
                               className={cn(
-                                "flex w-[10.5rem] flex-col gap-1.5 rounded-3xl border-2 border-stone-200/70 bg-stone-50/98 p-3 shadow-md backdrop-blur-md md:w-44 md:gap-2 md:p-3.5 dark:border-stone-600/50 dark:bg-stone-900/95",
+                                "flex w-[10.5rem] flex-col gap-1.5 rounded-3xl border-2 border-stone-200/70 bg-stone-50/98 p-3 shadow-md backdrop-blur-md md:w-52 md:gap-2 md:p-3.5 dark:border-stone-600/50 dark:bg-stone-900/95",
                               )}
                               variants={dropdownPanelShellVariants}
                             >
                               {item.children.map((child) => (
-                                <motion.div key={child.path} variants={dropdownLinkVariants} className="w-full">
-                                  <Link
-                                    href={child.path}
-                                    onClick={
-                                      child.name === "Logout"
-                                        ? async (e) => {
+                                <motion.div
+                                  key={child.name}
+                                  variants={dropdownLinkVariants}
+                                  className="group relative w-full"
+                                  onMouseEnter={() => child.children && setDesktopOpenSubMenu(child.name)}
+                                  onMouseLeave={() => child.children && setDesktopOpenSubMenu(null)}
+                                >
+                                  {child.children ? (
+                                    <>
+                                      <div
+                                        className={cn(
+                                          subLinkClass(false, false),
+                                          "justify-between px-3 text-primary/70 group-hover:text-primary group-hover:bg-primary/5 cursor-default"
+                                        )}
+                                      >
+                                        <span className="flex-1 text-center pl-4">{child.name}</span>
+                                        <ChevronDown className="size-3 -rotate-90 opacity-90 transition-transform group-hover:opacity-100" />
+                                      </div>
+                                      <AnimatePresence>
+                                        {desktopOpenSubMenu === child.name && (
+                                          <motion.div
+                                            initial={{ opacity: 0, x: -10 }}
+                                            animate={{ opacity: 1, x: 0 }}
+                                            exit={{ opacity: 0, x: -10 }}
+                                            transition={{ duration: 0.2, ease: "easeOut" }}
+                                            className="absolute left-[calc(100%+0.5rem)] top-0 z-[120] flex w-48 flex-col gap-1.5 rounded-3xl border-2 border-stone-200/70 bg-stone-50/98 p-3 shadow-xl backdrop-blur-md dark:border-stone-600/50 dark:bg-stone-900/95"
+                                          >
+                                            <div className="flex flex-col gap-1">
+                                              {child.children.map((sub) => (
+                                                <Link
+                                                  key={sub.name}
+                                                  href={sub.path}
+                                                  className={subLinkClass(pathActive(pathname, sub.path), false)}
+                                                  role="menuitem"
+                                                >
+                                                  {sub.name}
+                                                </Link>
+                                              ))}
+                                            </div>
+                                          </motion.div>
+                                        )}
+                                      </AnimatePresence>
+                                    </>
+                                  ) : child.path ? (
+                                    <Link
+                                      href={child.path}
+                                      onClick={
+                                        child.name === "Logout"
+                                          ? async (e) => {
                                             e.preventDefault();
                                             await logout();
                                             setDesktopOpenMenu(null);
                                           }
-                                        : undefined
-                                    }
-                                    className={subLinkClass(
-                                      pathActive(pathname, child.path),
-                                      item.name === "My",
-                                    )}
-                                    role="menuitem"
-                                  >
-                                    {child.name}
-                                  </Link>
+                                          : undefined
+                                      }
+                                      className={subLinkClass(
+                                        pathActive(pathname, child.path),
+                                        false,
+                                      )}
+                                      role="menuitem"
+                                    >
+                                      {child.name}
+                                    </Link>
+                                  ) : null}
                                 </motion.div>
                               ))}
                             </motion.div>
@@ -407,18 +466,62 @@ export function Header() {
                             >
                               <ul className="space-y-1.5 pb-5 pl-2">
                                 {item.children.map((child) => {
-                                  const active = pathActive(pathname, child.path);
+                                  if (child.children) {
+                                    const subOpen = openMobileSection === `sub-${child.name}`;
+                                    return (
+                                      <li key={child.name} className="py-1">
+                                        <button
+                                          type="button"
+                                          onClick={() => setOpenMobileSection(subOpen ? null : `sub-${child.name}`)}
+                                          className="flex w-full items-center justify-between px-5 py-3 text-sm font-black text-primary/40 uppercase tracking-[0.18em]"
+                                        >
+                                          {child.name}
+                                          <ChevronDown className={cn("size-4 transition-transform", subOpen && "rotate-180")} />
+                                        </button>
+                                        <AnimatePresence>
+                                          {subOpen && (
+                                            <motion.div
+                                              initial={{ height: 0, opacity: 0 }}
+                                              animate={{ height: "auto", opacity: 1 }}
+                                              exit={{ height: 0, opacity: 0 }}
+                                              className="overflow-hidden bg-primary/5"
+                                            >
+                                              <ul className="space-y-1 py-2">
+                                                {child.children.map((sub) => (
+                                                  <li key={sub.path}>
+                                                    <Link
+                                                      href={sub.path}
+                                                      onClick={() => setIsMobileMenuOpen(false)}
+                                                      className={cn(
+                                                        "block py-2.5 pl-10 text-[13px] font-black uppercase tracking-[0.15em]",
+                                                        pathActive(pathname, sub.path)
+                                                          ? "text-primary"
+                                                          : "text-primary/50"
+                                                      )}
+                                                    >
+                                                      {sub.name}
+                                                    </Link>
+                                                  </li>
+                                                ))}
+                                              </ul>
+                                            </motion.div>
+                                          )}
+                                        </AnimatePresence>
+                                      </li>
+                                    );
+                                  }
+                                  const active = child.path ? pathActive(pathname, child.path) : false;
                                   return (
-                                    <li key={child.path}>
+                                    <li key={child.path || child.name}>
                                       <Link
-                                        href={child.path}
+                                        href={child.path || "#"}
                                         onClick={
                                           child.name === "Logout"
                                             ? async (e) => {
-                                                e.preventDefault();
-                                                await logout();
-                                                setIsMobileMenuOpen(false);
-                                              }
+                                              e.preventDefault();
+                                              await logout();
+                                              setIsMobileMenuOpen(false);
+                                            }
                                             : () => setIsMobileMenuOpen(false)
                                         }
                                         className={cn(
