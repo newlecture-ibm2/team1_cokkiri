@@ -10,7 +10,7 @@ const UI_TYPE_OPTIONS = [
   { value: "toggle", label: "토글 (ON/OFF)" },
   { value: "slider", label: "슬라이더 (밝기/온도)" },
   { value: "select", label: "선택 (모드)" },
-  { value: "button", label: "버튼 (시작/정지)" },
+  { value: "button", label: "버튼 (시작/정지/재시작)" },
 ];
 
 const EMPTY_COMMAND: DeviceCommand = {
@@ -263,7 +263,7 @@ export function DeviceTypeManager() {
                 <input
                   id="dt-code"
                   type="text"
-                  placeholder="예: AIR_CONDITIONER"
+                  placeholder="ex: AIR_CONDITIONER"
                   value={form.code}
                   onChange={(e) => setForm({ ...form, code: e.target.value })}
                   className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm font-mono
@@ -278,7 +278,7 @@ export function DeviceTypeManager() {
                 <input
                   id="dt-name"
                   type="text"
-                  placeholder="예: 에어컨"
+                  placeholder="ex: 에어컨"
                   value={form.name}
                   onChange={(e) => setForm({ ...form, name: e.target.value })}
                   className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm
@@ -335,7 +335,7 @@ export function DeviceTypeManager() {
                       </label>
                       <input
                         type="text"
-                        placeholder="ON"
+                        placeholder="ex: ON, RESTART"
                         value={cmd.command}
                         onChange={(e) => updateCommand(idx, "command", e.target.value.toUpperCase())}
                         className="w-full rounded-lg border border-border bg-surface px-2 py-1.5 text-sm font-mono
@@ -349,7 +349,7 @@ export function DeviceTypeManager() {
                       </label>
                       <input
                         type="text"
-                        placeholder="전원 켜기"
+                        placeholder="ex: 전원 켜기, 재시작"
                         value={cmd.label}
                         onChange={(e) => updateCommand(idx, "label", e.target.value)}
                         className="w-full rounded-lg border border-border bg-surface px-2 py-1.5 text-sm
@@ -379,7 +379,7 @@ export function DeviceTypeManager() {
                       </label>
                       <input
                         type="text"
-                        placeholder="power"
+                        placeholder="ex: power, mode"
                         value={cmd.stateKey}
                         onChange={(e) => updateCommand(idx, "stateKey", e.target.value)}
                         className="w-full rounded-lg border border-border bg-surface px-2 py-1.5 text-sm font-mono
@@ -397,7 +397,7 @@ export function DeviceTypeManager() {
                         </label>
                         <input
                           type="text"
-                          placeholder='예: ON 또는 true'
+                          placeholder='ex: ON 또는 true'
                           value={cmd.stateValue != null ? String(cmd.stateValue) : ""}
                           onChange={(e) => {
                             const v = e.target.value;
@@ -419,7 +419,7 @@ export function DeviceTypeManager() {
                         <label className="text-[10px] font-semibold text-muted-foreground uppercase">최소</label>
                         <input
                           type="number"
-                          placeholder="0"
+                          placeholder="ex: 0"
                           value={cmd.min ?? ""}
                           onChange={(e) => updateCommand(idx, "min", e.target.value ? Number(e.target.value) : undefined)}
                           className="w-full rounded-lg border border-border bg-surface px-2 py-1.5 text-sm font-mono
@@ -430,7 +430,7 @@ export function DeviceTypeManager() {
                         <label className="text-[10px] font-semibold text-muted-foreground uppercase">최대</label>
                         <input
                           type="number"
-                          placeholder="100"
+                          placeholder="ex: 100"
                           value={cmd.max ?? ""}
                           onChange={(e) => updateCommand(idx, "max", e.target.value ? Number(e.target.value) : undefined)}
                           className="w-full rounded-lg border border-border bg-surface px-2 py-1.5 text-sm font-mono
@@ -441,7 +441,7 @@ export function DeviceTypeManager() {
                         <label className="text-[10px] font-semibold text-muted-foreground uppercase">단위</label>
                         <input
                           type="text"
-                          placeholder="℃"
+                          placeholder="ex: ℃, %"
                           value={cmd.unit ?? ""}
                           onChange={(e) => updateCommand(idx, "unit", e.target.value)}
                           className="w-full rounded-lg border border-border bg-surface px-2 py-1.5 text-sm
@@ -458,7 +458,7 @@ export function DeviceTypeManager() {
                       </label>
                       <input
                         type="text"
-                        placeholder="COOL,HEAT,DRY,FAN"
+                        placeholder="ex: COOL, HEAT, DRY, FAN"
                         defaultValue={cmd.options?.join(", ") ?? ""}
                         onBlur={(e) =>
                           updateCommand(idx, "options", e.target.value.split(",").map((s) => s.trim()).filter(Boolean))
