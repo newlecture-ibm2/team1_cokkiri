@@ -72,6 +72,7 @@ public class AdminMonitoringController {
             @RequestParam(required = false) Long deviceId,
             @RequestParam(required = false) Long userId,
             @RequestParam(required = false) Long spaceId,
+            @RequestParam(required = false) Long deviceTypeId,
             @RequestParam(required = false) String result,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
@@ -79,7 +80,7 @@ public class AdminMonitoringController {
             @RequestParam(defaultValue = "20") int s
     ) {
         AdminControlLogListCommand command = new AdminControlLogListCommand(
-                deviceId, userId, spaceId, result, startDate, endDate, p, s
+                deviceId, userId, spaceId, deviceTypeId, result, startDate, endDate, p, s
         );
         AdminControlLogPageResult pageResult = monitoringUseCase.getControlLogs(command);
         return ResponseEntity.ok(ApiResponse.ok(pageResult));

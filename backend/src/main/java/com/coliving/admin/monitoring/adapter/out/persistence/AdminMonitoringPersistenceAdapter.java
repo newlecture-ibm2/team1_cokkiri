@@ -140,6 +140,9 @@ public class AdminMonitoringPersistenceAdapter implements AdminMonitoringReposit
         if (command.spaceId() != null) {
             sql.append(" AND d.space_id = :spaceId");
         }
+        if (command.deviceTypeId() != null) {
+            sql.append(" AND d.device_type_id = :deviceTypeId");
+        }
         if (command.result() != null) {
             sql.append(" AND cl.result = :result");
         }
@@ -160,6 +163,9 @@ public class AdminMonitoringPersistenceAdapter implements AdminMonitoringReposit
         }
         if (command.spaceId() != null) {
             query.setParameter("spaceId", command.spaceId());
+        }
+        if (command.deviceTypeId() != null) {
+            query.setParameter("deviceTypeId", command.deviceTypeId());
         }
         if (command.result() != null) {
             query.setParameter("result", command.result());
