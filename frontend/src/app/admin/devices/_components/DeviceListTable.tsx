@@ -51,6 +51,26 @@ export function DeviceListTable() {
   const cooldownRef = useRef<Set<number>>(new Set());
   const [, forceUpdate] = useState(0);
 
+  // 정렬
+  type SortKey = "name" | "deviceTypeName" | "spaceName" | "status";
+  type SortDir = "asc" | "desc";
+  const [sortKey, setSortKey] = useState<SortKey | null>(null);
+  const [sortDir, setSortDir] = useState<SortDir>("asc");
+
+  const handleSort = (key: SortKey) => {
+    if (sortKey === key) {
+      setSortDir((prev) => (prev === "asc" ? "desc" : "asc"));
+    } else {
+      setSortKey(key);
+      setSortDir("asc");
+    }
+  };
+
+  const sortIndicator = (key: SortKey) => {
+    if (sortKey !== key) return " ↕";
+    return sortDir === "asc" ? " ▲" : " ▼";
+  };
+
   const loadDevices = useCallback(async () => {
     try {
       setLoading(true);
@@ -247,17 +267,29 @@ export function DeviceListTable() {
               <table className="w-full text-left text-sm">
                 <thead>
                   <tr className="border-b border-border bg-muted/20">
-                    <th className="px-5 py-3 font-black text-[10px] uppercase tracking-[0.3em] text-muted-foreground">
-                      기기명
+                    <th
+                      className="px-5 py-3 font-black text-[10px] uppercase tracking-[0.3em] text-muted-foreground cursor-pointer select-none hover:text-primary transition-colors"
+                      onClick={() => handleSort("name")}
+                    >
+                      기기명{sortIndicator("name")}
                     </th>
-                    <th className="px-5 py-3 font-black text-[10px] uppercase tracking-[0.3em] text-muted-foreground">
-                      종류
+                    <th
+                      className="px-5 py-3 font-black text-[10px] uppercase tracking-[0.3em] text-muted-foreground cursor-pointer select-none hover:text-primary transition-colors"
+                      onClick={() => handleSort("deviceTypeName")}
+                    >
+                      종류{sortIndicator("deviceTypeName")}
                     </th>
-                    <th className="px-5 py-3 font-black text-[10px] uppercase tracking-[0.3em] text-muted-foreground">
-                      설치 위치
+                    <th
+                      className="px-5 py-3 font-black text-[10px] uppercase tracking-[0.3em] text-muted-foreground cursor-pointer select-none hover:text-primary transition-colors"
+                      onClick={() => handleSort("spaceName")}
+                    >
+                      설치 위치{sortIndicator("spaceName")}
                     </th>
-                    <th className="px-5 py-3 font-black text-[10px] uppercase tracking-[0.3em] text-muted-foreground">
-                      상태
+                    <th
+                      className="px-5 py-3 font-black text-[10px] uppercase tracking-[0.3em] text-muted-foreground cursor-pointer select-none hover:text-primary transition-colors"
+                      onClick={() => handleSort("status")}
+                    >
+                      상태{sortIndicator("status")}
                     </th>
                     <th className="px-5 py-3 font-black text-[10px] uppercase tracking-[0.3em] text-muted-foreground">
                       제어
@@ -274,7 +306,19 @@ export function DeviceListTable() {
                   </tr>
                 </thead>
                 <tbody>
-                  {devices.map((device, idx) => {
+                  {[...devices]
+                    .sort((a, b) => {
+                      if (!sortKey) return 0;
+                      const dir = sortDir === "asc" ? 1 : -1;
+                      const valA = a[sortKey] ?? "";
+                      const valB = b[sortKey] ?? "";
+                      if (sortKey === "status") {
+                        const order = { ONLINE: 0, ERROR: 1, OFFLINE: 2 };
+                        return dir * ((order[valA as keyof typeof order] ?? 3) - (order[valB as keyof typeof order] ?? 3));
+                      }
+                      return dir * String(valA).localeCompare(String(valB), "ko", { numeric: true });
+                    })
+                    .map((device, idx) => {
                     const badge = getStatusBadge(device.status);
                     const icon = DEVICE_ICONS[device.deviceTypeCode] ?? "📱";
                     const isThisControlling = controllingId === device.deviceId;

@@ -51,6 +51,11 @@ export function DeviceGrid() {
     device: MyDevice | null;
   }>({ open: false, device: null });
 
+  // 정렬
+  type SortKey = "name" | "deviceTypeName" | "status";
+  const [sortKey, setSortKey] = useState<SortKey>("name");
+  const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
+
   const loadDevices = useCallback(async () => {
     try {
       setLoading(true);
@@ -146,9 +151,18 @@ export function DeviceGrid() {
     router.push(spaceId ? `/facilities?spaceId=${spaceId}` : "/facilities");
   };
 
-  /* ── 기기 분류 ── */
-  const privateDevices = devices.filter((d) => d.spaceType === "PRIVATE");
-  const commonDevices = devices.filter((d) => d.spaceType === "COMMON");
+  /* ── 기기 분류 + 정렬 ── */
+  const sortDevices = (list: MyDevice[]) =>
+    [...list].sort((a, b) => {
+      const dir = sortDir === "asc" ? 1 : -1;
+      if (sortKey === "status") {
+        const order = { ONLINE: 0, ERROR: 1, OFFLINE: 2 };
+        return dir * ((order[a.status] ?? 3) - (order[b.status] ?? 3));
+      }
+      return dir * String(a[sortKey] ?? "").localeCompare(String(b[sortKey] ?? ""), "ko", { numeric: true });
+    });
+  const privateDevices = sortDevices(devices.filter((d) => d.spaceType === "PRIVATE"));
+  const commonDevices = sortDevices(devices.filter((d) => d.spaceType === "COMMON"));
 
   // ── 로딩 ──
   if (loading && devices.length === 0) {
@@ -271,6 +285,30 @@ export function DeviceGrid() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* ── 정렬 선택기 ── */}
+      <div className="flex items-center justify-end gap-2">
+        <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground">
+          정렬
+        </span>
+        <select
+          value={sortKey}
+          onChange={(e) => setSortKey(e.target.value as SortKey)}
+          className="rounded-lg border border-border bg-surface px-2 py-1 text-xs font-medium text-primary
+            focus:outline-none focus:ring-1 focus:ring-ring/40"
+        >
+          <option value="name">기기명</option>
+          <option value="deviceTypeName">종류</option>
+          <option value="status">상태</option>
+        </select>
+        <button
+          onClick={() => setSortDir((d) => (d === "asc" ? "desc" : "asc"))}
+          className="rounded-lg border border-border bg-surface px-2 py-1 text-xs font-medium text-primary
+            transition-colors hover:bg-muted/20"
+        >
+          {sortDir === "asc" ? "▲ 오름차순" : "▼ 내림차순"}
+        </button>
+      </div>
 
       {/* 개인 공간 기기 */}
       {privateDevices.length > 0 && (
