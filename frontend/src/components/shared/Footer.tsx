@@ -19,7 +19,7 @@ export function Footer() {
       { name: "Contract", path: "/my-contracts" },
       { name: "Reservation", path: "/facilities" },
       { name: "Device", path: "/my-devices" },
-      { name: "VOC", path: "/profile/vocs" },
+      { name: "VOC", path: "/vocs" },
       { name: "Notification", path: "/notifications" },
     ],
   };

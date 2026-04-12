@@ -114,7 +114,7 @@ export function NewVocForm() {
           setError("등록은 되었지만 민원 번호를 받지 못했습니다. 나의 민원 내역에서 확인해 주세요.");
           return;
         }
-        router.push(`/profile/vocs/${vid}`);
+        router.push(`/vocs/${vid}`);
         router.refresh();
       } catch {
         setError("네트워크 오류가 발생했습니다. 연결을 확인한 뒤 다시 시도해 주세요.");
@@ -238,7 +238,7 @@ export function NewVocForm() {
       <CancelModal
         isOpen={showCancelModal}
         onClose={() => setShowCancelModal(false)}
-        onConfirm={() => router.push("/profile/vocs")}
+        onConfirm={() => router.push("/vocs")}
       />
     </form>
   );

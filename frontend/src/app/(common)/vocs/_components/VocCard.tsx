@@ -22,7 +22,7 @@ function statusStyles(status: string) {
 export function VocCard({ item }: { item: VocListItem }) {
   return (
     <Link 
-      href={`/profile/vocs/${item.vocId}`} 
+      href={`/vocs/${item.vocId}`} 
       className="group relative rounded-[clamp(1rem,2vw,2rem)] p-[clamp(1.25rem,3vw,2.5rem)] bg-primary/5 border border-primary/10 overflow-hidden transition-all hover:bg-primary/10 block"
     >
       <div className="flex flex-col md:flex-row md:items-start justify-between gap-[clamp(1rem,2vw,2rem)] relative z-10">

@@ -60,7 +60,7 @@ export function NotificationListItem({ item }: { item: NotificationItem }) {
         if (type === "VOC_CREATED") {
           targetPath = `/admin/vocs/${refId}`;
         } else {
-          targetPath = `/profile/vocs/${refId}`;
+          targetPath = `/vocs/${refId}`;
         }
       } else if (refType === "CONTRACT") {
         targetPath = `/my-contracts`; 
