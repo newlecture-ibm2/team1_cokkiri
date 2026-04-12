@@ -2,9 +2,9 @@
 
 import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
-import { useState, useTransition } from "react";
+import { useEffect, useRef, useState, useTransition } from "react";
 import Link from "next/link";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { ArrowLeft, ChevronDown, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { messageFromBffResponse } from "@/lib/bff-error-message";
@@ -34,10 +34,10 @@ const CommunityRichTextEditor = dynamic(
 );
 
 const labelClass =
-  "block text-[10px] font-black uppercase tracking-[0.5em] text-accent mb-4";
+  "flex items-baseline gap-2 mb-4";
 
 const fieldClass =
-  "w-full rounded-[2rem] border border-primary/5 bg-white/40 backdrop-blur-sm p-8 font-medium tracking-tight text-xl text-primary focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-accent/10 transition-all placeholder:text-muted-foreground/30";
+  "w-full rounded-xl border border-primary/10 bg-white px-6 py-4 font-medium tracking-tight text-base text-primary focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-accent/10 transition-all placeholder:text-primary/30";
 
 export function NewPostForm() {
   const router = useRouter();
@@ -132,16 +132,9 @@ export function NewPostForm() {
   }
 
   return (
-    <form onSubmit={submit} className="mx-auto max-w-2xl space-y-10">
+    <form onSubmit={submit} className="mx-auto max-w-5xl space-y-10">
       <LoginRequiredModal isOpen={showLoginModal} onClose={() => setShowLoginModal(false)} />
       <AccessDeniedModal isOpen={showAccessDenied} onClose={() => setShowAccessDenied(false)} />
-      <Link
-        href="/community"
-        className="group inline-flex items-center gap-2 font-black text-xs uppercase tracking-[0.3em] text-secondary transition-colors hover:text-foreground"
-      >
-        <ArrowLeft className="size-4 transition-transform group-hover:-translate-x-0.5" aria-hidden />
-        목록으로
-      </Link>
 
       {submitError ? (
         <p
@@ -153,121 +146,117 @@ export function NewPostForm() {
       ) : null}
 
       <div className="space-y-16">
-        <section className="space-y-4">
-          <label htmlFor="category" className={labelClass}>
-            01 | CATEGORY
-          </label>
-          <div className="relative">
-            <select
-              id="category"
-              value={category}
-              onChange={(e) => setCategory(e.target.value)}
-              className={cn(fieldClass, "appearance-none pr-12 leading-none py-0 h-24 cursor-pointer")}
-            >
-              {POST_CATEGORIES.map((c) => (
-                <option key={c.value} value={c.value}>
-                  {c.label}
-                </option>
-              ))}
-            </select>
-            <ChevronDown
-              className="pointer-events-none absolute right-8 top-1/2 -translate-y-1/2 size-5 text-accent"
-              aria-hidden
-            />
-          </div>
-          <p className="px-8 text-[10px] font-black tracking-widest text-muted-foreground/50 uppercase">
-            Notice is restricted to administrators.
-          </p>
-        </section>
+        <CategoryDropdown
+          value={category}
+          onChange={setCategory}
+          labelClass={labelClass}
+          fieldClass={fieldClass}
+        />
 
         <section className="space-y-4">
           <label htmlFor="title" className={labelClass}>
-            02 | DISCOURSE TITLE
+            <span className="text-lg font-black uppercase tracking-tight text-primary">TITLE.</span>
+            <span className="text-sm font-medium text-primary/80">제목</span>
           </label>
           <input
             id="title"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            placeholder="Type your headline here..."
+            placeholder="제목을 입력하세요."
             maxLength={POST_TITLE_MAX_LENGTH}
             required
             className={fieldClass}
           />
-          <p className="px-8 text-[10px] font-black tracking-widest text-muted-foreground/50 uppercase">
-            Max {POST_TITLE_MAX_LENGTH.toLocaleString()} characters.
+          <p className="px-8 text-xs font-medium tracking-tight text-primary/40">
+            최대 {POST_TITLE_MAX_LENGTH.toLocaleString()}자까지 입력 가능합니다.
           </p>
         </section>
 
         <section className="space-y-4">
           <label htmlFor="content" className={labelClass}>
-            03 | NARRATIVE CONTENT
+            <span className="text-lg font-black uppercase tracking-tight text-primary">CONTENT.</span>
+            <span className="text-sm font-medium text-primary/80">내용</span>
           </label>
-          <div className="rounded-[2.5rem] border border-primary/5 bg-white/40 backdrop-blur-sm p-4 h-full">
+          <div className="rounded-[2rem] border border-primary/10 bg-white p-4 h-full">
             <CommunityRichTextEditor
               id="content"
               value={content}
               onChange={setContent}
-              placeholder="Begin your story..."
+              placeholder="내용을 입력하세요."
             />
           </div>
         </section>
 
         <section className="space-y-4">
           <label htmlFor="links" className={labelClass}>
-            04 | EXTERNAL REFERENCES
+            <span className="text-lg font-black uppercase tracking-tight text-primary">LINKS.</span>
+            <span className="text-sm font-medium text-primary/80">외부 링크</span>
           </label>
           <textarea
             id="links"
             value={linksText}
             onChange={(e) => setLinksText(e.target.value)}
-            placeholder="Enter URLs, one per line (max 3)..."
+            placeholder="URL을 한 줄에 하나씩 입력하세요 (최대 3개)..."
             rows={3}
             className={cn(fieldClass, "resize-none")}
           />
         </section>
 
         <section className="space-y-4">
-          <label htmlFor="post-files" className={labelClass}>
-            05 | DOCUMENT ASSETS
+          <label className={labelClass}>
+            <span className="text-lg font-black uppercase tracking-tight text-primary">FILES.</span>
+            <span className="text-sm font-medium text-primary/80">첨부파일</span>
           </label>
-          <div className="relative group">
+          <div className="flex items-center gap-4">
+            <label
+              htmlFor="post-files"
+              className="inline-flex cursor-pointer items-center gap-2 rounded-xl border-2 border-primary/10 bg-primary/5 px-6 py-3 text-sm font-semibold tracking-tight text-primary/70 transition-all hover:bg-primary/10 hover:border-primary/20 hover:text-primary"
+            >
+              파일 첨부
+            </label>
             <input
               id="post-files"
               type="file"
               multiple
               onChange={(e) => setFiles(e.target.files)}
-              className={cn(
-                fieldClass,
-                "cursor-pointer py-8 file:mr-8 file:rounded-xl file:border-0 file:bg-accent file:px-6 file:py-3 file:text-[10px] file:font-black file:uppercase file:tracking-[0.2em] file:text-white hover:file:bg-primary transition-all",
-              )}
+              className="hidden"
             />
+            {files && files.length > 0 ? (
+              <span className="text-sm font-medium tracking-tight text-primary/60">
+                {files.length}개 파일 선택됨
+              </span>
+            ) : (
+              <span className="text-xs font-medium tracking-tight text-primary/30">
+                선택된 파일 없음
+              </span>
+            )}
           </div>
-          <p className="px-8 text-[10px] font-black tracking-widest text-muted-foreground/50 uppercase">
-            Multiple files supported. Images can also be added via the editor toolbar.
+          <p className="text-xs font-medium tracking-tight text-primary/40">
+            여러 파일을 첨부할 수 있습니다. 이미지는 에디터 툴바에서도 추가할 수 있습니다.
           </p>
         </section>
       </div>
 
-      <div className="pt-20 flex flex-col md:flex-row justify-end gap-6 items-center">
+      <div className="pt-20 flex flex-col md:flex-row justify-end gap-4 items-center">
         <button
           type="button"
           onClick={() => setShowCancelModal(true)}
-          className="w-full md:w-auto px-12 py-6 text-[10px] font-black uppercase tracking-[0.4em] text-muted-foreground hover:text-primary transition-colors"
+          className="w-full md:w-auto px-10 py-3.5 text-sm font-semibold tracking-tight text-primary/60 rounded-xl border-2 border-primary/10 hover:border-primary/20 hover:text-primary transition-all"
         >
-          Discard
+          취소
         </button>
         <motion.button
           type="submit"
           disabled={pending}
-          whileHover={{ scale: 1.05, y: -4 }}
-          whileTap={{ scale: 0.95 }}
+          whileHover={{ scale: 1.03, y: -2 }}
+          whileTap={{ scale: 0.97 }}
           className={cn(
-            "w-full md:w-auto inline-flex items-center justify-center gap-4 rounded-full bg-primary px-16 py-8 text-xs font-black uppercase tracking-[0.5em] text-white shadow-2xl shadow-primary/20",
+            "w-full md:w-auto inline-flex items-center justify-center gap-3 rounded-xl bg-primary px-12 py-3.5 text-sm font-semibold tracking-tight text-white shadow-lg shadow-primary/15 hover:bg-primary/90 transition-all",
             pending && "opacity-60",
           )}
         >
           {pending && <Loader2 className="size-4 animate-spin" aria-hidden />}
-          PUBLISH STORY
+          게시하기
         </motion.button>
       </div>
       <CancelModal
@@ -276,5 +265,103 @@ export function NewPostForm() {
         onConfirm={() => router.push("/community")}
       />
     </form>
+  );
+}
+
+/* ── Custom Category Dropdown ── */
+function CategoryDropdown({
+  value,
+  onChange,
+  labelClass,
+  fieldClass,
+}: {
+  value: string;
+  onChange: (v: string) => void;
+  labelClass: string;
+  fieldClass: string;
+}) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+  const selected = POST_CATEGORIES.find((c) => c.value === value);
+
+  useEffect(() => {
+    function handleClick(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    }
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, []);
+
+  return (
+    <section className="space-y-4">
+      <label className={labelClass}>
+        <span className="text-lg font-black uppercase tracking-tight text-primary">CATEGORY.</span>
+        <span className="text-sm font-medium text-primary/80">유형선택</span>
+      </label>
+      <div className="flex items-center gap-4">
+        <div ref={ref} className="relative w-56">
+          <button
+            type="button"
+            onClick={() => setOpen((p) => !p)}
+            className={cn(
+              fieldClass,
+              "flex items-center justify-between pr-12 h-12 cursor-pointer rounded-xl text-left",
+            )}
+          >
+            <span className="font-semibold text-sm tracking-tight">
+              {selected?.label ?? "선택"}
+            </span>
+            <ChevronDown
+              className={cn(
+                "absolute right-5 top-1/2 -translate-y-1/2 size-[1.125rem] opacity-60 transition-transform duration-500 ease-[cubic-bezier(0.33,1,0.68,1)]",
+                open && "rotate-180",
+              )}
+              aria-hidden
+            />
+          </button>
+
+          <AnimatePresence>
+            {open && (
+              <motion.ul
+                initial={{ opacity: 0, y: -6, scale: 0.96 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: -4, scale: 0.98 }}
+                transition={{ duration: 0.3, ease: [0.33, 1, 0.68, 1] }}
+                style={{ transformOrigin: "top center" }}
+                className="absolute z-50 mt-2 w-full flex flex-col gap-1.5 rounded-3xl border-2 border-stone-200/70 bg-stone-50/98 p-3 shadow-md backdrop-blur-md dark:border-stone-600/50 dark:bg-stone-900/95"
+              >
+                {POST_CATEGORIES.map((c, i) => (
+                  <motion.li
+                    key={c.value}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ duration: 0.34, delay: 0.1 + i * 0.055, ease: [0.33, 1, 0.68, 1] }}
+                  >
+                    <button
+                      type="button"
+                      onClick={() => {
+                        onChange(c.value);
+                        setOpen(false);
+                      }}
+                      className={cn(
+                        "flex w-full items-center justify-center rounded-md py-2.5 text-sm font-semibold tracking-tight transition-colors",
+                        c.value === value
+                          ? "bg-primary/10 text-primary"
+                          : "text-primary/70 hover:bg-primary/5 hover:text-primary",
+                      )}
+                    >
+                      {c.label}
+                    </button>
+                  </motion.li>
+                ))}
+              </motion.ul>
+            )}
+          </AnimatePresence>
+        </div>
+        <p className="text-xs font-medium tracking-tight text-primary/40">
+          공지 카테고리는 관리자만 선택 가능합니다.
+        </p>
+      </div>
+    </section>
   );
 }

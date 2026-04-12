@@ -156,7 +156,7 @@ export function Header() {
 
   const linkClass = (active: boolean) =>
     cn(
-      "text-base font-black tracking-widest text-primary uppercase transition-all duration-500 hover:underline hover:underline-offset-8",
+      "inline-flex items-center leading-none text-[clamp(0.75rem,1.2vw,1rem)] font-black tracking-widest text-primary uppercase transition-all duration-500 hover:underline hover:underline-offset-8",
       active ? "underline underline-offset-8 opacity-100" : "opacity-100",
     );
 
@@ -173,7 +173,7 @@ export function Header() {
   return (
     <>
       <motion.header
-        className={`sticky top-0 z-[100] border-b px-6 py-2 transition-all duration-500 md:px-12 md:py-3 ${isScrolled || isMobileMenuOpen
+        className={`sticky top-0 z-[100] border-b px-[clamp(1rem,3vw,3rem)] py-[clamp(0.375rem,0.8vw,0.75rem)] transition-all duration-500 ${isScrolled || isMobileMenuOpen
           ? "border-primary/10 bg-background/80 shadow-sm backdrop-blur-md"
           : "border-transparent bg-transparent"
           }`}
@@ -183,14 +183,14 @@ export function Header() {
       >
         <div className="flex items-center justify-between">
           <Link href="/" className="group flex items-center gap-2">
-            <span className="text-4xl font-black tracking-tighter text-primary uppercase">COKKIRI</span>
-            <span className="mt-1 mb-auto ml-1 text-sm font-black tracking-widest text-primary/50 uppercase transition-colors duration-500 group-hover:text-primary">
+            <span className="text-[clamp(1.5rem,3.5vw,2.25rem)] font-black tracking-tighter text-primary uppercase">COKKIRI</span>
+            <span className="mt-1 mb-auto ml-1 text-[clamp(0.55rem,1vw,0.875rem)] font-black tracking-widest text-primary/50 uppercase transition-colors duration-500 group-hover:text-primary">
               © 26
             </span>
           </Link>
 
-          <div className="flex items-center gap-10">
-            <nav className="hidden items-center gap-8 md:flex lg:gap-10" aria-label="Main">
+          <div className="flex items-center gap-[clamp(1rem,2.5vw,2.5rem)]">
+            <nav className="hidden items-center gap-[clamp(1rem,2vw,2.5rem)] md:flex" aria-label="Main">
               {navItems.map((item) => {
                 if ("children" in item) {
                   const active = itemActive(pathname, item);
@@ -210,7 +210,7 @@ export function Header() {
                     >
                       <span
                         className={cn(
-                          "inline-flex cursor-default items-center gap-1 text-base font-black tracking-widest text-primary uppercase transition-all duration-500 hover:underline hover:underline-offset-8",
+                          "inline-flex cursor-default items-center leading-none gap-1 text-[clamp(0.75rem,1.2vw,1rem)] font-black tracking-widest text-primary uppercase transition-all duration-500 hover:underline hover:underline-offset-8",
                           active || menuOpen ? "underline underline-offset-8 opacity-100" : "opacity-100",
                         )}
                         tabIndex={0}
@@ -220,7 +220,7 @@ export function Header() {
                         {item.name}
                         <ChevronDown
                           className={cn(
-                            "size-4 shrink-0 opacity-60 transition-transform duration-500 ease-[cubic-bezier(0.33,1,0.68,1)] md:size-[1.125rem]",
+                            "size-[1em] shrink-0 opacity-60 transition-transform duration-500 ease-[cubic-bezier(0.33,1,0.68,1)]",
                             menuOpen && "rotate-180",
                           )}
                         />
