@@ -18,6 +18,7 @@ public record ResidentDevice(
         String deviceTypeCommands,
         String name,
         String modelName,
+        String mockEndpoint,
         String status,
         String currentState,
         Boolean isActive,

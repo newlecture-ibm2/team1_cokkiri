@@ -214,6 +214,7 @@ public class ResidentDevicePersistenceAdapter implements ResidentDeviceRepositor
                 entity.getDeviceType().getCommands(),
                 entity.getName(),
                 entity.getModelName(),
+                entity.getMockEndpoint(),
                 entity.getStatus().name(),
                 entity.getCurrentState(),
                 entity.getIsActive(),

@@ -195,7 +195,13 @@ public class AdminDeviceService implements CreateAdminDeviceUseCase, AdminDevice
         if (!success) {
             // IoT 통신 실패 시 기기 상태를 자동으로 ERROR로 전환
             adminDeviceRepositoryPort.updateStatus(command.deviceId(), "ERROR");
-            throw new BusinessException(ErrorCode.IOT_COMMUNICATION_FAIL);
+            // 예외를 던지지 않고 실패 결과 반환 → 트랜잭션 커밋 (CONTROL_LOG + status 변경 보존)
+            return new ControlAdminDeviceResult(
+                    command.deviceId(),
+                    command.command(),
+                    false,
+                    "IoT 기기 통신에 실패했습니다"
+            );
         }
 
         // 6. 제어 성공 시 기기 current_state 업데이트 (기존 상태에 params 병합)

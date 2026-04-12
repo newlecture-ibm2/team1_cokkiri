@@ -166,6 +166,7 @@ export function DeviceListTable() {
     } catch (err) {
       if (err instanceof ApiError) setError(err.message);
       else setError("기기 제어에 실패했습니다");
+      loadDevices(); // 제어 실패 시에도 기기 상태(ERROR 전환 등) 반영
     } finally {
       setControllingId(null);
 

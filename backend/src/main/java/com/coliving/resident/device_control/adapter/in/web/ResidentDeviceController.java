@@ -14,6 +14,7 @@ import com.coliving.resident.device_control.model.ResidentDevice;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
@@ -59,7 +60,7 @@ public class ResidentDeviceController {
      * 기기 제어 (RES-DEV-02)
      */
     @PostMapping("/{id}/control")
-    public ResponseEntity<ApiResponse<ControlDeviceResponseDto>> controlDevice(
+    public ResponseEntity<ApiResponse<?>> controlDevice(
             @PathVariable Long id,
             @Valid @RequestBody ControlDeviceRequestDto requestDto,
             HttpServletRequest request) {
@@ -82,6 +83,12 @@ public class ResidentDeviceController {
         );
 
         ControlDeviceResult result = residentDeviceUseCase.controlDevice(command);
+
+        if (!result.success()) {
+            return ResponseEntity.status(HttpStatus.BAD_GATEWAY)
+                    .body(ApiResponse.error(ErrorCode.IOT_COMMUNICATION_FAIL));
+        }
+
         return ResponseEntity.ok(ApiResponse.ok(
                 ControlDeviceResponseDto.from(result), result.message()));
     }

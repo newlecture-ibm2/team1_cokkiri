@@ -131,6 +131,7 @@ export function DeviceGrid() {
     } catch (err) {
       if (err instanceof ApiError) showFeedback(err.message, "error");
       else showFeedback("제어에 실패했습니다", "error");
+      loadDevices(); // 제어 실패 시에도 기기 상태(ERROR 전환 등) 반영
     } finally {
       setControllingId(null);
 

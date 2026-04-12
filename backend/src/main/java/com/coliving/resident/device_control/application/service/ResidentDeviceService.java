@@ -115,9 +115,9 @@ public class ResidentDeviceService implements ResidentDeviceUseCase {
             }
         }
 
-        // 8. MockIoT 제어 명령 전송
+        // 8. MockIoT 제어 명령 전송 (기기별 mockEndpoint 사용)
         boolean success = iotClient.sendCommand(
-                command.deviceId(), command.command(), command.params());
+                command.deviceId(), command.command(), command.params(), device.mockEndpoint());
 
         // 9. CONTROL_LOG 감사 이력 기록 (성공/실패 모두 기록, RES-DEV-02 필수)
         residentDeviceRepositoryPort.saveControlLog(
@@ -134,7 +134,13 @@ public class ResidentDeviceService implements ResidentDeviceUseCase {
         if (!success) {
             // IoT 통신 실패 시 기기 상태를 자동으로 ERROR로 전환
             residentDeviceRepositoryPort.updateDeviceStatus(command.deviceId(), "ERROR");
-            throw new BusinessException(ErrorCode.IOT_COMMUNICATION_FAIL);
+            // 예외를 던지지 않고 실패 결과 반환 → 트랜잭션 커밋 (CONTROL_LOG + status 변경 보존)
+            return new ControlDeviceResult(
+                    command.deviceId(),
+                    command.command(),
+                    false,
+                    "IoT 기기 통신에 실패했습니다"
+            );
         }
 
         // 10. 제어 성공 시 기기 current_state 업데이트 (기존 상태에 params 병합)

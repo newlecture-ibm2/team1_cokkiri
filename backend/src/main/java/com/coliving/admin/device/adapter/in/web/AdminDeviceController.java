@@ -141,7 +141,7 @@ public class AdminDeviceController {
      * ADMIN은 space_id 제한 없이 전체 접근
      */
     @PostMapping("/{id}/control")
-    public ResponseEntity<ApiResponse<ControlAdminDeviceResponseDto>> controlDevice(
+    public ResponseEntity<ApiResponse<?>> controlDevice(
             @PathVariable Long id,
             @Valid @RequestBody ControlAdminDeviceRequestDto requestDto,
             HttpServletRequest request) {
@@ -157,6 +157,12 @@ public class AdminDeviceController {
         );
 
         ControlAdminDeviceResult result = adminDeviceUseCase.controlDevice(command);
+
+        if (!result.success()) {
+            return ResponseEntity.status(HttpStatus.BAD_GATEWAY)
+                    .body(ApiResponse.error(ErrorCode.IOT_COMMUNICATION_FAIL));
+        }
+
         return ResponseEntity.ok(ApiResponse.ok(
                 ControlAdminDeviceResponseDto.from(result), result.message()));
     }
