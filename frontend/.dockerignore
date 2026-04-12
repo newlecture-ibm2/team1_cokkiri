@@ -1,0 +1,29 @@
+# Dependencies (will be installed fresh via npm ci in Docker)
+node_modules
+
+# Build output
+.next
+out
+dist
+
+# Dev/IDE files
+.env*.local
+.vscode
+.idea
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# Git
+.git
+.gitignore
+
+# Docker
+Dockerfile
+.dockerignore
+docker-compose*.yml
+
+# Misc
+README.md
+*.md
