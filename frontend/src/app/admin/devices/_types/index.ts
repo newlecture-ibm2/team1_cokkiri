@@ -30,12 +30,39 @@ export interface SaveDeviceTypeRequest {
 }
 
 export interface CreateDeviceRequest {
-  spaceId: number;
-  deviceTypeId: number;
-  name: string;
-  modelName: string;
+  macAddress: string;   // IoT 목록에서 선택된 기기의 MAC (자동)
+  name: string;         // 관리자가 부여하는 기기 이름
+  spaceId: number;      // 관리자 선택
+  deviceTypeId: number; // 관리자 선택
+}
+
+/** IoT 기기 동작 정의 (기기 펌웨어에서 제공 — UI 매핑은 관리자가 결정) */
+export interface DeviceCapability {
+  command: string;
+  stateKey: string;
+  stateValue?: unknown;
+  min?: number;
+  max?: number;
+  unit?: string;
+  options?: string[];
+}
+
+/** IoT 서버에서 조회한 기기 정보 (name 없음 — IoT 기기 자체는 이름을 갖지 않음) */
+export interface IotDeviceInfo {
   macAddress: string;
-  mockEndpoint: string;
+  modelName: string;
+  host: string;
+  localIp: string;
+  capabilities: DeviceCapability[];
+  state: Record<string, unknown>;
+  status: string;
+  errorMode: string;
+}
+
+/** IoT 기기 목록 응답 */
+export interface IotDevicesResponse {
+  devices: IotDeviceInfo[];
+  total: number;
 }
 
 export interface CreateDeviceResponse {

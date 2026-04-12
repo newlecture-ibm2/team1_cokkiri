@@ -84,14 +84,14 @@ services:
 
   mock-iot:
     container_name: team1-cokkiri-mock-iot
-    image: wiremock/wiremock:3.5.4
+    build: ./mock-iot
     restart: unless-stopped
-    command: [ "--port", "8000" ]
     expose:
       - "8000"
     volumes:
-      # 이미 볼륨 마운트가 되어 있어 호스트에서 수정 시 즉시 반영됩니다.
-      - ./mock-iot/mappings:/home/wiremock/mappings
+      - mock-iot-data:/app/data
+    environment:
+      - ERROR_SIMULATION=${ERROR_SIMULATION:-true}
 
   redis:
     container_name: team1-cokkiri-redis
@@ -111,3 +111,5 @@ volumes:
     name: team1-cokkiri-pg-data
   uploads-data:
     name: team1-cokkiri-uploads-data
+  mock-iot-data:
+    name: team1-cokkiri-mock-iot-data

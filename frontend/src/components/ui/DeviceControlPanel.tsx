@@ -19,11 +19,22 @@ export interface DeviceCommand {
   options?: string[];
 }
 
+/** IoT 기기가 실제 지원하는 동작 (capabilities에서 추출) */
+export interface DeviceCapabilityRef {
+  command: string;
+}
+
 interface DeviceControlPanelProps {
-  /** device_types.commands JSON 문자열 */
+  /** device_types.commands JSON 문자열 — 관리자가 정의한 UI 매핑 (superset) */
   commandsJson: string;
   /** devices.current_state JSON 문자열 */
   currentStateJson: string;
+  /**
+   * IoT 기기가 실제 지원하는 command 목록 (capabilities).
+   * 제공 시 commandsJson과의 **교집합**만 렌더링.
+   * 미제공 시 commandsJson 전체를 렌더링 (기존 동작 호환).
+   */
+  iotCapabilities?: DeviceCapabilityRef[];
   /** 제어 가능 여부 */
   disabled?: boolean;
   /** 제어 실행 콜백. command + params 를 전달 */
@@ -92,15 +103,31 @@ function groupTogglePairs(commands: DeviceCommand[]): {
 /**
  * commands 기반 동적 기기 제어 패널.
  * toggle, slider, select, button 4가지 uiType을 지원.
+ *
+ * **교집합 모드**: iotCapabilities가 제공되면, commandsJson(관리자 UI 정의)에서
+ * 해당 모델이 실제 지원하는 command만 필터링하여 렌더링합니다.
+ * 같은 타입이라도 모델별로 지원 범위가 다를 수 있기 때문입니다.
  */
 export function DeviceControlPanel({
   commandsJson,
   currentStateJson,
+  iotCapabilities,
   disabled = false,
   onControl,
   onStateChange,
 }: DeviceControlPanelProps) {
-  const commands = parseCommands(commandsJson);
+  // 1. 관리자 정의 commands 파싱
+  const allCommands = parseCommands(commandsJson);
+
+  // 2. IoT capabilities와 교집합 필터링
+  //    capabilities가 제공되면 해당 모델이 지원하는 command만 표시
+  //    capabilities가 없으면 전체 표시 (기존 동작 호환)
+  const commands = iotCapabilities && iotCapabilities.length > 0
+    ? (() => {
+        const supported = new Set(iotCapabilities.map(c => c.command));
+        return allCommands.filter(cmd => supported.has(cmd.command));
+      })()
+    : allCommands;
   const [busy, setBusy] = useState(false);
   const [firedCommands, setFiredCommands] = useState<Set<string>>(new Set());
 

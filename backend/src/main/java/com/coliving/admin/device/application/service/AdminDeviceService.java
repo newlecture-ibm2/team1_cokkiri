@@ -16,6 +16,9 @@ import com.coliving.global.error.BusinessException;
 import com.coliving.global.error.ErrorCode;
 import com.coliving.infra.iot.DeviceStateUtil;
 import com.coliving.infra.iot.IotClient;
+import com.coliving.infra.iot.IotResponse;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -31,36 +34,44 @@ public class AdminDeviceService implements CreateAdminDeviceUseCase, AdminDevice
     private final AdminDeviceRepositoryPort adminDeviceRepositoryPort;
     private final IotClient iotClient;
 
-    // ── 기기 등록 (Create) ──
+    // ── 기기 등록 (Create) — IoT 서버 조회 → DB INSERT ──
 
     @Override
     @Transactional
     public CreateAdminDeviceResult execute(CreateAdminDeviceCommand command) {
-        if (command.macAddress() != null && !command.macAddress().isBlank()) {
-            if (adminDeviceRepositoryPort.existsByMacAddress(command.macAddress())) {
-                throw new BusinessException(ErrorCode.DUPLICATE_MAC_ADDRESS);
-            }
+        // 1. MAC 주소 중복 검증
+        if (adminDeviceRepositoryPort.existsByMacAddress(command.macAddress())) {
+            throw new BusinessException(ErrorCode.DUPLICATE_MAC_ADDRESS);
         }
 
-        if (command.deviceTypeId() != null) {
-            validateDoorLockSpaceType(command.spaceId(), command.deviceTypeId());
+        // 2. 도어락 → PRIVATE 공간만 허용
+        validateDoorLockSpaceType(command.spaceId(), command.deviceTypeId());
+
+        // 3. IoT 서버에서 MAC으로 기기 정보 조회
+        var iotDevice = iotClient.getDeviceByMac(command.macAddress());
+        if (iotDevice == null) {
+            throw new BusinessException(ErrorCode.NOT_FOUND, "IoT 서버에서 해당 MAC 주소의 기기를 찾을 수 없습니다");
         }
 
-        // commands에서 초기 current_state 자동 생성
-        String commandsJson = adminDeviceRepositoryPort.findDeviceTypeCommandsById(command.deviceTypeId());
-        String initialState = DeviceStateUtil.buildInitialState(commandsJson);
+        // 4. 초기 상태: 제어 이벤트 전까지 빈 객체
+        //    current_state는 IoT 제어 응답으로만 채워지며, device_types.commands는 사용하지 않음
+        String initialState = "{}";
 
+        // 5. AdminDevice 생성
+        //    - name: 관리자가 입력 (command.name())
+        //    - modelName: IoT 서버에서 조회
+        //    - mockEndpoint: 게이트웨이 IP (host)
         AdminDevice device = new AdminDevice(
                 null,
                 command.spaceId(),
                 null, null,   // spaceName, spaceFloor — PersistenceAdapter에서 채움
                 command.deviceTypeId(),
                 null, null, null, // deviceTypeCode, Name, Commands — PersistenceAdapter에서 채움
-                command.name(),
-                command.modelName(),
-                command.macAddress(),
-                command.mockEndpoint(),
-                "ONLINE",
+                command.name(),            // 관리자가 부여한 이름
+                iotDevice.modelName(),     // IoT 서버에서 조회
+                command.macAddress(),      // 연결 키
+                iotDevice.host(),          // 게이트웨이 IP → mock_endpoint에 저장
+                iotDevice.status() != null ? iotDevice.status() : "ONLINE",
                 initialState,
                 true,
                 null, null, null, null
@@ -176,9 +187,9 @@ public class AdminDeviceService implements CreateAdminDeviceUseCase, AdminDevice
         }
         boolean wasError = "ERROR".equals(device.status());
 
-        // 4. MockIoT 제어 명령 전송 (기기별 mockEndpoint 사용)
-        boolean success = iotClient.sendCommand(
-                command.deviceId(), command.command(), command.params(), device.mockEndpoint());
+        // 4. MockIoT 제어 명령 전송
+        IotResponse iotResult = iotClient.sendCommand(
+                command.deviceId(), command.command(), command.params());
 
         // 5. CONTROL_LOG 감사 이력 기록 (성공/실패 모두 기록)
         adminDeviceRepositoryPort.saveControlLog(
@@ -187,12 +198,12 @@ public class AdminDeviceService implements CreateAdminDeviceUseCase, AdminDevice
                 "ADMIN",
                 command.command(),
                 command.params(),
-                success ? "SUCCESS" : "FAILURE",
-                success ? null : "IoT 통신 실패",
+                iotResult.result(),
+                iotResult.success() ? null : iotResult.message(),
                 command.correlationId()
         );
 
-        if (!success) {
+        if (!iotResult.success()) {
             // IoT 통신 실패 시 기기 상태를 자동으로 ERROR로 전환
             adminDeviceRepositoryPort.updateStatus(command.deviceId(), "ERROR");
             // 예외를 던지지 않고 실패 결과 반환 → 트랜잭션 커밋 (CONTROL_LOG + status 변경 보존)
@@ -200,12 +211,23 @@ public class AdminDeviceService implements CreateAdminDeviceUseCase, AdminDevice
                     command.deviceId(),
                     command.command(),
                     false,
-                    "IoT 기기 통신에 실패했습니다"
+                    iotResult.message() != null ? iotResult.message() : "IoT 기기 통신에 실패했습니다"
             );
         }
 
-        // 6. 제어 성공 시 기기 current_state 업데이트 (기존 상태에 params 병합)
-        String newState = DeviceStateUtil.mergeState(device.currentState(), command.params());
+        // 6. 제어 성공 시 기기 current_state 업데이트
+        //    IoT 서버가 반환한 state가 있으면 그것으로 동기화, 없으면 기존 params 병합 방식 폴백
+        String newState;
+        if (iotResult.state() != null && !iotResult.state().isEmpty()) {
+            try {
+                newState = new ObjectMapper().writeValueAsString(iotResult.state());
+            } catch (JsonProcessingException e) {
+                log.warn("[IoT 상태 직렬화 실패] deviceId: {}, 기존 방식으로 폴백", command.deviceId(), e);
+                newState = DeviceStateUtil.mergeState(device.currentState(), command.params());
+            }
+        } else {
+            newState = DeviceStateUtil.mergeState(device.currentState(), command.params());
+        }
         adminDeviceRepositoryPort.updateCurrentState(command.deviceId(), newState);
 
         // 7. ERROR 상태였던 기기가 제어 성공 시 → ONLINE 자동 복구

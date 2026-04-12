@@ -9,8 +9,11 @@ import {
   deleteDevice,
   updateDevice,
   controlAdminDevice,
+  setDeviceErrorMode,
+  discoverIotDevices,
 } from "../_api";
-import type { AdminDevice, UpdateDeviceRequest, Space } from "../_types";
+import type { ErrorMode } from "../_api";
+import type { AdminDevice, UpdateDeviceRequest, Space, DeviceCapability } from "../_types";
 import { ApiError } from "@/lib/api";
 import { DeviceControlPanel } from "@/components/ui/DeviceControlPanel";
 
@@ -24,15 +27,7 @@ const STATUS_OPTIONS = [
   { value: "ERROR", label: "에러", color: "bg-red-500" },
 ] as const;
 
-const DEVICE_ICONS: Record<string, string> = {
-  DOOR_LOCK: "🔒",
-  LIGHT: "💡",
-  AIR_CONDITIONER: "❄️",
-  WASHER: "🫧",
-  DRYER: "🌀",
-  HEATER: "🔥",
-  CCTV: "📹",
-};
+
 
 function getStatusBadge(status: string) {
   const opt = STATUS_OPTIONS.find((s) => s.value === status);
@@ -71,6 +66,9 @@ export function DeviceListTable() {
     return sortDir === "asc" ? " ▲" : " ▼";
   };
 
+  // IoT capabilities 캐시 (MAC → capabilities 매핑)
+  const [iotCapsMap, setIotCapsMap] = useState<Map<string, DeviceCapability[]>>(new Map());
+
   const loadDevices = useCallback(async () => {
     try {
       setLoading(true);
@@ -84,9 +82,27 @@ export function DeviceListTable() {
     }
   }, []);
 
+  // IoT 서버에서 전체 기기 capabilities 한 번 조회 → MAC 기반 맵 생성
+  const loadIotCapabilities = useCallback(async () => {
+    try {
+      const res = await discoverIotDevices();
+      const map = new Map<string, DeviceCapability[]>();
+      for (const device of res.data?.devices ?? []) {
+        if (device.macAddress && device.capabilities) {
+          map.set(device.macAddress, device.capabilities);
+        }
+      }
+      setIotCapsMap(map);
+    } catch {
+      // IoT 조회 실패 시 graceful 폴백 — capabilities 없이 전체 commands 표시
+      console.warn("[DeviceListTable] IoT capabilities 조회 실패 — 폴백 모드");
+    }
+  }, []);
+
   useEffect(() => {
     loadDevices();
-  }, [loadDevices]);
+    loadIotCapabilities();
+  }, [loadDevices, loadIotCapabilities]);
 
   // 자동 알림 숨김
   useEffect(() => {
@@ -321,7 +337,6 @@ export function DeviceListTable() {
                     })
                     .map((device, idx) => {
                     const badge = getStatusBadge(device.status);
-                    const icon = DEVICE_ICONS[device.deviceTypeCode] ?? "📱";
                     const isThisControlling = controllingId === device.deviceId;
                     const isCooldown = cooldownRef.current.has(device.deviceId);
 
@@ -341,7 +356,6 @@ export function DeviceListTable() {
                         {/* 기기명 */}
                         <td className="px-5 py-3">
                           <div className="flex items-center gap-2">
-                            <span className="text-lg">{icon}</span>
                             <div>
                               <span className="font-semibold text-primary">{device.name}</span>
                               {device.modelName && (
@@ -388,6 +402,7 @@ export function DeviceListTable() {
                               <DeviceControlPanel
                                 commandsJson={device.deviceTypeCommands ?? "[]"}
                                 currentStateJson={device.currentState}
+                                iotCapabilities={iotCapsMap.get(device.macAddress)?.map(c => ({ command: c.command }))}
                                 disabled={isThisControlling || isCooldown}
                                 onControl={async (cmd, params) => {
                                   await handleControl(device.deviceId, device.name, cmd, params);
@@ -468,7 +483,9 @@ function EditDeviceModal({
   const [spaceId, setSpaceId] = useState(device.spaceId);
   const [modelName, setModelName] = useState(device.modelName || "");
   const [macAddress, setMacAddress] = useState(device.macAddress || "");
-  const [mockEndpoint, setMockEndpoint] = useState(device.mockEndpoint || "");
+  const [errorMode, setErrorMode] = useState<ErrorMode>("normal");
+  const [errorModeLoading, setErrorModeLoading] = useState(false);
+  const [errorModeMsg, setErrorModeMsg] = useState<string | null>(null);
   const [spaces, setSpaces] = useState<Space[]>([]);
 
   useEffect(() => {
@@ -494,7 +511,21 @@ function EditDeviceModal({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onSave({ name, spaceId, modelName, macAddress, mockEndpoint });
+    onSave({ name, spaceId, modelName, macAddress, mockEndpoint: device.mockEndpoint || "" });
+  };
+
+  const handleErrorModeChange = async (mode: ErrorMode) => {
+    setErrorModeLoading(true);
+    setErrorModeMsg(null);
+    try {
+      await setDeviceErrorMode(device.deviceId, mode);
+      setErrorMode(mode);
+      setErrorModeMsg(`에러 모드가 '${mode}'로 설정되었습니다`);
+    } catch {
+      setErrorModeMsg("에러 모드 설정 실패");
+    } finally {
+      setErrorModeLoading(false);
+    }
   };
 
   return (
@@ -576,23 +607,42 @@ function EditDeviceModal({
             />
           </label>
 
-          <label className="block">
-            <span className="text-xs font-bold text-primary">IoT 동작 모드</span>
-            <select
-              value={mockEndpoint}
-              onChange={(e) => setMockEndpoint(e.target.value)}
-              className="mt-1 w-full rounded-xl border border-border bg-surface px-3 py-2
-                text-sm text-primary focus:outline-none focus:ring-2 focus:ring-ring/40"
-            >
-              <option value="">🟢 정상 작동 (기본)</option>
-              <option value="/api/devices/control/error">🔴 에러 테스트 — 500 응답</option>
-              <option value="/api/devices/control/fault">⚡ 연결 끊김 테스트 — 연결 리셋</option>
-              <option value="/api/devices/control/timeout">⏳ 타임아웃 테스트 — 6초 지연</option>
-            </select>
-            <p className="mt-1 text-[10px] text-muted-foreground">
-              에러 모드 선택 시 제어 실패 → ERROR 상태 전환
+          <div className="space-y-2">
+            <span className="text-xs font-bold text-primary">IoT 에러 모드</span>
+            <div className="flex gap-2 flex-wrap">
+              {(["normal", "error", "timeout", "fault"] as ErrorMode[]).map((mode) => {
+                const labels: Record<ErrorMode, { icon: string; text: string }> = {
+                  normal: { icon: "🟢", text: "정상" },
+                  error: { icon: "🔴", text: "에러 (500)" },
+                  timeout: { icon: "⏳", text: "타임아웃" },
+                  fault: { icon: "⚡", text: "연결 끊김" },
+                };
+                const { icon, text } = labels[mode];
+                const isActive = errorMode === mode;
+                return (
+                  <button
+                    key={mode}
+                    type="button"
+                    disabled={errorModeLoading}
+                    onClick={() => handleErrorModeChange(mode)}
+                    className={`rounded-xl border px-3 py-1.5 text-xs font-bold transition-all
+                      ${isActive
+                        ? "border-accent bg-accent/20 text-accent ring-1 ring-accent/40"
+                        : "border-border text-muted-foreground hover:border-secondary"
+                      } ${errorModeLoading ? "opacity-50 cursor-not-allowed" : ""}`}
+                  >
+                    {icon} {text}
+                  </button>
+                );
+              })}
+            </div>
+            {errorModeMsg && (
+              <p className="text-[10px] text-muted-foreground">{errorModeMsg}</p>
+            )}
+            <p className="text-[10px] text-muted-foreground">
+              에러 모드 변경은 Mock IoT 서버에 즉시 적용됩니다
             </p>
-          </label>
+          </div>
 
           <div className="flex justify-end gap-3 pt-2">
             <button

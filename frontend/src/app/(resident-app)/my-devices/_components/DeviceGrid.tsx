@@ -18,15 +18,7 @@ const STATUS_MAP: Record<string, { label: string; color: string; dot: string }> 
   ERROR: { label: "에러", color: "border-red-400/40 bg-red-50/80", dot: "bg-red-500" },
 };
 
-const DEVICE_ICONS: Record<string, string> = {
-  DOOR_LOCK: "🔒",
-  LIGHT: "💡",
-  AIR_CONDITIONER: "❄️",
-  WASHER: "🫧",
-  DRYER: "🌀",
-  HEATER: "🔥",
-  CCTV: "📹",
-};
+
 
 /* ── 컴포넌트 ── */
 
@@ -373,7 +365,6 @@ function DeviceCard({
 }) {
   const isCommon = device.spaceType === "COMMON";
   const status = STATUS_MAP[device.status] ?? STATUS_MAP.OFFLINE;
-  const icon = DEVICE_ICONS[device.deviceTypeCode] ?? "📱";
 
   // 공용 기기: 회색 계열 스타일 (제어 불가)
   const cardColor = isCommon
@@ -394,9 +385,6 @@ function DeviceCard({
     >
       {/* 상태 점 */}
       <span className={`absolute right-4 top-4 h-2.5 w-2.5 rounded-full ${dotColor}`} />
-
-      {/* 아이콘 */}
-      <div className={`text-3xl ${isCommon ? "grayscale opacity-60" : ""}`}>{icon}</div>
 
       {/* 기기명 */}
       <p className={`mt-3 text-sm font-bold tracking-tight ${isCommon ? "text-muted-foreground" : "text-primary"}`}>

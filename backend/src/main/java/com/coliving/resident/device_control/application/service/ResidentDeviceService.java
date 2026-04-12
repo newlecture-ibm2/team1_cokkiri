@@ -4,6 +4,9 @@ import com.coliving.global.error.BusinessException;
 import com.coliving.global.error.ErrorCode;
 import com.coliving.infra.iot.DeviceStateUtil;
 import com.coliving.infra.iot.IotClient;
+import com.coliving.infra.iot.IotResponse;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.coliving.resident.device_control.application.command.ControlDeviceCommand;
 import com.coliving.resident.device_control.application.port.in.ResidentDeviceUseCase;
 import com.coliving.resident.device_control.application.port.out.ResidentDeviceRepositoryPort;
@@ -115,9 +118,9 @@ public class ResidentDeviceService implements ResidentDeviceUseCase {
             }
         }
 
-        // 8. MockIoT 제어 명령 전송 (기기별 mockEndpoint 사용)
-        boolean success = iotClient.sendCommand(
-                command.deviceId(), command.command(), command.params(), device.mockEndpoint());
+        // 8. MockIoT 제어 명령 전송
+        IotResponse iotResult = iotClient.sendCommand(
+                command.deviceId(), command.command(), command.params());
 
         // 9. CONTROL_LOG 감사 이력 기록 (성공/실패 모두 기록, RES-DEV-02 필수)
         residentDeviceRepositoryPort.saveControlLog(
@@ -126,12 +129,12 @@ public class ResidentDeviceService implements ResidentDeviceUseCase {
                 "RESIDENT",
                 command.command(),
                 command.params(),
-                success ? "SUCCESS" : "FAILURE",
-                success ? null : "IoT 통신 실패",
+                iotResult.result(),
+                iotResult.success() ? null : iotResult.message(),
                 command.correlationId()
         );
 
-        if (!success) {
+        if (!iotResult.success()) {
             // IoT 통신 실패 시 기기 상태를 자동으로 ERROR로 전환
             residentDeviceRepositoryPort.updateDeviceStatus(command.deviceId(), "ERROR");
             // 예외를 던지지 않고 실패 결과 반환 → 트랜잭션 커밋 (CONTROL_LOG + status 변경 보존)
@@ -139,13 +142,23 @@ public class ResidentDeviceService implements ResidentDeviceUseCase {
                     command.deviceId(),
                     command.command(),
                     false,
-                    "IoT 기기 통신에 실패했습니다"
+                    iotResult.message() != null ? iotResult.message() : "IoT 기기 통신에 실패했습니다"
             );
         }
 
-        // 10. 제어 성공 시 기기 current_state 업데이트 (기존 상태에 params 병합)
+        // 10. 제어 성공 시 기기 current_state 업데이트
+        //     IoT 서버가 반환한 state가 있으면 그것으로 동기화, 없으면 기존 params 병합 방식 폴백
         String existingState = residentDeviceRepositoryPort.findCurrentState(command.deviceId());
-        String newState = DeviceStateUtil.mergeState(existingState, command.params());
+        String newState;
+        if (iotResult.state() != null && !iotResult.state().isEmpty()) {
+            try {
+                newState = new ObjectMapper().writeValueAsString(iotResult.state());
+            } catch (JsonProcessingException e) {
+                newState = DeviceStateUtil.mergeState(existingState, command.params());
+            }
+        } else {
+            newState = DeviceStateUtil.mergeState(existingState, command.params());
+        }
         residentDeviceRepositoryPort.updateCurrentState(command.deviceId(), newState);
 
         return new ControlDeviceResult(

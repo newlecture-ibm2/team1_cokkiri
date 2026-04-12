@@ -2,8 +2,11 @@ package com.coliving.admin.device.adapter.in.web;
 
 import com.coliving.admin.device.adapter.in.web.dto.req.ControlAdminDeviceRequestDto;
 import com.coliving.admin.device.adapter.in.web.dto.req.CreateAdminDeviceRequestDto;
+import com.coliving.admin.device.adapter.in.web.dto.req.ErrorModeRequestDto;
 import com.coliving.admin.device.adapter.in.web.dto.req.UpdateAdminDeviceActiveRequestDto;
 import com.coliving.admin.device.adapter.in.web.dto.req.UpdateAdminDeviceRequestDto;
+import com.coliving.admin.device.adapter.out.jpa.DeviceEntity;
+import com.coliving.admin.device.adapter.out.jpa.DeviceJpaRepository;
 import com.coliving.admin.device.adapter.in.web.dto.res.AdminDeviceResponseDto;
 import com.coliving.admin.device.adapter.in.web.dto.res.ControlAdminDeviceResponseDto;
 import com.coliving.admin.device.adapter.in.web.dto.res.CreateAdminDeviceResponseDto;
@@ -19,13 +22,17 @@ import com.coliving.global.dto.ApiResponse;
 import com.coliving.global.error.BusinessException;
 import com.coliving.global.error.ErrorCode;
 import com.coliving.global.security.JwtTokenProvider;
+import com.coliving.infra.iot.IotClient;
+import com.coliving.infra.iot.IotDeviceInfo;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.reactive.function.client.WebClient;
 
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -39,6 +46,10 @@ public class AdminDeviceController {
     private final CreateAdminDeviceUseCase createAdminDeviceUseCase;
     private final AdminDeviceUseCase adminDeviceUseCase;
     private final JwtTokenProvider jwtTokenProvider;
+    private final IotClient iotClient;
+    private final DeviceJpaRepository deviceJpaRepository;
+    @Qualifier("iotWebClient")
+    private final WebClient iotWebClient;
 
     /**
      * 기기 목록 조회 (ADM-DEV-01)
@@ -72,6 +83,25 @@ public class AdminDeviceController {
         result.put("size", s);
         result.put("totalElements", totalElements);
         result.put("totalPages", totalPages);
+
+        return ResponseEntity.ok(ApiResponse.ok(result));
+    }
+
+    /**
+     * IoT 서버 기기 발견 — 등록 전 기기 조회 (NEW)
+     * GET /api/admin/devices/iot-devices?host=192.168.1.101
+     */
+    @GetMapping("/iot-devices")
+    public ResponseEntity<ApiResponse<Map<String, Object>>> discoverIotDevices(
+            @RequestParam(required = false) String host) {
+
+        List<IotDeviceInfo> devices = (host != null && !host.isBlank())
+                ? iotClient.discoverDevicesByHost(host)
+                : iotClient.discoverDevices();
+
+        Map<String, Object> result = new LinkedHashMap<>();
+        result.put("devices", devices);
+        result.put("total", devices.size());
 
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
@@ -165,6 +195,43 @@ public class AdminDeviceController {
 
         return ResponseEntity.ok(ApiResponse.ok(
                 ControlAdminDeviceResponseDto.from(result), result.message()));
+    }
+
+    /**
+     * 기기 에러 모드 설정 (Mock IoT 서버 프록시)
+     * POST /api/admin/devices/{id}/error-mode
+     * { "mode": "normal" | "error" | "timeout" | "fault" }
+     */
+    @PostMapping("/{id}/error-mode")
+    public ResponseEntity<ApiResponse<?>> setErrorMode(
+            @PathVariable Long id,
+            @Valid @RequestBody ErrorModeRequestDto requestDto) {
+
+        // DB에서 device_id → mac_address 조회
+        String macAddress = deviceJpaRepository.findById(id)
+                .map(DeviceEntity::getMacAddress)
+                .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND));
+
+        // Mock IoT 서버에 MAC 기반으로 에러 모드 전달
+        try {
+            iotWebClient.post()
+                    .uri("/api/devices/" + macAddress + "/error-mode")
+                    .bodyValue(Map.of("mode", requestDto.mode()))
+                    .retrieve()
+                    .bodyToMono(String.class)
+                    .block();
+
+            Map<String, Object> result = Map.of(
+                    "deviceId", id,
+                    "macAddress", macAddress,
+                    "errorMode", requestDto.mode(),
+                    "message", "에러 모드가 '" + requestDto.mode() + "'로 설정되었습니다"
+            );
+            return ResponseEntity.ok(ApiResponse.ok(result));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_GATEWAY)
+                    .body(ApiResponse.error(ErrorCode.IOT_COMMUNICATION_FAIL));
+        }
     }
 
     // ── JWT 토큰 추출 ──
