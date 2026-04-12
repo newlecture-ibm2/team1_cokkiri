@@ -45,7 +45,7 @@ const navItems: NavItem[] = [
       {
         name: "나의 커뮤니티",
         children: [
-          { name: "나의 민원", path: "/my-vocs" },
+          { name: "나의 민원", path: "/vocs" },
           { name: "나의 게시글", path: "/my-posts" },
         ],
       },

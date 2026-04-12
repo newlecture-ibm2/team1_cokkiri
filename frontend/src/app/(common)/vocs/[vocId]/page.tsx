@@ -13,7 +13,7 @@ import { apiFileUrlToBffPath } from "@/lib/bff-file-url";
 import { isRichTextBodyHtml } from "@/lib/post-html";
 import { prepareVocBodyForDisplay, VOC_RICH_BODY_CLASSNAME } from "@/lib/vocs-html";
 import { cn } from "@/lib/utils";
-import { VocAccessDeniedState } from "../_components/VocAccessDeniedState";
+import { VocAccessDeniedState } from "@/app/(common)/vocs/_components/VocAccessDeniedState";
 
 type Params = Promise<{ vocId: string }>;
 
@@ -104,7 +104,7 @@ export default async function VocDetailPage({ params }: { params: Params }) {
                 {vocStatusLabel(d.status)}
               </span>
             </div>
-            
+
             <h1 className="text-5xl md:text-7xl font-black tracking-tighter leading-[0.95] text-primary uppercase italic text-balance">
               {d.title}
             </h1>
@@ -141,7 +141,7 @@ export default async function VocDetailPage({ params }: { params: Params }) {
                 {d.content}
               </p>
             )}
-            
+
             {/* Background Decoration */}
             <span className="absolute -right-10 -bottom-10 text-[20vw] font-black opacity-[0.01] pointer-events-none select-none italic text-primary">
               VOICE
@@ -179,7 +179,7 @@ export default async function VocDetailPage({ params }: { params: Params }) {
                   </time>
                 )}
               </div>
-              
+
               {d.adminReply && isRichTextBodyHtml(d.adminReply) ? (
                 <div
                   className={cn("font-medium leading-[1.8] tracking-tight text-white/90 text-xl", VOC_RICH_BODY_CLASSNAME)}
@@ -202,7 +202,7 @@ export default async function VocDetailPage({ params }: { params: Params }) {
         <div className="pt-12">
           <VocDetailActions vocId={d.vocId} status={d.status} />
         </div>
-        
+
         {/* Global Watermark */}
         <span className="absolute -left-32 top-1/2 -rotate-90 text-[12vw] font-black opacity-[0.02] pointer-events-none select-none italic text-primary">
           ADMIN-VOICE

@@ -7,7 +7,7 @@ import type { ApiResponse, VocDetail } from "@/app/(common)/vocs/_types/vocs";
 import { VocShell } from "@/app/(common)/vocs/_components/VocShell";
 import { MotionEnter } from "@/app/(common)/community/_components/MotionEnter";
 import { VocEditForm } from "@/app/(common)/vocs/_components/VocEditForm";
-import { VocAccessDeniedState } from "../../_components/VocAccessDeniedState";
+import { VocAccessDeniedState } from "@/app/(common)/vocs/_components/VocAccessDeniedState";
 
 type Params = Promise<{ vocId: string }>;
 
