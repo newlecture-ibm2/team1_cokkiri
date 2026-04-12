@@ -280,7 +280,8 @@ export function DeviceListTable() {
                     const isThisControlling = controllingId === device.deviceId;
                     const isCooldown = cooldownRef.current.has(device.deviceId);
 
-                    const canControl = device.status === "ONLINE" && device.isActive;
+                    const canControl = (device.status === "ONLINE" || device.status === "ERROR") && device.isActive;
+                    const isErrorRetry = device.status === "ERROR" && device.isActive;
 
                     return (
                       <motion.tr
@@ -289,7 +290,8 @@ export function DeviceListTable() {
                         animate={{ opacity: 1 }}
                         transition={{ delay: idx * 0.03 }}
                         className={`border-b border-border/50 transition-colors hover:bg-muted/10
-                          ${!device.isActive ? "opacity-50" : ""}`}
+                          ${!device.isActive ? "opacity-50" : ""}
+                          ${isErrorRetry ? "bg-red-50/30" : ""}`}
                       >
                         {/* 기기명 */}
                         <td className="px-5 py-3">
@@ -332,17 +334,24 @@ export function DeviceListTable() {
                         {/* 제어 패널 (ADM-DEV-04) — commands 기반 동적 UI */}
                         <td className="px-5 py-3">
                           {canControl ? (
-                            <DeviceControlPanel
-                              commandsJson={device.deviceTypeCommands ?? "[]"}
-                              currentStateJson={device.currentState}
-                              disabled={isThisControlling || isCooldown}
-                              onControl={async (cmd, params) => {
-                                await handleControl(device.deviceId, device.name, cmd, params);
-                              }}
-                            />
+                            <div>
+                              {isErrorRetry && (
+                                <span className="mb-1 block text-[10px] font-bold text-red-500">
+                                  ⚡ 재시도 — 성공 시 자동 복구
+                                </span>
+                              )}
+                              <DeviceControlPanel
+                                commandsJson={device.deviceTypeCommands ?? "[]"}
+                                currentStateJson={device.currentState}
+                                disabled={isThisControlling || isCooldown}
+                                onControl={async (cmd, params) => {
+                                  await handleControl(device.deviceId, device.name, cmd, params);
+                                }}
+                              />
+                            </div>
                           ) : (
                             <span className="text-[10px] font-medium text-muted-foreground">
-                              {!device.isActive ? "비활성" : device.status === "OFFLINE" ? "오프라인" : "에러"}
+                              {!device.isActive ? "비활성" : "오프라인"}
                             </span>
                           )}
                         </td>
@@ -523,13 +532,21 @@ function EditDeviceModal({
           </label>
 
           <label className="block">
-            <span className="text-xs font-bold text-primary">Mock Endpoint</span>
-            <input
+            <span className="text-xs font-bold text-primary">IoT 동작 모드</span>
+            <select
               value={mockEndpoint}
               onChange={(e) => setMockEndpoint(e.target.value)}
               className="mt-1 w-full rounded-xl border border-border bg-surface px-3 py-2
                 text-sm text-primary focus:outline-none focus:ring-2 focus:ring-ring/40"
-            />
+            >
+              <option value="">🟢 정상 작동 (기본)</option>
+              <option value="/api/devices/control/error">🔴 에러 테스트 — 500 응답</option>
+              <option value="/api/devices/control/fault">⚡ 연결 끊김 테스트 — 연결 리셋</option>
+              <option value="/api/devices/control/timeout">⏳ 타임아웃 테스트 — 6초 지연</option>
+            </select>
+            <p className="mt-1 text-[10px] text-muted-foreground">
+              에러 모드 선택 시 제어 실패 → ERROR 상태 전환
+            </p>
           </label>
 
           <div className="flex justify-end gap-3 pt-2">

@@ -170,14 +170,15 @@ public class AdminDeviceService implements CreateAdminDeviceUseCase, AdminDevice
             throw new BusinessException(ErrorCode.DEVICE_INACTIVE);
         }
 
-        // 3. 기기 온라인 상태 검증
-        if ("OFFLINE".equals(device.status()) || "ERROR".equals(device.status())) {
+        // 3. 기기 온라인 상태 검증 — OFFLINE만 차단, ERROR는 관리자 재시도 허용
+        if ("OFFLINE".equals(device.status())) {
             throw new BusinessException(ErrorCode.DEVICE_OFFLINE);
         }
+        boolean wasError = "ERROR".equals(device.status());
 
-        // 4. MockIoT 제어 명령 전송
+        // 4. MockIoT 제어 명령 전송 (기기별 mockEndpoint 사용)
         boolean success = iotClient.sendCommand(
-                command.deviceId(), command.command(), command.params());
+                command.deviceId(), command.command(), command.params(), device.mockEndpoint());
 
         // 5. CONTROL_LOG 감사 이력 기록 (성공/실패 모두 기록)
         adminDeviceRepositoryPort.saveControlLog(
@@ -201,11 +202,17 @@ public class AdminDeviceService implements CreateAdminDeviceUseCase, AdminDevice
         String newState = DeviceStateUtil.mergeState(device.currentState(), command.params());
         adminDeviceRepositoryPort.updateCurrentState(command.deviceId(), newState);
 
+        // 7. ERROR 상태였던 기기가 제어 성공 시 → ONLINE 자동 복구
+        if (wasError) {
+            adminDeviceRepositoryPort.updateStatus(command.deviceId(), "ONLINE");
+            log.info("[기기 복구] deviceId: {} — ERROR → ONLINE 자동 전환", command.deviceId());
+        }
+
         return new ControlAdminDeviceResult(
                 command.deviceId(),
                 command.command(),
                 true,
-                "기기 제어가 완료되었습니다"
+                wasError ? "기기가 복구되어 정상 작동합니다" : "기기 제어가 완료되었습니다"
         );
     }
 

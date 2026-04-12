@@ -1,29 +1,75 @@
 {
-  "request": {
-    "method": "POST",
-    "url": "/api/devices/control",
-    "bodyPatterns": [
-      {
-        "matchesJsonPath": "$.device_id"
+  "mappings": [
+    {
+      "name": "IoT 제어 — 에러 응답 (500 Internal Server Error)",
+      "priority": 1,
+      "request": {
+        "method": "POST",
+        "url": "/api/devices/control/error"
       },
-      {
-        "matchesJsonPath": "$.command"
+      "response": {
+        "status": 500,
+        "headers": { "Content-Type": "application/json" },
+        "jsonBody": {
+          "success": false,
+          "result": "FAILURE",
+          "message": "기기 응답 없음 — 하드웨어 오류"
+        }
       }
-    ]
-  },
-  "response": {
-    "status": 200,
-    "headers": {
-      "Content-Type": "application/json"
     },
-    "jsonBody": {
-      "success": true,
-      "deviceId": "{{jsonPath request.body '$.device_id'}}",
-      "command": "{{jsonPath request.body '$.command'}}",
-      "result": "SUCCESS",
-      "message": "기기 제어 명령이 성공적으로 처리되었습니다.",
-      "executedAt": "{{now}}"
+    {
+      "name": "IoT 제어 — 연결 끊김 (Connection Reset)",
+      "priority": 1,
+      "request": {
+        "method": "POST",
+        "url": "/api/devices/control/fault"
+      },
+      "response": {
+        "fault": "CONNECTION_RESET_BY_PEER"
+      }
     },
-    "transformers": ["response-template"]
-  }
+    {
+      "name": "IoT 제어 — 지연 응답 (6초, 타임아웃 유발)",
+      "priority": 1,
+      "request": {
+        "method": "POST",
+        "url": "/api/devices/control/timeout"
+      },
+      "response": {
+        "status": 200,
+        "fixedDelayMilliseconds": 6000,
+        "headers": { "Content-Type": "application/json" },
+        "jsonBody": {
+          "success": true,
+          "result": "SUCCESS",
+          "message": "지연 응답 — 타임아웃 테스트용"
+        }
+      }
+    },
+    {
+      "name": "IoT 제어 — 정상 응답 (기본)",
+      "priority": 5,
+      "request": {
+        "method": "POST",
+        "url": "/api/devices/control",
+        "bodyPatterns": [
+          { "matchesJsonPath": "$.device_id" },
+          { "matchesJsonPath": "$.command" }
+        ]
+      },
+      "response": {
+        "status": 200,
+        "headers": { "Content-Type": "application/json" },
+        "jsonBody": {
+          "success": true,
+          "deviceId": "{{jsonPath request.body '$.device_id'}}",
+          "command": "{{jsonPath request.body '$.command'}}",
+          "result": "SUCCESS",
+          "message": "기기 제어 명령이 성공적으로 처리되었습니다.",
+          "executedAt": "{{now}}"
+        },
+        "transformers": ["response-template"]
+      }
+    }
+  ]
 }

@@ -91,9 +91,7 @@ export function DeviceRegisterForm() {
     } else if (form.macAddress.length > 50) {
       newErrors.macAddress = "MAC 주소는 50자 이내여야 합니다";
     }
-    if (form.mockEndpoint && !isValidUrl(form.mockEndpoint)) {
-      newErrors.mockEndpoint = "올바른 URL 형식이 아닙니다";
-    }
+    // mockEndpoint는 드롭다운 선택이므로 별도 검증 불필요
 
 
     setErrors(newErrors);
@@ -327,23 +325,27 @@ export function DeviceRegisterForm() {
           {errors.macAddress && <p className="text-xs font-medium text-destructive pl-1">{errors.macAddress}</p>}
         </div>
 
-        {/* Mock Endpoint */}
+        {/* Mock Endpoint — IoT 동작 모드 선택 */}
         <div className="space-y-2">
           <label htmlFor="mock-endpoint" className="block text-sm font-semibold text-primary">
-            모의 엔드포인트 URL
+            IoT 동작 모드
           </label>
-          <input
+          <select
             id="mock-endpoint"
-            type="text"
-            placeholder="예: http://mock-iot:8000/api/device/1"
             value={form.mockEndpoint}
             onChange={(e) => handleChange("mockEndpoint", e.target.value)}
-            className={`w-full rounded-xl border px-4 py-3 text-sm font-medium text-primary font-mono
-              bg-surface placeholder:text-muted-foreground/50 transition-all duration-200
-              focus:outline-none focus:ring-2 focus:ring-ring/40
-              ${errors.mockEndpoint ? "border-destructive ring-1 ring-destructive/30" : "border-border hover:border-secondary"}`}
-          />
-          {errors.mockEndpoint && <p className="text-xs font-medium text-destructive pl-1">{errors.mockEndpoint}</p>}
+            className="w-full rounded-xl border border-border px-4 py-3 text-sm font-medium text-primary
+              bg-surface transition-all duration-200
+              focus:outline-none focus:ring-2 focus:ring-ring/40 hover:border-secondary"
+          >
+            <option value="">🟢 정상 작동 (기본)</option>
+            <option value="/api/devices/control/error">🔴 에러 테스트 — 500 응답</option>
+            <option value="/api/devices/control/fault">⚡ 연결 끊김 테스트 — 연결 리셋</option>
+            <option value="/api/devices/control/timeout">⏳ 타임아웃 테스트 — 6초 지연</option>
+          </select>
+          <p className="text-xs text-muted-foreground pl-1">
+            에러 모드 선택 시 해당 기기의 제어 명령이 항상 실패하여 ERROR 상태로 전환됩니다
+          </p>
         </div>
       </fieldset>
 

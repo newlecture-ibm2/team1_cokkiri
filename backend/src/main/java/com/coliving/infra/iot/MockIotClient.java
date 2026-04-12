@@ -47,8 +47,18 @@ public class MockIotClient implements IotClient {
         this.iotTaskExecutor = iotTaskExecutor;
     }
 
+    private static final String DEFAULT_ENDPOINT = "/api/devices/control";
+
     /**
-     * IoT 기기에 제어 명령을 전송합니다.
+     * IoT 기기에 제어 명령을 전송합니다. (기본 엔드포인트)
+     */
+    @Override
+    public boolean sendCommand(Long deviceId, String command, Map<String, Object> params) {
+        return sendCommand(deviceId, command, params, null);
+    }
+
+    /**
+     * IoT 기기에 제어 명령을 전송합니다. (기기별 엔드포인트 지정)
      *
      * <p>전용 스레드풀에서 비동기 실행 후 동기 결과를 반환합니다.
      * 톰캣 스레드는 즉시 해제되며, IoT 응답을 기다리는 것은 iot-worker 스레드입니다.</p>
@@ -56,22 +66,24 @@ public class MockIotClient implements IotClient {
      * @param deviceId 기기 ID
      * @param command  제어 명령 (예: "ON", "OFF", "SET_TEMP")
      * @param params   추가 파라미터
+     * @param endpoint 기기별 Mock IoT 엔드포인트 경로 (null이면 기본 경로 사용)
      * @return 통신 성공 여부
      */
     @Override
-    public boolean sendCommand(Long deviceId, String command, Map<String, Object> params) {
+    public boolean sendCommand(Long deviceId, String command, Map<String, Object> params, String endpoint) {
+        String resolvedEndpoint = (endpoint != null && !endpoint.isBlank()) ? endpoint : DEFAULT_ENDPOINT;
         try {
             return CompletableFuture.supplyAsync(
-                    () -> executeCommand(deviceId, command, params),
+                    () -> executeCommand(deviceId, command, params, resolvedEndpoint),
                     iotTaskExecutor
             ).get(GLOBAL_TIMEOUT.toMillis(), TimeUnit.MILLISECONDS);
         } catch (TimeoutException e) {
-            log.error("[IoT 타임아웃] deviceId: {}, command: {} — 전체 타임아웃({}초) 초과",
-                    deviceId, command, GLOBAL_TIMEOUT.toSeconds());
+            log.error("[IoT 타임아웃] deviceId: {}, command: {}, endpoint: {} — 전체 타임아웃({}초) 초과",
+                    deviceId, command, resolvedEndpoint, GLOBAL_TIMEOUT.toSeconds());
             return false;
         } catch (Exception e) {
-            log.error("[IoT 통신 실패] deviceId: {}, command: {} — {}",
-                    deviceId, command, e.getMessage());
+            log.error("[IoT 통신 실패] deviceId: {}, command: {}, endpoint: {} — {}",
+                    deviceId, command, resolvedEndpoint, e.getMessage());
             return false;
         }
     }
@@ -79,7 +91,7 @@ public class MockIotClient implements IotClient {
     /**
      * 실제 WebClient HTTP 호출 (iot-worker 스레드에서 실행)
      */
-    private boolean executeCommand(Long deviceId, String command, Map<String, Object> params) {
+    private boolean executeCommand(Long deviceId, String command, Map<String, Object> params, String endpoint) {
         Map<String, Object> requestBody = Map.of(
                 "device_id", deviceId,
                 "command", command,
@@ -88,16 +100,16 @@ public class MockIotClient implements IotClient {
 
         try {
             String response = webClient.post()
-                    .uri("/api/devices/control")
+                    .uri(endpoint)
                     .bodyValue(requestBody)
                     .retrieve()
                     .bodyToMono(String.class)
                     .retryWhen(Retry.fixedDelay(MAX_RETRY, RETRY_DELAY)
                             .filter(this::isRetryable)
                             .doBeforeRetry(signal ->
-                                    log.warn("[IoT 재시도 {}/{}] deviceId: {}, command: {}, 원인: {}",
+                                    log.warn("[IoT 재시도 {}/{}] deviceId: {}, command: {}, endpoint: {}, 원인: {}",
                                             signal.totalRetries() + 1, MAX_RETRY,
-                                            deviceId, command, signal.failure().getMessage())
+                                            deviceId, command, endpoint, signal.failure().getMessage())
                             ))
                     .block();
 
