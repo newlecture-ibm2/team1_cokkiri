@@ -1,8 +1,17 @@
 'use client';
 
 import { useEffect, useState, useCallback, useRef } from 'react';
-import { fetchSpaces, updateSpaceLayout, SpaceDTO, extractRoomTypeName } from '../_api/spaceAdminApi';
-import type { FloorPlanBlock } from '../_types/layout';
+import {
+  fetchSpaces,
+  updateSpaceLayout,
+  SpaceDTO,
+  extractRoomTypeName,
+  fetchFloorPlan,
+  updateFloorPlan,
+  uploadBlueprint,
+  deleteBlueprint,
+} from '../_api/spaceAdminApi';
+import type { FloorPlanBlock, FloorPlanData, FloorAnnotation } from '../_types/layout';
 
 /** SpaceDTO → FloorPlanBlock 변환 (DB 값 우선, 없으면 기본값) */
 function spaceToBlock(space: SpaceDTO): FloorPlanBlock {
@@ -14,8 +23,8 @@ function spaceToBlock(space: SpaceDTO): FloorPlanBlock {
     roomTypeName: extractRoomTypeName(space),
     gridX: space.positionX ?? 0,
     gridY: space.positionY ?? 0,
-    gridW: space.positionW ?? (space.type === 'COMMON' ? 4 : 3),
-    gridH: space.positionH ?? 2,
+    gridW: space.positionW ?? (space.type === 'COMMON' ? 8 : 6),
+    gridH: space.positionH ?? 4,
     hasDeviceError: space.hasDeviceError ?? false,
   };
 }
@@ -36,6 +45,10 @@ export function useFloorPlan() {
   const [dirty, setDirty] = useState(false);
   const [saveMessage, setSaveMessage] = useState<string | null>(null);
 
+  // 평면도 (배경/어노테이션) 상태
+  const [floorPlan, setFloorPlan] = useState<FloorPlanData | null>(null);
+  const [fpDirty, setFpDirty] = useState(false);
+
   // 원본 좌표+크기 스냅샷 (dirty 판별용)
   const originalPositions = useRef<Map<number, OriginalState>>(new Map());
 
@@ -54,8 +67,8 @@ export function useFloorPlan() {
           posMap.set(s.spaceId, {
             x: s.positionX ?? 0,
             y: s.positionY ?? 0,
-            w: s.positionW ?? (s.type === 'COMMON' ? 4 : 3),
-            h: s.positionH ?? 2,
+            w: s.positionW ?? (s.type === 'COMMON' ? 8 : 6),
+            h: s.positionH ?? 4,
           });
         }
       });
@@ -79,15 +92,30 @@ export function useFloorPlan() {
     loadSpaces();
   }, [loadSpaces]);
 
-  // 선택된 층에 맞는 블록들 생성
+  // 배치가 선택된 층일 때, 해당 층의 평면도 데이터를 가져옴
+  const loadFloorPlan = useCallback(async (floor: number) => {
+    try {
+      const res = await fetchFloorPlan(floor);
+      if (res.data) {
+        setFloorPlan(res.data);
+      }
+      setFpDirty(false);
+    } catch (e) {
+      console.error('Failed to load floor plan:', e);
+    }
+  }, []);
+
+  // 선택된 층에 맞는 블록들 생성 및 평면도 로드
   useEffect(() => {
     if (selectedFloor === null) {
       setBlocks([]);
+      setFloorPlan(null);
       return;
     }
     const filtered = allSpaces.filter((s) => s.floor === selectedFloor);
     setBlocks(filtered.map(spaceToBlock));
-  }, [selectedFloor, allSpaces]);
+    loadFloorPlan(selectedFloor);
+  }, [selectedFloor, allSpaces, loadFloorPlan]);
 
   // 유일한 층 목록
   const floors = [
@@ -161,6 +189,99 @@ export function useFloorPlan() {
     }
   }, [blocks, dirty]);
 
+  // 평면도 저장 (서버 전송)
+  const saveFloorPlanState = useCallback(async () => {
+    if (!fpDirty || selectedFloor === null || !floorPlan) return;
+
+    try {
+      setSaving(true);
+      await updateFloorPlan(selectedFloor, {
+        blueprintOpacity: floorPlan.blueprintOpacity,
+        annotations: floorPlan.annotations,
+      });
+      setFpDirty(false);
+      setSaveMessage((prev) => (prev ? prev + ' 평면도 구성이 저장되었습니다.' : '평면도 구성이 저장되었습니다.'));
+    } catch (e) {
+      console.error('Failed to save floor plan:', e);
+      setSaveMessage('평면도 저장에 실패했습니다.');
+    } finally {
+      setSaving(false);
+    }
+  }, [fpDirty, floorPlan, selectedFloor]);
+
+  // 전체 저장 함수 (블록 + 평면도)
+  const saveAll = useCallback(async () => {
+    setSaveMessage(null);
+    if (dirty) await saveLayout();
+    if (fpDirty) await saveFloorPlanState();
+  }, [dirty, fpDirty, saveLayout, saveFloorPlanState]);
+
+  // 평면도 조작 함수들
+  const updateBlueprintOpacity = useCallback((opacity: number) => {
+    setFloorPlan((prev) => (prev ? { ...prev, blueprintOpacity: opacity } : prev));
+    setFpDirty(true);
+  }, []);
+
+  const handleUploadBlueprint = useCallback(
+    async (file: File) => {
+      if (selectedFloor === null) return;
+      try {
+        setSaving(true);
+        const res = await uploadBlueprint(selectedFloor, file);
+        if (res.data) setFloorPlan(res.data);
+        setSaveMessage('도면이 업로드되었습니다.');
+      } catch (e) {
+        console.error(e);
+        setSaveMessage('도면 업로드에 실패했습니다.');
+      } finally {
+        setSaving(false);
+      }
+    },
+    [selectedFloor]
+  );
+
+  const handleDeleteBlueprint = useCallback(async () => {
+    if (selectedFloor === null) return;
+    try {
+      setSaving(true);
+      await deleteBlueprint(selectedFloor);
+      setFloorPlan((prev) => (prev ? { ...prev, blueprintUrl: null } : prev));
+      setSaveMessage('도면이 삭제되었습니다.');
+    } catch (e) {
+      console.error(e);
+      setSaveMessage('도면 삭제에 실패했습니다.');
+    } finally {
+      setSaving(false);
+    }
+  }, [selectedFloor]);
+
+  const addAnnotation = useCallback((annotation: FloorAnnotation) => {
+    setFloorPlan((prev) => {
+      if (!prev) return prev;
+      return { ...prev, annotations: [...prev.annotations, annotation] };
+    });
+    setFpDirty(true);
+  }, []);
+
+  const updateAnnotation = useCallback((id: string, updates: Partial<FloorAnnotation>) => {
+    setFloorPlan((prev) => {
+      if (!prev) return prev;
+      return {
+        ...prev,
+        annotations: prev.annotations.map((a) => (a.id === id ? { ...a, ...updates } : a)),
+      };
+    });
+    setFpDirty(true);
+  }, []);
+
+  const removeAnnotation = useCallback((id: string) => {
+    setFloorPlan((prev) => {
+      if (!prev) return prev;
+      return { ...prev, annotations: prev.annotations.filter((a) => a.id !== id) };
+    });
+    setFpDirty(true);
+  }, []);
+
   return {
     blocks,
     floors,
@@ -171,7 +292,15 @@ export function useFloorPlan() {
     saveLayout,
     loading,
     saving,
-    dirty,
+    dirty: dirty || fpDirty, // 둘 중 하나라도 더티면 저장 버튼 활성화
+    saveAll,
     saveMessage,
+    floorPlan,
+    updateBlueprintOpacity,
+    handleUploadBlueprint,
+    handleDeleteBlueprint,
+    addAnnotation,
+    updateAnnotation,
+    removeAnnotation,
   };
 }

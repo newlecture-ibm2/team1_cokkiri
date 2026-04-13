@@ -28,6 +28,7 @@ const navItems: NavItem[] = [
       { name: "룸 둘러보기", path: "/rooms" },
       { name: "시설 둘러보기", path: "/experience" },
       { name: "층별 안내", path: "/floor" },
+      { name: "예약 시설", path: "/facilities" },
     ],
   },
   { name: "Community", path: "/community" },
