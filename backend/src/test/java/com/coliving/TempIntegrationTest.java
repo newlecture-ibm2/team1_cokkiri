@@ -1,4 +1,4 @@
-package com.coliving;
+    package com.coliving;
 
 import com.coliving.common.auth.application.command.RegisterCommand;
 import com.coliving.common.auth.application.port.in.RegisterUseCase;
@@ -18,16 +18,16 @@ public class TempIntegrationTest {
     public void testRegister() {
         try {
             RegisterCommand cmd = RegisterCommand.builder()
-                .loginId("test500error")
-                .password("Valid@Password1")
-                .passwordConfirm("Valid@Password1")
-                .name("test")
-                .birthDate("990101")
-                .gender(Gender.MALE)
-                .nationality("대한민국")
-                .phone("010-1234-5678")
-                .email("test@email.com")
-                .build();
+                    .loginId("test500error")
+                    .password("Valid@Password1")
+                    .passwordConfirm("Valid@Password1")
+                    .name("test")
+                    .birthDate("990101")
+                    .gender(Gender.MALE)
+                    .nationality("대한민국")
+                    .phone("010-1234-5678")
+                    .email("test@email.com")
+                    .build();
             registerUseCase.register(cmd);
             System.out.println("SUCCESS");
         } catch (Exception e) {
