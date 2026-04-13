@@ -150,10 +150,7 @@ public class AdminDeviceService implements CreateAdminDeviceUseCase, AdminDevice
             throw new BusinessException(ErrorCode.DEVICE_ACTIVE);
         }
 
-        if (adminDeviceRepositoryPort.hasControlLogs(command.deviceId())) {
-            throw new BusinessException(ErrorCode.CONTROL_LOG_EXISTS);
-        }
-
+        // Soft Delete: deleted_at 설정 — 제어 이력(control_logs)은 감사 목적으로 보존
         adminDeviceRepositoryPort.softDelete(command.deviceId());
     }
 
