@@ -60,6 +60,8 @@ export default function ContractApplyForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showToast, setShowToast] = useState(false);
+  const [bankAccountError, setBankAccountError] = useState<string | null>(null);
+  const [bankAccountTouched, setBankAccountTouched] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [userProfile, setUserProfile] = useState<{
     name?: string; phone?: string; email?: string;
@@ -258,9 +260,35 @@ export default function ContractApplyForm() {
   const nextStep = () => setStep(s => Math.min(s + 1, 4));
   const prevStep = () => setStep(s => Math.max(s - 1, 1));
 
+  // 계좌번호 유효성 검사
+  const validateBankAccount = (value: string): string | null => {
+    if (!value.trim()) return "계좌 정보를 입력해주세요.";
+
+    // 은행명 목록
+    const bankNames = ["국민", "신한", "하나", "우리", "농협", "기업", "SC", "씨티", "카카오", "토스", "케이", "수협", "대구", "부산", "광주", "전북", "경남", "제주", "산업", "우체국"];
+    const hasBankName = bankNames.some((bank) => value.includes(bank));
+    if (!hasBankName) return "은행명을 포함해주세요. (예: 국민은행 123-456-789012)";
+
+    // 계좌번호 부분 추출 (숫자와 하이픈만)
+    const accountPart = value.replace(/[^0-9-]/g, "");
+    const digitsOnly = accountPart.replace(/-/g, "");
+
+    if (digitsOnly.length < 10) return "계좌번호가 너무 짧습니다. (최소 10자리)";
+    if (digitsOnly.length > 16) return "계좌번호가 너무 깁니다. (최대 16자리)";
+
+    return null;
+  };
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target;
     const val = type === "checkbox" ? (e.target as HTMLInputElement).checked : value;
+
+    // 계좌번호 필드 실시간 검증
+    if (name === "bankAccount") {
+      if (bankAccountTouched) {
+        setBankAccountError(validateBankAccount(value));
+      }
+    }
 
     setFormData(prev => ({
       ...prev,
@@ -274,7 +302,17 @@ export default function ContractApplyForm() {
     // Validate required fields before submission
     if (!formData.address || !formData.bankAccount || !formData.usagePurpose) {
       setError("주소, 계좌 정보, 입주 목적을 모두 입력해주세요.");
-      setStep(4); // Go back to billing/details if needed
+      setStep(4);
+      return;
+    }
+
+    // 계좌번호 유효성 재검증
+    const bankError = validateBankAccount(formData.bankAccount);
+    if (bankError) {
+      setError(bankError);
+      setBankAccountError(bankError);
+      setBankAccountTouched(true);
+      setStep(4);
       return;
     }
 
@@ -659,7 +697,7 @@ export default function ContractApplyForm() {
                     </p>
                   </div>
 
-                  <div className="space-y-4">
+                  <div className="space-y-3">
                     <label className="text-[10px] font-black tracking-[0.3em] uppercase text-primary/40 block">
                       BANK ACCOUNT INFO (보증금 반환 계좌)
                     </label>
@@ -668,10 +706,35 @@ export default function ContractApplyForm() {
                       name="bankAccount"
                       value={formData.bankAccount}
                       onChange={handleInputChange}
+                      onBlur={() => {
+                        setBankAccountTouched(true);
+                        setBankAccountError(validateBankAccount(formData.bankAccount));
+                      }}
                       disabled={isReadOnly}
-                      placeholder="은행명 및 계좌번호를 입력하세요."
-                      className="w-full bg-primary/5 border-none p-6 rounded-2xl text-lg font-bold focus:ring-2 focus:ring-accent transition-all disabled:opacity-50"
+                      placeholder="예: 국민은행 940-810-012847561"
+                      className={`w-full bg-primary/5 p-6 rounded-2xl text-lg font-bold focus:ring-2 transition-all disabled:opacity-50 ${
+                        bankAccountTouched && bankAccountError
+                          ? "border-2 border-red-400 focus:ring-red-300"
+                          : bankAccountTouched && !bankAccountError && formData.bankAccount
+                            ? "border-2 border-green-400 focus:ring-green-300"
+                            : "border-none focus:ring-accent"
+                      }`}
                     />
+                    {bankAccountTouched && bankAccountError && (
+                      <div className="flex items-center gap-2 text-red-500">
+                        <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+                        <span className="text-xs font-bold">{bankAccountError}</span>
+                      </div>
+                    )}
+                    {bankAccountTouched && !bankAccountError && formData.bankAccount && (
+                      <div className="flex items-center gap-2 text-green-600">
+                        <CheckCircle2 className="w-3.5 h-3.5 shrink-0" />
+                        <span className="text-xs font-bold">유효한 계좌 형식입니다</span>
+                      </div>
+                    )}
+                    <p className="text-[10px] font-bold text-primary/30 tracking-tight">
+                      은행명과 계좌번호를 함께 입력해주세요 (10~16자리)
+                    </p>
                   </div>
 
                   {/* Payment Method Selection */}
