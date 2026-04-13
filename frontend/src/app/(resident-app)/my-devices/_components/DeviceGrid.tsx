@@ -90,14 +90,8 @@ export function DeviceGrid() {
     command: string,
     params: Record<string, unknown>
   ) => {
-    // 공용 기기는 제어 차단 → 예약 안내 모달 표시
-    if (device.spaceType === "COMMON") {
-      setReservationModal({ open: true, device });
-      return;
-    }
-
-    // 상태 검증
-    if (device.status !== "ONLINE") return;
+    // 상태 검증 — OFFLINE만 차단, ERROR는 재시도 허용 (mock-iot에서 자동 복구)
+    if (device.status === "OFFLINE") return;
     if (controllingId !== null) return;
     if (cooldownRef.current.has(device.deviceId)) return;
 
@@ -115,14 +109,22 @@ export function DeviceGrid() {
       setDevices((prev) =>
         prev.map((d) =>
           d.deviceId === device.deviceId
-            ? { ...d, currentState: JSON.stringify(newState) }
+            ? { ...d, currentState: JSON.stringify(newState), status: "ONLINE" }
             : d
         )
       );
       showFeedback(`"${device.name}" ${command}`, "success");
     } catch (err) {
-      if (err instanceof ApiError) showFeedback(err.message, "error");
-      else showFeedback("제어에 실패했습니다", "error");
+      if (err instanceof ApiError) {
+        // 공용 기기 예약 없음 → 예약 안내 모달
+        if (err.errorCode === "NO_ACTIVE_RESERVATION") {
+          setReservationModal({ open: true, device });
+        } else {
+          showFeedback(err.message, "error");
+        }
+      } else {
+        showFeedback("제어에 실패했습니다", "error");
+      }
       loadDevices(); // 제어 실패 시에도 기기 상태(ERROR 전환 등) 반영
     } finally {
       setControllingId(null);
