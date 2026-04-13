@@ -63,4 +63,11 @@ public class AdminRoomTypeController {
         adminRoomTypeUseCase.deleteRoomType(roomTypeId);
         return ApiResponse.ok(null);
     }
+
+    @Operation(summary = "방 유형 순서 변경")
+    @PutMapping("/order")
+    public ApiResponse<Void> updateRoomTypeOrder(@RequestBody java.util.List<Long> orderedIds) {
+        adminRoomTypeUseCase.updateRoomTypeOrder(orderedIds);
+        return ApiResponse.ok(null, "순서가 저장되었습니다.");
+    }
 }

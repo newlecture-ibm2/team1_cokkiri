@@ -6,6 +6,7 @@ export interface RoomTypeDTO {
   code: string;
   name: string;
   isSystemDefault: boolean;
+  sortOrder: number;
 }
 
 export interface SpaceDTO {
@@ -62,10 +63,11 @@ export function extractRoomTypeName(space: SpaceDTO): string | undefined {
   return space.roomTypeName || nested?.roomTypeName;
 }
 
-export const fetchSpaces = async (params?: { type?: string; status?: string }) => {
+export const fetchSpaces = async (params?: { type?: string; status?: string; sort?: string }) => {
   const query = new URLSearchParams();
   if (params?.type && params.type !== 'ALL') query.append('type', params.type);
   if (params?.status && params.status !== 'ALL') query.append('status', params.status);
+  if (params?.sort) query.append('sort', params.sort);
   
   const queryString = query.toString() ? `?${query.toString()}` : '';
   const res = await apiFetch<any>(`/admin/spaces${queryString}`);
@@ -174,6 +176,13 @@ export const updateRoomType = async (roomTypeId: number, data: { name: string })
 export const deleteRoomType = async (roomTypeId: number) => {
   return await apiFetch<any>(`/admin/room-types/${roomTypeId}`, {
     method: 'DELETE',
+  });
+};
+
+export const updateRoomTypeOrder = async (orderedIds: number[]) => {
+  return await apiFetch<any>('/admin/room-types/order', {
+    method: 'PUT',
+    body: JSON.stringify(orderedIds),
   });
 };
 

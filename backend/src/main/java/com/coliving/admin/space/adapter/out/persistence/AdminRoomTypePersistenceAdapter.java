@@ -21,7 +21,7 @@ public class AdminRoomTypePersistenceAdapter implements AdminRoomTypeRepositoryP
 
     @Override
     public List<AdminRoomType> findAll() {
-        return roomTypeJpaRepository.findAll(org.springframework.data.domain.Sort.by(org.springframework.data.domain.Sort.Direction.ASC, "name")).stream()
+        return roomTypeJpaRepository.findAll(org.springframework.data.domain.Sort.by(org.springframework.data.domain.Sort.Direction.ASC, "sortOrder", "id")).stream()
                 .map(this::toModel)
                 .toList();
     }
@@ -47,6 +47,7 @@ public class AdminRoomTypePersistenceAdapter implements AdminRoomTypeRepositoryP
                     .code(roomType.getCode())
                     .name(roomType.getName())
                     .isSystemDefault(roomType.getIsSystemDefault())
+                    .sortOrder(roomType.getSortOrder())
                     .build();
         }
         return toModel(roomTypeJpaRepository.save(entity));
@@ -64,12 +65,24 @@ public class AdminRoomTypePersistenceAdapter implements AdminRoomTypeRepositoryP
         return privateSpaceDetailJpaRepository.existsByRoomType_Id(roomTypeId);
     }
 
+    @Override
+    public void updateSortOrders(List<AdminRoomType> roomTypes) {
+        for (AdminRoomType rt : roomTypes) {
+            RoomTypeEntity entity = roomTypeJpaRepository.findById(rt.getRoomTypeId()).orElse(null);
+            if (entity != null) {
+                entity.updateSortOrder(rt.getSortOrder());
+                roomTypeJpaRepository.save(entity);
+            }
+        }
+    }
+
     private AdminRoomType toModel(RoomTypeEntity entity) {
         return AdminRoomType.builder()
                 .roomTypeId(entity.getId())
                 .code(entity.getCode())
                 .name(entity.getName())
                 .isSystemDefault(entity.getIsSystemDefault())
+                .sortOrder(entity.getSortOrder())
                 .build();
     }
 }

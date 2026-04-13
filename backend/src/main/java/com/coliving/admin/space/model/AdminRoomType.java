@@ -10,4 +10,5 @@ public class AdminRoomType {
     private String code;
     private String name;
     private Boolean isSystemDefault;
+    private Integer sortOrder;
 }
