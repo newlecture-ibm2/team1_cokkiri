@@ -176,3 +176,68 @@ export const deleteRoomType = async (roomTypeId: number) => {
     method: 'DELETE',
   });
 };
+
+// ===== Floor Plan (평면도 배경/어노테이션) API =====
+
+import type { FloorPlanData, FloorAnnotation } from '../_types/layout';
+
+export const fetchFloorPlan = async (floor: number): Promise<ApiResponse<FloorPlanData>> => {
+  return await apiFetch<FloorPlanData>(`/admin/floors/${floor}/plan`);
+};
+
+export const updateFloorPlan = async (
+  floor: number,
+  data: { blueprintOpacity: number; annotations: FloorAnnotation[] }
+) => {
+  return await apiFetch<FloorPlanData>(`/admin/floors/${floor}/plan`, {
+    method: 'PUT',
+    body: JSON.stringify(data),
+  });
+};
+
+export const uploadBlueprint = async (floor: number, file: File): Promise<ApiResponse<FloorPlanData>> => {
+  const formData = new FormData();
+  formData.append('file', file);
+
+  const res = await fetch(`/api/admin/floors/${floor}/plan/blueprint`, {
+    method: 'POST',
+    body: formData,
+    credentials: 'include',
+  });
+  if (!res.ok) throw new Error('Failed to upload blueprint');
+  return res.json();
+};
+
+export const deleteBlueprint = async (floor: number) => {
+  return await apiFetch<void>(`/admin/floors/${floor}/plan/blueprint`, {
+    method: 'DELETE',
+  });
+};
+
+// ===== Annotation Type (어노테이션 유형) API =====
+
+import type { AnnotationType } from '../_types/layout';
+
+export const fetchAnnotationTypes = async (): Promise<ApiResponse<AnnotationType[]>> => {
+  return await apiFetch<AnnotationType[]>('/admin/annotation-types');
+};
+
+export const createAnnotationType = async (data: { code: string; name: string; iconName: string; defaultColor?: string }) => {
+  return await apiFetch<AnnotationType>('/admin/annotation-types', {
+    method: 'POST',
+    body: JSON.stringify(data),
+  });
+};
+
+export const updateAnnotationType = async (id: number, data: { name: string; iconName: string; defaultColor?: string }) => {
+  return await apiFetch<AnnotationType>(`/admin/annotation-types/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify(data),
+  });
+};
+
+export const deleteAnnotationType = async (id: number) => {
+  return await apiFetch<void>(`/admin/annotation-types/${id}`, {
+    method: 'DELETE',
+  });
+};
