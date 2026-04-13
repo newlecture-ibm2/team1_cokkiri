@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { apiFetch, ApiError } from '@/lib/api';
 import { useAuthStore } from '@/store/useAuthStore';
+import { motion, AnimatePresence } from 'framer-motion';
 
 export default function LoginForm() {
   const router = useRouter();
@@ -12,6 +13,11 @@ export default function LoginForm() {
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const login = useAuthStore((state) => state.login);
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 30 },
+    visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: "easeOut" as const } }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -38,7 +44,7 @@ export default function LoginForm() {
         // which fulfills the prompt's requirement of not giving specific reasons.
         setError(err.message);
       } else {
-        setError('로그인 중 문제가 발생했습니다.');
+        setError('An error occurred during login.');
       }
     } finally {
       setIsLoading(false);
@@ -46,44 +52,56 @@ export default function LoginForm() {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="mt-8 flex flex-col gap-6">
-      {error && (
-        <div className="bg-destructive/10 text-destructive text-sm font-medium p-4 rounded-xl border border-destructive/20">
-          {error}
-        </div>
-      )}
+    <form 
+      onSubmit={handleSubmit} 
+      className="mt-8 flex flex-col gap-6"
+    >
+      <AnimatePresence>
+        {error && (
+          <motion.div 
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            className="bg-destructive/10 text-destructive text-sm font-medium p-4 rounded-xl border border-destructive/20"
+          >
+            {error}
+          </motion.div>
+        )}
+      </AnimatePresence>
       
-      <div className="flex flex-col gap-2">
-        <label className="text-[10px] font-black uppercase tracking-[0.3em] text-muted">ID</label>
+      <motion.div variants={itemVariants} className="flex flex-col gap-2">
+        <label className="text-[10px] font-black uppercase tracking-[0.3em] text-primary/80">ID</label>
         <input
           type="text"
           value={loginId}
           onChange={(e) => setLoginId(e.target.value)}
           required
-          placeholder="아이디를 입력하세요"
-          className="h-12 w-full rounded-xl border border-secondary bg-transparent px-4 py-2 placeholder:text-muted focus:border-primary focus:outline-none"
+          placeholder="Enter your login ID"
+          className="h-12 w-full rounded-xl border border-secondary bg-transparent px-4 py-2 text-primary placeholder:text-primary/50 focus:border-primary focus:outline-none"
         />
-      </div>
+      </motion.div>
       
-      <div className="flex flex-col gap-2">
-        <label className="text-[10px] font-black uppercase tracking-[0.3em] text-muted">PASSWORD</label>
+      <motion.div variants={itemVariants} className="flex flex-col gap-2">
+        <label className="text-[10px] font-black uppercase tracking-[0.3em] text-primary/80">PASSWORD</label>
         <input
           type="password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           required
-          placeholder="비밀번호를 입력하세요"
-          className="h-12 w-full rounded-xl border border-secondary bg-transparent px-4 py-2 placeholder:text-muted focus:border-primary focus:outline-none"
+          placeholder="Enter your password"
+          className="h-12 w-full rounded-xl border border-secondary bg-transparent px-4 py-2 text-primary placeholder:text-primary/50 focus:border-primary focus:outline-none"
         />
-      </div>
+      </motion.div>
 
-      <button
-        type="submit"
-        disabled={isLoading}
-        className="mt-6 flex h-14 w-full items-center justify-center rounded-xl bg-primary text-background font-black uppercase tracking-tighter hover:scale-[1.02] transition-transform disabled:opacity-50"
-      >
-        {isLoading ? '로딩 중...' : '로그인'}
-      </button>
+      <motion.div variants={itemVariants} className="mt-6">
+        <button
+          type="submit"
+          disabled={isLoading}
+          className="flex h-14 w-full items-center justify-center rounded-xl bg-primary text-background font-black uppercase tracking-[0.2em] hover:scale-[1.02] transition-transform disabled:opacity-50"
+        >
+          {isLoading ? 'Loading...' : 'Log In'}
+        </button>
+      </motion.div>
     </form>
   );
 }

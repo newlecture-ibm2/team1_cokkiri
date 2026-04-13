@@ -1,8 +1,88 @@
-import { redirect } from "next/navigation";
+import Link from "next/link";
+import { notFound, redirect } from "next/navigation";
+import { LOGIN_REQUIRED_MESSAGE } from "@/lib/auth-messages";
+import { LoginRequiredGate } from "@/components/shared/LoginRequiredGate";
+import { bffGet } from "@/app/(common)/vocs/_api/bff-server";
+import type { ApiResponse, VocDetail } from "@/app/(common)/vocs/_types/vocs";
+import { VocShell } from "@/app/(common)/vocs/_components/VocShell";
+import { MotionEnter } from "@/app/(common)/community/_components/MotionEnter";
+import { VocEditForm } from "@/app/(common)/vocs/_components/VocEditForm";
+import { VocAccessDeniedState } from "@/app/(common)/vocs/_components/VocAccessDeniedState";
 
 type Params = Promise<{ vocId: string }>;
 
-export default async function LegacyVocEditRedirect({ params }: { params: Params }) {
+export async function generateMetadata({ params }: { params: Params }) {
   const { vocId } = await params;
-  redirect(`/profile/vocs/${vocId}/edit`);
+  return { title: `민원 수정 #${vocId} | CoKkiri` };
+}
+
+export default async function VocEditPage({ params }: { params: Params }) {
+  const { vocId } = await params;
+  const id = parseInt(vocId, 10);
+  if (Number.isNaN(id)) notFound();
+
+  const res = await bffGet(`vocs/${id}`);
+  if (res.status === 404) notFound();
+  if (res.status === 401) {
+    return (
+      <VocShell>
+        <MotionEnter>
+          <div className="mx-auto max-w-3xl text-center">
+            <LoginRequiredGate />
+            <p className="font-medium text-destructive">{LOGIN_REQUIRED_MESSAGE}</p>
+          </div>
+        </MotionEnter>
+      </VocShell>
+    );
+  }
+  if (res.status === 403) {
+    return <VocAccessDeniedState />;
+  }
+  if (!res.ok) {
+    return (
+      <VocShell>
+        <MotionEnter>
+          <div className="mx-auto max-w-3xl text-center">
+            <p className="font-medium text-destructive" role="alert">
+              민원 정보를 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.
+            </p>
+          </div>
+        </MotionEnter>
+      </VocShell>
+    );
+  }
+
+  const body = (await res.json()) as ApiResponse<VocDetail>;
+  if (!body.success || !body.data) notFound();
+
+  if (body.data.status !== "OPEN") {
+    redirect(`/vocs/${id}`);
+  }
+
+  return (
+    <VocShell>
+      <MotionEnter>
+        <div className="mx-auto max-w-4xl">
+          <header className="space-y-4 border-b border-primary/10 pb-10">
+            <Link
+              href={`/vocs/${id}`}
+              className="inline-flex h-11 items-center rounded-full border border-secondary/40 bg-secondary/10 px-5 font-black text-[10px] uppercase tracking-[0.24em] text-secondary hover:border-secondary/70"
+            >
+              ← 상세
+            </Link>
+            <h1 className="text-[8vw] font-black uppercase leading-[0.85] tracking-tighter text-foreground md:text-[3rem]">
+              민원{" "}
+              <span className="underline decoration-secondary decoration-2 underline-offset-[0.18em]">수정</span>
+            </h1>
+            <p className="max-w-xl text-sm font-medium text-muted-foreground">
+              접수 상태(OPEN)에서만 수정할 수 있습니다.
+            </p>
+          </header>
+          <div className="mt-10">
+            <VocEditForm initial={body.data} />
+          </div>
+        </div>
+      </MotionEnter>
+    </VocShell>
+  );
 }

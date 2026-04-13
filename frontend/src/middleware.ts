@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
+import { decodeToken } from '@/lib/auth';
 
 /**
  * Edge Middleware — 최소 보안 게이트
@@ -15,17 +16,39 @@ import type { NextRequest } from 'next/server';
  *   2. 그 외 요청은 Route Handler로 통과
  */
 export async function middleware(req: NextRequest) {
+  const pathname = req.nextUrl.pathname;
+
   // /api/session 은 내부 전용 — 브라우저 직접 호출 차단
-  if (req.nextUrl.pathname.startsWith('/api/session')) {
+  if (pathname.startsWith('/api/session')) {
     return NextResponse.json(
       { success: false, message: 'Not Found' },
       { status: 404 },
     );
   }
 
+  // 관리자 페이지 및 접근 제어
+  if (pathname.startsWith('/admin') || pathname.startsWith('/api/admin')) {
+    const accessToken = req.cookies.get('access_token')?.value;
+
+    if (!accessToken) {
+      if (pathname.startsWith('/api/admin')) {
+        return NextResponse.json({ success: false, message: '접근 권한이 없습니다.', errorCode: 'FORBIDDEN' }, { status: 403 });
+      }
+      return NextResponse.redirect(new URL('/login', req.url));
+    }
+
+    const payload = decodeToken(accessToken);
+    if (!payload || payload.role !== 'ADMIN') {
+      if (pathname.startsWith('/api/admin')) {
+        return NextResponse.json({ success: false, message: '접근 권한이 없습니다.', errorCode: 'FORBIDDEN' }, { status: 403 });
+      }
+      return NextResponse.redirect(new URL('/forbidden', req.url));
+    }
+  }
+
   return NextResponse.next();
 }
 
 export const config = {
-  matcher: ['/api/session/:path*'],
+  matcher: ['/api/session/:path*', '/admin/:path*', '/api/admin/:path*'],
 };

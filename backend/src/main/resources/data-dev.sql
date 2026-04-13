@@ -24,6 +24,28 @@ INSERT INTO room_types (code, name, is_system_default, created_at, updated_at)
 SELECT 'SUITE', '스위트룸', true, now(), now() WHERE NOT EXISTS (SELECT 1 FROM room_types WHERE code = 'SUITE');
 
 -- ──────────────────────────────────────────────
+-- 0-1. 어노테이션 유형 마스터 데이터 (ANNOTATION_TYPES)
+-- ──────────────────────────────────────────────
+
+INSERT INTO annotation_types (code, name, icon_name, default_color, is_system_default, created_at, updated_at)
+SELECT 'DOOR', '출입문', 'DoorOpen', 'primary', true, now(), now() WHERE NOT EXISTS (SELECT 1 FROM annotation_types WHERE code = 'DOOR');
+
+INSERT INTO annotation_types (code, name, icon_name, default_color, is_system_default, created_at, updated_at)
+SELECT 'STAIRS', '계단', 'ArrowUpDown', 'muted', true, now(), now() WHERE NOT EXISTS (SELECT 1 FROM annotation_types WHERE code = 'STAIRS');
+
+INSERT INTO annotation_types (code, name, icon_name, default_color, is_system_default, created_at, updated_at)
+SELECT 'ELEVATOR', '엘리베이터', 'ArrowUpSquare', 'accent', true, now(), now() WHERE NOT EXISTS (SELECT 1 FROM annotation_types WHERE code = 'ELEVATOR');
+
+INSERT INTO annotation_types (code, name, icon_name, default_color, is_system_default, created_at, updated_at)
+SELECT 'RESTROOM', '화장실', 'Bath', 'secondary', true, now(), now() WHERE NOT EXISTS (SELECT 1 FROM annotation_types WHERE code = 'RESTROOM');
+
+INSERT INTO annotation_types (code, name, icon_name, default_color, is_system_default, created_at, updated_at)
+SELECT 'GARDEN', '정원', 'TreePine', 'accent', true, now(), now() WHERE NOT EXISTS (SELECT 1 FROM annotation_types WHERE code = 'GARDEN');
+
+INSERT INTO annotation_types (code, name, icon_name, default_color, is_system_default, created_at, updated_at)
+SELECT 'CUSTOM', '기타', 'MapPin', 'primary', true, now(), now() WHERE NOT EXISTS (SELECT 1 FROM annotation_types WHERE code = 'CUSTOM');
+
+-- ──────────────────────────────────────────────
 -- 1. 개인 공간 (PRIVATE) — 방 5개
 -- ──────────────────────────────────────────────
 

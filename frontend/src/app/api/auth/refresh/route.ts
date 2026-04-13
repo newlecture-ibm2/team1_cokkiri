@@ -50,6 +50,13 @@ export async function POST(req: NextRequest) {
         path: '/',
         maxAge: 0,
       });
+      failResponse.cookies.set('access_token', '', {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+        path: '/',
+        maxAge: 0,
+      });
       return failResponse;
     }
 
@@ -59,11 +66,21 @@ export async function POST(req: NextRequest) {
     await redis.set(`session:${sessionId}:access`, newAccess, 'EX', 1800); // 30분
     await redis.set(`session:${sessionId}:refresh`, newRefresh, 'EX', 7 * 24 * 60 * 60); // 7일
 
-    // 응답엔 클라이언트가 토큰을 볼 수 없도록 제거
-    return NextResponse.json(
+    // 응답엔 클라이언트가 토큰을 볼 수 없도록 제거(단, access_token은 미들웨어 검증용으로 유지)
+    const successResponse = NextResponse.json(
       { success: true, data: null, message: '토큰이 갱신되었습니다.' },
       { status: 200 }
     );
+
+    successResponse.cookies.set('access_token', newAccess, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      path: '/',
+      maxAge: 7 * 24 * 60 * 60,
+    });
+
+    return successResponse;
 
   } catch (error: any) {
     console.error(`[Refresh Route] Unexpected error: ${error.message || 'Unknown Error'}`);

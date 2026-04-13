@@ -46,6 +46,8 @@ import com.coliving.admin.space.adapter.out.jpa.SpaceJpaRepository;
 import com.coliving.admin.space.model.ImageType;
 import com.coliving.admin.space.adapter.out.jpa.RoomTypeEntity;
 import com.coliving.admin.space.adapter.out.jpa.RoomTypeJpaRepository;
+import com.coliving.admin.space.adapter.out.jpa.AnnotationTypeEntity;
+import com.coliving.admin.space.adapter.out.jpa.AnnotationTypeJpaRepository;
 import com.coliving.admin.space.model.SpaceStatus;
 import com.coliving.admin.space.model.SpaceType;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -93,6 +95,7 @@ public class DataInitializer implements ApplicationRunner {
     private final PrivateSpaceDetailJpaRepository privateSpaceDetailJpaRepository;
     private final CommonSpaceDetailJpaRepository commonSpaceDetailJpaRepository;
     private final RoomTypeJpaRepository roomTypeJpaRepository;
+    private final AnnotationTypeJpaRepository annotationTypeJpaRepository;
     private final SpaceImageJpaRepository spaceImageJpaRepository;
     private final DeviceTypeJpaRepository deviceTypeJpaRepository;
     private final DeviceJpaRepository deviceJpaRepository;
@@ -116,6 +119,8 @@ public class DataInitializer implements ApplicationRunner {
         UserEntity user2 = getOrCreateUser("user2", "김민지", "980315", Gender.FEMALE, "010-1234-5678", "minji@cokkiri.local");
         UserEntity user3 = getOrCreateUser("user3", "이준호", "970820", Gender.MALE, "010-2345-6789", "junho@cokkiri.local");
         UserEntity user4 = getOrCreateUser("user4", "박서연", "000112", Gender.FEMALE, "010-3456-7890", "seoyeon@cokkiri.local");
+
+        seedDefaultAnnotationTypes();
 
         if (userCount == 0) {
             SpaceEntity deviceHostSpace = seedSpacesFromDevDataset();
@@ -663,6 +668,28 @@ public class DataInitializer implements ApplicationRunner {
                 .sortOrder(sortOrder)
                 .isThumbnail(thumbnail)
                 .build());
+    }
+
+    private void seedDefaultAnnotationTypes() {
+        getOrCreateAnnotationType("DOOR", "출입문", "DoorOpen", "primary");
+        getOrCreateAnnotationType("STAIRS", "계단", "ArrowUpDown", "muted");
+        getOrCreateAnnotationType("ELEVATOR", "엘리베이터", "ArrowUpSquare", "accent");
+        getOrCreateAnnotationType("RESTROOM", "화장실", "Bath", "secondary");
+        getOrCreateAnnotationType("GARDEN", "정원", "TreePine", "accent");
+        getOrCreateAnnotationType("CUSTOM", "기타", "MapPin", "primary");
+        log.info("[DataInitializer] 어노테이션 유형 시드 데이터 적재 완료 (6종)");
+    }
+
+    private AnnotationTypeEntity getOrCreateAnnotationType(String code, String name, String iconName, String defaultColor) {
+        return annotationTypeJpaRepository.findByCode(code)
+                .orElseGet(() -> annotationTypeJpaRepository.save(
+                        AnnotationTypeEntity.builder()
+                                .code(code)
+                                .name(name)
+                                .iconName(iconName)
+                                .defaultColor(defaultColor)
+                                .isSystemDefault(true)
+                                .build()));
     }
 
     private RoomTypeEntity getOrCreateRoomType(String code, String name) {

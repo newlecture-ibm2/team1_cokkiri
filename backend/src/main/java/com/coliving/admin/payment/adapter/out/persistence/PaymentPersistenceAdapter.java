@@ -107,6 +107,11 @@ public class PaymentPersistenceAdapter implements PaymentRepositoryPort {
                 .collect(Collectors.toList());
     }
 
+    @Override
+    public boolean existsByContractAndMonth(Long contractId, com.coliving.admin.payment.model.PaymentType type, int year, int month) {
+        return paymentJpaRepository.existsByContractAndTypeAndMonth(contractId, type, year, month);
+    }
+
     private Payment mapToDomain(PaymentEntity entity, com.coliving.common.auth.adapter.out.jpa.UserEntity user) {
         Payment domain = new Payment();
         domain.setPaymentId(entity.getPaymentId());

@@ -62,12 +62,16 @@ public class SecurityConfig {
                         // --- 공개: 공간·룸 조회 ---
                         .requestMatchers(HttpMethod.GET, "/api/rooms/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/experience/**").permitAll() // EXPERIENCE 공용시설 소개 🔓 Public
+                        .requestMatchers(HttpMethod.GET, "/api/floors").permitAll() // FLOOR 층별 평면도 🔓 Public
 
                         // --- 커뮤니티: 목록·상세만 비로그인 조회 (Controller에서 Optional Actor 처리) ---
                         .requestMatchers(HttpMethod.GET, "/api/posts", "/api/posts/*").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/facilities").permitAll() // §6.1 🔓 Public
                         // 게시글 본문(리치 텍스트)에 포함된 업로드 이미지 조회
                         .requestMatchers(HttpMethod.GET, "/api/files/community/**").permitAll()
+
+                        // --- 업로드 파일 정적 서빙 (배경 도면 등) ---
+                        .requestMatchers(HttpMethod.GET, "/api/uploads/**").permitAll()
 
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html").permitAll()
 
@@ -79,10 +83,10 @@ public class SecurityConfig {
                                 "/api/reservations/**", "/api/control-logs/**")
                         .hasAnyRole("RESIDENT", "ADMIN")
 
-                        // --- VOC: 입주자·관리자·일반회원 (본인 민원만 서비스 레이어에서 추가 제한) ---
-                        .requestMatchers("/api/vocs/**").hasAnyRole(MEMBER_ROLES)
+                        // --- VOC: 입주자·관리자 전용 ---
+                        .requestMatchers("/api/vocs/**").hasAnyRole(RESIDENT_ADMIN_ROLES)
                         // VOC 본문 이미지·첨부 파일
-                        .requestMatchers(HttpMethod.GET, "/api/files/voc/**").hasAnyRole(MEMBER_ROLES)
+                        .requestMatchers(HttpMethod.GET, "/api/files/voc/**").hasAnyRole(RESIDENT_ADMIN_ROLES)
 
                         // --- 알림: 로그인 회원 전체 (USER 포함) ---
                         .requestMatchers("/api/notifications/**").hasAnyRole(MEMBER_ROLES)

@@ -50,7 +50,17 @@ public class GlobalExceptionHandler {
      */
     @ExceptionHandler(DataIntegrityViolationException.class)
     public ResponseEntity<ApiResponse<?>> handleDataIntegrityViolation(DataIntegrityViolationException e) {
-        log.warn("Data Integrity Violation: {}", e.getMessage());
+        String rootMsg = e.getMostSpecificCause().getMessage();
+        log.warn("Data Integrity Violation: {}", rootMsg);
+
+        // Unique constraint 위반 시 의미 있는 메시지 반환
+        if (rootMsg != null && (rootMsg.contains("unique") || rootMsg.contains("duplicate")
+                || rootMsg.contains("중복") || rootMsg.contains("already exists"))) {
+            return ResponseEntity
+                    .status(HttpStatus.CONFLICT)
+                    .body(ApiResponse.error(ErrorCode.DUPLICATE_SPACE_NAME, "이미 동일한 이름의 데이터가 존재합니다. 삭제된 데이터와 충돌할 수 있으니 다른 이름을 사용해 주세요."));
+        }
+
         return ResponseEntity
                 .status(HttpStatus.CONFLICT)
                 .body(ApiResponse.error(ErrorCode.CONCURRENCY_ERROR));
