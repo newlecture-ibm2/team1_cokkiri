@@ -66,6 +66,14 @@ public class GlobalExceptionHandler {
                 .body(ApiResponse.error(ErrorCode.CONCURRENCY_ERROR));
     }
 
+    @ExceptionHandler(org.springframework.http.converter.HttpMessageNotReadableException.class)
+    public ResponseEntity<ApiResponse<?>> handleHttpMessageNotReadableException(org.springframework.http.converter.HttpMessageNotReadableException e) {
+        log.warn("Invalid JSON format (Parsing failed): {}", e.getMessage());
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(ApiResponse.error(ErrorCode.VALIDATION_ERROR, "데이터 파싱 중 오류가 발생했습니다. 전송된 항목의 타입이나 형식을 확인해주세요."));
+    }
+
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ApiResponse<Map<String, String>>> handleValidationException(MethodArgumentNotValidException e) {
         Map<String, String> errors = new HashMap<>();
@@ -99,6 +107,6 @@ public class GlobalExceptionHandler {
         log.error("Unhandled exception", e);
         return ResponseEntity
                 .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(ApiResponse.error(ErrorCode.INTERNAL_SERVER_ERROR));
+                .body(ApiResponse.error(ErrorCode.INTERNAL_SERVER_ERROR, e.toString() + " | " + e.getMessage()));
     }
 }

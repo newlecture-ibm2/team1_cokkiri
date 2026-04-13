@@ -25,7 +25,7 @@ export default function RegisterPage() {
       animate="visible"
       className="w-full"
     >
-      <motion.div variants={itemVariants} className="mb-14">
+      <motion.div variants={itemVariants} className="mb-8">
         <h2 className="text-4xl md:text-5xl font-black tracking-tighter uppercase text-primary mb-4">
           Create Account<span className="text-accent">.</span>
         </h2>
