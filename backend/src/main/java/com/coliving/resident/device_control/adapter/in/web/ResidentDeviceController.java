@@ -54,7 +54,10 @@ public class ResidentDeviceController {
                 .map(d -> {
                     boolean controllable;
                     if ("COMMON".equals(d.spaceType())) {
-                        controllable = residentDeviceUseCase.hasApprovedReservationNow(userId, d.spaceId());
+                        // 자유이용 시설(is_reservable=false): 항상 제어 가능
+                        // 예약제 시설(is_reservable=true): APPROVED 예약 시간대만 제어 가능
+                        controllable = !Boolean.TRUE.equals(d.isReservable())
+                                || residentDeviceUseCase.hasApprovedReservationNow(userId, d.spaceId());
                     } else {
                         controllable = true; // PRIVATE 기기는 항상 제어 가능
                     }

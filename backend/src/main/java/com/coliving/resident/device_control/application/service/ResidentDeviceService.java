@@ -122,10 +122,14 @@ public class ResidentDeviceService implements ResidentDeviceUseCase {
                 throw new BusinessException(ErrorCode.SPACE_MISMATCH);
             }
         } else if ("COMMON".equals(spaceType)) {
-            // COMMON 기기: 현재시각 APPROVED 예약 보유 확인 (ERD 비즈니스 규칙 #9)
-            if (!residentDeviceRepositoryPort.hasApprovedReservationNow(command.userId(), device.spaceId())) {
-                throw new BusinessException(ErrorCode.NO_ACTIVE_RESERVATION);
+            // COMMON 기기: 예약제 시설만 예약 검증 (자유이용 시설은 RESIDENT면 바로 허용)
+            if (Boolean.TRUE.equals(device.isReservable())) {
+                // 예약제 시설: 현재시각 APPROVED 예약 보유 확인 (ERD 비즈니스 규칙 #9)
+                if (!residentDeviceRepositoryPort.hasApprovedReservationNow(command.userId(), device.spaceId())) {
+                    throw new BusinessException(ErrorCode.NO_ACTIVE_RESERVATION);
+                }
             }
+            // 자유이용 시설(is_reservable=false): ACTIVE 계약만 있으면 제어 허용 (step 2에서 이미 검증)
         }
 
         // 8. MockIoT 제어 명령 전송
