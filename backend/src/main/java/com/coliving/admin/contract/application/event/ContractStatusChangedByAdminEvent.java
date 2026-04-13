@@ -11,6 +11,7 @@ public class ContractStatusChangedByAdminEvent {
     private final Long userId;
     private final Long spaceId;
     private final String spaceName; // 공간 이름을 미리 담아서 컨텍스트 유실 방지
+    private final java.math.BigDecimal monthlyRent;
     private final ContractStatus newStatus;
     private final String message;
     private final String rejectedReason;

@@ -22,6 +22,7 @@ public class AdminPaymentController {
 
     private final ApprovePaymentUseCase approvePaymentUseCase;
     private final ViewPaymentListUseCase viewPaymentListUseCase;
+    private final com.coliving.admin.payment.application.port.in.CreatePaymentUseCase createPaymentUseCase;
 
     @GetMapping
     public ApiResponse<PaymentListResponseDto> getAllPayments() {
@@ -30,6 +31,22 @@ public class AdminPaymentController {
                 .map(PaymentResponseDto::from)
                 .collect(Collectors.toList());
         return ApiResponse.ok(PaymentListResponseDto.from(responseDtos));
+    }
+
+    @PostMapping
+    public ApiResponse<PaymentResponseDto> createPayment(@Valid @RequestBody com.coliving.admin.payment.adapter.in.web.dto.req.CreatePaymentRequestDto requestDto) {
+        com.coliving.admin.payment.application.command.CreatePaymentCommand command = com.coliving.admin.payment.application.command.CreatePaymentCommand.builder()
+                .contractId(requestDto.getContractId())
+                .reservationId(requestDto.getReservationId())
+                .userId(requestDto.getUserId())
+                .type(requestDto.getType())
+                .amount(requestDto.getAmount())
+                .status(requestDto.getStatus())
+                .billingDate(requestDto.getBillingDate())
+                .build();
+
+        Payment created = createPaymentUseCase.createPayment(command);
+        return ApiResponse.ok(PaymentResponseDto.from(created), "결제 정보가 등록되었습니다.");
     }
 
     @PostMapping("/{id}/approve")
