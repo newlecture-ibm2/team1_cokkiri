@@ -48,8 +48,30 @@ function loadSeed() {
   return [];
 }
 
-/** 파일에서 기기 데이터 로드 (없으면 시드에서 초기화) */
+/** 시드 파일이 데이터 파일보다 최신인지 확인 */
+function isSeedNewer() {
+  try {
+    if (!fs.existsSync(DATA_PATH) || !fs.existsSync(SEED_PATH)) return true;
+    const dataMtime = fs.statSync(DATA_PATH).mtimeMs;
+    const seedMtime = fs.statSync(SEED_PATH).mtimeMs;
+    return seedMtime > dataMtime;
+  } catch {
+    return true;
+  }
+}
+
+/** 파일에서 기기 데이터 로드 (시드가 더 최신이면 시드에서 재초기화) */
 function load() {
+  // 시드 파일이 데이터 파일보다 최신이면 시드에서 재초기화
+  if (isSeedNewer()) {
+    console.log('[DeviceStore] 시드 파일이 변경됨 → 시드 데이터에서 재초기화');
+    const seed = loadSeed();
+    if (seed.length > 0) {
+      saveData(seed);
+    }
+    return seed;
+  }
+
   try {
     if (fs.existsSync(DATA_PATH)) {
       const raw = fs.readFileSync(DATA_PATH, 'utf-8');
