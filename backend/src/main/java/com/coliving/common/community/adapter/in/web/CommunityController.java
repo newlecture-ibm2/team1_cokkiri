@@ -72,6 +72,7 @@ public class CommunityController {
                                 .category(item.getCategory() != null ? item.getCategory().name() : null)
                                 .title(item.getTitle())
                                 .authorUserId(item.getAuthorUserId())
+                                .authorName(item.getAuthorName())
                                 .viewCount(item.getViewCount())
                                 .likeCount(item.getLikeCount())
                                 .commentCount(item.getCommentCount())

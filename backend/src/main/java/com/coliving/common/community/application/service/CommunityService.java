@@ -79,16 +79,26 @@ public class CommunityService implements CommunityUseCase {
         Page<Post> page = repositoryPort.findPosts(command.getCategory(), pageRequest);
 
         List<PostListItemResult> content = page.getContent().stream()
-                .map(post -> PostListItemResult.builder()
-                        .postId(post.getPostId())
-                        .category(post.getCategory())
-                        .title(PlainTextHtmlSanitizer.sanitizeTitle(post.getTitle()))
-                        .authorUserId(post.getUserId())
-                        .viewCount(post.getViewCount())
-                        .likeCount(post.getLikeCount())
-                        .commentCount(post.getCommentCount())
-                        .createdAt(post.getCreatedAt())
-                        .build())
+                .map(post -> {
+                    String authorName;
+                    try {
+                        AdminUserResult user = adminUserRepositoryPort.findUserById(post.getUserId());
+                        authorName = user.getName();
+                    } catch (Exception e) {
+                        authorName = "알 수 없음";
+                    }
+                    return PostListItemResult.builder()
+                            .postId(post.getPostId())
+                            .category(post.getCategory())
+                            .title(PlainTextHtmlSanitizer.sanitizeTitle(post.getTitle()))
+                            .authorUserId(post.getUserId())
+                            .authorName(authorName)
+                            .viewCount(post.getViewCount())
+                            .likeCount(post.getLikeCount())
+                            .commentCount(post.getCommentCount())
+                            .createdAt(post.getCreatedAt())
+                            .build();
+                })
                 .toList();
 
         return PostListResult.builder()

@@ -2,8 +2,7 @@
 
 import { useEffect, useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { MessageCircle, CornerDownRight } from "lucide-react";
-import { motion } from "framer-motion";
+import { MessageCircle, CornerDownRight, ChevronDown } from "lucide-react";
 import { CommentItem } from "./CommentItem";
 import type { PostAuthor, PostComment } from "../../community/_types/community";
 import { LoginRequiredModal } from "@/components/shared/LoginRequiredModal";
@@ -62,6 +61,7 @@ export function CommentThreadSection({
   const [openReplyForId, setOpenReplyForId] = useState<number | null>(null);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [showLoginModal, setShowLoginModal] = useState(false);
+  const [expandedReplies, setExpandedReplies] = useState<Set<number>>(new Set());
   const [pending, startTransition] = useTransition();
 
   useEffect(() => {
@@ -132,112 +132,112 @@ export function CommentThreadSection({
       const openReply = openReplyForId === node.commentId;
 
       return (
-        <div key={node.commentId} className={cn(depth > 0 && "ml-5 border-l border-border pl-4 md:ml-8 md:pl-6")}>
-          <ul className="space-y-4">
-            <CommentItem
-              commentId={node.commentId}
-              content={node.content}
-              authorUserId={node.author.userId}
-              authorName={node.author.name}
-              createdAt={node.createdAt}
-              currentUser={currentUser}
-              footerSlot={
-                <div className="flex flex-col gap-3">
-                  <button
-                    type="button"
-                    onClick={() => setOpenReplyForId(openReply ? null : node.commentId)}
-                    className="inline-flex w-fit items-center gap-1.5 text-[11px] font-black uppercase tracking-[0.24em] text-muted-foreground hover:text-foreground"
-                  >
-                    <CornerDownRight className="size-3.5" aria-hidden />
-                    답글
-                  </button>
-                  {openReply ? (
-                    currentUser?.role === "USER" ? (
-                      <div className="rounded-2xl border border-dashed border-primary/20 bg-primary/5 p-6 text-center">
-                        <p className="font-bold text-[11px] text-primary tracking-tight">입주민 전용 기능입니다</p>
-                        <p className="mt-1 text-[9px] font-medium text-muted-foreground opacity-60">답글 작성 권한이 없습니다.</p>
+        <div key={node.commentId} className={cn(depth > 0 && "ml-5 pl-4 md:ml-8 md:pl-6")}>
+          <CommentItem
+            commentId={node.commentId}
+            content={node.content}
+            authorUserId={node.author.userId}
+            authorName={node.author.name}
+            createdAt={node.createdAt}
+            currentUser={currentUser}
+            footerSlot={
+              <div className="flex flex-col gap-2">
+                <button
+                  type="button"
+                  onClick={() => setOpenReplyForId(openReply ? null : node.commentId)}
+                  className="inline-flex w-fit items-center gap-1 text-xs font-medium text-muted-foreground hover:text-accent transition-colors"
+                >
+                  <CornerDownRight className="size-3" aria-hidden />
+                  답글 쓰기
+                </button>
+                {openReply ? (
+                  currentUser?.role === "USER" ? (
+                    <p className="text-xs text-muted-foreground/60 pl-4">입주민 전용 기능입니다.</p>
+                  ) : (
+                    <form
+                      onSubmit={(e) => {
+                        e.preventDefault();
+                        addComment(node.commentId, replyDraft);
+                      }}
+                      className="pl-4"
+                    >
+                      <textarea
+                        value={replyDraft}
+                        onChange={(e) => setReplyDraftById((prev) => ({ ...prev, [node.commentId]: e.target.value }))}
+                        rows={2}
+                        placeholder="답글을 입력하세요"
+                        className="w-full resize-y rounded-lg border border-primary/10 bg-surface px-3 py-2 text-sm font-medium tracking-tight text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+                      />
+                      <div className="mt-2 flex justify-end gap-2">
+                        <button
+                          type="button"
+                          onClick={() => setOpenReplyForId(null)}
+                          className="px-3 py-1 text-xs font-medium text-muted-foreground hover:text-primary transition-colors"
+                        >
+                          취소
+                        </button>
+                        <button
+                          type="submit"
+                          disabled={pending || !replyDraft.trim()}
+                          className="rounded-lg bg-primary px-4 py-1 text-xs font-semibold text-primary-foreground hover:bg-accent transition-colors disabled:opacity-40"
+                        >
+                          등록
+                        </button>
                       </div>
-                    ) : (
-                      <form
-                        onSubmit={(e) => {
-                          e.preventDefault();
-                          addComment(node.commentId, replyDraft);
-                        }}
-                        className="rounded-2xl border border-primary/10 bg-background p-4 shadow-sm"
-                      >
-                        <textarea
-                          value={replyDraft}
-                          onChange={(e) => setReplyDraftById((prev) => ({ ...prev, [node.commentId]: e.target.value }))}
-                          rows={2}
-                          placeholder="답글을 입력하세요"
-                          className="w-full resize-y rounded-xl border border-input bg-surface px-3 py-2 text-sm font-medium tracking-tight text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                        />
-                        <div className="mt-2 flex justify-end gap-2">
-                          <button
-                            type="button"
-                            onClick={() => setOpenReplyForId(null)}
-                            className="rounded-full border border-border px-4 py-1.5 text-[11px] font-black uppercase tracking-[0.24em] text-foreground"
-                          >
-                            취소
-                          </button>
-                          <motion.button
-                            type="submit"
-                            disabled={pending || !replyDraft.trim()}
-                            whileHover={{ scale: 1.02 }}
-                            whileTap={{ scale: 0.98 }}
-                            className="rounded-full bg-primary px-4 py-1.5 text-[11px] font-black uppercase tracking-[0.24em] text-primary-foreground disabled:opacity-50"
-                          >
-                            등록
-                          </motion.button>
-                        </div>
-                      </form>
-                    )
-                  ) : null}
-                </div>
-              }
-            />
-          </ul>
-          {node.children.length > 0 ? <div className="mt-4 space-y-4">{renderNodes(node.children, depth + 1)}</div> : null}
+                    </form>
+                  )
+                ) : null}
+              </div>
+            }
+          />
+          {node.children.length > 0 && (
+            <div className="mt-2 ml-5 pl-4 md:ml-8 md:pl-6">
+              <button
+                type="button"
+                onClick={() => {
+                  setExpandedReplies((prev) => {
+                    const next = new Set(prev);
+                    if (next.has(node.commentId)) next.delete(node.commentId);
+                    else next.add(node.commentId);
+                    return next;
+                  });
+                }}
+                className="inline-flex items-center gap-1 text-xs font-medium text-accent hover:text-primary transition-colors mb-2"
+              >
+                <ChevronDown className={cn("size-3.5 transition-transform", expandedReplies.has(node.commentId) && "rotate-180")} />
+                답글 {node.children.length}개
+              </button>
+              {expandedReplies.has(node.commentId) && (
+                <div className="space-y-2">{renderNodes(node.children, depth + 1)}</div>
+              )}
+            </div>
+          )}
         </div>
       );
     });
   }
 
   return (
-    <section className="mt-14 border-t border-border pt-12">
+    <section>
       <LoginRequiredModal isOpen={showLoginModal} onClose={() => setShowLoginModal(false)} />
-      <h2 className="font-black text-[10px] uppercase tracking-[0.3em] text-muted-foreground">댓글</h2>
 
       {tree.length === 0 ? (
-        <div
-          className="mt-8 flex flex-col items-center justify-center gap-4 rounded-[2rem] border border-dashed border-primary/20 bg-background px-8 py-14 text-center md:px-12"
-          aria-live="polite"
-        >
-          <MessageCircle className="size-10 text-muted-foreground opacity-80" strokeWidth={1.25} aria-hidden />
-          <p className="max-w-sm font-medium tracking-tight text-balance text-muted-foreground md:text-base">
-            아직 댓글이 없습니다. 첫 댓글을 남겨 대화를 시작해 보세요.
-          </p>
+        <div className="flex items-center gap-2 py-3 text-sm text-muted-foreground" aria-live="polite">
+          <MessageCircle className="size-4 opacity-50" strokeWidth={1.5} aria-hidden />
+          아직 댓글이 없습니다. 첫 댓글을 남겨보세요.
         </div>
       ) : (
-        <div className="mt-8 space-y-6">{renderNodes(tree, 0)}</div>
+        <div className="space-y-3">{renderNodes(tree, 0)}</div>
       )}
 
       {submitError ? (
-        <p
-          role="alert"
-          className="mt-6 rounded-xl border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm font-medium tracking-tight text-destructive"
-        >
-          {submitError}
-        </p>
+        <p role="alert" className="mt-4 text-xs font-medium text-destructive">{submitError}</p>
       ) : null}
 
       {currentUser?.role === "USER" ? (
-        <div className="mt-8 rounded-[2rem] border border-dashed border-primary/20 bg-primary/5 p-12 text-center">
-          <p className="font-black text-xs uppercase tracking-[0.4em] text-destructive mb-3">Resident Only</p>
-          <p className="font-bold text-primary tracking-tight">입주민 전용 기능입니다</p>
-          <p className="mt-2 text-[10px] font-medium text-muted-foreground opacity-60">
-            댓글 작성을 위해선 실제 입주가 확인된 거주민 권한이 필요합니다.
-          </p>
+        <div className="mt-3 rounded-lg border border-dashed border-primary/15 bg-primary/5 px-4 py-5 text-center">
+          <p className="text-xs font-semibold text-primary/70">입주민 전용 기능입니다</p>
+          <p className="mt-1 text-xs text-muted-foreground/60">댓글 작성을 위해선 거주민 권한이 필요합니다.</p>
         </div>
       ) : (
         <form
@@ -245,7 +245,7 @@ export function CommentThreadSection({
             e.preventDefault();
             addComment(null, rootDraft);
           }}
-          className="mt-8 rounded-[2rem] border border-primary/10 bg-background p-6 shadow-2xl shadow-primary/5 md:p-8"
+          className="mt-3"
         >
           <label htmlFor={`comment-root-${postId}`} className="sr-only">
             댓글 작성
@@ -256,18 +256,16 @@ export function CommentThreadSection({
             onChange={(e) => setRootDraft(e.target.value)}
             rows={3}
             placeholder="댓글을 입력하세요"
-            className="w-full resize-y rounded-xl border border-input bg-surface px-4 py-3 font-medium tracking-tight text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            className="w-full resize-y rounded-lg border border-primary/10 bg-surface px-4 py-3 text-sm font-medium tracking-tight text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
           />
-          <div className="mt-4 flex justify-end">
-            <motion.button
+          <div className="mt-3 flex justify-end">
+            <button
               type="submit"
               disabled={pending || !rootDraft.trim()}
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              className="rounded-full bg-primary px-5 py-2.5 text-xs font-black uppercase tracking-[0.24em] text-primary-foreground disabled:opacity-50"
+              className="rounded-lg bg-primary px-5 py-2 text-xs font-semibold text-primary-foreground hover:bg-accent transition-colors disabled:opacity-40"
             >
               등록
-            </motion.button>
+            </button>
           </div>
         </form>
       )}

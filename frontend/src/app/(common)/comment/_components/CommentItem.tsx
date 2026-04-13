@@ -2,7 +2,6 @@
 
 import { useEffect, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { motion } from "framer-motion";
 import { Edit3, Trash2 } from "lucide-react";
 import { bffErrorMessageFromResponse } from "@/lib/bff-error-message";
 import { formatDateTimeKo } from "@/lib/format-date";
@@ -117,63 +116,58 @@ export function CommentItem({
   }
 
   return (
-    <li className="bg-white rounded-[2.5rem] p-8 md:p-10 border border-primary/5 shadow-2xl shadow-primary/5 transition-all group relative overflow-hidden">
-      <div className="flex flex-col gap-6 relative z-10">
-        <div className="flex items-center justify-between pb-4 border-b border-primary/5">
-          <div className="flex flex-col gap-1">
-            <span className="text-[9px] font-black uppercase tracking-[0.4em] text-accent">Author</span>
-            <span className="text-sm font-black uppercase tracking-tighter text-primary">{authorName}</span>
+    <div className="rounded-lg bg-background border border-primary/15 p-4">
+      <div className="flex flex-col gap-2">
+        {/* Author + Date inline */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <span className="inline-flex items-center justify-center size-6 rounded-full bg-accent/15 text-[10px] font-bold text-accent">
+              {(authorName ?? "?").charAt(0)}
+            </span>
+            <span className="text-sm font-bold text-primary">{authorName ?? "익명"}</span>
           </div>
-          <div className="flex flex-col items-end gap-1 text-right">
-             <span className="text-[9px] font-black uppercase tracking-[0.4em] text-muted-foreground opacity-40">Posted on</span>
-             <time className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
-               {new Date(createdAt).toLocaleDateString()} · {new Date(createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
-             </time>
-          </div>
+          <time className="text-xs text-muted-foreground/60">
+            {formatDateTimeKo(createdAt)}
+          </time>
         </div>
 
-        <div className="py-2">
+        {/* Content */}
+        <div>
           {!editing ? (
-            <div className="space-y-6">
-              <p className="whitespace-pre-wrap text-lg font-medium tracking-tight text-primary leading-relaxed opacity-80">
+            <div className="space-y-3">
+              <p className="whitespace-pre-wrap text-sm font-semibold tracking-tight text-primary leading-relaxed">
                 {content}
               </p>
               
               {error && (
-                <div role="alert" className="rounded-2xl bg-destructive/5 border border-destructive/10 p-4 text-[10px] font-black uppercase tracking-widest text-destructive">
-                   {error}
-                </div>
+                <p role="alert" className="text-xs font-medium text-destructive">{error}</p>
               )}
 
               {canMutate && (
-                <div className="flex items-center justify-end gap-4 pt-4">
-                  <motion.button
+                <div className="flex items-center justify-end gap-3 pt-1">
+                  <button
                     type="button"
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
                     onClick={startEdit}
-                    className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.3em] text-accent hover:text-primary transition-colors"
+                    className="inline-flex items-center gap-1 text-xs font-medium text-muted-foreground hover:text-accent transition-colors"
                   >
                     <Edit3 className="size-3" />
-                    Edit
-                  </motion.button>
-                  <motion.button
+                    수정
+                  </button>
+                  <button
                     type="button"
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
                     onClick={deleteComment}
                     disabled={pending}
-                    className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.3em] text-destructive/60 hover:text-destructive transition-colors disabled:opacity-30"
+                    className="inline-flex items-center gap-1 text-xs font-medium text-muted-foreground hover:text-destructive transition-colors disabled:opacity-30"
                   >
                     <Trash2 className="size-3" />
-                    Delete
-                  </motion.button>
+                    삭제
+                  </button>
                 </div>
               )}
             </div>
           ) : (
             <form
-              className="space-y-6"
+              className="space-y-3"
               onSubmit={(e) => {
                 e.preventDefault();
                 save();
@@ -185,34 +179,30 @@ export function CommentItem({
                   setDraft(e.target.value);
                   if (error) setError(null);
                 }}
-                rows={4}
+                rows={3}
                 autoFocus
-                className="w-full resize-none rounded-3xl bg-primary/5 border-none p-8 font-medium tracking-tight text-primary focus:ring-2 focus:ring-accent outline-none text-lg leading-relaxed h-[200px]"
+                className="w-full resize-none rounded-lg bg-surface border border-primary/10 px-4 py-3 text-sm font-medium tracking-tight text-primary focus:ring-2 focus:ring-accent outline-none leading-relaxed"
               />
               
               {error && (
-                <div role="alert" className="rounded-2xl bg-destructive/5 border border-destructive/10 p-4 text-[10px] font-black uppercase tracking-widest text-destructive">
-                   {error}
-                </div>
+                <p role="alert" className="text-xs font-medium text-destructive">{error}</p>
               )}
 
-              <div className="flex items-center justify-end gap-6">
+              <div className="flex items-center justify-end gap-3">
                 <button
                   type="button"
                   onClick={() => setShowCancelModal(true)}
-                  className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground hover:text-primary transition-all"
+                  className="px-3 py-1.5 text-xs font-medium text-muted-foreground hover:text-primary transition-colors"
                 >
-                  CANCEL
+                  취소
                 </button>
-                <motion.button
+                <button
                   type="submit"
                   disabled={pending || !draft.trim()}
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  className="h-14 px-10 bg-primary text-white rounded-2xl text-[10px] font-black uppercase tracking-[0.25em] hover:bg-accent transition-all disabled:opacity-30"
+                  className="px-4 py-1.5 bg-primary text-white rounded-lg text-xs font-semibold hover:bg-accent transition-colors disabled:opacity-30"
                 >
-                  {pending ? "SAVING..." : "SAVE CHANGES"}
-                </motion.button>
+                  {pending ? "저장 중..." : "저장"}
+                </button>
               </div>
             </form>
           )}
@@ -228,12 +218,7 @@ export function CommentItem({
         }}
       />
       <LoginRequiredModal isOpen={showLoginModal} onClose={() => setShowLoginModal(false)} />
-      {footerSlot && <div className="mt-8 pt-8 border-t border-primary/5">{footerSlot}</div>}
-      
-      {/* Background decoration */}
-      <span className="absolute -right-10 -bottom-10 text-[20vw] font-black opacity-[0.01] pointer-events-none select-none italic tracking-tighter">
-        CMNT
-      </span>
-    </li>
+      {footerSlot && <div className="mt-2 pt-2 border-t border-primary/5">{footerSlot}</div>}
+    </div>
   );
 }

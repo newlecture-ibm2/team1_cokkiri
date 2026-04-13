@@ -11,6 +11,7 @@ export type PostListItem = {
   category: string;
   title: string;
   authorUserId: number;
+  authorName?: string | null;
   viewCount: number;
   likeCount: number;
   commentCount: number;
