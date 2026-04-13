@@ -22,13 +22,15 @@ public class RoomService implements RoomUseCase {
 
     @Override
     public Page<Room> getRooms(RoomListCommand command, Pageable pageable) {
-        boolean hasFilter = command.getRoomTypeId() != null
+        boolean hasFilter = command.getKeyword() != null
+                || command.getRoomTypeId() != null
                 || command.getMinRent() != null
                 || command.getMaxRent() != null
                 || command.getFloor() != null;
 
         if (hasFilter) {
             return roomRepositoryPort.findAvailableRoomsWithFilter(
+                    command.getKeyword(),
                     command.getRoomTypeId(),
                     command.getMinRent(),
                     command.getMaxRent(),
