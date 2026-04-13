@@ -106,6 +106,15 @@ export function CommunityRichTextEditor({ value, onChange, placeholder, id }: Pr
       const html = quill.getSemanticHTML();
       lastEmittedRef.current = html;
       onChangeRef.current(html);
+
+      // Fix: force placeholder visibility sync on every change
+      const editor = quill.root;
+      const isEmpty = quill.getText().trim().length === 0;
+      if (isEmpty) {
+        editor.classList.add("ql-blank");
+      } else {
+        editor.classList.remove("ql-blank");
+      }
     });
 
     quillRef.current = quill;
@@ -159,9 +168,6 @@ export function CommunityRichTextEditor({ value, onChange, placeholder, id }: Pr
           {uploadError}
         </p>
       ) : null}
-      <p className="text-xs text-muted-foreground">
-        본문 최대 {POST_BODY_HTML_MAX_LENGTH.toLocaleString()}자(UTF-16 코드 유닛, 이모지 등은 2자로 셀 수 있음)
-      </p>
     </div>
   );
 }

@@ -19,7 +19,7 @@ export default function ProfilePage() {
         <h1 className="text-[10vw] md:text-[5vw] font-black tracking-tighter uppercase leading-[0.85] text-foreground">
           <span className="underline underline-offset-[1vw] decoration-accent">내</span> 프로필
         </h1>
-        
+
         <div className="mt-12 border-l-2 border-accent pl-5 md:pl-8 py-1">
           <p className="text-[10px] font-black uppercase tracking-[0.3em] text-accent mb-3">
             Identity & Residency
@@ -33,42 +33,9 @@ export default function ProfilePage() {
 
       {/* 내 정보 조회 및 편집 지원 섹션 */}
       <section>
-         <ProfileInfo />
+        <ProfileInfo />
       </section>
 
-      {/* 바로가기 링크 그룹 */}
-      <ul className="grid gap-4 sm:grid-cols-2">
-        <li>
-          <Link href="/profile/vocs" className={cardClass}>
-            <div className="mb-2 w-fit rounded-full bg-secondary/10 p-3">
-               <ClipboardList
-                 className="size-7 text-secondary transition-transform duration-300 group-hover:scale-105"
-                 strokeWidth={1.5}
-                 aria-hidden
-               />
-            </div>
-            <span className="font-black uppercase tracking-[0.15em] text-foreground text-lg">My VOC</span>
-            <p className="text-sm font-medium leading-relaxed text-muted-foreground">
-              나의 민원 내역을 확인하고 처리 현황을 조회할 수 있습니다.
-            </p>
-          </Link>
-        </li>
-        <li>
-          <Link href="/notifications" className={cardClass}>
-            <div className="mb-2 w-fit rounded-full bg-secondary/10 p-3">
-               <Bell
-                 className="size-7 text-secondary transition-transform duration-300 group-hover:scale-105"
-                 strokeWidth={1.5}
-                 aria-hidden
-               />
-            </div>
-            <span className="font-black uppercase tracking-[0.15em] text-foreground text-lg">알림</span>
-            <p className="text-sm font-medium leading-relaxed text-muted-foreground">
-              계약 및 민원 상태 변경 등 수신된 주요 알림을 확인합니다.
-            </p>
-          </Link>
-        </li>
-      </ul>
     </div>
   );
 }

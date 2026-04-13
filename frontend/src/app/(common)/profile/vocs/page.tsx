@@ -4,13 +4,11 @@ import { LOGIN_REQUIRED_MESSAGE } from "@/lib/auth-messages";
 import { LoginRequiredGate } from "@/components/shared/LoginRequiredGate";
 import { bffGet } from "@/app/(common)/vocs/_api/bff-server";
 import type { ApiResponse, VocListData } from "@/app/(common)/vocs/_types/vocs";
-import { VocShell } from "@/app/(common)/vocs/_components/VocShell";
-import { MotionEnter } from "@/app/(common)/community/_components/MotionEnter";
 import { VocCard } from "@/app/(common)/vocs/_components/VocCard";
 import { PaginationBar } from "@/app/(common)/community/_components/PaginationBar";
 import { NewVocForm } from "@/app/(common)/vocs/new/_components/NewVocForm";
 import { MyVocTabLinks } from "./_components/MyVocTabLinks";
-import { VocAccessDeniedState } from "./_components/VocAccessDeniedState";
+import { VocAccessDeniedState } from "@/app/(common)/vocs/_components/VocAccessDeniedState";
 
 type SearchParams = Promise<{ tab?: string; p?: string; s?: string }>;
 
@@ -80,7 +78,7 @@ export default async function ProfileVocsPage({ searchParams }: { searchParams: 
                 더 나은 주거 환경을 위해 입주민 여러분의 소중한 의견을 들려주세요. 모든 민원은 시간순으로 정성껏 검토됩니다.
               </p>
               <div className="mt-10">
-                 <MyVocTabLinks active={showList ? "list" : "register"} />
+                <MyVocTabLinks active={showList ? "list" : "register"} />
               </div>
             </div>
           </div>
@@ -94,11 +92,11 @@ export default async function ProfileVocsPage({ searchParams }: { searchParams: 
       ) : !showList ? (
         <div className="mx-auto max-w-4xl space-y-12">
           <div className="bg-white p-12 rounded-[3rem] border border-primary/5 shadow-2xl shadow-primary/5">
-             <div className="mb-12 space-y-2">
-               <span className="text-[9px] font-black uppercase tracking-[0.4em] text-accent">New Inquiry</span>
-               <h2 className="text-4xl font-black tracking-tighter uppercase">새 민원 등록</h2>
-             </div>
-             <NewVocForm />
+            <div className="mb-12 space-y-2">
+              <span className="text-[9px] font-black uppercase tracking-[0.4em] text-accent">New Inquiry</span>
+              <h2 className="text-4xl font-black tracking-tighter uppercase">새 민원 등록</h2>
+            </div>
+            <NewVocForm />
           </div>
         </div>
       ) : (
@@ -110,9 +108,9 @@ export default async function ProfileVocsPage({ searchParams }: { searchParams: 
                 {listError}
               </p>
               {authError === LOGIN_REQUIRED_MESSAGE && (
-                 <Link href="/login" className="mt-8 inline-flex h-12 bg-primary text-white px-8 rounded-xl items-center gap-2 text-[9px] font-black uppercase tracking-[0.2em] hover:bg-accent transition-all animate-pulse underline decoration-transparent">
-                   Go to Login <ArrowRight className="size-3" />
-                 </Link>
+                <Link href="/login" className="mt-8 inline-flex h-12 bg-primary text-white px-8 rounded-xl items-center gap-2 text-[9px] font-black uppercase tracking-[0.2em] hover:bg-accent transition-all animate-pulse underline decoration-transparent">
+                  Go to Login <ArrowRight className="size-3" />
+                </Link>
               )}
             </div>
           )}

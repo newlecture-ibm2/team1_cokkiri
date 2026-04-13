@@ -60,7 +60,7 @@ export function NotificationListItem({ item }: { item: NotificationItem }) {
         if (type === "VOC_CREATED") {
           targetPath = `/admin/vocs/${refId}`;
         } else {
-          targetPath = `/profile/vocs/${refId}`;
+          targetPath = `/vocs/${refId}`;
         }
       } else if (refType === "CONTRACT") {
         targetPath = `/my-contracts`; 
@@ -77,67 +77,67 @@ export function NotificationListItem({ item }: { item: NotificationItem }) {
   return (
     <li
       onClick={handleClick}
-      className={`group rounded-[2.5rem] p-10 md:p-14 border transition-all relative overflow-hidden cursor-pointer active:scale-[0.98] ${
+      className={`group relative rounded-[clamp(1rem,2vw,2rem)] p-[clamp(1.25rem,3vw,2.5rem)] border transition-all overflow-hidden cursor-pointer active:scale-[0.98] ${
         isRead
-          ? "bg-muted/30 border-primary/10"
-          : "bg-white border-l-4 border-l-accent border-accent/25 shadow-xl shadow-accent/10 hover:border-accent/45"
+          ? "bg-primary/3 border-primary/10"
+          : "bg-white border-l-4 border-l-accent border-accent/20 shadow-lg shadow-accent/5 hover:border-accent/40"
       }`}
     >
-      <div className="flex flex-col md:flex-row md:items-start justify-between gap-8 relative z-10">
-        <div className="space-y-6 max-w-2xl">
-          <div className="flex flex-wrap items-center gap-3">
+      <div className="flex flex-col md:flex-row md:items-start justify-between gap-[clamp(1rem,2vw,2rem)] relative z-10">
+        <div className="space-y-[clamp(0.5rem,1.5vw,1.5rem)] min-w-0">
+          <div className="flex flex-wrap items-center gap-2">
             <span
-              className={`text-[10px] font-black tracking-[0.15em] uppercase px-3 py-1.5 rounded-full border ${
+              className={`text-[clamp(0.55rem,0.8vw,0.65rem)] font-bold tracking-[0.15em] uppercase px-2.5 py-1 rounded-lg border ${
                 isRead
-                  ? "border-muted-foreground/25 bg-background text-muted-foreground"
-                  : "border-accent/40 bg-accent/15 text-accent"
+                  ? "border-primary/10 bg-primary/5 text-primary/50"
+                  : "border-accent/30 bg-accent/10 text-accent"
               }`}
               aria-label={isRead ? "읽은 알림" : "읽지 않은 알림"}
             >
               {isRead ? "읽음" : "미읽음"}
             </span>
             <span
-              className={`text-[10px] font-black tracking-[0.2em] uppercase px-4 py-1.5 rounded-full ${
-                isRead ? "bg-muted/20 text-muted-foreground" : "bg-primary/5 text-primary"
+              className={`text-[clamp(0.55rem,0.8vw,0.65rem)] font-bold tracking-[0.15em] uppercase px-2.5 py-1 rounded-lg ${
+                isRead ? "bg-primary/5 text-primary/40" : "bg-primary/5 text-primary/70"
               }`}
             >
               {item.type ?? "NOTICE"}
             </span>
-            <span className="text-[10px] font-mono tracking-wider text-muted-foreground/50">
+            <span className="text-[clamp(0.5rem,0.7vw,0.6rem)] font-medium tracking-wider text-primary/30">
               #{item.notificationId}
             </span>
             {!isRead ? (
-              <span className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-accent">
-                <span className="size-2 rounded-full bg-accent animate-pulse" aria-hidden />
+              <span className="inline-flex items-center gap-1.5 text-[clamp(0.5rem,0.7vw,0.6rem)] font-bold tracking-wider text-accent">
+                <span className="size-1.5 rounded-full bg-accent animate-pulse" aria-hidden />
                 확인 필요
               </span>
             ) : null}
           </div>
           <div>
             <h2
-              className={`text-3xl font-black tracking-tighter leading-tight uppercase italic transition-colors ${
-                isRead ? "text-primary/70" : "text-primary group-hover:text-accent"
+              className={`text-[clamp(1rem,2vw,1.5rem)] font-bold tracking-tight leading-snug transition-colors ${
+                isRead ? "text-primary/60" : "text-primary group-hover:text-accent"
               }`}
             >
               {item.title}
             </h2>
             <p
-              className={`mt-4 text-lg font-medium tracking-tight ${
-                isRead ? "text-muted-foreground" : "text-primary/80"
+              className={`mt-[clamp(0.25rem,0.5vw,0.5rem)] text-[clamp(0.8rem,1.2vw,1rem)] font-medium tracking-tight ${
+                isRead ? "text-primary/40" : "text-primary/70"
               }`}
             >
               {item.message}
             </p>
           </div>
         </div>
-        <div className="shrink-0 flex flex-col items-end gap-2 text-right">
-          <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+        <div className="shrink-0 flex flex-col items-end gap-1 text-right">
+          <span className="text-[clamp(0.55rem,0.8vw,0.65rem)] font-bold tracking-tight text-primary/50">
             {(() => {
               const d = new Date(item.createdAt);
               return `${d.getFullYear()}. ${d.getMonth() + 1}. ${d.getDate()}.`;
             })()}
           </span>
-          <span className="text-[10px] font-black uppercase tracking-widest opacity-20">
+          <span className="text-[clamp(0.5rem,0.7vw,0.6rem)] font-medium tracking-tight text-primary/30">
             {(() => {
               const d = new Date(item.createdAt);
               return `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
