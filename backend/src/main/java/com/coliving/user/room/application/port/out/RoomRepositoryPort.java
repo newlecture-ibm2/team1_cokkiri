@@ -16,7 +16,7 @@ public interface RoomRepositoryPort {
 
     Page<Room> findAvailablePrivateSpaces(Pageable pageable);
 
-    Page<Room> findAvailableRoomsWithFilter(Long roomTypeId, BigDecimal minRent,
+    Page<Room> findAvailableRoomsWithFilter(String keyword, Long roomTypeId, BigDecimal minRent,
                                              BigDecimal maxRent, Integer floor, Pageable pageable);
 
     Optional<Room> findById(Long spaceId);

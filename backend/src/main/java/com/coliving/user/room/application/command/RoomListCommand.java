@@ -11,6 +11,7 @@ import java.math.BigDecimal;
 @Builder
 public class RoomListCommand {
 
+    private String keyword;
     private Long roomTypeId;
     private BigDecimal minRent;
     private BigDecimal maxRent;

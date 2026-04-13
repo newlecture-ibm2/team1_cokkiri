@@ -36,14 +36,23 @@ public class RoomTypeEntity extends BaseEntity {
     @Column(name = "is_system_default", nullable = false)
     private Boolean isSystemDefault;
 
+    @org.hibernate.annotations.ColumnDefault("0")
+    @Column(name = "sort_order", nullable = false)
+    private Integer sortOrder = 0;
+
     @Builder
-    public RoomTypeEntity(String code, String name, Boolean isSystemDefault) {
+    public RoomTypeEntity(String code, String name, Boolean isSystemDefault, Integer sortOrder) {
         this.code = code;
         this.name = name;
         this.isSystemDefault = isSystemDefault;
+        this.sortOrder = sortOrder != null ? sortOrder : 0;
     }
 
     public void update(String name) {
         this.name = name;
+    }
+
+    public void updateSortOrder(Integer sortOrder) {
+        this.sortOrder = sortOrder;
     }
 }

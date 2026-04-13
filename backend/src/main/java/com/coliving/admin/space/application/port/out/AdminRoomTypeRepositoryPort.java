@@ -12,4 +12,5 @@ public interface AdminRoomTypeRepositoryPort {
     AdminRoomType save(AdminRoomType roomType);
     void delete(Long roomTypeId);
     boolean isUsedInSpaces(Long roomTypeId);
+    void updateSortOrders(List<AdminRoomType> roomTypes);
 }
