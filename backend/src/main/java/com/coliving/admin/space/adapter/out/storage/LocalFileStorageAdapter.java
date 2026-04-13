@@ -37,7 +37,7 @@ public class LocalFileStorageAdapter implements FileStoragePort {
         // 2. MIME 타입 검증
         String contentType = file.getContentType();
         if (contentType == null || !(contentType.equals("image/jpeg") || contentType.equals("image/png")
-                || contentType.equals("image/webp"))) {
+                || contentType.equals("image/webp") || contentType.equals("image/svg+xml"))) {
             throw new BusinessException(ErrorCode.VALIDATION_ERROR);
         }
 
