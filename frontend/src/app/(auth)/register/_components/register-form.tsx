@@ -218,7 +218,7 @@ export default function RegisterForm() {
     <>
       <form
         onSubmit={handleSubmit}
-        className="flex flex-col gap-6 md:gap-8"
+        className="flex flex-col gap-4"
         noValidate
       >
         <AnimatePresence>
@@ -243,14 +243,14 @@ export default function RegisterForm() {
           )}
         </AnimatePresence>
 
-        <motion.div variants={itemVariants} className="space-y-6 md:space-y-8">
+        <motion.div variants={itemVariants} className="space-y-4">
           <div className="relative">
             <label className={labelClasses}>LOGIN ID *</label>
             <input name="loginId" value={formData.loginId} onChange={handleChange} onBlur={handleBlur} className={getInputClasses(!!fieldErrors.loginId)} placeholder="아이디를 입력하세요 (4자 이상)" />
             {fieldErrors.loginId && <p className="absolute top-full left-0 mt-1.5 text-red-500 text-xs font-medium leading-tight">{fieldErrors.loginId}</p>}
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="relative">
               <label className={labelClasses}>PASSWORD *</label>
               <input name="password" type="password" value={formData.password} onChange={handleChange} onBlur={handleBlur} className={getInputClasses(!!fieldErrors.password)} placeholder="비밀번호" />
@@ -268,8 +268,8 @@ export default function RegisterForm() {
           </div>
         </motion.div>
 
-        <motion.div variants={itemVariants} className="space-y-6 md:space-y-8">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
+        <motion.div variants={itemVariants} className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="relative">
               <label className={labelClasses}>FULL NAME *</label>
               <input name="name" value={formData.name} onChange={handleChange} onBlur={handleBlur} className={getInputClasses(!!fieldErrors.name)} placeholder="이름을 입력하세요" />
@@ -289,8 +289,8 @@ export default function RegisterForm() {
           </div>
         </motion.div>
 
-        <motion.div variants={itemVariants} className="space-y-6 md:space-y-8">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
+        <motion.div variants={itemVariants} className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="col-span-1 md:col-span-1 relative flex flex-col justify-end z-20" ref={genderRef}>
               <label className={labelClasses}>M/F</label>
               <div
@@ -409,7 +409,7 @@ export default function RegisterForm() {
           </div>
         </motion.div>
 
-        <motion.div variants={itemVariants} className="pt-4 flex flex-col gap-6">
+        <motion.div variants={itemVariants} className="pt-2 flex flex-col gap-3">
           <div className="relative flex items-center gap-3">
             <label className="flex items-center gap-3 cursor-pointer group">
               <div className={`w-5 h-5 rounded border flex items-center justify-center transition-colors ${formData.termsConsent ? 'bg-accent border-accent text-background' : 'border-primary/30 group-hover:border-primary/60'}`}>
@@ -463,9 +463,9 @@ export default function RegisterForm() {
           </div>
         </motion.div>
 
-        <motion.div variants={itemVariants} className="pt-4">
+        <motion.div variants={itemVariants} className="pt-2">
           <Button
-            className="w-full rounded-2xl bg-primary py-7 text-sm font-black tracking-[0.2em] uppercase transition-transform hover:scale-[1.02] active:scale-[0.98]"
+            className="w-full rounded-xl bg-primary h-12 text-sm font-black tracking-[0.2em] uppercase transition-transform hover:scale-[1.02] active:scale-[0.98]"
             disabled={loading}
             type="submit"
           >

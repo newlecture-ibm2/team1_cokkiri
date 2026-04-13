@@ -50,6 +50,8 @@ services:
       - MOCK_IOT_URL=${MOCK_IOT_URL:-http://mock-iot:8000}
       - APP_UPLOAD_DIR=${APP_UPLOAD_DIR:-/var/lib/cokkiri/uploads}
       - APP_DEMO_DATA_ENABLED=${APP_DEMO_DATA_ENABLED:-true}
+      - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
+      - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}
     volumes:
       - uploads-data:/var/lib/cokkiri/uploads
     depends_on:

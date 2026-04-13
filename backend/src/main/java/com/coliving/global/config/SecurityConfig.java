@@ -26,17 +26,15 @@ public class SecurityConfig {
 
     private final JwtTokenProvider jwtTokenProvider;
     private final com.coliving.common.auth.application.port.out.AuthRepositoryPort authRepositoryPort;
+    private final com.coliving.global.security.oauth2.CustomOAuth2UserService customOAuth2UserService;
+    private final com.coliving.global.security.oauth2.OAuth2AuthenticationSuccessHandler oAuth2AuthenticationSuccessHandler;
+    private final com.coliving.global.security.oauth2.OAuth2AuthenticationFailureHandler oAuth2AuthenticationFailureHandler;
 
     /** 일반 회원·입주자·관리자 공통 (JWT role 클레임과 동일) */
     private static final String[] MEMBER_ROLES = {"USER", "RESIDENT", "ADMIN"};
 
     /** 입주자·관리자만 (게시판·민원·댓글 CUD) */
     private static final String[] RESIDENT_ADMIN_ROLES = {"RESIDENT", "ADMIN"};
-
-    @Bean
-    public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
-    }
 
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
@@ -83,10 +81,10 @@ public class SecurityConfig {
                                 "/api/reservations/**", "/api/control-logs/**")
                         .hasAnyRole("RESIDENT", "ADMIN")
 
-                        // --- VOC: 입주자·관리자 전용 ---
-                        .requestMatchers("/api/vocs/**").hasAnyRole(RESIDENT_ADMIN_ROLES)
+                        // --- VOC: 회원 전용 (팀 정책에 따라 🔑, MEMBER_ROLES) ---
+                        .requestMatchers("/api/vocs/**").hasAnyRole(MEMBER_ROLES)
                         // VOC 본문 이미지·첨부 파일
-                        .requestMatchers(HttpMethod.GET, "/api/files/voc/**").hasAnyRole(RESIDENT_ADMIN_ROLES)
+                        .requestMatchers(HttpMethod.GET, "/api/files/voc/**").hasAnyRole(MEMBER_ROLES)
 
                         // --- 알림: 로그인 회원 전체 (USER 포함) ---
                         .requestMatchers("/api/notifications/**").hasAnyRole(MEMBER_ROLES)
@@ -99,6 +97,19 @@ public class SecurityConfig {
 
                         // --- 그 외 API ---
                         .anyRequest().authenticated())
+                .oauth2Login(oauth2 -> oauth2
+                        .authorizationEndpoint(auth -> auth
+                                .baseUri("/api/oauth2/authorization")
+                        )
+                        .redirectionEndpoint(redir -> redir
+                                .baseUri("/api/login/oauth2/code/*")
+                        )
+                        .userInfoEndpoint(userInfo -> userInfo
+                                .userService(customOAuth2UserService)
+                        )
+                        .successHandler(oAuth2AuthenticationSuccessHandler)
+                        .failureHandler(oAuth2AuthenticationFailureHandler)
+                )
                 .exceptionHandling(exception -> exception
                         .authenticationEntryPoint((request, response, authException) -> {
                             response.setContentType("application/json;charset=UTF-8");
