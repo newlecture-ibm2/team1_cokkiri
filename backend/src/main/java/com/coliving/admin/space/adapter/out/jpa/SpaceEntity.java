@@ -31,7 +31,7 @@ public class SpaceEntity extends BaseEntity {
     @Column(name = "space_id")
     private Long spaceId;
 
-    @Column(name = "name", nullable = false, unique = true, length = 100)
+    @Column(name = "name", nullable = false, length = 100)
     private String name;
 
     @Column(name = "type", nullable = false, length = 20)

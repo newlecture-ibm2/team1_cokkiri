@@ -42,7 +42,7 @@ export function PostDetailSection({
           className="group inline-flex items-center gap-3 text-[10px] font-black uppercase tracking-[0.4em] text-accent hover:text-primary transition-all"
         >
           <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-2" />
-          Back to Community
+          목록으로
         </Link>
       </div>
 
@@ -65,13 +65,13 @@ export function PostDetailSection({
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-8 pt-8 border-t border-primary/10">
               <div className="flex items-center gap-6">
                 <div className="flex flex-col gap-1">
-                  <span className="text-[9px] font-black uppercase tracking-[0.4em] text-accent">Published by</span>
-                  <span className="text-sm font-black uppercase tracking-tighter text-primary">{detail.author?.name ?? "Unknown Resident"}</span>
+                  <span className="text-xs font-bold tracking-tight text-primary/60">작성자</span>
+                  <span className="text-sm font-bold tracking-tight text-primary">{detail.author?.name ?? "Unknown Resident"}</span>
                 </div>
                 <div className="h-8 w-px bg-primary/10 hidden md:block" />
                 <div className="flex flex-col gap-1">
-                  <span className="text-[9px] font-black uppercase tracking-[0.4em] text-muted-foreground opacity-40">Posted on</span>
-                  <time className="text-xs font-black uppercase tracking-widest text-muted-foreground">
+                  <span className="text-xs font-bold tracking-tight text-primary/60">작성일</span>
+                  <time className="text-sm font-bold tracking-tight text-primary">
                     {new Date(detail.createdAt).toLocaleDateString()}
                   </time>
                 </div>
@@ -80,7 +80,7 @@ export function PostDetailSection({
               <div className="flex items-center gap-4">
                 <div className="flex items-center gap-2 px-6 h-12 bg-primary/5 rounded-2xl">
                   <Eye className="size-3 text-accent" strokeWidth={3} />
-                  <span className="text-[10px] font-black tracking-tighter text-primary">{detail.viewCount.toLocaleString()} VIEWS</span>
+                  <span className="text-sm font-bold tracking-tight text-primary">{detail.viewCount.toLocaleString()} 조회</span>
                 </div>
                 <LikeToggle
                   postId={detail.postId}
@@ -96,14 +96,9 @@ export function PostDetailSection({
           postId={detail.postId}
           authorUserId={detail.author.userId}
           currentUser={currentUser}
-          initialCategory={detail.category}
-          initialTitle={detail.title}
-          initialContent={detail.content}
-          initialLinks={detail.links}
-          initialAttachments={detail.attachments ?? []}
         />
 
-        <div className="bg-white p-12 md:p-20 rounded-[4rem] border border-primary/5 shadow-2xl shadow-primary/5 relative overflow-hidden min-h-[400px]">
+        <div className="bg-primary/5 p-12 md:p-20 rounded-[2rem] border border-primary/10 relative overflow-hidden min-h-[400px]">
           <div className="post-html font-medium leading-[1.8] tracking-tight text-primary text-xl relative z-10 opacity-80 lg:px-10">
             {isRichTextBodyHtml(detail.content) ? (
               <div
@@ -123,8 +118,8 @@ export function PostDetailSection({
 
         {(detail.links?.length ?? 0) > 0 && (
           <section className="space-y-8">
-            <h2 className="text-[10px] font-black uppercase tracking-[0.5em] text-accent border-b border-accent/20 pb-4 inline-block">
-              External References
+            <h2 className="text-sm font-bold tracking-tight text-primary/80 border-b border-primary/10 pb-4 inline-block">
+              외부 링크
             </h2>
             <ul className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {detail.links?.map((l, i) =>
@@ -148,8 +143,8 @@ export function PostDetailSection({
 
         {(detail.attachments?.length ?? 0) > 0 && (
           <section className="space-y-8">
-            <h2 className="text-[10px] font-black uppercase tracking-[0.5em] text-accent border-b border-accent/20 pb-4 inline-block">
-              Document Assets
+            <h2 className="text-sm font-bold tracking-tight text-primary/80 border-b border-primary/10 pb-4 inline-block">
+              첨부파일
             </h2>
             <ul className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {detail.attachments?.map((a, i) =>
@@ -161,7 +156,7 @@ export function PostDetailSection({
                       rel="noopener noreferrer"
                       className="group flex flex-col gap-2 p-8 bg-primary/5 rounded-3xl border border-transparent hover:border-accent transition-all"
                     >
-                      <span className="text-[9px] font-black uppercase tracking-[0.4em] opacity-40">Download File</span>
+                      <span className="text-xs font-bold tracking-tight text-primary/50">파일 다운로드</span>
                       <span className="text-sm font-black tracking-tighter text-primary group-hover:text-accent transition-colors truncate">{a.fileName ?? a.fileUrl}</span>
                     </a>
                   </li>
@@ -173,8 +168,8 @@ export function PostDetailSection({
 
         <div className="pt-20 border-t border-primary/10">
           <div className="mb-12 flex flex-col gap-2">
-            <span className="text-[10px] font-black uppercase tracking-[0.5em] text-accent">Join the conversation</span>
-            <h3 className="text-5xl font-black tracking-tighter text-primary uppercase italic">REPLIES ({detail.commentCount})</h3>
+            <span className="text-sm font-bold tracking-tight text-primary/60">댓글</span>
+            <h3 className="text-4xl md:text-5xl font-black tracking-tighter text-primary uppercase italic">REPLIES ({detail.commentCount})</h3>
           </div>
           <CommentThreadSection
             postId={detail.postId}

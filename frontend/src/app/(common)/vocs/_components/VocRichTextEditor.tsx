@@ -159,9 +159,6 @@ export function VocRichTextEditor({ value, onChange, placeholder, id }: Props) {
           {uploadError}
         </p>
       ) : null}
-      <p className="text-xs text-muted-foreground">
-        본문 최대 {VOC_BODY_HTML_MAX_LENGTH.toLocaleString()}자(UTF-16 코드 유닛, 이모지 등은 2자로 셀 수 있음)
-      </p>
     </div>
   );
 }
