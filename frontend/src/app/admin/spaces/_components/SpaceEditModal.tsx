@@ -43,6 +43,16 @@ export default function SpaceEditModal({ isOpen, space, onClose, onUpdated }: Sp
 
   const handleUpdate = async () => {
     if (!space.spaceId) return;
+    
+    if (!formData.name?.trim()) {
+      alert('공간 이름을 입력해 주세요.');
+      return;
+    }
+    if (formData.type === 'PRIVATE' && !formData.roomTypeId) {
+      alert('방 유형을 선택해 주세요. (등록된 방 유형이 없다면 방 유형 관리 메뉴에서 먼저 생성해야 합니다.)');
+      return;
+    }
+
     setIsSubmitting(true);
     try {
       await updateSpace(space.spaceId, formData);
