@@ -49,7 +49,7 @@ export default function AuthLayout({
       </div>
 
       {/* Right Content Area */}
-      <div className="flex w-full flex-col justify-center px-6 py-16 md:px-16 lg:w-[55%] xl:px-32 relative">
+      <div className="flex w-full flex-col justify-center px-6 py-8 md:py-12 md:px-16 lg:w-[55%] xl:px-32 relative">
         <div className="mx-auto w-full max-w-xl">
           {children}
         </div>
