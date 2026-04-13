@@ -29,6 +29,9 @@ oauth2:
 mock-iot:
   base-url: ${MOCK_IOT_URL:http://mock-iot:8000}
 
+server:
+  forward-headers-strategy: framework
+
 logging:
   level:
     com.coliving: INFO

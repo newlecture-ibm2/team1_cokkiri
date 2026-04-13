@@ -7,7 +7,7 @@ spring:
     url: jdbc:postgresql://localhost:5432/coliving
     driver-class-name: org.postgresql.Driver
     username: coliving
-    password: coliving1234
+    password: coliving123
   jpa:
     hibernate:
       ddl-auto: update

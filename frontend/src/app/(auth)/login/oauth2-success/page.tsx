@@ -40,7 +40,7 @@ function OAuth2SuccessHandler() {
           // 3. Check for missing profile data (e.g. phone)
           if (!userRes.data.phone) {
             // New user missing phone. Naturally routing.
-            router.replace('/profile/edit?from=social_login');
+            router.replace('/profile?notice=missing_phone');
           } else {
             router.replace('/');
           }
