@@ -21,7 +21,7 @@ public class AdminRoomTypePersistenceAdapter implements AdminRoomTypeRepositoryP
 
     @Override
     public List<AdminRoomType> findAll() {
-        return roomTypeJpaRepository.findAll().stream()
+        return roomTypeJpaRepository.findAll(org.springframework.data.domain.Sort.by(org.springframework.data.domain.Sort.Direction.ASC, "name")).stream()
                 .map(this::toModel)
                 .toList();
     }
