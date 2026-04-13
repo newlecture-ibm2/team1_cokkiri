@@ -112,6 +112,47 @@ public class CommunityService implements CommunityUseCase {
 
     @Override
     @Transactional(readOnly = true)
+    public PostListResult getMyPosts(Long userId, int page, int size) {
+        int safePage = Math.max(0, page);
+        int safeSize = normalizeSize(size);
+        PageRequest pageRequest = PageRequest.of(safePage, safeSize);
+
+        Page<Post> postPage = repositoryPort.findPostsByUserId(userId, pageRequest);
+
+        List<PostListItemResult> content = postPage.getContent().stream()
+                .map(post -> {
+                    String authorName;
+                    try {
+                        AdminUserResult user = adminUserRepositoryPort.findUserById(post.getUserId());
+                        authorName = user.getName();
+                    } catch (Exception e) {
+                        authorName = "알 수 없음";
+                    }
+                    return PostListItemResult.builder()
+                            .postId(post.getPostId())
+                            .category(post.getCategory())
+                            .title(PlainTextHtmlSanitizer.sanitizeTitle(post.getTitle()))
+                            .authorUserId(post.getUserId())
+                            .authorName(authorName)
+                            .viewCount(post.getViewCount())
+                            .likeCount(post.getLikeCount())
+                            .commentCount(post.getCommentCount())
+                            .createdAt(post.getCreatedAt())
+                            .build();
+                })
+                .toList();
+
+        return PostListResult.builder()
+                .content(content)
+                .page(postPage.getNumber())
+                .size(postPage.getSize())
+                .totalElements(postPage.getTotalElements())
+                .totalPages(postPage.getTotalPages())
+                .build();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public PostDetailResult getPostDetail(GetPostDetailCommand command) {
         Post post = repositoryPort.incrementViewCount(command.getPostId());
 

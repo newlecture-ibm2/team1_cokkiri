@@ -55,7 +55,7 @@ export function PostCard({ post }: { post: PostListItem }) {
   return (
     <Link
       href={`/community/${post.postId}`}
-      className="group block rounded-xl border border-primary/8 bg-white p-4 md:p-5 shadow-sm ring-1 ring-transparent transition-all duration-300 hover:shadow-xl hover:shadow-primary/8 hover:border-primary/15 hover:ring-primary/10 relative overflow-hidden"
+      className="group block rounded-xl border border-primary/8 bg-white px-8 py-4 md:px-10 md:py-6 shadow-sm ring-1 ring-transparent transition-all duration-300 hover:shadow-xl hover:shadow-primary/8 hover:border-primary/15 hover:ring-primary/10 relative overflow-hidden"
     >
       {/* Category + Title row */}
       <div className="flex items-start justify-between gap-2 mb-3">

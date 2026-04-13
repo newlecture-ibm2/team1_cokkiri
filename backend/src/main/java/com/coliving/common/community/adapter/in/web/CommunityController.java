@@ -88,6 +88,38 @@ public class CommunityController {
         return ApiResponse.ok(response);
     }
 
+    @GetMapping("/api/posts/my")
+    public ApiResponse<PostListResponseDto> getMyPosts(
+            @RequestParam(value = "p", defaultValue = "0") int page,
+            @RequestParam(value = "s", defaultValue = "20") int size
+    ) {
+        ActorInfo actor = getActorInfo();
+
+        PostListResult result = useCase.getMyPosts(actor.actorId, page, size);
+
+        PostListResponseDto response = PostListResponseDto.builder()
+                .content(result.getContent().stream()
+                        .map(item -> PostListItemResponseDto.builder()
+                                .postId(item.getPostId())
+                                .category(item.getCategory() != null ? item.getCategory().name() : null)
+                                .title(item.getTitle())
+                                .authorUserId(item.getAuthorUserId())
+                                .authorName(item.getAuthorName())
+                                .viewCount(item.getViewCount())
+                                .likeCount(item.getLikeCount())
+                                .commentCount(item.getCommentCount())
+                                .createdAt(item.getCreatedAt())
+                                .build())
+                        .toList())
+                .page(result.getPage())
+                .size(result.getSize())
+                .totalElements(result.getTotalElements())
+                .totalPages(result.getTotalPages())
+                .build();
+
+        return ApiResponse.ok(response);
+    }
+
     @GetMapping("/api/posts/{postId}")
     public ApiResponse<PostDetailResponseDto> getPostDetail(@PathVariable Long postId) {
         ActorInfo actor = getOptionalActorInfo();

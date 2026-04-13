@@ -126,7 +126,7 @@ export function CommentItem({
             </span>
             <span className="text-sm font-bold text-primary">{authorName ?? "익명"}</span>
           </div>
-          <time className="text-xs text-muted-foreground/60">
+          <time className="text-xs text-muted-foreground/60" suppressHydrationWarning>
             {formatDateTimeKo(createdAt)}
           </time>
         </div>
@@ -138,7 +138,7 @@ export function CommentItem({
               <p className="whitespace-pre-wrap text-sm font-semibold tracking-tight text-primary leading-relaxed">
                 {content}
               </p>
-              
+
               {error && (
                 <p role="alert" className="text-xs font-medium text-destructive">{error}</p>
               )}
@@ -151,7 +151,6 @@ export function CommentItem({
                     className="inline-flex items-center gap-1 text-xs font-medium text-muted-foreground hover:text-accent transition-colors"
                   >
                     <Edit3 className="size-3" />
-                    수정
                   </button>
                   <button
                     type="button"
@@ -160,7 +159,6 @@ export function CommentItem({
                     className="inline-flex items-center gap-1 text-xs font-medium text-muted-foreground hover:text-destructive transition-colors disabled:opacity-30"
                   >
                     <Trash2 className="size-3" />
-                    삭제
                   </button>
                 </div>
               )}
@@ -183,7 +181,7 @@ export function CommentItem({
                 autoFocus
                 className="w-full resize-none rounded-lg bg-surface border border-primary/10 px-4 py-3 text-sm font-medium tracking-tight text-primary focus:ring-2 focus:ring-accent outline-none leading-relaxed"
               />
-              
+
               {error && (
                 <p role="alert" className="text-xs font-medium text-destructive">{error}</p>
               )}

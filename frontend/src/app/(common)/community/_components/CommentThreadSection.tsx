@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { MessageCircle, CornerDownRight, ChevronDown } from "lucide-react";
 import { CommentItem } from "./CommentItem";
-import type { PostAuthor, PostComment } from "../../community/_types/community";
+import type { PostAuthor, PostComment } from "../_types/community";
 import { LoginRequiredModal } from "@/components/shared/LoginRequiredModal";
 import { bffErrorMessageFromResponse } from "@/lib/bff-error-message";
 import { cn } from "@/lib/utils";
@@ -142,14 +142,33 @@ export function CommentThreadSection({
             currentUser={currentUser}
             footerSlot={
               <div className="flex flex-col gap-2">
-                <button
-                  type="button"
-                  onClick={() => setOpenReplyForId(openReply ? null : node.commentId)}
-                  className="inline-flex w-fit items-center gap-1 text-xs font-medium text-muted-foreground hover:text-accent transition-colors"
-                >
-                  <CornerDownRight className="size-3" aria-hidden />
-                  답글 쓰기
-                </button>
+                <div className="flex items-center gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setOpenReplyForId(openReply ? null : node.commentId)}
+                    className="inline-flex w-fit items-center gap-1 text-xs font-medium text-muted-foreground hover:text-accent transition-colors"
+                  >
+                    <CornerDownRight className="size-3" aria-hidden />
+                    답글 쓰기
+                  </button>
+                  {node.children.length > 0 && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setExpandedReplies((prev) => {
+                          const next = new Set(prev);
+                          if (next.has(node.commentId)) next.delete(node.commentId);
+                          else next.add(node.commentId);
+                          return next;
+                        });
+                      }}
+                      className="inline-flex items-center gap-1 text-xs font-medium text-accent hover:text-primary transition-colors"
+                    >
+                      <ChevronDown className={cn("size-3.5 transition-transform", expandedReplies.has(node.commentId) && "rotate-180")} />
+                      답글 {node.children.length}개
+                    </button>
+                  )}
+                </div>
                 {openReply ? (
                   currentUser?.role === "USER" ? (
                     <p className="text-xs text-muted-foreground/60 pl-4">입주민 전용 기능입니다.</p>
@@ -190,26 +209,9 @@ export function CommentThreadSection({
               </div>
             }
           />
-          {node.children.length > 0 && (
+          {node.children.length > 0 && expandedReplies.has(node.commentId) && (
             <div className="mt-2 ml-5 pl-4 md:ml-8 md:pl-6">
-              <button
-                type="button"
-                onClick={() => {
-                  setExpandedReplies((prev) => {
-                    const next = new Set(prev);
-                    if (next.has(node.commentId)) next.delete(node.commentId);
-                    else next.add(node.commentId);
-                    return next;
-                  });
-                }}
-                className="inline-flex items-center gap-1 text-xs font-medium text-accent hover:text-primary transition-colors mb-2"
-              >
-                <ChevronDown className={cn("size-3.5 transition-transform", expandedReplies.has(node.commentId) && "rotate-180")} />
-                답글 {node.children.length}개
-              </button>
-              {expandedReplies.has(node.commentId) && (
-                <div className="space-y-2">{renderNodes(node.children, depth + 1)}</div>
-              )}
+              <div className="space-y-2">{renderNodes(node.children, depth + 1)}</div>
             </div>
           )}
         </div>

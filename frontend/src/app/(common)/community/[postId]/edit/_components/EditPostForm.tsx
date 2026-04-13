@@ -1,11 +1,11 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { useState, useTransition, useMemo } from "react";
+import { useEffect, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { ChevronDown, Loader2 } from "lucide-react";
-import { POST_CATEGORIES, type PostAttachment, type PostLink } from "../../../_types/community";
+import { POST_CATEGORIES, type PostAttachment } from "../../../_types/community";
 import { cn } from "@/lib/utils";
 import { messageFromBffResponse } from "@/lib/bff-error-message";
 import { LoginRequiredModal } from "@/components/shared/LoginRequiredModal";
@@ -53,7 +53,6 @@ type Props = {
   initialCategory: string;
   initialTitle: string;
   initialContent: string;
-  initialLinks?: PostLink[] | null;
   initialAttachments?: PostAttachment[] | null;
 };
 
@@ -65,24 +64,15 @@ export function EditPostForm({
   initialCategory,
   initialTitle,
   initialContent,
-  initialLinks,
   initialAttachments,
 }: Props) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
 
-  const initialLinksText = useMemo(() => {
-    return (initialLinks ?? [])
-      .map((l) => l.url)
-      .filter((u): u is string => Boolean(u))
-      .slice(0, 3)
-      .join("\n");
-  }, [initialLinks]);
 
   const [category, setCategory] = useState(initialCategory);
   const [title, setTitle] = useState(initialTitle);
   const [content, setContent] = useState(initialContent);
-  const [linksText, setLinksText] = useState(initialLinksText);
   const [attachments, setAttachments] = useState<EditPostAttachment[]>(() =>
     mapToEditAttachments(initialAttachments),
   );
@@ -117,19 +107,12 @@ export function EditPostForm({
       return;
     }
 
-    const linkLines = linksText
-      .split("\n")
-      .map((s) => s.trim())
-      .filter(Boolean)
-      .slice(0, 3);
-
     startTransition(async () => {
       try {
         const formData = new FormData();
         formData.append("category", category);
         formData.append("title", titleTrim);
         formData.append("content", body);
-        linkLines.forEach((url) => formData.append("links", url));
         formData.append(
           "attachmentsJson",
           JSON.stringify(
@@ -178,163 +161,128 @@ export function EditPostForm({
   }
 
   return (
-    <form onSubmit={submit} className="space-y-16">
+    <form onSubmit={submit} className="mx-auto max-w-5xl space-y-6">
       <LoginRequiredModal isOpen={showLoginModal} onClose={() => setShowLoginModal(false)} />
 
       {submitError ? (
         <p
-          className="rounded-xl border border-destructive/20 bg-destructive/5 px-6 py-4 text-sm font-medium tracking-tight text-destructive"
+          className="rounded-3xl border border-destructive/20 bg-destructive/5 px-8 py-4 text-sm font-black uppercase tracking-wider text-destructive"
           role="alert"
         >
           {submitError}
         </p>
       ) : null}
 
-      <section className="space-y-4">
-        <label
-          htmlFor="edit-category"
-          className="flex items-baseline gap-2 mb-4"
-        >
-          <span className="text-lg font-black uppercase tracking-tight text-primary">CATEGORY.</span>
-          <span className="text-sm font-medium text-primary/80">카테고리</span>
-        </label>
-        <div className="relative">
-          <select
-            id="edit-category"
-            value={category}
-            onChange={(e) => setCategory(e.target.value)}
-            className={cn(fieldClass, "appearance-none cursor-pointer")}
+      <div className="space-y-8">
+        <EditCategoryDropdown
+          value={category}
+          onChange={setCategory}
+          fieldClass={fieldClass}
+        />
+
+        <section className="space-y-4">
+          <label
+            htmlFor="edit-title"
+            className="flex items-baseline gap-2 mb-4"
           >
-            {POST_CATEGORIES.map((c) => (
-              <option key={c.value} value={c.value}>
-                {c.label}
-              </option>
-            ))}
-          </select>
-          <ChevronDown
-            className="pointer-events-none absolute right-5 top-1/2 -translate-y-1/2 size-4 text-primary/40"
-            aria-hidden
-          />
-        </div>
-      </section>
-
-      <section className="space-y-4">
-        <label
-          htmlFor="edit-title"
-          className="flex items-baseline gap-2 mb-4"
-        >
-          <span className="text-lg font-black uppercase tracking-tight text-primary">TITLE.</span>
-          <span className="text-sm font-medium text-primary/80">제목</span>
-        </label>
-        <input
-          id="edit-title"
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          maxLength={POST_TITLE_MAX_LENGTH}
-          required
-          placeholder="제목을 입력하세요."
-          className={fieldClass}
-        />
-        <p className="px-8 text-xs font-medium tracking-tight text-primary/40">
-          최대 {POST_TITLE_MAX_LENGTH.toLocaleString()}자까지 입력 가능합니다.
-        </p>
-      </section>
-
-      <section className="space-y-4">
-        <label
-          htmlFor="edit-content"
-          className="flex items-baseline gap-2 mb-4"
-        >
-          <span className="text-lg font-black uppercase tracking-tight text-primary">CONTENT.</span>
-          <span className="text-sm font-medium text-primary/80">내용</span>
-        </label>
-        <CommunityRichTextEditor
-          id="edit-content"
-          value={content}
-          onChange={setContent}
-          placeholder="내용을 입력하세요."
-        />
-      </section>
-
-      <section className="space-y-4">
-        <label
-          htmlFor="edit-links"
-          className="flex items-baseline gap-2 mb-4"
-        >
-          <span className="text-lg font-black uppercase tracking-tight text-primary">LINKS.</span>
-          <span className="text-sm font-medium text-primary/80">참고 링크</span>
-        </label>
-        <textarea
-          id="edit-links"
-          value={linksText}
-          onChange={(e) => setLinksText(e.target.value)}
-          rows={3}
-          placeholder="URL을 한 줄에 하나씩 입력하세요. (최대 3개)"
-          className={cn(fieldClass, "resize-none")}
-        />
-      </section>
-
-      <section className="space-y-8">
-        <div className="space-y-4">
-          <label className="flex items-baseline gap-2 mb-4">
-            <span className="text-lg font-black uppercase tracking-tight text-primary">FILES.</span>
-            <span className="text-sm font-medium text-primary/80">첨부파일</span>
+            <span className="text-lg font-black uppercase tracking-tight text-primary">TITLE.</span>
+            <span className="text-sm font-medium text-primary/80">제목</span>
           </label>
-          {attachments.length === 0 ? (
-            <p className="text-xs font-medium tracking-tight text-primary/30">기존 첨부파일 없음</p>
-          ) : (
-            <ul className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              {attachments.map((a, i) => (
-                <li
-                  key={`${a.fileUrl}-${i}`}
-                  className="flex items-center justify-between px-5 py-3 bg-primary/5 rounded-xl"
-                >
-                  <span className="truncate text-sm font-medium tracking-tight text-primary/70">{a.fileName || a.fileUrl}</span>
-                  <button
-                    type="button"
-                    onClick={() => removeAttachment(i)}
-                    className="shrink-0 ml-3 text-xs font-semibold tracking-tight text-destructive hover:text-destructive/80 transition-colors"
-                  >
-                    삭제
-                  </button>
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
+          <input
+            id="edit-title"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            maxLength={POST_TITLE_MAX_LENGTH}
+            required
+            placeholder="제목을 입력하세요."
+            className={fieldClass}
+          />
+          <p className="px-8 text-xs font-medium tracking-tight text-primary/40">
+            최대 {POST_TITLE_MAX_LENGTH.toLocaleString()}자까지 입력 가능합니다.
+          </p>
+        </section>
 
-        <div className="space-y-4">
-          <div className="flex items-center gap-4">
-            <label
-              htmlFor="edit-new-files"
-              className="inline-flex cursor-pointer items-center gap-2 rounded-xl border-2 border-primary/10 bg-primary/5 px-6 py-3 text-sm font-semibold tracking-tight text-primary/70 transition-all hover:bg-primary/10 hover:border-primary/20 hover:text-primary"
-            >
-              파일 첨부
-            </label>
-            <input
-              id="edit-new-files"
-              type="file"
-              multiple
-              onChange={(e) => setNewFiles(e.target.files)}
-              className="hidden"
+        <section className="space-y-4">
+          <label
+            htmlFor="edit-content"
+            className="flex items-baseline gap-2 mb-4"
+          >
+            <span className="text-lg font-black uppercase tracking-tight text-primary">CONTENT.</span>
+            <span className="text-sm font-medium text-primary/80">내용</span>
+          </label>
+          <div className="rounded-[2rem] border border-primary/10 bg-white p-4 h-full">
+            <CommunityRichTextEditor
+              id="edit-content"
+              value={content}
+              onChange={setContent}
+              placeholder="내용을 입력하세요."
             />
-            {newFiles && newFiles.length > 0 ? (
-              <span className="text-sm font-medium tracking-tight text-primary/60">
-                {newFiles.length}개 파일 선택됨
-              </span>
+          </div>
+        </section>
+
+
+        <section className="space-y-8">
+          <div className="space-y-4">
+            <label className="flex items-baseline gap-2 mb-4">
+              <span className="text-lg font-black uppercase tracking-tight text-primary">FILES.</span>
+              <span className="text-sm font-medium text-primary/80">첨부파일</span>
+            </label>
+            {attachments.length === 0 ? (
+              <p className="text-xs font-medium tracking-tight text-primary/30">기존 첨부파일 없음</p>
             ) : (
-              <span className="text-xs font-medium tracking-tight text-primary/30">
-                선택된 파일 없음
-              </span>
+              <ul className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                {attachments.map((a, i) => (
+                  <li
+                    key={`${a.fileUrl}-${i}`}
+                    className="flex items-center justify-between px-5 py-3 bg-primary/5 rounded-xl"
+                  >
+                    <span className="truncate text-sm font-medium tracking-tight text-primary/70">{a.fileName || a.fileUrl}</span>
+                    <button
+                      type="button"
+                      onClick={() => removeAttachment(i)}
+                      className="shrink-0 ml-3 text-xs font-semibold tracking-tight text-destructive hover:text-destructive/80 transition-colors"
+                    >
+                      삭제
+                    </button>
+                  </li>
+                ))}
+              </ul>
             )}
           </div>
-          <p className="text-xs font-medium tracking-tight text-primary/40">
-            여러 파일을 첨부할 수 있습니다. 이미지는 에디터 툴바에서도 추가할 수 있습니다.
-          </p>
-        </div>
-      </section>
 
-      <div className="pt-20 flex flex-col md:flex-row justify-end gap-4 items-center">
+          <div className="space-y-4">
+            <div className="flex items-center gap-4">
+              <label
+                htmlFor="edit-new-files"
+                className="inline-flex cursor-pointer items-center gap-2 rounded-xl border-2 border-primary/10 bg-primary/5 px-6 py-3 text-sm font-semibold tracking-tight text-primary/70 transition-all hover:bg-primary/10 hover:border-primary/20 hover:text-primary"
+              >
+                파일 첨부
+              </label>
+              <input
+                id="edit-new-files"
+                type="file"
+                multiple
+                onChange={(e) => setNewFiles(e.target.files)}
+                className="hidden"
+              />
+              {newFiles && newFiles.length > 0 ? (
+                <span className="text-sm font-medium tracking-tight text-primary/60">
+                  {newFiles.length}개 파일 선택됨
+                </span>
+              ) : (
+                <span className="text-xs font-medium tracking-tight text-primary/30">
+                  선택된 파일 없음
+                </span>
+              )}
+            </div>
+            <p className="text-xs font-medium tracking-tight text-primary/40">
+              여러 파일을 첨부할 수 있습니다. (파일당 최대 15MB, 총 50MB)
+            </p>
+          </div>
+        </section>
+      </div>
+
+      <div className="pt-10 flex flex-col md:flex-row justify-end gap-4 items-center">
         <button
           type="button"
           onClick={() => setShowCancelModal(true)}
@@ -362,5 +310,102 @@ export function EditPostForm({
         onConfirm={() => router.push(`/community/${postId}`)}
       />
     </form>
+  );
+}
+
+/* ── Custom Category Dropdown (matches NewPostForm) ── */
+function EditCategoryDropdown({
+  value,
+  onChange,
+  fieldClass,
+}: {
+  value: string;
+  onChange: (v: string) => void;
+  fieldClass: string;
+}) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+  const selected = POST_CATEGORIES.find((c) => c.value === value);
+  const labelClass = "flex items-baseline gap-2 mb-4";
+
+  useEffect(() => {
+    function handleClick(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    }
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, []);
+
+  return (
+    <section className="space-y-4">
+      <label className={labelClass}>
+        <span className="text-lg font-black uppercase tracking-tight text-primary">CATEGORY.</span>
+        <span className="text-sm font-medium text-primary/80">유형선택</span>
+      </label>
+      <div className="flex items-center gap-4">
+        <div ref={ref} className="relative w-56">
+          <button
+            type="button"
+            onClick={() => setOpen((p) => !p)}
+            className={cn(
+              fieldClass,
+              "flex items-center justify-between pr-12 h-12 cursor-pointer rounded-xl text-left",
+            )}
+          >
+            <span className="font-semibold text-sm tracking-tight">
+              {selected?.label ?? "선택"}
+            </span>
+            <ChevronDown
+              className={cn(
+                "absolute right-5 top-1/2 -translate-y-1/2 size-[1.125rem] opacity-60 transition-transform duration-500 ease-[cubic-bezier(0.33,1,0.68,1)]",
+                open && "rotate-180",
+              )}
+              aria-hidden
+            />
+          </button>
+
+          <AnimatePresence>
+            {open && (
+              <motion.ul
+                initial={{ opacity: 0, y: -6, scale: 0.96 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: -4, scale: 0.98 }}
+                transition={{ duration: 0.3, ease: [0.33, 1, 0.68, 1] }}
+                style={{ transformOrigin: "top center" }}
+                className="absolute z-50 mt-2 w-full flex flex-col gap-1.5 rounded-3xl border-2 border-stone-200/70 bg-stone-50/98 p-3 shadow-md backdrop-blur-md dark:border-stone-600/50 dark:bg-stone-900/95"
+              >
+                {POST_CATEGORIES.map((c, i) => (
+                  <motion.li
+                    key={c.value}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ duration: 0.34, delay: 0.1 + i * 0.055, ease: [0.33, 1, 0.68, 1] }}
+                  >
+                    <button
+                      type="button"
+                      onClick={() => {
+                        onChange(c.value);
+                        setOpen(false);
+                      }}
+                      className={cn(
+                        "flex w-full items-center justify-center rounded-md py-2.5 text-sm font-semibold tracking-tight transition-colors",
+                        c.value === value
+                          ? "bg-primary/10 text-primary"
+                          : "text-primary/70 hover:bg-primary/5 hover:text-primary",
+                      )}
+                    >
+                      {c.label}
+                    </button>
+                  </motion.li>
+                ))}
+              </motion.ul>
+            )}
+          </AnimatePresence>
+        </div>
+        <p className="text-xs font-medium tracking-tight text-primary/40">
+          공지 카테고리는 관리자만 선택 가능합니다.
+        </p>
+      </div>
+    </section>
   );
 }

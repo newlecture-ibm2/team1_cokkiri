@@ -4,7 +4,7 @@ import type { PostDetail } from "../_types/community";
 import { POST_CATEGORIES } from "../_types/community";
 
 import { PostEditDeleteActions } from "./PostEditDeleteActions";
-import { CommentThreadSection } from "../../comment/_components/CommentThreadSection";
+import { CommentThreadSection } from "./CommentThreadSection";
 import { formatDateTimeKo } from "@/lib/format-date";
 import { apiFileUrlToBffPath } from "@/lib/bff-file-url";
 import { isRichTextBodyHtml, prepareCommunityPostBodyForDisplay } from "@/lib/post-html";
@@ -115,11 +115,10 @@ export function PostDetailSection({
 
         {/* Content Body */}
         <section className="space-y-3">
-          <h2 className="text-lg md:text-xl font-black tracking-tighter text-primary uppercase">
-            CONTEN<span className="underline underline-offset-4 decoration-[var(--color-accent)]">TS.</span>
-            <span className="text-sm font-bold tracking-normal ml-1.5 align-bottom opacity-80">내용</span>
+          <h2 className="text-sm font-semibold tracking-tight text-primary/50">
+            내용
           </h2>
-          <div className="bg-surface p-8 md:p-12 rounded-xl border border-primary/5 shadow-sm relative overflow-hidden">
+          <div className="bg-surface p-8 md:p-12 rounded-lg border border-primary/5 shadow-sm relative overflow-hidden">
             <div className="post-html font-medium leading-[1.8] tracking-tight text-primary text-base relative z-10 opacity-90">
               {isRichTextBodyHtml(detail.content) ? (
                 <div
@@ -136,9 +135,8 @@ export function PostDetailSection({
         {/* Links */}
         {(detail.links?.length ?? 0) > 0 && (
           <section className="space-y-2">
-            <h2 className="text-lg md:text-xl font-black tracking-tighter text-primary uppercase">
-              LINK<span className="underline underline-offset-4 decoration-[var(--color-accent)]">S.</span>
-              <span className="text-sm font-bold tracking-normal ml-1.5 align-bottom opacity-80">외부 링크</span>
+            <h2 className="text-sm font-semibold tracking-tight text-primary/50">
+              외부 링크
             </h2>
             <ul className="space-y-1.5">
               {detail.links?.map((l, i) =>
@@ -163,9 +161,8 @@ export function PostDetailSection({
         {/* Attachments */}
         {(detail.attachments?.length ?? 0) > 0 && (
           <section className="space-y-2">
-            <h2 className="text-lg md:text-xl font-black tracking-tighter text-primary uppercase">
-              FIL<span className="underline underline-offset-4 decoration-[var(--color-accent)]">ES.</span>
-              <span className="text-sm font-bold tracking-normal ml-1.5 align-bottom opacity-80">첨부파일</span>
+            <h2 className="text-sm font-semibold tracking-tight text-primary/50">
+              첨부파일
             </h2>
             <ul className="space-y-1.5">
               {detail.attachments?.map((a, i) =>
@@ -189,9 +186,8 @@ export function PostDetailSection({
 
         {/* Comments */}
         <div className="pt-8 border-t border-primary/10">
-          <h3 className="text-lg md:text-xl font-black tracking-tighter text-primary uppercase mb-3">
-            REPL<span className="underline underline-offset-4 decoration-[var(--color-accent)]">IES.</span>
-            <span className="text-sm font-bold tracking-normal ml-1.5 align-bottom opacity-80">댓글 ({detail.commentCount})</span>
+          <h3 className="text-sm font-semibold tracking-tight text-primary/50 mb-3">
+            댓글 ({detail.commentCount})
           </h3>
           <CommentThreadSection
             postId={detail.postId}
