@@ -17,10 +17,12 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @Tag(name = "Admin Contract", description = "관리자용 계약 관리 API")
@@ -33,11 +35,14 @@ public class AdminContractController {
 
     // ── ADM-CTR-01: 전체 계약 목록 조회 ──
 
-    @Operation(summary = "전체 계약 목록 조회", description = "모든 계약을 조회합니다. 상태 필터를 선택적으로 적용할 수 있습니다.")
+    @Operation(summary = "전체 계약 목록 조회", description = "모든 계약을 조회합니다. 상태, 공간, 기간 필터를 선택적으로 적용할 수 있습니다.")
     @GetMapping
     public ApiResponse<List<AdminContractListResult>> viewAllContracts(
-            @RequestParam(value = "status", required = false) ContractStatus status) {
-        return ApiResponse.ok(adminContractUseCase.viewAllContracts(status));
+            @RequestParam(value = "status", required = false) ContractStatus status,
+            @RequestParam(value = "spaceId", required = false) Long spaceId,
+            @RequestParam(value = "startDate", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+            @RequestParam(value = "endDate", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
+        return ApiResponse.ok(adminContractUseCase.viewAllContracts(status, spaceId, startDate, endDate));
     }
 
     // ── ADM-CTR-05: 신청 목록 조회 ──

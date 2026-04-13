@@ -82,13 +82,13 @@ export function SpaceBlock({ block, cellSize, onResizeEnd }: SpaceBlockProps) {
 
         const newW = clamp(
           resizeStart.current.w + Math.round(deltaX / cellSize),
-          2,  // 최소 2칸
-          Math.min(12, DEFAULT_LAYOUT.columns - block.gridX), // 최대 12칸 또는 캔버스 한도
+          4,  // 최소 4칸 (48격자 기준, 이전 24격자의 2칸에 해당)
+          Math.min(24, DEFAULT_LAYOUT.columns - block.gridX), // 최대 24칸 또는 캔버스 한도
         );
         const newH = clamp(
           resizeStart.current.h + Math.round(deltaY / cellSize),
-          1,  // 최소 1칸
-          Math.min(8, DEFAULT_LAYOUT.rows - block.gridY), // 최대 8칸 또는 캔버스 한도
+          2,  // 최소 2칸 (48격자 기준, 이전 24격자의 1칸에 해당)
+          Math.min(16, DEFAULT_LAYOUT.rows - block.gridY), // 최대 16칸 또는 캔버스 한도
         );
 
         if (newW !== block.gridW || newH !== block.gridH) {

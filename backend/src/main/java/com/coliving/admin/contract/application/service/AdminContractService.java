@@ -27,6 +27,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @Service
@@ -52,8 +53,8 @@ public class AdminContractService implements AdminContractUseCase {
 
         @Override
         @Transactional(readOnly = true)
-        public List<AdminContractListResult> viewAllContracts(ContractStatus status) {
-                return repositoryPort.findAllContracts(status);
+        public List<AdminContractListResult> viewAllContracts(ContractStatus status, Long spaceId, LocalDate startDate, LocalDate endDate) {
+                return repositoryPort.findAllContracts(status, spaceId, startDate, endDate);
         }
 
         // ── ADM-CTR-02: 관리자 직접 계약 등록 (ACTIVE 직행) ──
@@ -105,6 +106,7 @@ public class AdminContractService implements AdminContractUseCase {
                                 .userId(user.getUserId())
                                 .spaceId(space.getSpaceId())
                                 .spaceName(space.getName())
+                                .monthlyRent(contract.getMonthlyRent())
                                 .newStatus(contract.getStatus())
                                 .message("관리자에 의해 계약이 등록되었습니다.")
                                 .build());
