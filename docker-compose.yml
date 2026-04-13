@@ -26,7 +26,7 @@ services:
         # 소스 코드가 바뀌면 컨테이너 내부로 파일만 즉시 동기화 (Hot Reloading 적용)
         - action: sync
           path: ./frontend/src
-          target: /app/src  # ⚠️ 프론트엔드 Dockerfile의 WORKDIR 경로에 맞춰 수정하세요 (보통 /app)
+          target: /app/src # ⚠️ 프론트엔드 Dockerfile의 WORKDIR 경로에 맞춰 수정하세요 (보통 /app)
         - action: sync
           path: ./frontend/public
           target: /app/public
@@ -49,7 +49,7 @@ services:
       - JWT_SECRET=${JWT_SECRET}
       - MOCK_IOT_URL=${MOCK_IOT_URL:-http://mock-iot:8000}
       - APP_UPLOAD_DIR=${APP_UPLOAD_DIR:-/var/lib/cokkiri/uploads}
-      - APP_DEMO_DATA_ENABLED=${APP_DEMO_DATA_ENABLED:-false}
+      - APP_DEMO_DATA_ENABLED=${APP_DEMO_DATA_ENABLED:-true}
     volumes:
       - uploads-data:/var/lib/cokkiri/uploads
     depends_on:
@@ -61,7 +61,7 @@ services:
         # Java 코드가 바뀌면 파일을 동기화하고 컨테이너를 빠르게 재시작
         - action: sync+restart
           path: ./backend/src
-          target: /app/src  # ⚠️ 백엔드 Dockerfile의 WORKDIR 경로에 맞춰 수정하세요 (예: /app, /workspace)
+          target: /app/src # ⚠️ 백엔드 Dockerfile의 WORKDIR 경로에 맞춰 수정하세요 (예: /app, /workspace)
         # 의존성이 변경되면 이미지를 다시 빌드
         - action: rebuild
           path: ./backend/build.gradle # Maven을 사용한다면 pom.xml로 변경하세요
