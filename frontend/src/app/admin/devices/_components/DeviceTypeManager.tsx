@@ -193,13 +193,10 @@ export function DeviceTypeManager() {
       setError("코드와 이름은 필수입니다");
       return;
     }
-    if (form.commands.length === 0) {
-      setError("최소 1개의 명령어를 추가해야 합니다");
-      return;
-    }
+    // 명령어가 있을 경우만 필드 검증 (명령어 없이 등록 가능 — 기기 등록 시 IoT 서버에서 자동 병합)
     for (const cmd of form.commands) {
       if (!cmd.command.trim() || !cmd.stateKey.trim() || !cmd.label.trim()) {
-        setError("모든 명령어의 명령어명, 상태 키, 라벨은 필수입니다");
+        setError("추가된 명령어의 명령어명, 상태 키, 라벨은 필수입니다");
         return;
       }
     }
@@ -354,6 +351,7 @@ export function DeviceTypeManager() {
               <div className="rounded-lg border border-accent/20 bg-accent/5 px-4 py-3 text-[11px] leading-relaxed text-muted-foreground">
                 <p className="font-bold text-primary mb-1">💡 명령어 등록 가이드</p>
                 <ul className="list-disc list-inside space-y-0.5">
+                  <li><strong>선택 사항</strong>: 명령어 없이도 기기 종류를 등록할 수 있습니다. 기기 등록 시 IoT 서버에서 자동으로 병합됩니다.</li>
                   <li><strong>토글</strong>: ON/OFF 쌍으로 등록되며, 하나의 스위치로 표시됩니다. (같은 상태 키를 자동 공유)</li>
                   <li><strong>명령</strong>: 슬라이더/선택/버튼 등 개별 제어를 추가합니다.</li>
                   <li><strong>상태 키</strong>가 같은 명령어끼리 하나의 제어로 묶입니다.</li>
@@ -362,7 +360,7 @@ export function DeviceTypeManager() {
 
               {form.commands.length === 0 && (
                 <p className="rounded-lg border border-dashed border-border p-4 text-center text-xs text-muted-foreground">
-                  명령어가 없습니다. 위의 버튼을 눌러 추가하세요.
+                  명령어가 없습니다. 기기 등록 시 IoT 서버에서 자동 병합되거나, 직접 추가할 수 있습니다.
                 </p>
               )}
 
