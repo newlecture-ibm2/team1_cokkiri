@@ -632,6 +632,7 @@ public class DataInitializer implements ApplicationRunner {
                                 .code(code)
                                 .name(name)
                                 .isSystemDefault(true)
+                                .sortOrder((int) roomTypeJpaRepository.count())
                                 .build()));
     }
 

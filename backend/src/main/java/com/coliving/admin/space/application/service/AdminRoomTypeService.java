@@ -77,4 +77,16 @@ public class AdminRoomTypeService implements AdminRoomTypeUseCase {
 
         adminRoomTypeRepositoryPort.delete(roomTypeId);
     }
+
+    @Override
+    public void updateRoomTypeOrder(List<Long> orderedIds) {
+        List<AdminRoomType> updates = new java.util.ArrayList<>();
+        for (int i = 0; i < orderedIds.size(); i++) {
+            updates.add(AdminRoomType.builder()
+                    .roomTypeId(orderedIds.get(i))
+                    .sortOrder(i)
+                    .build());
+        }
+        adminRoomTypeRepositoryPort.updateSortOrders(updates);
+    }
 }

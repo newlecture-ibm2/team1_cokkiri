@@ -36,12 +36,14 @@ export interface PageResponse<T> {
 }
 
 export interface RoomFilterParams {
+  keyword?: string;
   roomTypeId?: number;
   minRent?: number;
   maxRent?: number;
   floor?: number;
   page?: number;
   size?: number;
+  sort?: string;
 }
 
 export interface RoomTypeOption {

@@ -30,6 +30,7 @@ public class RoomController {
     @Operation(summary = "방 목록 조회 (필터 + 페이지네이션)")
     @GetMapping
     public ApiResponse<Page<RoomResponseDto>> getRooms(
+            @RequestParam(required = false) String keyword,
             @RequestParam(required = false) Long roomTypeId,
             @RequestParam(required = false) BigDecimal minRent,
             @RequestParam(required = false) BigDecimal maxRent,
@@ -37,6 +38,7 @@ public class RoomController {
             @PageableDefault(size = 12, sort = "name", direction = org.springframework.data.domain.Sort.Direction.ASC) Pageable pageable) {
 
         RoomListCommand command = RoomListCommand.builder()
+                .keyword(keyword)
                 .roomTypeId(roomTypeId)
                 .minRent(minRent)
                 .maxRent(maxRent)
