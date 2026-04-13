@@ -25,6 +25,9 @@ import java.util.List;
  * 입주자 기기 조회 및 제어 (RES-DEV-01, RES-DEV-02)
  * GET  /api/devices/my      — 내 기기 목록
  * POST /api/devices/{id}/control — 기기 제어
+ *
+ * Controller는 JWT에서 userId만 추출하여 UseCase에 전달.
+ * ACTIVE 계약의 space_id 조회는 Service 레이어에서 수행. (§1-9 #4 준수)
  */
 @RestController
 @RequestMapping("/api/devices")
@@ -36,7 +39,8 @@ public class ResidentDeviceController {
 
     /**
      * 내 기기 목록 (RES-DEV-01)
-     * - controllable 필드: PRIVATE=항상true, COMMON=현재시각 APPROVED 예약 보유 시 true
+     * - 다중 계약: Service에서 DB 조회하여 모든 계약 space의 기기 반환
+     * - controllable: PRIVATE=항상true, COMMON=현재시각 APPROVED 예약 보유 시 true
      */
     @GetMapping("/my")
     public ResponseEntity<ApiResponse<List<ResidentDeviceResponseDto>>> getMyDevices(
@@ -44,14 +48,8 @@ public class ResidentDeviceController {
 
         String token = resolveToken(request);
         Long userId = jwtTokenProvider.getUserId(token);
-        Long spaceId = jwtTokenProvider.getSpaceId(token);
 
-        // null 처리 통일: controlDevice와 동일하게 Controller 레벨에서 검증
-        if (spaceId == null) {
-            throw new BusinessException(ErrorCode.NO_ACTIVE_CONTRACT);
-        }
-
-        List<ResidentDevice> devices = residentDeviceUseCase.getMyDevices(spaceId);
+        List<ResidentDevice> devices = residentDeviceUseCase.getMyDevices(userId);
         List<ResidentDeviceResponseDto> dtoList = devices.stream()
                 .map(d -> {
                     boolean controllable;
@@ -69,6 +67,7 @@ public class ResidentDeviceController {
 
     /**
      * 기기 제어 (RES-DEV-02)
+     * - 다중 계약: Service에서 DB 조회하여 접근 권한 검증
      */
     @PostMapping("/{id}/control")
     public ResponseEntity<ApiResponse<?>> controlDevice(
@@ -78,17 +77,12 @@ public class ResidentDeviceController {
 
         String token = resolveToken(request);
         Long userId = jwtTokenProvider.getUserId(token);
-        Long spaceId = jwtTokenProvider.getSpaceId(token);
-
-        if (spaceId == null) {
-            throw new BusinessException(ErrorCode.NO_ACTIVE_CONTRACT);
-        }
 
         // 요청 추적 ID 추출 (CorrelationIdFilter가 설정한 헤더)
         String correlationId = request.getHeader("X-Correlation-Id");
 
         ControlDeviceCommand command = new ControlDeviceCommand(
-                id, userId, spaceId,
+                id, userId,
                 requestDto.command(), requestDto.params(),
                 correlationId
         );
@@ -102,17 +96,6 @@ public class ResidentDeviceController {
 
         return ResponseEntity.ok(ApiResponse.ok(
                 ControlDeviceResponseDto.from(result), result.message()));
-    }
-
-    // ── JWT에서 space_id 추출 ──
-    // TODO: [보류] 현재 JWT를 직접 파싱하여 spaceId/userId를 추출하고 있음.
-    //  SecurityContext 기반으로 전환하려면 global/security의 JwtTokenProvider.getAuthentication()에서
-    //  principal을 CustomUserDetails(userId, spaceId, contractId 포함)로 확장해야 함.
-    //  → 공통 인프라(global/security) 영역 수정이 필요하므로 인프라 담당자와 협의 후 전환 예정.
-
-    private Long extractSpaceId(HttpServletRequest request) {
-        String token = resolveToken(request);
-        return jwtTokenProvider.getSpaceId(token);
     }
 
     private String resolveToken(HttpServletRequest request) {
