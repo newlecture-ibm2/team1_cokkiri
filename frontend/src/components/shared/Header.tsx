@@ -292,7 +292,7 @@ export function Header() {
                                     <Link
                                       href={child.path}
                                       onClick={
-                                        child.name === "Logout"
+                                        child.name === "로그아웃"
                                           ? async (e) => {
                                             e.preventDefault();
                                             await logout();
@@ -516,7 +516,7 @@ export function Header() {
                                       <Link
                                         href={child.path || "#"}
                                         onClick={
-                                          child.name === "Logout"
+                                          child.name === "로그아웃"
                                             ? async (e) => {
                                               e.preventDefault();
                                               await logout();

@@ -18,9 +18,11 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
       <AdminLayoutHeader onOpenMenu={() => setMobileMenuOpen(true)} />
       <div className="flex min-h-0 flex-1 flex-col lg:flex-row">
         <AdminSidebar mobileOpen={mobileMenuOpen} onClose={() => setMobileMenuOpen(false)} />
-        <div className="min-h-0 min-w-0 flex-1 overflow-y-auto">
-          <div className="mx-auto w-full max-w-[1200px] px-4 py-8 md:px-6 lg:px-8">{children}</div>
-        </div>
+        <main className="min-h-0 min-w-0 flex-1 overflow-y-auto">
+          <div className="mx-auto w-full max-w-[1280px] px-4 py-6 md:px-6 md:py-8 lg:px-8">
+            {children}
+          </div>
+        </main>
       </div>
     </div>
   );

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { Menu, ShieldCheck, LogOut, ExternalLink, Bell } from "lucide-react";
+import { Menu, LogOut, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuthStore } from "@/store/useAuthStore";
 
@@ -11,59 +11,65 @@ type Props = {
 };
 
 export function AdminLayoutHeader({ onOpenMenu }: Props) {
+  const { user } = useAuthStore();
+
   return (
     <motion.header
-      className="sticky top-0 z-30 border-b border-border bg-background/90 backdrop-blur-md"
-      initial={{ opacity: 0, y: -8 }}
+      className="sticky top-0 z-30 border-b border-primary/8 bg-background/85 backdrop-blur-lg"
+      initial={{ opacity: 0, y: -6 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+      transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
     >
-      <div className="flex items-center justify-between gap-4 px-4 py-2 md:px-6 md:py-3 lg:px-8">
-        <div className="flex min-w-0 items-center gap-3">
+      <div className="flex h-14 items-center justify-between px-4 md:px-6 lg:px-8">
+        {/* Left: Mobile menu + Logo */}
+        <div className="flex items-center gap-2.5">
           <Button
             type="button"
             variant="ghost"
             size="icon"
-            className="shrink-0 lg:hidden"
+            className="size-9 shrink-0 lg:hidden"
             onClick={onOpenMenu}
             aria-label="사이드 메뉴 열기"
           >
-            <Menu className="size-5 text-primary" />
+            <Menu className="size-[18px] text-primary" />
           </Button>
-          <Link href="/admin" className="group flex min-w-0 items-center gap-2">
-            <ShieldCheck className="size-6 shrink-0 text-secondary" aria-hidden />
-            <div className="min-w-0">
-              <span className="block truncate font-black text-lg uppercase tracking-tight text-primary md:text-xl">
-                CoKkiri Admin
-              </span>
-              <span className="hidden font-black text-sm uppercase tracking-[0.25em] text-muted-foreground sm:block">
-                Operations
-              </span>
-            </div>
+
+          <Link href="/admin" className="flex items-center gap-2">
+            <span className="text-base font-black uppercase tracking-tight text-primary md:text-lg">
+              CoKkiri
+            </span>
+            <span className="rounded-md bg-secondary/15 px-1.5 py-0.5 text-[10px] font-black uppercase tracking-widest text-secondary">
+              Admin
+            </span>
           </Link>
         </div>
 
-        <div className="flex shrink-0 items-center gap-2 md:gap-3">
-          <Button variant="ghost" size="icon" className="hidden text-primary sm:inline-flex" aria-label="알림">
-            <Bell className="size-5" />
-          </Button>
+        {/* Right: Actions */}
+        <div className="flex items-center gap-1.5 md:gap-2">
           <Link
             href="/"
-            className="hidden h-9 items-center gap-1.5 rounded-md border border-border bg-background px-3 font-black text-sm uppercase tracking-wider transition-colors hover:bg-muted/50 md:inline-flex"
+            className="hidden items-center gap-1.5 rounded-lg px-3 py-1.5 text-[11px] font-bold tracking-wide text-muted-foreground transition-colors hover:bg-primary/5 hover:text-primary sm:inline-flex"
           >
-            <ExternalLink className="size-3.5" aria-hidden />
-            입주민 사이트
+            <ExternalLink className="size-3" aria-hidden />
+            사이트 보기
           </Link>
 
-          <div className="flex items-center gap-2 rounded-xl border border-border bg-muted/30 px-2 py-1.5 pl-3 md:px-3">
+          <div className="hidden h-5 w-px bg-border/60 sm:block" />
+
+          <div className="flex items-center gap-2 pl-1">
             <div className="hidden text-right sm:block">
-              <p className="font-black text-sm uppercase tracking-wider text-muted-foreground">Administrator</p>
+              <p className="text-xs font-bold leading-none text-primary">
+                {user?.name || "관리자"}
+              </p>
+              <p className="mt-0.5 text-[10px] font-medium text-muted-foreground">
+                Administrator
+              </p>
             </div>
             <div
-              className="flex size-9 shrink-0 items-center justify-center rounded-full bg-primary text-sm font-black uppercase text-primary-foreground"
+              className="flex size-8 shrink-0 items-center justify-center rounded-full bg-primary text-[11px] font-black text-primary-foreground"
               aria-hidden
             >
-              AD
+              {user?.name?.[0] || "A"}
             </div>
           </div>
 
@@ -73,10 +79,11 @@ export function AdminLayoutHeader({ onOpenMenu }: Props) {
               e.preventDefault();
               useAuthStore.getState().logout();
             }}
-            className="inline-flex size-9 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-primary/5 hover:text-destructive"
+            className="inline-flex size-8 items-center justify-center rounded-lg text-muted-foreground/70 transition-colors hover:bg-destructive/8 hover:text-destructive"
             aria-label="로그아웃"
+            title="로그아웃"
           >
-            <LogOut className="size-5" />
+            <LogOut className="size-4" />
           </button>
         </div>
       </div>
