@@ -129,6 +129,42 @@ public class MockIotClient implements IotClient {
         }
     }
 
+    // ── 게이트웨이 발견 ──
+
+    private static final String GATEWAYS_ENDPOINT = "/api/gateways";
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public List<IotGatewayInfo> discoverGateways() {
+        try {
+            String response = webClient.get()
+                    .uri(GATEWAYS_ENDPOINT)
+                    .retrieve()
+                    .bodyToMono(String.class)
+                    .block(Duration.ofSeconds(5));
+
+            if (response == null) return List.of();
+
+            Map<String, Object> body = MAPPER.readValue(response, new TypeReference<>() {});
+            if (!Boolean.TRUE.equals(body.get("success"))) return List.of();
+
+            List<Map<String, Object>> gateways = (List<Map<String, Object>>) body.get("gateways");
+            if (gateways == null) return List.of();
+
+            return gateways.stream()
+                    .map(gw -> new IotGatewayInfo(
+                            (String) gw.get("host"),
+                            ((Number) gw.getOrDefault("deviceCount", 0)).intValue(),
+                            ((Number) gw.getOrDefault("onlineCount", 0)).intValue(),
+                            ((Number) gw.getOrDefault("errorCount", 0)).intValue()
+                    ))
+                    .toList();
+        } catch (Exception e) {
+            log.error("[IoT 게이트웨이 목록 조회 실패] — {}", e.getMessage());
+            return List.of();
+        }
+    }
+
     // ── 기기 발견 (discover) ──
 
     @Override

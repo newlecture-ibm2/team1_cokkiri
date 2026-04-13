@@ -24,6 +24,7 @@ import com.coliving.global.error.ErrorCode;
 import com.coliving.global.security.JwtTokenProvider;
 import com.coliving.infra.iot.IotClient;
 import com.coliving.infra.iot.IotDeviceInfo;
+import com.coliving.infra.iot.IotGatewayInfo;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -88,7 +89,22 @@ public class AdminDeviceController {
     }
 
     /**
-     * IoT 서버 기기 발견 — 등록 전 기기 조회 (NEW)
+     * IoT 게이트웨이 목록 조회 — 네트워크 토폴로지 파악
+     * GET /api/admin/devices/gateways
+     */
+    @GetMapping("/gateways")
+    public ResponseEntity<ApiResponse<Map<String, Object>>> discoverGateways() {
+        List<IotGatewayInfo> gateways = iotClient.discoverGateways();
+
+        Map<String, Object> result = new LinkedHashMap<>();
+        result.put("gateways", gateways);
+        result.put("total", gateways.size());
+
+        return ResponseEntity.ok(ApiResponse.ok(result));
+    }
+
+    /**
+     * IoT 서버 기기 발견 — 게이트웨이별 로컬 기기 조회
      * GET /api/admin/devices/iot-devices?host=192.168.1.101
      */
     @GetMapping("/iot-devices")

@@ -10,10 +10,9 @@ import {
   updateDevice,
   controlAdminDevice,
   setDeviceErrorMode,
-  discoverIotDevices,
 } from "../_api";
 import type { ErrorMode } from "../_api";
-import type { AdminDevice, UpdateDeviceRequest, Space, DeviceCapability } from "../_types";
+import type { AdminDevice, UpdateDeviceRequest, Space } from "../_types";
 import { ApiError } from "@/lib/api";
 import { DeviceControlPanel } from "@/components/ui/DeviceControlPanel";
 
@@ -66,9 +65,6 @@ export function DeviceListTable() {
     return sortDir === "asc" ? " ▲" : " ▼";
   };
 
-  // IoT capabilities 캐시 (MAC → capabilities 매핑)
-  const [iotCapsMap, setIotCapsMap] = useState<Map<string, DeviceCapability[]>>(new Map());
-
   const loadDevices = useCallback(async () => {
     try {
       setLoading(true);
@@ -82,27 +78,9 @@ export function DeviceListTable() {
     }
   }, []);
 
-  // IoT 서버에서 전체 기기 capabilities 한 번 조회 → MAC 기반 맵 생성
-  const loadIotCapabilities = useCallback(async () => {
-    try {
-      const res = await discoverIotDevices();
-      const map = new Map<string, DeviceCapability[]>();
-      for (const device of res.data?.devices ?? []) {
-        if (device.macAddress && device.capabilities) {
-          map.set(device.macAddress, device.capabilities);
-        }
-      }
-      setIotCapsMap(map);
-    } catch {
-      // IoT 조회 실패 시 graceful 폴백 — capabilities 없이 전체 commands 표시
-      console.warn("[DeviceListTable] IoT capabilities 조회 실패 — 폴백 모드");
-    }
-  }, []);
-
   useEffect(() => {
     loadDevices();
-    loadIotCapabilities();
-  }, [loadDevices, loadIotCapabilities]);
+  }, [loadDevices]);
 
   // 자동 알림 숨김
   useEffect(() => {
@@ -402,7 +380,7 @@ export function DeviceListTable() {
                               <DeviceControlPanel
                                 commandsJson={device.deviceTypeCommands ?? "[]"}
                                 currentStateJson={device.currentState}
-                                iotCapabilities={iotCapsMap.get(device.macAddress)?.map(c => ({ command: c.command }))}
+                                modelName={device.modelName}
                                 disabled={isThisControlling || isCooldown}
                                 onControl={async (cmd, params) => {
                                   await handleControl(device.deviceId, device.name, cmd, params);

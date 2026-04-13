@@ -17,6 +17,8 @@ export interface DeviceCommand {
   max?: number;
   unit?: string;
   options?: string[];
+  /** 이 명령을 지원하는 모델명 목록. 미지정 시 모든 모델에 표시 */
+  models?: string[];
 }
 
 /** IoT 기기가 실제 지원하는 동작 (capabilities에서 추출) */
@@ -29,6 +31,11 @@ interface DeviceControlPanelProps {
   commandsJson: string;
   /** devices.current_state JSON 문자열 */
   currentStateJson: string;
+  /**
+   * 기기 모델명. 제공 시 commands의 `models` 배열로 필터링하여
+   * 해당 모델이 지원하는 command만 렌더링합니다.
+   */
+  modelName?: string;
   /**
    * IoT 기기가 실제 지원하는 command 목록 (capabilities).
    * 제공 시 commandsJson과의 **교집합**만 렌더링.
@@ -111,6 +118,7 @@ function groupTogglePairs(commands: DeviceCommand[]): {
 export function DeviceControlPanel({
   commandsJson,
   currentStateJson,
+  modelName,
   iotCapabilities,
   disabled = false,
   onControl,
@@ -119,15 +127,22 @@ export function DeviceControlPanel({
   // 1. 관리자 정의 commands 파싱
   const allCommands = parseCommands(commandsJson);
 
-  // 2. IoT capabilities와 교집합 필터링
-  //    capabilities가 제공되면 해당 모델이 지원하는 command만 표시
-  //    capabilities가 없으면 전체 표시 (기존 동작 호환)
+  // 2. 모델 기반 필터링 (우선) → IoT capabilities 교집합 (fallback)
+  //    models 배열이 있는 command는 해당 모델만 표시
+  //    models가 없거나 비어있으면 모든 모델에 표시 (하위 호환)
+  let filtered = modelName
+    ? allCommands.filter(cmd =>
+        !cmd.models || cmd.models.length === 0 || cmd.models.includes(modelName)
+      )
+    : allCommands;
+
+  // IoT capabilities가 제공되면 추가 교집합 필터링
   const commands = iotCapabilities && iotCapabilities.length > 0
     ? (() => {
         const supported = new Set(iotCapabilities.map(c => c.command));
-        return allCommands.filter(cmd => supported.has(cmd.command));
+        return filtered.filter(cmd => supported.has(cmd.command));
       })()
-    : allCommands;
+    : filtered;
   const [busy, setBusy] = useState(false);
   const [firedCommands, setFiredCommands] = useState<Set<string>>(new Set());
 

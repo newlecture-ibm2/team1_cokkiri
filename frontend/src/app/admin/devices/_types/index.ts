@@ -20,6 +20,8 @@ export interface DeviceCommand {
   max?: number;
   unit?: string;
   options?: string[];
+  /** 이 명령을 지원하는 모델명 목록. 미지정 시 모든 모델에 표시 */
+  models?: string[];
 }
 
 export interface SaveDeviceTypeRequest {
@@ -63,6 +65,14 @@ export interface IotDeviceInfo {
 export interface IotDevicesResponse {
   devices: IotDeviceInfo[];
   total: number;
+}
+
+/** IoT 게이트웨이 정보 */
+export interface GatewayInfo {
+  host: string;
+  deviceCount: number;
+  onlineCount: number;
+  errorCount: number;
 }
 
 export interface CreateDeviceResponse {

@@ -22,6 +22,14 @@ public interface IotClient {
     IotResponse sendCommand(Long deviceId, String command, Map<String, Object> params);
 
     /**
+     * IoT 네트워크의 게이트웨이 목록을 조회합니다.
+     * 각 게이트웨이별 연결된 기기 수와 상태 요약을 반환합니다.
+     *
+     * @return 게이트웨이 정보 목록
+     */
+    List<IotGatewayInfo> discoverGateways();
+
+    /**
      * IoT 서버에 존재하는 전체 기기 목록을 조회합니다.
      *
      * @return IoT 기기 정보 목록

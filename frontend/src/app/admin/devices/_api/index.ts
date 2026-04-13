@@ -11,9 +11,16 @@ import type {
   ControlAdminDeviceResponse,
   DevicePageResponse,
   IotDevicesResponse,
+  GatewayInfo,
 } from "../_types";
 
-// ── IoT 기기 발견 (IoT 서버 조회) ──
+// ── IoT 게이트웨이 조회 ──
+
+export async function fetchGateways() {
+  return apiFetch<{ gateways: GatewayInfo[]; total: number }>("/admin/devices/gateways");
+}
+
+// ── IoT 기기 발견 (게이트웨이별 로컬 네트워크 스캔) ──
 
 export async function discoverIotDevices(host?: string) {
   const query = host ? `?host=${encodeURIComponent(host)}` : "";

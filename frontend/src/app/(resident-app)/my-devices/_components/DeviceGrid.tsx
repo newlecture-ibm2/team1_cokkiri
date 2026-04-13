@@ -412,6 +412,7 @@ function DeviceCard({
           <DeviceControlPanel
             commandsJson={device.commands ?? "[]"}
             currentStateJson={device.currentState}
+            modelName={device.modelName}
             disabled={isControlling || isCooldown}
             onControl={async (cmd, params) => {
               onControl(device, cmd, params);

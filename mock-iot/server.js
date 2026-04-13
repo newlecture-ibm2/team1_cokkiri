@@ -13,6 +13,46 @@ app.get('/health', (req, res) => {
   res.json({ status: 'UP', service: 'mock-iot-server' });
 });
 
+// ── 게이트웨이 목록 조회 (네트워크 토폴로지 표현) ──
+app.get('/api/gateways', (req, res) => {
+  const hosts = store.getUniqueHosts();
+  const gateways = hosts.map(host => {
+    const devices = store.getByHost(host);
+    return {
+      host,
+      deviceCount: devices.length,
+      onlineCount: devices.filter(d => d.status === 'ONLINE').length,
+      errorCount: devices.filter(d => d.status === 'ERROR').length,
+    };
+  });
+
+  res.json({
+    success: true,
+    gateways,
+    total: gateways.length,
+  });
+});
+
+// ── 게이트웨이별 기기 조회 (로컬 네트워크 스캔 시뮬레이션) ──
+app.get('/api/gateways/:host/devices', (req, res) => {
+  const { host } = req.params;
+  const devices = store.getByHost(host);
+
+  if (devices.length === 0) {
+    return res.status(404).json({
+      success: false,
+      message: `게이트웨이 ${host}에 연결된 기기가 없습니다`,
+    });
+  }
+
+  res.json({
+    success: true,
+    host,
+    devices,
+    total: devices.length,
+  });
+});
+
 // ── 기기 목록 조회 (관리자가 기기 발견용) ──
 app.get('/api/devices', (req, res) => {
   const { host } = req.query;
@@ -129,6 +169,8 @@ if (ERROR_SIMULATION) {
 app.listen(PORT, () => {
   console.log(`\n🔌 Mock IoT Server running on port ${PORT}`);
   console.log(`   Health:      GET  http://localhost:${PORT}/health`);
+  console.log(`   Gateways:    GET  http://localhost:${PORT}/api/gateways`);
+  console.log(`   GW Devices:  GET  http://localhost:${PORT}/api/gateways/:host/devices`);
   console.log(`   Devices:     GET  http://localhost:${PORT}/api/devices`);
   console.log(`   Device:      GET  http://localhost:${PORT}/api/devices/:macAddress`);
   console.log(`   Control:     POST http://localhost:${PORT}/api/devices/control`);

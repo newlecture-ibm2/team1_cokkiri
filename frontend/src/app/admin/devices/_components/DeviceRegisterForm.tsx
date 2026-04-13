@@ -2,8 +2,8 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { createDevice, discoverIotDevices, fetchDeviceTypes, fetchSpaces, updateDeviceType } from "../_api";
-import type { CreateDeviceRequest, DeviceType, Space, IotDeviceInfo, DeviceCapability } from "../_types";
+import { createDevice, discoverIotDevices, fetchDeviceTypes, fetchGateways, fetchSpaces, updateDeviceType } from "../_api";
+import type { CreateDeviceRequest, DeviceType, Space, IotDeviceInfo, DeviceCapability, GatewayInfo } from "../_types";
 import { ApiError } from "@/lib/api";
 import { parseCommands, type DeviceCommand } from "@/components/ui/DeviceControlPanel";
 
@@ -16,8 +16,12 @@ export function DeviceRegisterForm() {
   const [deviceTypes, setDeviceTypes] = useState<DeviceType[]>([]);
   const [spaces, setSpaces] = useState<Space[]>([]);
 
+  // ── 게이트웨이 목록 ──
+  const [gateways, setGateways] = useState<GatewayInfo[]>([]);
+  const [gatewayLoading, setGatewayLoading] = useState(false);
+  const [selectedGateway, setSelectedGateway] = useState<GatewayInfo | null>(null);
+
   // ── IoT 기기 발견 ──
-  const [hostFilter, setHostFilter] = useState("");
   const [iotDevices, setIotDevices] = useState<IotDeviceInfo[]>([]);
   const [iotLoading, setIotLoading] = useState(false);
   const [iotError, setIotError] = useState<string | null>(null);
@@ -77,24 +81,40 @@ export function DeviceRegisterForm() {
     }
   }, []);
 
+  // ── 게이트웨이 조회 ──
+  const loadGateways = useCallback(async () => {
+    setGatewayLoading(true);
+    try {
+      const res = await fetchGateways();
+      setGateways(res.data?.gateways ?? []);
+    } catch {
+      // fallback
+    } finally {
+      setGatewayLoading(false);
+    }
+  }, []);
+
   useEffect(() => {
     loadDeviceTypes();
     loadSpaces();
-  }, [loadDeviceTypes, loadSpaces]);
+    loadGateways();
+  }, [loadDeviceTypes, loadSpaces, loadGateways]);
 
-  // ── IoT 기기 조회 ──
-  const handleDiscover = async () => {
+  // ── 게이트웨이 선택 → 로컬 네트워크 스캔 ──
+  const handleSelectGateway = async (gw: GatewayInfo) => {
+    setSelectedGateway(gw);
+    setSelectedDevice(null);
+    setIotDevices([]);
     setIotLoading(true);
     setIotError(null);
-    setSelectedDevice(null);
     try {
-      const res = await discoverIotDevices(hostFilter || undefined);
+      const res = await discoverIotDevices(gw.host);
       setIotDevices(res.data?.devices ?? []);
       if ((res.data?.devices ?? []).length === 0) {
-        setIotError("조회된 기기가 없습니다");
+        setIotError("이 게이트웨이에 연결된 기기가 없습니다");
       }
     } catch {
-      setIotError("IoT 서버 연결에 실패했습니다");
+      setIotError("게이트웨이 기기 스캔에 실패했습니다");
       setIotDevices([]);
     } finally {
       setIotLoading(false);
@@ -160,26 +180,41 @@ export function DeviceRegisterForm() {
     return selectedDevice.capabilities.filter(cap => !existingSet.has(cap.command));
   };
 
-  // ── 타입 commands 병합 (합집합) — 관리자가 설정한 uiType/label 적용 ──
+  // ── 타입 commands 병합 (합집합) — 관리자가 설정한 uiType/label 적용 + models 추적 ──
   const mergeCapabilitiesToType = async (entries: NewCapEntry[]) => {
     const selectedType = deviceTypes.find(dt => dt.deviceTypeId === form.deviceTypeId);
-    if (!selectedType) return;
+    if (!selectedType || !selectedDevice) return;
 
+    const modelName = selectedDevice.modelName;
     const existingCommands: DeviceCommand[] = parseCommands(selectedType.commands || "[]");
-    const merged = [
-      ...existingCommands,
-      ...entries.map(entry => ({
-        command: entry.cap.command,
-        uiType: entry.uiType,
-        stateKey: entry.cap.stateKey,
-        label: entry.label,
-        ...(entry.cap.stateValue !== undefined && { stateValue: entry.cap.stateValue }),
-        ...(entry.cap.min !== undefined && { min: entry.cap.min }),
-        ...(entry.cap.max !== undefined && { max: entry.cap.max }),
-        ...(entry.cap.unit && { unit: entry.cap.unit }),
-        ...(entry.cap.options && { options: entry.cap.options }),
-      })),
-    ];
+
+    // 기존 commands: 이 모델의 capabilities에 해당하는 command에 모델명 추가
+    const deviceCapCommands = new Set([
+      ...(selectedDevice.capabilities?.map(c => c.command) ?? []),
+      ...entries.map(e => e.cap.command),
+    ]);
+    const updatedExisting = existingCommands.map(cmd => {
+      if (!deviceCapCommands.has(cmd.command)) return cmd;
+      const currentModels = cmd.models ?? [];
+      if (currentModels.includes(modelName)) return cmd;
+      return { ...cmd, models: [...currentModels, modelName] };
+    });
+
+    // 새 commands: models에 이 모델명 포함
+    const newCommands = entries.map(entry => ({
+      command: entry.cap.command,
+      uiType: entry.uiType,
+      stateKey: entry.cap.stateKey,
+      label: entry.label,
+      models: [modelName],
+      ...(entry.cap.stateValue !== undefined && { stateValue: entry.cap.stateValue }),
+      ...(entry.cap.min !== undefined && { min: entry.cap.min }),
+      ...(entry.cap.max !== undefined && { max: entry.cap.max }),
+      ...(entry.cap.unit && { unit: entry.cap.unit }),
+      ...(entry.cap.options && { options: entry.cap.options }),
+    }));
+
+    const merged = [...updatedExisting, ...newCommands];
 
     await updateDeviceType(form.deviceTypeId, {
       code: selectedType.code,
@@ -221,6 +256,43 @@ export function DeviceRegisterForm() {
     }
   };
 
+  // ── 새 capabilities 없이 기존 commands에 모델명만 추가 ──
+  const addModelToExistingCommands = async () => {
+    const selectedType = deviceTypes.find(dt => dt.deviceTypeId === form.deviceTypeId);
+    if (!selectedType || !selectedDevice) return;
+
+    const modelName = selectedDevice.modelName;
+    const existingCommands: DeviceCommand[] = parseCommands(selectedType.commands || "[]");
+
+    // 이 모델의 capabilities에 해당하는 기존 command에 모델명 추가
+    const deviceCapCommands = new Set(
+      selectedDevice.capabilities?.map(c => c.command) ?? []
+    );
+    let changed = false;
+    const updated = existingCommands.map(cmd => {
+      if (!deviceCapCommands.has(cmd.command)) return cmd;
+      const currentModels = cmd.models ?? [];
+      if (currentModels.includes(modelName)) return cmd;
+      changed = true;
+      return { ...cmd, models: [...currentModels, modelName] };
+    });
+
+    if (!changed) return; // 이미 모든 commands에 모델명 포함
+
+    await updateDeviceType(form.deviceTypeId, {
+      code: selectedType.code,
+      name: selectedType.name,
+      commands: JSON.stringify(updated),
+      uiType: selectedType.uiType,
+    });
+
+    setDeviceTypes(prev => prev.map(dt =>
+      dt.deviceTypeId === form.deviceTypeId
+        ? { ...dt, commands: JSON.stringify(updated) }
+        : dt
+    ));
+  };
+
   // ── 제출 (새 capabilities 확인 후 등록) ──
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -237,6 +309,8 @@ export function DeviceRegisterForm() {
       setNewCapEntries(entries);
       setNewCapsModalOpen(true);
     } else {
+      // 새 동작 없음 → 기존 commands에 모델명만 추가 후 등록
+      await addModelToExistingCommands();
       await executeRegister();
     }
   };
@@ -293,90 +367,123 @@ export function DeviceRegisterForm() {
         </motion.div>
       )}
 
-      {/* ── Step 1: IoT 기기 발견 ── */}
+      {/* ── Step 1: 게이트웨이 선택 → 로컬 기기 발견 ── */}
       <fieldset className="space-y-4">
         <legend className="font-black text-xs uppercase tracking-[0.3em] text-muted-foreground mb-4">
-          Step 1 — IoT 기기 발견
+          Step 1 — 게이트웨이 선택
         </legend>
 
-        <div className="flex gap-3">
-          <input
-            type="text"
-            placeholder="게이트웨이 IP (예: 192.168.1.101) — 비우면 전체 조회"
-            value={hostFilter}
-            onChange={(e) => setHostFilter(e.target.value)}
-            className="flex-1 rounded-xl border border-border px-4 py-3 text-sm font-medium text-primary
-              bg-surface placeholder:text-muted-foreground/50 transition-all duration-200
-              focus:outline-none focus:ring-2 focus:ring-ring/40 font-mono"
-          />
-          <motion.button
-            type="button"
-            onClick={handleDiscover}
-            disabled={iotLoading}
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            className="rounded-xl bg-accent px-6 py-3 text-sm font-bold text-white
-              transition-colors duration-200 hover:bg-accent/80 disabled:opacity-50 whitespace-nowrap"
-          >
-            {iotLoading ? "조회 중..." : "🔍 기기 조회"}
-          </motion.button>
-        </div>
-
-        {iotError && (
-          <p className="text-xs text-muted-foreground pl-1">{iotError}</p>
+        {gatewayLoading ? (
+          <p className="text-xs text-muted-foreground animate-pulse">게이트웨이 조회 중...</p>
+        ) : gateways.length === 0 ? (
+          <div className="text-center py-6">
+            <p className="text-sm text-muted-foreground">게이트웨이를 찾을 수 없습니다</p>
+            <button type="button" onClick={loadGateways} className="mt-2 text-xs text-accent hover:underline">
+              다시 시도
+            </button>
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+            {gateways.map((gw) => (
+              <motion.div
+                key={gw.host}
+                whileHover={{ y: -2 }}
+                onClick={() => handleSelectGateway(gw)}
+                className={`cursor-pointer rounded-xl border px-4 py-3 transition-all duration-200
+                  ${selectedGateway?.host === gw.host
+                    ? "border-accent bg-accent/10 ring-2 ring-accent/30"
+                    : "border-border bg-surface hover:border-secondary"
+                  }`}
+              >
+                <p className="text-sm font-semibold text-primary font-mono">{gw.host}</p>
+                <div className="flex items-center gap-3 mt-1">
+                  <span className="text-xs text-muted-foreground">{gw.deviceCount}개 기기</span>
+                  {gw.onlineCount > 0 && (
+                    <span className="flex items-center gap-1 text-xs">
+                      <span className="w-1.5 h-1.5 rounded-full bg-green-500" />
+                      {gw.onlineCount}
+                    </span>
+                  )}
+                  {gw.errorCount > 0 && (
+                    <span className="flex items-center gap-1 text-xs">
+                      <span className="w-1.5 h-1.5 rounded-full bg-red-500" />
+                      {gw.errorCount}
+                    </span>
+                  )}
+                </div>
+              </motion.div>
+            ))}
+          </div>
         )}
-
-        {/* 발견된 기기 목록 */}
-        <AnimatePresence>
-          {iotDevices.length > 0 && (
-            <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: "auto" }}
-              exit={{ opacity: 0, height: 0 }}
-              className="space-y-2 max-h-80 overflow-y-auto"
-            >
-              <p className="text-xs text-muted-foreground pl-1">
-                {iotDevices.length}개 기기 발견 — 등록할 기기를 선택하세요
-              </p>
-              {iotDevices.map((device) => (
-                <motion.div
-                  key={device.macAddress}
-                  whileHover={{ y: -2 }}
-                  onClick={() => handleSelectDevice(device)}
-                  className={`cursor-pointer rounded-xl border px-4 py-3 transition-all duration-200
-                    ${selectedDevice?.macAddress === device.macAddress
-                      ? "border-accent bg-accent/10 ring-2 ring-accent/30"
-                      : "border-border bg-surface hover:border-secondary"
-                    }`}
-                >
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm font-semibold text-primary font-mono">{device.modelName}</p>
-                      <p className="text-xs text-muted-foreground font-mono">
-                        MAC: {device.macAddress} · GW: {device.host} · Local: {device.localIp}
-                      </p>
-                      {device.capabilities?.length > 0 && (
-                        <p className="text-xs text-muted-foreground mt-1">
-                          지원: {device.capabilities.map(c => c.command).join(", ")}
-                        </p>
-                      )}
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span className={`inline-block w-2 h-2 rounded-full ${
-                        device.status === "ONLINE" ? "bg-green-500" :
-                        device.status === "ERROR" ? "bg-red-500" : "bg-gray-400"
-                      }`} />
-                      <span className="text-xs text-muted-foreground">{device.status}</span>
-                    </div>
-                  </div>
-                </motion.div>
-              ))}
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-        {errors.macAddress && <p className="text-xs font-medium text-destructive pl-1">{errors.macAddress}</p>}
       </fieldset>
+
+      {/* ── Step 1-2: 로컬 네트워크 기기 발견 ── */}
+      <AnimatePresence>
+        {selectedGateway && (
+          <motion.fieldset
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            className="space-y-4"
+          >
+            <legend className="font-black text-xs uppercase tracking-[0.3em] text-muted-foreground mb-4">
+              Step 1-2 — 로컬 기기 발견 ({selectedGateway.host})
+            </legend>
+
+            {iotLoading && (
+              <p className="text-xs text-muted-foreground animate-pulse">로컬 네트워크 스캔 중...</p>
+            )}
+
+            {iotError && (
+              <p className="text-xs text-muted-foreground pl-1">{iotError}</p>
+            )}
+
+            {/* 발견된 기기 목록 */}
+            {iotDevices.length > 0 && (
+              <div className="space-y-2 max-h-80 overflow-y-auto">
+                <p className="text-xs text-muted-foreground pl-1">
+                  {iotDevices.length}개 기기 발견 — 등록할 기기를 선택하세요
+                </p>
+                {iotDevices.map((device) => (
+                  <motion.div
+                    key={device.macAddress}
+                    whileHover={{ y: -2 }}
+                    onClick={() => handleSelectDevice(device)}
+                    className={`cursor-pointer rounded-xl border px-4 py-3 transition-all duration-200
+                      ${selectedDevice?.macAddress === device.macAddress
+                        ? "border-accent bg-accent/10 ring-2 ring-accent/30"
+                        : "border-border bg-surface hover:border-secondary"
+                      }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm font-semibold text-primary font-mono">{device.modelName}</p>
+                        <p className="text-xs text-muted-foreground font-mono">
+                          MAC: {device.macAddress} · Local: {device.localIp}
+                        </p>
+                        {device.capabilities?.length > 0 && (
+                          <p className="text-xs text-muted-foreground mt-1">
+                            지원: {device.capabilities.map(c => c.command).join(", ")}
+                          </p>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className={`inline-block w-2 h-2 rounded-full ${
+                          device.status === "ONLINE" ? "bg-green-500" :
+                          device.status === "ERROR" ? "bg-red-500" : "bg-gray-400"
+                        }`} />
+                        <span className="text-xs text-muted-foreground">{device.status}</span>
+                      </div>
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+            )}
+
+            {errors.macAddress && <p className="text-xs font-medium text-destructive pl-1">{errors.macAddress}</p>}
+          </motion.fieldset>
+        )}
+      </AnimatePresence>
 
       {/* ── Step 2: 선택된 기기 + 관리자 설정 ── */}
       <AnimatePresence>
