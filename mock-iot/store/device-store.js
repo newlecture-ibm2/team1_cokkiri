@@ -48,26 +48,56 @@ function loadSeed() {
   return [];
 }
 
-/** 시드 파일이 데이터 파일보다 최신인지 확인 */
-function isSeedNewer() {
+/** 시드 파일 내용의 해시를 계산 */
+function getSeedHash() {
+  const crypto = require('crypto');
   try {
-    if (!fs.existsSync(DATA_PATH) || !fs.existsSync(SEED_PATH)) return true;
-    const dataMtime = fs.statSync(DATA_PATH).mtimeMs;
-    const seedMtime = fs.statSync(SEED_PATH).mtimeMs;
-    return seedMtime > dataMtime;
+    const raw = fs.readFileSync(SEED_PATH, 'utf-8');
+    return crypto.createHash('md5').update(raw).digest('hex');
+  } catch {
+    return null;
+  }
+}
+
+const SEED_HASH_PATH = path.join(path.dirname(DATA_PATH), '.seed-hash');
+
+/** 시드 파일 내용이 마지막 초기화 시점과 달라졌는지 확인 */
+function isSeedChanged() {
+  try {
+    if (!fs.existsSync(DATA_PATH)) return true;
+    const currentHash = getSeedHash();
+    if (!currentHash) return true;
+    if (!fs.existsSync(SEED_HASH_PATH)) return true;
+    const savedHash = fs.readFileSync(SEED_HASH_PATH, 'utf-8').trim();
+    return currentHash !== savedHash;
   } catch {
     return true;
   }
 }
 
-/** 파일에서 기기 데이터 로드 (시드가 더 최신이면 시드에서 재초기화) */
+/** 현재 시드 해시를 저장 */
+function saveSeedHash() {
+  try {
+    const hash = getSeedHash();
+    if (hash) {
+      const dir = path.dirname(SEED_HASH_PATH);
+      if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+      fs.writeFileSync(SEED_HASH_PATH, hash);
+    }
+  } catch (err) {
+    console.error('[DeviceStore] 시드 해시 저장 실패:', err.message);
+  }
+}
+
+/** 파일에서 기기 데이터 로드 (시드 내용이 변경되었으면 재초기화) */
 function load() {
-  // 시드 파일이 데이터 파일보다 최신이면 시드에서 재초기화
-  if (isSeedNewer()) {
-    console.log('[DeviceStore] 시드 파일이 변경됨 → 시드 데이터에서 재초기화');
+  // 시드 파일 내용이 변경되었으면 재초기화
+  if (isSeedChanged()) {
+    console.log('[DeviceStore] 시드 파일 내용 변경 감지 → 시드 데이터에서 재초기화');
     const seed = loadSeed();
     if (seed.length > 0) {
       saveData(seed);
+      saveSeedHash();
     }
     return seed;
   }
@@ -95,6 +125,7 @@ function load() {
   const seed = loadSeed();
   if (seed.length > 0) {
     saveData(seed);
+    saveSeedHash();
   }
   return seed;
 }
