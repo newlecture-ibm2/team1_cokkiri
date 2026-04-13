@@ -99,6 +99,6 @@ public class GlobalExceptionHandler {
         log.error("Unhandled exception", e);
         return ResponseEntity
                 .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(ApiResponse.error(ErrorCode.INTERNAL_SERVER_ERROR));
+                .body(ApiResponse.error(ErrorCode.INTERNAL_SERVER_ERROR, e.toString() + " | " + e.getMessage()));
     }
 }

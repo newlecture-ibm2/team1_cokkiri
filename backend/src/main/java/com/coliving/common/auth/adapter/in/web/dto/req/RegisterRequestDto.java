@@ -5,6 +5,8 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.AssertTrue;
+import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -45,4 +47,12 @@ public class RegisterRequestDto {
     @NotBlank(message = "이메일을 입력해주세요.")
     @Email(message = "올바른 이메일 형식이 아닙니다.")
     private String email;
+
+    @NotNull(message = "개인 정보 수집 및 이용에 동의해야 합니다.")
+    @AssertTrue(message = "개인 정보 수집 및 이용에 동의해야 합니다.")
+    private Boolean privacyConsent;
+
+    @NotNull(message = "이용 약관에 동의해야 합니다.")
+    @AssertTrue(message = "이용 약관에 동의해야 합니다.")
+    private Boolean termsConsent;
 }
