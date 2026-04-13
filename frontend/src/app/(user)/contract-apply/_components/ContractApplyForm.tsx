@@ -270,30 +270,48 @@ export default function ContractApplyForm() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Validate required fields before submission
+    if (!formData.address || !formData.bankAccount || !formData.usagePurpose) {
+      setError("주소, 계좌 정보, 입주 목적을 모두 입력해주세요.");
+      setStep(4); // Go back to billing/details if needed
+      return;
+    }
+
     if (!formData.privacyAgreed || !formData.termsAgreed) {
       setError("모든 필수 약관에 동의해주세요.");
+      setStep(3);
+      return;
+    }
+
+    if (!paymentComplete) {
+      setError("결제를 완료해주세요.");
       return;
     }
 
     setIsSubmitting(true);
     setError(null);
 
+    const payload = {
+      contractId: formData.contractId,
+      spaceId: Number(spaceId),
+      desiredStartDate: formData.desiredStartDate,
+      desiredDurationMonths: Number(formData.desiredDurationMonths),
+      usagePurpose: formData.usagePurpose,
+      requestNote: formData.requestNote || "",
+      address: formData.address,
+      bankAccount: formData.bankAccount,
+      privacyAgreed: formData.privacyAgreed
+    };
+
+    console.log("Submitting contract application:", payload);
+
     try {
       const response = await fetch('/api/contracts/submit', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
-        body: JSON.stringify({
-          contractId: formData.contractId,
-          spaceId: Number(spaceId),
-          desiredStartDate: formData.desiredStartDate,
-          desiredDurationMonths: Number(formData.desiredDurationMonths),
-          usagePurpose: formData.usagePurpose,
-          requestNote: formData.requestNote || "",
-          address: formData.address,
-          bankAccount: formData.bankAccount,
-          privacyAgreed: formData.privacyAgreed
-        })
+        body: JSON.stringify(payload)
       });
 
       if (!response.ok) {
