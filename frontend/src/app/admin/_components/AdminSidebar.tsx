@@ -20,36 +20,36 @@ const NAV_SECTIONS: {
   label: string;
   items: { href: string; label: string; icon: typeof LayoutDashboard }[];
 }[] = [
-  {
-    label: "Overview",
-    items: [
-      { href: "/admin/dashboard", label: "대시보드", icon: LayoutDashboard },
-    ],
-  },
-  {
-    label: "공간·계약",
-    items: [
-      { href: "/admin/spaces", label: "공간 관리", icon: Building2 },
-      { href: "/admin/contracts", label: "계약 관리", icon: FileText },
-      { href: "/admin/reservations", label: "예약 관리", icon: CalendarDays },
-    ],
-  },
-  {
-    label: "기기·모니터링",
-    items: [
-      { href: "/admin/devices", label: "기기 관리", icon: Cpu },
-      { href: "/admin/monitoring", label: "모니터링", icon: Activity },
-    ],
-  },
-  {
-    label: "운영",
-    items: [
-      { href: "/admin/billing", label: "결제·청구", icon: CreditCard },
-      { href: "/admin/vocs", label: "민원 관리", icon: MessageSquareText },
-      { href: "/admin/community", label: "커뮤니티", icon: MessagesSquare },
-    ],
-  },
-];
+    {
+      label: "Overview",
+      items: [
+        { href: "/admin/dashboard", label: "대시보드", icon: LayoutDashboard },
+      ],
+    },
+    {
+      label: "Space",
+      items: [
+        { href: "/admin/spaces", label: "공간 관리", icon: Building2 },
+        { href: "/admin/contracts", label: "계약 관리", icon: FileText },
+        { href: "/admin/reservations", label: "예약 관리", icon: CalendarDays },
+      ],
+    },
+    {
+      label: "Device",
+      items: [
+        { href: "/admin/devices", label: "기기 관리", icon: Cpu },
+        { href: "/admin/monitoring", label: "모니터링", icon: Activity },
+      ],
+    },
+    {
+      label: "Operations",
+      items: [
+        { href: "/admin/billing", label: "결제·청구", icon: CreditCard },
+        { href: "/admin/vocs", label: "민원 관리", icon: MessageSquareText },
+        { href: "/admin/community", label: "커뮤니티", icon: MessagesSquare },
+      ],
+    },
+  ];
 
 function linkActive(pathname: string, href: string) {
   if (href === "/admin/dashboard") {
@@ -70,7 +70,7 @@ export function AdminSidebar({ mobileOpen, onClose }: Props) {
     <nav className="flex h-full flex-col gap-6 px-3 py-5" aria-label="관리자 메뉴">
       {NAV_SECTIONS.map((section) => (
         <div key={section.label}>
-          <p className="mb-2 px-3 text-xs font-black uppercase tracking-[0.25em] text-muted-foreground/80">
+          <p className="mb-2 px-3 text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground/60">
             {section.label}
           </p>
           <ul className="space-y-0.5">
@@ -83,16 +83,16 @@ export function AdminSidebar({ mobileOpen, onClose }: Props) {
                     href={item.href}
                     onClick={onClose}
                     className={cn(
-                      "group flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-[15px] font-bold tracking-wide transition-all duration-200",
+                      "group flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-base font-extrabold tracking-wide transition-all duration-200",
                       active
                         ? "bg-primary/10 text-primary shadow-sm shadow-primary/5"
-                        : "text-foreground/80 hover:bg-primary/5 hover:text-foreground",
+                        : "text-foreground/90 hover:bg-primary/5 hover:text-foreground",
                     )}
                   >
                     <Icon
                       className={cn(
-                        "size-[18px] shrink-0 transition-colors",
-                        active ? "text-secondary" : "text-foreground/60 group-hover:text-foreground/80",
+                        "size-5 shrink-0 transition-colors",
+                        active ? "text-secondary" : "text-foreground/70 group-hover:text-foreground/90",
                       )}
                       aria-hidden
                     />

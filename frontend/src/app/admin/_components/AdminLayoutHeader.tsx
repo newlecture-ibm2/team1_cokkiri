@@ -48,9 +48,9 @@ export function AdminLayoutHeader({ onOpenMenu }: Props) {
         <div className="flex items-center gap-1.5 md:gap-2">
           <Link
             href="/"
-            className="hidden items-center gap-1.5 rounded-lg px-3 py-1.5 text-[clamp(0.7rem,1vw,0.85rem)] font-bold tracking-wide text-muted-foreground transition-colors hover:bg-primary/5 hover:text-primary sm:inline-flex"
+            className="hidden items-center gap-2 rounded-lg px-4 py-2 text-base font-bold tracking-wide text-muted-foreground transition-colors hover:bg-primary/5 hover:text-primary sm:inline-flex"
           >
-            <ExternalLink className="size-3" aria-hidden />
+            <ExternalLink className="size-4" aria-hidden />
             사이트 보기
           </Link>
 
@@ -79,11 +79,11 @@ export function AdminLayoutHeader({ onOpenMenu }: Props) {
               e.preventDefault();
               useAuthStore.getState().logout();
             }}
-            className="inline-flex size-8 items-center justify-center rounded-lg text-muted-foreground/70 transition-colors hover:bg-destructive/8 hover:text-destructive"
+            className="inline-flex size-10 items-center justify-center rounded-lg text-muted-foreground/70 transition-colors hover:bg-destructive/8 hover:text-destructive"
             aria-label="로그아웃"
             title="로그아웃"
           >
-            <LogOut className="size-4" />
+            <LogOut className="size-5" />
           </button>
         </div>
       </div>
