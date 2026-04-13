@@ -12,10 +12,11 @@ import { useAuthStore } from "@/store/useAuthStore";
 type NavChild = {
   name: string;
   path?: string;
+  action?: "logout";
   children?: { name: string; path: string }[];
 };
 
-type NavLinkItem = { name: string; path: string };
+type NavLinkItem = { name: string; path: string; action?: "logout" };
 type NavMenuItem = { name: string; children: NavChild[] };
 type NavItem = NavLinkItem | NavMenuItem;
 
@@ -28,6 +29,7 @@ const navItems: NavItem[] = [
       { name: "룸 둘러보기", path: "/rooms" },
       { name: "시설 둘러보기", path: "/experience" },
       { name: "층별 안내", path: "/floor" },
+      { name: "예약 시설", path: "/facilities" },
     ],
   },
   { name: "Community", path: "/community" },
@@ -51,7 +53,7 @@ const navItems: NavItem[] = [
       },
       { name: "스마트홈 기기", path: "/my-devices" },
       { name: "알림", path: "/notifications" },
-      { name: "로그아웃", path: "#" },
+      { name: "로그아웃", path: "#", action: "logout" },
     ],
   },
 ];
@@ -292,7 +294,11 @@ export function Header() {
                                     <Link
                                       href={child.path}
                                       onClick={
+<<<<<<< HEAD
                                         child.name === "로그아웃"
+=======
+                                        child.action === "logout"
+>>>>>>> d6eb0637421968003ebcf872a7d2e5155e9dbc18
                                           ? async (e) => {
                                             e.preventDefault();
                                             await logout();
@@ -516,7 +522,11 @@ export function Header() {
                                       <Link
                                         href={child.path || "#"}
                                         onClick={
+<<<<<<< HEAD
                                           child.name === "로그아웃"
+=======
+                                          child.action === "logout"
+>>>>>>> d6eb0637421968003ebcf872a7d2e5155e9dbc18
                                             ? async (e) => {
                                               e.preventDefault();
                                               await logout();

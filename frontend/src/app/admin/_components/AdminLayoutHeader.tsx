@@ -20,7 +20,7 @@ export function AdminLayoutHeader({ onOpenMenu }: Props) {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
     >
-      <div className="flex h-14 items-center justify-between px-4 md:px-6 lg:px-8">
+      <div className="flex items-center justify-between px-[clamp(1rem,3vw,3rem)] py-[clamp(0.375rem,0.8vw,0.75rem)]">
         {/* Left: Mobile menu + Logo */}
         <div className="flex items-center gap-2.5">
           <Button
@@ -35,10 +35,10 @@ export function AdminLayoutHeader({ onOpenMenu }: Props) {
           </Button>
 
           <Link href="/admin" className="flex items-center gap-2">
-            <span className="text-base font-black uppercase tracking-tight text-primary md:text-lg">
-              CoKkiri
+            <span className="text-[clamp(1.5rem,3.5vw,2.25rem)] font-black uppercase tracking-tighter text-primary">
+              COKKIRI
             </span>
-            <span className="rounded-md bg-secondary/15 px-1.5 py-0.5 text-[10px] font-black uppercase tracking-widest text-secondary">
+            <span className="mt-1 mb-auto ml-1 rounded-md bg-secondary/15 px-2 py-0.5 text-[clamp(0.55rem,1vw,0.875rem)] font-black uppercase tracking-widest text-secondary">
               Admin
             </span>
           </Link>
@@ -48,7 +48,7 @@ export function AdminLayoutHeader({ onOpenMenu }: Props) {
         <div className="flex items-center gap-1.5 md:gap-2">
           <Link
             href="/"
-            className="hidden items-center gap-1.5 rounded-lg px-3 py-1.5 text-[11px] font-bold tracking-wide text-muted-foreground transition-colors hover:bg-primary/5 hover:text-primary sm:inline-flex"
+            className="hidden items-center gap-1.5 rounded-lg px-3 py-1.5 text-[clamp(0.7rem,1vw,0.85rem)] font-bold tracking-wide text-muted-foreground transition-colors hover:bg-primary/5 hover:text-primary sm:inline-flex"
           >
             <ExternalLink className="size-3" aria-hidden />
             사이트 보기
@@ -58,15 +58,15 @@ export function AdminLayoutHeader({ onOpenMenu }: Props) {
 
           <div className="flex items-center gap-2 pl-1">
             <div className="hidden text-right sm:block">
-              <p className="text-xs font-bold leading-none text-primary">
+              <p className="text-sm font-bold leading-none text-primary">
                 {user?.name || "관리자"}
               </p>
-              <p className="mt-0.5 text-[10px] font-medium text-muted-foreground">
+              <p className="mt-0.5 text-xs font-medium text-muted-foreground">
                 Administrator
               </p>
             </div>
             <div
-              className="flex size-8 shrink-0 items-center justify-center rounded-full bg-primary text-[11px] font-black text-primary-foreground"
+              className="flex size-10 shrink-0 items-center justify-center rounded-full bg-primary text-sm font-black text-primary-foreground"
               aria-hidden
             >
               {user?.name?.[0] || "A"}

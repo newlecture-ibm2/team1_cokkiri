@@ -79,13 +79,18 @@ export function TenantHistoryTab({ refreshKey }: Props) {
 
   useEffect(() => {
     fetchAllContracts();
-  }, [refreshKey]);
+  }, [refreshKey, dateFrom, dateTo]);
 
   const fetchAllContracts = async () => {
     setIsLoading(true);
     setError(null);
     try {
-      const res = await fetch("/api/admin/contracts");
+      const params = new URLSearchParams();
+      if (dateFrom) params.set('startDate', dateFrom);
+      if (dateTo) params.set('endDate', dateTo);
+      const qs = params.toString();
+      const url = `/api/admin/contracts${qs ? `?${qs}` : ''}`;
+      const res = await fetch(url);
       if (!res.ok) throw new Error("계약 데이터를 불러오는 데 실패했습니다.");
       const result = await res.json();
       if (result.success && result.data) {

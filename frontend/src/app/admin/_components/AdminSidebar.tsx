@@ -70,7 +70,7 @@ export function AdminSidebar({ mobileOpen, onClose }: Props) {
     <nav className="flex h-full flex-col gap-6 px-3 py-5" aria-label="관리자 메뉴">
       {NAV_SECTIONS.map((section) => (
         <div key={section.label}>
-          <p className="mb-2 px-3 text-[10px] font-black uppercase tracking-[0.25em] text-muted-foreground/50">
+          <p className="mb-2 px-3 text-xs font-black uppercase tracking-[0.25em] text-muted-foreground/80">
             {section.label}
           </p>
           <ul className="space-y-0.5">
@@ -83,16 +83,16 @@ export function AdminSidebar({ mobileOpen, onClose }: Props) {
                     href={item.href}
                     onClick={onClose}
                     className={cn(
-                      "group flex items-center gap-2.5 rounded-xl px-3 py-2 text-[13px] font-bold tracking-wide transition-all duration-200",
+                      "group flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-[15px] font-bold tracking-wide transition-all duration-200",
                       active
                         ? "bg-primary/10 text-primary shadow-sm shadow-primary/5"
-                        : "text-foreground/55 hover:bg-primary/5 hover:text-foreground/90",
+                        : "text-foreground/80 hover:bg-primary/5 hover:text-foreground",
                     )}
                   >
                     <Icon
                       className={cn(
-                        "size-[15px] shrink-0 transition-colors",
-                        active ? "text-secondary" : "text-foreground/40 group-hover:text-foreground/60",
+                        "size-[18px] shrink-0 transition-colors",
+                        active ? "text-secondary" : "text-foreground/60 group-hover:text-foreground/80",
                       )}
                       aria-hidden
                     />
