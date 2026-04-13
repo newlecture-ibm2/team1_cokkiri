@@ -137,9 +137,21 @@ export function ContractListTab({ refreshKey, onRefresh }: Props) {
 
   const openEdit = (c: Contract) => {
     setEditId(c.contractId);
+
+    // If final dates are missing (PENDING status), fallback to desired dates
+    let initialStart = c.startDate || c.desiredStartDate || "";
+    let initialEnd = c.endDate || "";
+
+    if (!initialEnd && initialStart && c.desiredDurationMonths) {
+      const start = new Date(initialStart);
+      const end = new Date(start);
+      end.setMonth(start.getMonth() + c.desiredDurationMonths);
+      initialEnd = end.toISOString().split("T")[0];
+    }
+
     setEditForm({
-      startDate: c.startDate || "",
-      endDate: c.endDate || "",
+      startDate: initialStart,
+      endDate: initialEnd,
       monthlyRent: c.monthlyRent?.toString() || "",
       deposit: c.deposit?.toString() || "",
       specialTerms: c.specialTerms || "",
@@ -147,7 +159,10 @@ export function ContractListTab({ refreshKey, onRefresh }: Props) {
   };
 
   const handleUpdate = async () => {
-    if (!editId) return;
+    if (editId === null) return;
+
+    console.log(`[AdminContract] Attempting to update contract #${editId}`, editForm);
+
     setIsSubmitting(true);
     try {
       const res = await fetch(`/api/admin/contracts/${editId}`, {
@@ -161,15 +176,18 @@ export function ContractListTab({ refreshKey, onRefresh }: Props) {
           specialTerms: editForm.specialTerms,
         }),
       });
+
       const result = await res.json();
       if (result.success) {
         setEditId(null);
         onRefresh();
       } else {
-        alert(result.message || "수정에 실패했습니다.");
+        const errorDetail = result.data ? JSON.stringify(result.data) : (result.message || "수정에 실패했습니다.");
+        alert(`수정 실패: ${errorDetail}\n(Code: ${result.errorCode || "Unknown"})`);
       }
     } catch (err) {
-      console.error(err);
+      console.error("[AdminContract] Update error:", err);
+      alert("서버 통신 중 오류가 발생했습니다.");
     } finally {
       setIsSubmitting(false);
     }
@@ -312,11 +330,10 @@ export function ContractListTab({ refreshKey, onRefresh }: Props) {
             <button
               key={s}
               onClick={() => setStatusFilter(s)}
-              className={`px-4 py-2 rounded-full text-[10px] font-black uppercase tracking-[0.15em] transition-all ${
-                statusFilter === s
+              className={`px-4 py-2 rounded-full text-[10px] font-black uppercase tracking-[0.15em] transition-all ${statusFilter === s
                   ? "bg-primary text-background"
                   : "bg-primary/5 text-muted hover:bg-primary/10"
-              }`}
+                }`}
             >
               {s === "ALL" ? "전체" : STATUS_LABELS[s] || s}
             </button>
@@ -421,9 +438,8 @@ export function ContractListTab({ refreshKey, onRefresh }: Props) {
                     </td>
                     <td className="p-5">
                       <span
-                        className={`text-[10px] font-black tracking-[0.15em] uppercase px-3 py-1.5 rounded-full ${
-                          STATUS_COLORS[c.status] || "bg-gray-100 text-gray-600"
-                        }`}
+                        className={`text-[10px] font-black tracking-[0.15em] uppercase px-3 py-1.5 rounded-full ${STATUS_COLORS[c.status] || "bg-gray-100 text-gray-600"
+                          }`}
                       >
                         {STATUS_LABELS[c.status] || c.status}
                       </span>
@@ -689,11 +705,10 @@ export function ContractListTab({ refreshKey, onRefresh }: Props) {
             >
               <div className="p-8 text-center">
                 <div
-                  className={`w-16 h-16 rounded-full mx-auto mb-6 flex items-center justify-center ${
-                    actionModal.type === "expire"
+                  className={`w-16 h-16 rounded-full mx-auto mb-6 flex items-center justify-center ${actionModal.type === "expire"
                       ? "bg-yellow-50 text-yellow-600"
                       : "bg-red-50 text-red-600"
-                  }`}
+                    }`}
                 >
                   {actionModal.type === "expire" ? (
                     <Clock className="w-8 h-8" />
@@ -728,11 +743,10 @@ export function ContractListTab({ refreshKey, onRefresh }: Props) {
                   <button
                     onClick={handleAction}
                     disabled={isSubmitting}
-                    className={`flex-1 px-6 py-4 text-white text-[10px] font-black uppercase tracking-widest rounded-full transition-colors disabled:opacity-50 flex items-center justify-center gap-2 ${
-                      actionModal.type === "expire"
+                    className={`flex-1 px-6 py-4 text-white text-[10px] font-black uppercase tracking-widest rounded-full transition-colors disabled:opacity-50 flex items-center justify-center gap-2 ${actionModal.type === "expire"
                         ? "bg-yellow-600 hover:bg-yellow-700"
                         : "bg-red-600 hover:bg-red-700"
-                    }`}
+                      }`}
                   >
                     {isSubmitting && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
                     확인

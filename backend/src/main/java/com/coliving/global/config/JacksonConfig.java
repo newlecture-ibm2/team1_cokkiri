@@ -68,6 +68,8 @@ public class JacksonConfig {
 
         return new ObjectMapper()
                 .registerModule(javaTimeModule)
+                // 알 수 없는 필드 무시 (Spring 기본값 복원)
+                .disable(com.fasterxml.jackson.databind.DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
                 // LocalDate 등을 [2026,5,1] 배열이 아닌 "2026-05-01" 문자열로 직렬화
                 .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
                 // 모든 날짜/시간 직렬화·역직렬화 시 Asia/Seoul(KST) 기준

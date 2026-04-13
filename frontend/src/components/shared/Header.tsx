@@ -26,7 +26,7 @@ const navItems: NavItem[] = [
   {
     name: "Space",
     children: [
-      { name: "룸 둘러보기", path: "/rooms" },
+      { name: "방 둘러보기", path: "/rooms" },
       { name: "시설 둘러보기", path: "/experience" },
       { name: "층별 안내", path: "/floor" },
       { name: "예약 시설", path: "/facilities" },
@@ -294,7 +294,7 @@ export function Header() {
                                     <Link
                                       href={child.path}
                                       onClick={
-                                        child.action === "logout"
+                                        child.name === "로그아웃"
                                           ? async (e) => {
                                             e.preventDefault();
                                             await logout();
@@ -518,7 +518,7 @@ export function Header() {
                                       <Link
                                         href={child.path || "#"}
                                         onClick={
-                                          child.action === "logout"
+                                          child.name === "로그아웃"
                                             ? async (e) => {
                                               e.preventDefault();
                                               await logout();

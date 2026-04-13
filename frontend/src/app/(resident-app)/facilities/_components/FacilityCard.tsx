@@ -14,21 +14,18 @@ import {
 } from "lucide-react";
 import type { Facility } from "../_types";
 
-const STATUS_MAP: Record<string, { label: string; dot: string; border: string }> = {
+const STATUS_MAP: Record<string, { label: string; dot: string }> = {
   AVAILABLE: {
     label: "이용 가능",
     dot: "bg-green-500",
-    border: "border-green-400/30 bg-green-50/50",
   },
   OCCUPIED: {
     label: "사용 중",
     dot: "bg-accent",
-    border: "border-accent/30 bg-accent/5",
   },
   MAINTENANCE: {
     label: "점검 중",
     dot: "bg-muted-foreground",
-    border: "border-border bg-muted/20 opacity-60",
   },
 };
 
@@ -69,7 +66,7 @@ export function FacilityCard({ facility, selected, onSelect, index }: FacilityCa
       className={`relative w-full rounded-[2rem] border p-5 text-left transition-all duration-200
         ${selected
           ? "border-primary/60 bg-primary text-primary-foreground shadow-lg shadow-primary/20"
-          : `${status.border} hover:shadow-md hover:border-primary/30`
+          : "bg-primary/5 border-foreground/10 hover:bg-primary/10 hover:shadow-md hover:border-foreground/20"
         }`}
     >
       {/* 상태 점 */}
