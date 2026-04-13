@@ -33,10 +33,10 @@ public class RoomPersistenceAdapter implements RoomRepositoryPort {
     }
 
     @Override
-    public Page<Room> findAvailableRoomsWithFilter(Long roomTypeId, BigDecimal minRent,
+    public Page<Room> findAvailableRoomsWithFilter(String keyword, Long roomTypeId, BigDecimal minRent,
                                                     BigDecimal maxRent, Integer floor, Pageable pageable) {
         return spaceJpaRepository
-                .findRoomsWithFilter(roomTypeId, minRent, maxRent, floor, pageable)
+                .findRoomsWithFilter(keyword, roomTypeId, minRent, maxRent, floor, pageable)
                 .map(this::toRoom);
     }
 
