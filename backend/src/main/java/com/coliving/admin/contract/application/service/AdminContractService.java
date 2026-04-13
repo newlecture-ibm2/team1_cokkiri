@@ -24,12 +24,14 @@ import com.coliving.user.contract.adapter.out.jpa.ContractJpaRepository;
 import com.coliving.user.contract.model.ContractOrigin;
 import com.coliving.user.contract.model.ContractStatus;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.List;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional
@@ -53,7 +55,8 @@ public class AdminContractService implements AdminContractUseCase {
 
         @Override
         @Transactional(readOnly = true)
-        public List<AdminContractListResult> viewAllContracts(ContractStatus status, Long spaceId, LocalDate startDate, LocalDate endDate) {
+        public List<AdminContractListResult> viewAllContracts(ContractStatus status, Long spaceId, LocalDate startDate,
+                        LocalDate endDate) {
                 return repositoryPort.findAllContracts(status, spaceId, startDate, endDate);
         }
 
@@ -101,15 +104,17 @@ public class AdminContractService implements AdminContractUseCase {
                 userJpaRepository.save(user);
 
                 // 알림 이벤트 발행
-                eventPublisher.publishEvent(com.coliving.admin.contract.application.event.ContractStatusChangedByAdminEvent.builder()
-                                .contractId(contract.getContractId())
-                                .userId(user.getUserId())
-                                .spaceId(space.getSpaceId())
-                                .spaceName(space.getName())
-                                .monthlyRent(contract.getMonthlyRent())
-                                .newStatus(contract.getStatus())
-                                .message("관리자에 의해 계약이 등록되었습니다.")
-                                .build());
+                eventPublisher.publishEvent(
+                                com.coliving.admin.contract.application.event.ContractStatusChangedByAdminEvent
+                                                .builder()
+                                                .contractId(contract.getContractId())
+                                                .userId(user.getUserId())
+                                                .spaceId(space.getSpaceId())
+                                                .spaceName(space.getName())
+                                                .monthlyRent(contract.getMonthlyRent())
+                                                .newStatus(contract.getStatus())
+                                                .message("관리자에 의해 계약이 등록되었습니다.")
+                                                .build());
 
                 return AdminContractResult.builder()
                                 .contractId(contract.getContractId())
@@ -122,6 +127,8 @@ public class AdminContractService implements AdminContractUseCase {
 
         @Override
         public AdminContractResult updateContract(Long adminId, AdminUpdateContractCommand command) {
+                log.info("[AdminContract] updateContract called: contractId={}", command.getContractId());
+
                 ContractEntity contract = repositoryPort.findById(command.getContractId())
                                 .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND));
 
@@ -138,14 +145,7 @@ public class AdminContractService implements AdminContractUseCase {
                                 command.getSpecialTerms());
 
                 repositoryPort.save(contract);
-
-                // 계약 수정 알림 이벤트 발행
-                eventPublisher.publishEvent(com.coliving.admin.contract.application.event.ContractStatusChangedByAdminEvent.builder()
-                                .contractId(contract.getContractId())
-                                .userId(contract.getUserId())
-                                .newStatus(ContractStatus.ACTIVE) // 수정되어도 상태는 ACTIVE 유지
-                                .message("계약 정보가 변경되었습니다")
-                                .build());
+                log.info("[AdminContract] Contract {} updated successfully", command.getContractId());
 
                 return AdminContractResult.builder()
                                 .contractId(contract.getContractId())
@@ -178,12 +178,14 @@ public class AdminContractService implements AdminContractUseCase {
                 demoteUserIfNoActiveContract(contract.getUserId());
 
                 // 알림 이벤트 발행
-                eventPublisher.publishEvent(com.coliving.admin.contract.application.event.ContractStatusChangedByAdminEvent.builder()
-                                .contractId(contract.getContractId())
-                                .userId(contract.getUserId())
-                                .newStatus(ContractStatus.TERMINATED)
-                                .message("계약이 만료되었습니다.")
-                                .build());
+                eventPublisher.publishEvent(
+                                com.coliving.admin.contract.application.event.ContractStatusChangedByAdminEvent
+                                                .builder()
+                                                .contractId(contract.getContractId())
+                                                .userId(contract.getUserId())
+                                                .newStatus(ContractStatus.TERMINATED)
+                                                .message("계약이 만료되었습니다.")
+                                                .build());
 
                 return AdminContractResult.builder()
                                 .contractId(contract.getContractId())
@@ -216,12 +218,14 @@ public class AdminContractService implements AdminContractUseCase {
                 demoteUserIfNoActiveContract(contract.getUserId());
 
                 // 알림 이벤트 발행
-                eventPublisher.publishEvent(com.coliving.admin.contract.application.event.ContractStatusChangedByAdminEvent.builder()
-                                .contractId(contract.getContractId())
-                                .userId(contract.getUserId())
-                                .newStatus(ContractStatus.TERMINATED)
-                                .message("계약이 해지되었습니다.")
-                                .build());
+                eventPublisher.publishEvent(
+                                com.coliving.admin.contract.application.event.ContractStatusChangedByAdminEvent
+                                                .builder()
+                                                .contractId(contract.getContractId())
+                                                .userId(contract.getUserId())
+                                                .newStatus(ContractStatus.TERMINATED)
+                                                .message("계약이 해지되었습니다.")
+                                                .build());
 
                 return AdminContractResult.builder()
                                 .contractId(contract.getContractId())
@@ -253,13 +257,15 @@ public class AdminContractService implements AdminContractUseCase {
                 repositoryPort.save(contract);
 
                 // 알림 이벤트 발행
-                eventPublisher.publishEvent(com.coliving.admin.contract.application.event.ContractStatusChangedByAdminEvent.builder()
-                                .contractId(contract.getContractId())
-                                .userId(contract.getUserId())
-                                .spaceId(contract.getSpaceId())
-                                .newStatus(ContractStatus.APPROVED)
-                                .message("입주 신청이 승인되었습니다.")
-                                .build());
+                eventPublisher.publishEvent(
+                                com.coliving.admin.contract.application.event.ContractStatusChangedByAdminEvent
+                                                .builder()
+                                                .contractId(contract.getContractId())
+                                                .userId(contract.getUserId())
+                                                .spaceId(contract.getSpaceId())
+                                                .newStatus(ContractStatus.APPROVED)
+                                                .message("입주 신청이 승인되었습니다.")
+                                                .build());
 
                 return AdminContractResult.builder()
                                 .contractId(contract.getContractId())
@@ -276,9 +282,9 @@ public class AdminContractService implements AdminContractUseCase {
                                 .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND));
 
                 // PENDING, APPROVED, ACTIVE 상태인 경우에만 반려 가능
-                if (contract.getStatus() != ContractStatus.PENDING && 
-                    contract.getStatus() != ContractStatus.APPROVED &&
-                    contract.getStatus() != ContractStatus.ACTIVE) {
+                if (contract.getStatus() != ContractStatus.PENDING &&
+                                contract.getStatus() != ContractStatus.APPROVED &&
+                                contract.getStatus() != ContractStatus.ACTIVE) {
                         throw new BusinessException(ErrorCode.INVALID_STATUS);
                 }
 
@@ -298,13 +304,15 @@ public class AdminContractService implements AdminContractUseCase {
                 }
 
                 // 알림 이벤트 발행
-                eventPublisher.publishEvent(com.coliving.admin.contract.application.event.ContractStatusChangedByAdminEvent.builder()
-                                .contractId(contract.getContractId())
-                                .userId(contract.getUserId())
-                                .newStatus(ContractStatus.REJECTED)
-                                .rejectedReason(command.getRejectedReason())
-                                .message("계약이 반려(종료)되었습니다.")
-                                .build());
+                eventPublisher.publishEvent(
+                                com.coliving.admin.contract.application.event.ContractStatusChangedByAdminEvent
+                                                .builder()
+                                                .contractId(contract.getContractId())
+                                                .userId(contract.getUserId())
+                                                .newStatus(ContractStatus.REJECTED)
+                                                .rejectedReason(command.getRejectedReason())
+                                                .message("계약이 반려(종료)되었습니다.")
+                                                .build());
 
                 return AdminContractResult.builder()
                                 .contractId(contract.getContractId())
