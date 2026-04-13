@@ -16,6 +16,7 @@ import com.coliving.global.error.BusinessException;
 import com.coliving.global.error.ErrorCode;
 import com.coliving.infra.iot.DeviceStateUtil;
 import com.coliving.infra.iot.IotClient;
+import com.coliving.infra.iot.IotDeviceInfo;
 import com.coliving.infra.iot.IotResponse;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -25,6 +26,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Map;
 
 @Slf4j
 @Service
@@ -84,15 +86,53 @@ public class AdminDeviceService implements CreateAdminDeviceUseCase, AdminDevice
     // ── 기기 목록 조회 (Read) ──
 
     @Override
-    @Transactional(readOnly = true)
+    @Transactional
     public List<AdminDevice> getDeviceList() {
+        syncDeviceStatusFromIot();
         return adminDeviceRepositoryPort.findAll();
     }
 
     @Override
-    @Transactional(readOnly = true)
+    @Transactional
     public List<AdminDevice> getDeviceList(AdminDeviceListCommand command) {
+        syncDeviceStatusFromIot();
         return adminDeviceRepositoryPort.findAll(command);
+    }
+
+    /**
+     * Mock IoT 서버의 실시간 기기 상태(status)를 백엔드 DB에 동기화.
+     * 에러 시뮬레이션에 의해 mock-iot에서 발생한 ERROR/ONLINE 전환이
+     * 관리자 UI에 반영되도록 합니다.
+     * <p>
+     * IoT 서버 통신 실패 시 기존 DB 상태를 유지합니다 (내결함성).
+     */
+    private void syncDeviceStatusFromIot() {
+        try {
+            List<IotDeviceInfo> iotDevices = iotClient.discoverDevices();
+            if (iotDevices.isEmpty()) return;
+
+            // MAC → IoT 상태 맵 구성
+            Map<String, String> iotStatusMap = new java.util.HashMap<>();
+            for (IotDeviceInfo iot : iotDevices) {
+                if (iot.macAddress() != null && iot.status() != null) {
+                    iotStatusMap.put(iot.macAddress(), iot.status());
+                }
+            }
+
+            // DB의 활성화(is_active=true) 기기만 동기화
+            List<AdminDevice> dbDevices = adminDeviceRepositoryPort.findAll();
+            for (AdminDevice db : dbDevices) {
+                if (!Boolean.TRUE.equals(db.isActive())) continue;
+                String iotStatus = iotStatusMap.get(db.macAddress());
+                if (iotStatus != null && !iotStatus.equals(db.status())) {
+                    adminDeviceRepositoryPort.updateStatus(db.deviceId(), iotStatus);
+                    log.debug("[IoT 상태 동기화] deviceId: {}, mac: {}, {} → {}",
+                            db.deviceId(), db.macAddress(), db.status(), iotStatus);
+                }
+            }
+        } catch (Exception e) {
+            log.warn("[IoT 상태 동기화 실패] 기존 DB 상태 유지 — {}", e.getMessage());
+        }
     }
 
     // ── 기기 수정 (ADM-DEV-05) ──
