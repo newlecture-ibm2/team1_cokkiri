@@ -36,6 +36,7 @@ public class RoomTypeEntity extends BaseEntity {
     @Column(name = "is_system_default", nullable = false)
     private Boolean isSystemDefault;
 
+    @org.hibernate.annotations.ColumnDefault("0")
     @Column(name = "sort_order", nullable = false)
     private Integer sortOrder = 0;
 
