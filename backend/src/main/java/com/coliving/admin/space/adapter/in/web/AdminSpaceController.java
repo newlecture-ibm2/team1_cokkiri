@@ -99,7 +99,7 @@ public class AdminSpaceController {
     public ApiResponse<Page<AdminSpaceResponseDto>> getSpaces(
             @RequestParam(required = false) com.coliving.admin.space.model.SpaceType type,
             @RequestParam(required = false) com.coliving.admin.space.model.SpaceStatus status,
-            @PageableDefault(size = 20) Pageable pageable) {
+            @PageableDefault(size = 20, sort = "name", direction = org.springframework.data.domain.Sort.Direction.ASC) Pageable pageable) {
         Page<AdminSpaceResponseDto> result = adminSpaceUseCase.getSpaces(type, status, pageable)
                 .map(AdminSpaceResponseDto::from);
         return ApiResponse.ok(result);

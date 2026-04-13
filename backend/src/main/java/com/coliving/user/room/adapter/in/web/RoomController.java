@@ -34,7 +34,7 @@ public class RoomController {
             @RequestParam(required = false) BigDecimal minRent,
             @RequestParam(required = false) BigDecimal maxRent,
             @RequestParam(required = false) Integer floor,
-            @PageableDefault(size = 12) Pageable pageable) {
+            @PageableDefault(size = 12, sort = "name", direction = org.springframework.data.domain.Sort.Direction.ASC) Pageable pageable) {
 
         RoomListCommand command = RoomListCommand.builder()
                 .roomTypeId(roomTypeId)
