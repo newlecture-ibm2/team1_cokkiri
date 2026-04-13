@@ -11,12 +11,8 @@ import {
   METHOD_LABELS,
 } from '../_types';
 
-// PortOne V2 SDK (loaded via script tag in layout.tsx)
-declare global {
-  interface Window {
-    PortOne?: any;
-  }
-}
+// PortOne V2 SDK is loaded via script tag in layout.tsx
+// Window.PortOne type is declared in MyPaymentHistory.tsx
 
 interface Props {
   payment: Payment | null;
