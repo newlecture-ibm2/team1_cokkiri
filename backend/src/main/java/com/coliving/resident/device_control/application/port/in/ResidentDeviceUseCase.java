@@ -16,4 +16,7 @@ public interface ResidentDeviceUseCase {
 
     /** 기기 제어 (권한 검증 포함) */
     ControlDeviceResult controlDevice(ControlDeviceCommand command);
+
+    /** 해당 유저가 특정 공용 공간에 현재시각 기준 APPROVED 예약을 보유하고 있는지 확인 */
+    boolean hasApprovedReservationNow(Long userId, Long spaceId);
 }

@@ -168,4 +168,14 @@ public class ResidentDeviceService implements ResidentDeviceUseCase {
                 "기기 제어가 완료되었습니다"
         );
     }
+
+    /**
+     * 해당 유저가 특정 공용 공간에 현재시각 기준 APPROVED 예약을 보유하고 있는지 확인
+     * (기기 목록 조회 시 controllable 필드 결정에 사용)
+     */
+    @Override
+    @Transactional(readOnly = true)
+    public boolean hasApprovedReservationNow(Long userId, Long spaceId) {
+        return residentDeviceRepositoryPort.hasApprovedReservationNow(userId, spaceId);
+    }
 }

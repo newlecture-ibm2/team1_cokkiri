@@ -36,12 +36,15 @@ public class ResidentDeviceController {
 
     /**
      * 내 기기 목록 (RES-DEV-01)
+     * - controllable 필드: PRIVATE=항상true, COMMON=현재시각 APPROVED 예약 보유 시 true
      */
     @GetMapping("/my")
     public ResponseEntity<ApiResponse<List<ResidentDeviceResponseDto>>> getMyDevices(
             HttpServletRequest request) {
 
-        Long spaceId = extractSpaceId(request);
+        String token = resolveToken(request);
+        Long userId = jwtTokenProvider.getUserId(token);
+        Long spaceId = jwtTokenProvider.getSpaceId(token);
 
         // null 처리 통일: controlDevice와 동일하게 Controller 레벨에서 검증
         if (spaceId == null) {
@@ -50,7 +53,15 @@ public class ResidentDeviceController {
 
         List<ResidentDevice> devices = residentDeviceUseCase.getMyDevices(spaceId);
         List<ResidentDeviceResponseDto> dtoList = devices.stream()
-                .map(ResidentDeviceResponseDto::from)
+                .map(d -> {
+                    boolean controllable;
+                    if ("COMMON".equals(d.spaceType())) {
+                        controllable = residentDeviceUseCase.hasApprovedReservationNow(userId, d.spaceId());
+                    } else {
+                        controllable = true; // PRIVATE 기기는 항상 제어 가능
+                    }
+                    return ResidentDeviceResponseDto.from(d, controllable);
+                })
                 .toList();
 
         return ResponseEntity.ok(ApiResponse.ok(dtoList));

@@ -368,12 +368,14 @@ function DeviceCard({
   const isCommon = device.spaceType === "COMMON";
   const status = STATUS_MAP[device.status] ?? STATUS_MAP.OFFLINE;
 
-  // 공용 기기: 회색 계열 스타일 (제어 불가)
-  const cardColor = isCommon
-    ? "border-border bg-muted/10 opacity-75"
-    : status.color;
+  // 카드 색상: 기기 상태 기반 (개인/공용 공통)
+  const cardColor = isCommon && !device.controllable
+    ? "border-border bg-muted/10 opacity-60"
+    : isCommon
+      ? `${status.color} ring-1 ring-accent/20`
+      : status.color;
 
-  const dotColor = isCommon ? "bg-gray-400" : status.dot;
+  const dotColor = isCommon && !device.controllable ? "bg-gray-400" : status.dot;
 
   return (
     <motion.div
@@ -408,8 +410,8 @@ function DeviceCard({
         {device.deviceTypeName}
       </p>
 
-      {/* ── 개인 기기: commands 기반 동적 제어 UI ── */}
-      {!isCommon && device.status === "ONLINE" && (
+      {/* ── 제어 가능: commands 기반 동적 제어 UI ── */}
+      {device.controllable && device.status !== "OFFLINE" && (
         <div className="mt-3" onClick={(e) => e.stopPropagation()}>
           <DeviceControlPanel
             commandsJson={device.commands ?? "[]"}
@@ -423,21 +425,21 @@ function DeviceCard({
         </div>
       )}
 
-      {/* ── 개인 기기: 오프라인/에러 표시 ── */}
-      {!isCommon && device.status !== "ONLINE" && (
-        <p className="mt-3 text-[10px] font-semibold text-muted-foreground">
-          {status.label}
-        </p>
-      )}
-
-      {/* ── 공용 기기: 제어 불가 라벨 ── */}
-      {isCommon && (
+      {/* ── 제어 불가: 예약 필요 안내 (COMMON + 예약 없음) ── */}
+      {!device.controllable && isCommon && (
         <div className="mt-3 flex items-center gap-1.5">
-          <span className="inline-block w-1.5 h-1.5 rounded-full bg-gray-400" />
+          <span className="inline-block w-1.5 h-1.5 rounded-full bg-amber-400" />
           <span className="text-[10px] font-bold text-muted-foreground">
             예약 후 이용 가능
           </span>
         </div>
+      )}
+
+      {/* ── 오프라인 표시 ── */}
+      {device.status === "OFFLINE" && (
+        <p className="mt-3 text-[10px] font-semibold text-muted-foreground">
+          {status.label}
+        </p>
       )}
     </motion.div>
   );
