@@ -394,7 +394,10 @@ public class DataInitializer implements ApplicationRunner {
                                 Long approvedBy, LocalDate startDate, LocalDate endDate,
                                 BigDecimal monthlyRent, BigDecimal deposit, String specialTerms,
                                 OffsetDateTime contractedAt) {
-        boolean exists = contractJpaRepository.findByUserIdAndSpaceId(userId, spaceId).isPresent();
+        // findByUserIdAndSpaceId는 Optional 반환 → 동일 userId+spaceId의 다중 계약(상태 다름) 존재 시
+        // NonUniqueResultException 발생 방지를 위해 List 기반 중복 체크
+        boolean exists = contractJpaRepository.findByUserIdAndStatus(userId, status)
+                .stream().anyMatch(c -> c.getSpaceId().equals(spaceId));
         if (exists) return;
 
         ContractEntity.ContractEntityBuilder builder = ContractEntity.builder()
@@ -426,7 +429,8 @@ public class DataInitializer implements ApplicationRunner {
                                         LocalDate desiredStartDate, Integer desiredDurationMonths,
                                         String usagePurpose, String requestNote,
                                         Long approvedBy, String rejectedReason) {
-        boolean exists = contractJpaRepository.findByUserIdAndSpaceId(userId, spaceId).isPresent();
+        boolean exists = contractJpaRepository.findByUserIdOrderByCreatedAtDesc(userId)
+                .stream().anyMatch(c -> c.getSpaceId().equals(spaceId) && c.getStatus() == ContractStatus.REJECTED);
         if (exists) return;
 
         ContractEntity contract = ContractEntity.builder()
