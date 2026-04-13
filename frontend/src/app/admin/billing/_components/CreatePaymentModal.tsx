@@ -19,7 +19,7 @@ const OVERLAY = {
 
 const PANEL = {
   hidden: { opacity: 0, scale: 0.92, y: 24 },
-  visible: { opacity: 1, scale: 1, y: 0, transition: { type: 'spring', damping: 28, stiffness: 340 } },
+  visible: { opacity: 1, scale: 1, y: 0, transition: { type: 'spring' as const, damping: 28, stiffness: 340 } },
   exit: { opacity: 0, scale: 0.92, y: 24, transition: { duration: 0.18 } },
 };
 
