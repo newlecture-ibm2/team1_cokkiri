@@ -12,6 +12,7 @@ import com.coliving.admin.space.adapter.out.jpa.SpaceJpaRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDate;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -33,13 +34,48 @@ public class AdminContractPersistenceAdapter implements AdminContractRepositoryP
     }
 
     @Override
-    public List<AdminContractListResult> findAllContracts(ContractStatus status) {
+    public List<AdminContractListResult> findAllContracts(ContractStatus status, Long spaceId, LocalDate startDate, LocalDate endDate) {
         List<ContractEntity> contracts;
         if (status != null) {
             contracts = contractJpaRepository.findByStatus(status);
         } else {
             contracts = contractJpaRepository.findAll();
         }
+
+        // 공간 필터
+        if (spaceId != null) {
+            contracts = contracts.stream()
+                    .filter(c -> spaceId.equals(c.getSpaceId()))
+                    .collect(Collectors.toList());
+        }
+
+        // 기간 필터: 계약 startDate가 검색 범위 내에 있거나, 계약 기간이 검색 범위와 겹치는 계약 조회
+        if (startDate != null) {
+            contracts = contracts.stream()
+                    .filter(c -> {
+                        LocalDate cStart = c.getStartDate() != null ? c.getStartDate() : 
+                                          (c.getDesiredStartDate() != null ? c.getDesiredStartDate() : null);
+                        if (cStart == null) return true; // 날짜 없는 신청은 포함
+                        // 계약 시작일이 검색 시작일 이후이거나, 계약 종료일이 검색 시작일 이후인 경우
+                        LocalDate cEnd = c.getEndDate();
+                        if (cEnd != null) {
+                            return !cEnd.isBefore(startDate);
+                        }
+                        return !cStart.isBefore(startDate);
+                    })
+                    .collect(Collectors.toList());
+        }
+        if (endDate != null) {
+            contracts = contracts.stream()
+                    .filter(c -> {
+                        LocalDate cStart = c.getStartDate() != null ? c.getStartDate() : 
+                                          (c.getDesiredStartDate() != null ? c.getDesiredStartDate() : null);
+                        if (cStart == null) return true;
+                        return !cStart.isAfter(endDate);
+                    })
+                    .collect(Collectors.toList());
+        }
+
         return toResultList(contracts);
     }
 
