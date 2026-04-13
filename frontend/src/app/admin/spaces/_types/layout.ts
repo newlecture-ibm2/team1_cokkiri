@@ -56,11 +56,11 @@ export interface LayoutConfig {
   gap: number;
 }
 
-/** 기본 격자 설정값 */
+/** 기본 격자 설정값 (v2: 48×32 고밀도 격자) */
 export const DEFAULT_LAYOUT: LayoutConfig = {
-  columns: 24,
-  rows: 16,
-  gap: 4,
+  columns: 48,
+  rows: 32,
+  gap: 2,
 };
 
 /** 상태별 블록 색상 매핑 */

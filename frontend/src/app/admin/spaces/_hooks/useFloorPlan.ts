@@ -23,8 +23,8 @@ function spaceToBlock(space: SpaceDTO): FloorPlanBlock {
     roomTypeName: extractRoomTypeName(space),
     gridX: space.positionX ?? 0,
     gridY: space.positionY ?? 0,
-    gridW: space.positionW ?? (space.type === 'COMMON' ? 4 : 3),
-    gridH: space.positionH ?? 2,
+    gridW: space.positionW ?? (space.type === 'COMMON' ? 8 : 6),
+    gridH: space.positionH ?? 4,
     hasDeviceError: space.hasDeviceError ?? false,
   };
 }
@@ -67,8 +67,8 @@ export function useFloorPlan() {
           posMap.set(s.spaceId, {
             x: s.positionX ?? 0,
             y: s.positionY ?? 0,
-            w: s.positionW ?? (s.type === 'COMMON' ? 4 : 3),
-            h: s.positionH ?? 2,
+            w: s.positionW ?? (s.type === 'COMMON' ? 8 : 6),
+            h: s.positionH ?? 4,
           });
         }
       });
