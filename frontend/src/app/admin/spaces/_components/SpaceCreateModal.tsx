@@ -80,16 +80,24 @@ export default function SpaceCreateModal({
     });
   };
 
-  const submit = async () => {
-    try {
-      setIsSubmitting(true);
-      // 1. 공간 데이터 생성
-      const result = await createSpace(formData as SpaceDTO);
-      const spaceId = result.data.spaceId;
+  const handleCreate = async () => {
+    // 1. 필수값 검증 (프론트엔드 레벨)
+    if (!formData.name?.trim()) {
+      alert('공간 이름을 입력해 주세요.');
+      return;
+    }
+    if (formData.type === 'PRIVATE' && !formData.roomTypeId) {
+      alert('방 유형을 선택해 주세요. (등록된 방 유형이 없다면 방 유형 관리 메뉴에서 먼저 생성해야 합니다.)');
+      return;
+    }
 
-      // 2. 이미지 모아서 전송
+    setIsSubmitting(true);
+    try {
+      const res = await createSpace(formData as SpaceDTO);
+      const newSpaceId = res.data.spaceId;
+
       for (const [idx, file] of files.entries()) {
-        await uploadSpaceImage(spaceId, file, idx === 0);
+        await uploadSpaceImage(newSpaceId, file, idx === 0);
       }
 
       onCreated();
@@ -306,7 +314,8 @@ export default function SpaceCreateModal({
 
           <div className="flex justify-end pt-4">
             <button
-              onClick={submit}
+              type="button"
+              onClick={handleCreate}
               disabled={isSubmitting || !formData.name}
               className="group relative px-6 py-3 rounded-2xl text-[var(--background)] bg-[var(--foreground)] hover:bg-[var(--foreground)]/90 font-black tracking-tighter disabled:opacity-50 transition overflow-hidden"
             >
