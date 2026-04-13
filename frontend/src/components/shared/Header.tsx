@@ -25,9 +25,9 @@ const navItems: NavItem[] = [
   {
     name: "Space",
     children: [
-      { name: "일상의 집", path: "/rooms" },
-      { name: "느낌의 여정", path: "/experience" },
-      { name: "쉼의 자리", path: "/facilities" },
+      { name: "룸 둘러보기", path: "/rooms" },
+      { name: "시설 둘러보기", path: "/experience" },
+      { name: "층별 안내", path: "/floor" },
     ],
   },
   { name: "Community", path: "/community" },
@@ -36,20 +36,20 @@ const navItems: NavItem[] = [
     children: [
       { name: "프로필", path: "/profile" },
       {
-        name: "나의 히스토리",
+        name: "히스토리",
         children: [
           { name: "계약 내역", path: "/my-contracts" },
           { name: "예약 내역", path: "/my-history/reservation" },
         ],
       },
       {
-        name: "나의 커뮤니티",
+        name: "커뮤니티",
         children: [
           { name: "나의 민원", path: "/vocs" },
           { name: "나의 게시글", path: "/my-posts" },
         ],
       },
-      { name: "나의 기기", path: "/my-devices" },
+      { name: "스마트홈 기기", path: "/my-devices" },
       { name: "알림", path: "/notifications" },
       { name: "로그아웃", path: "#" },
     ],
