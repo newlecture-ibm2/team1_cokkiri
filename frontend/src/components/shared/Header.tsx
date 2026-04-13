@@ -12,10 +12,11 @@ import { useAuthStore } from "@/store/useAuthStore";
 type NavChild = {
   name: string;
   path?: string;
+  action?: "logout";
   children?: { name: string; path: string }[];
 };
 
-type NavLinkItem = { name: string; path: string };
+type NavLinkItem = { name: string; path: string; action?: "logout" };
 type NavMenuItem = { name: string; children: NavChild[] };
 type NavItem = NavLinkItem | NavMenuItem;
 
@@ -25,7 +26,7 @@ const navItems: NavItem[] = [
   {
     name: "Space",
     children: [
-      { name: "룸 둘러보기", path: "/rooms" },
+      { name: "방 둘러보기", path: "/rooms" },
       { name: "시설 둘러보기", path: "/experience" },
       { name: "층별 안내", path: "/floor" },
       { name: "예약 시설", path: "/facilities" },
@@ -52,7 +53,7 @@ const navItems: NavItem[] = [
       },
       { name: "스마트홈 기기", path: "/my-devices" },
       { name: "알림", path: "/notifications" },
-      { name: "로그아웃", path: "#" },
+      { name: "로그아웃", path: "#", action: "logout" },
     ],
   },
 ];
@@ -293,7 +294,7 @@ export function Header() {
                                     <Link
                                       href={child.path}
                                       onClick={
-                                        child.name === "Logout"
+                                        child.action === "logout"
                                           ? async (e) => {
                                             e.preventDefault();
                                             await logout();
@@ -517,7 +518,7 @@ export function Header() {
                                       <Link
                                         href={child.path || "#"}
                                         onClick={
-                                          child.name === "Logout"
+                                          child.action === "logout"
                                             ? async (e) => {
                                               e.preventDefault();
                                               await logout();
