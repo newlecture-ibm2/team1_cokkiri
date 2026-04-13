@@ -68,8 +68,12 @@ export default function AnnotationTypeManager() {
 
   const handleUpdate = async (id: number) => {
     if (!editName.trim()) return;
+    const currentType = types.find(t => t.annotationTypeId === id);
     try {
-      await updateAnnotationType(id, { name: editName.trim(), iconName: '' });
+      await updateAnnotationType(id, { 
+        name: editName.trim(), 
+        iconName: currentType?.iconName || 'MapPin' 
+      });
       setEditingId(null);
       await loadTypes();
     } catch (e: unknown) {
