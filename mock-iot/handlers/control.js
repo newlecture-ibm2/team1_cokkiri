@@ -38,18 +38,13 @@ function handleControl(req, res) {
     });
   }
 
-  // 기기 상태가 ERROR인 경우 (자체 에러 발생 상태)
+  // 기기 상태가 ERROR인 경우 → 제어 재시도로 복구 시도 (수리 후 재통신 시뮬레이션)
   if (device.status === 'ERROR' && device.error_mode === 'normal') {
-    console.log(`[Control] mac: ${mac_address}, command: ${command} → 기기 자체 ERROR 상태`);
-    return res.status(500).json({
-      success: false,
-      mac_address,
-      command,
-      result: 'FAILURE',
-      state: device.state,
-      message: device.error_message || '기기 자체 에러 상태입니다',
-      executed_at: new Date().toISOString(),
-    });
+    device.status = 'ONLINE';
+    delete device.error_message;
+    store.save();
+    console.log(`[Control] mac: ${mac_address}, command: ${command} → ERROR 기기 복구 후 명령 실행`);
+    // 복구 후 아래 정상 처리 로직으로 계속 진행
   }
 
   // 에러 모드 확인 (관리자 테스트 트리거)

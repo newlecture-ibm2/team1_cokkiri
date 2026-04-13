@@ -6,7 +6,26 @@ const app = express();
 const PORT = process.env.PORT || 8000;
 const ERROR_SIMULATION = process.env.ERROR_SIMULATION !== 'false';
 
+// ERROR_SIMULATION=false일 때: 볼륨에 남아있는 ERROR 상태 기기를 ONLINE으로 리셋
+if (!ERROR_SIMULATION) {
+  const devices = store.getAll();
+  let resetCount = 0;
+  devices.forEach(device => {
+    if (device.status === 'ERROR') {
+      device.status = 'ONLINE';
+      delete device.error_message;
+      device.error_mode = 'normal';
+      resetCount++;
+    }
+  });
+  if (resetCount > 0) {
+    store.save();
+    console.log(`[시작] ERROR_SIMULATION=false → ${resetCount}개 에러 기기 ONLINE 리셋`);
+  }
+}
+
 app.use(express.json());
+
 
 // ── 헬스체크 ──
 app.get('/health', (req, res) => {
@@ -138,9 +157,9 @@ if (ERROR_SIMULATION) {
     devices.forEach(device => {
       // 관리자가 에러 모드를 설정한 기기는 건너뜀
       if (device.error_mode !== 'normal') return;
-      // 이미 ERROR 상태인 기기는 10% 확률로 자동 복구
+      // 이미 ERROR 상태인 기기는 70% 확률로 자동 복구
       if (device.status === 'ERROR') {
-        if (Math.random() < 0.10) {
+        if (Math.random() < 0.70) {
           device.status = 'ONLINE';
           delete device.error_message;
           store.save();
