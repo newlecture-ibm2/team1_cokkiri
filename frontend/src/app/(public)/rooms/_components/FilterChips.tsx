@@ -1,19 +1,41 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, X, Filter } from 'lucide-react';
+import { Search, X, ArrowUpDown, Check } from 'lucide-react';
 import type { RoomTypeOption } from '../_types';
+import type { SortOption } from '../_hooks/useRooms';
 
 interface FilterChipsProps {
   roomTypes: RoomTypeOption[];
   selectedTypeId: number | null;
   onSelectType: (typeId: number | null) => void;
+  sortOption: SortOption;
+  onSortChange: (sort: SortOption) => void;
 }
 
-export function FilterChips({ roomTypes, selectedTypeId, onSelectType }: FilterChipsProps) {
+const SORT_OPTIONS: { value: SortOption; label: string }[] = [
+  { value: 'name,asc', label: '이름순 (ㄱ→ㅎ)' },
+  { value: 'name,desc', label: '이름순 (ㅎ→ㄱ)' },
+  { value: 'spaceId,desc', label: '최신 등록순' },
+];
+
+export function FilterChips({ roomTypes, selectedTypeId, onSelectType, sortOption, onSortChange }: FilterChipsProps) {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [isSortOpen, setIsSortOpen] = useState(false);
+  const sortRef = useRef<HTMLDivElement>(null);
+
+  // 바깥 클릭 시 정렬 드롭다운 닫기
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (sortRef.current && !sortRef.current.contains(e.target as Node)) {
+        setIsSortOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
 
   return (
     <div className="flex flex-col md:flex-row justify-between items-stretch md:items-center gap-6">
@@ -85,10 +107,44 @@ export function FilterChips({ roomTypes, selectedTypeId, onSelectType }: FilterC
           )}
         </AnimatePresence>
 
-        <button className="flex items-center gap-2 text-[10px] md:text-xs font-black uppercase tracking-widest hover:opacity-60 transition-opacity cursor-pointer">
-          <Filter className="h-3.5 w-3.5 md:h-4 md:w-4" />
-          Sort
-        </button>
+        {/* Sort dropdown */}
+        <div ref={sortRef} className="relative">
+          <button
+            onClick={() => setIsSortOpen(!isSortOpen)}
+            className="flex items-center gap-2 text-[10px] md:text-xs font-black uppercase tracking-widest hover:opacity-60 transition-opacity cursor-pointer"
+          >
+            <ArrowUpDown className="h-3.5 w-3.5 md:h-4 md:w-4" />
+            Sort
+          </button>
+
+          <AnimatePresence>
+            {isSortOpen && (
+              <motion.div
+                initial={{ opacity: 0, y: -8, scale: 0.95 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: -8, scale: 0.95 }}
+                transition={{ duration: 0.15 }}
+                className="absolute right-0 top-full mt-3 w-48 bg-[var(--background)] border border-foreground/10 rounded-2xl shadow-2xl overflow-hidden z-50"
+              >
+                {SORT_OPTIONS.map((opt) => (
+                  <button
+                    key={opt.value}
+                    onClick={() => {
+                      onSortChange(opt.value);
+                      setIsSortOpen(false);
+                    }}
+                    className={`w-full flex items-center justify-between px-4 py-3 text-xs font-bold tracking-tight hover:bg-black/5 transition cursor-pointer ${
+                      sortOption === opt.value ? 'text-[var(--color-accent)]' : ''
+                    }`}
+                  >
+                    {opt.label}
+                    {sortOption === opt.value && <Check size={14} className="text-[var(--color-accent)]" />}
+                  </button>
+                ))}
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
       </div>
     </div>
   );

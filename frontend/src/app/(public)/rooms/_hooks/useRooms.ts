@@ -4,6 +4,8 @@ import { useEffect, useState, useCallback } from 'react';
 import { fetchRooms, fetchPublicRoomTypes } from '../_api/roomApi';
 import type { RoomDTO, RoomFilterParams, RoomTypeOption } from '../_types';
 
+export type SortOption = 'name,asc' | 'spaceId,desc' | 'name,desc';
+
 export function useRooms() {
   const [rooms, setRooms] = useState<RoomDTO[]>([]);
   const [loading, setLoading] = useState(true);
@@ -12,6 +14,7 @@ export function useRooms() {
   const [totalPages, setTotalPages] = useState(0);
   const [totalElements, setTotalElements] = useState(0);
   const [roomTypes, setRoomTypes] = useState<RoomTypeOption[]>([]);
+  const [sortOption, setSortOption] = useState<SortOption>('name,asc');
 
   // 방 유형 목록 로드
   useEffect(() => {
@@ -27,6 +30,7 @@ export function useRooms() {
         roomTypeId: selectedTypeId ?? undefined,
         page: currentPage,
         size: 12,
+        sort: sortOption,
       };
       const res = await fetchRooms(params);
       const pageData = res.data;
@@ -39,7 +43,7 @@ export function useRooms() {
     } finally {
       setLoading(false);
     }
-  }, [selectedTypeId, currentPage]);
+  }, [selectedTypeId, currentPage, sortOption]);
 
   useEffect(() => {
     loadRooms();
@@ -48,7 +52,7 @@ export function useRooms() {
   // 필터 변경 시 페이지 리셋
   useEffect(() => {
     setCurrentPage(0);
-  }, [selectedTypeId]);
+  }, [selectedTypeId, sortOption]);
 
   return {
     rooms,
@@ -60,5 +64,7 @@ export function useRooms() {
     setCurrentPage,
     totalPages,
     totalElements,
+    sortOption,
+    setSortOption,
   };
 }

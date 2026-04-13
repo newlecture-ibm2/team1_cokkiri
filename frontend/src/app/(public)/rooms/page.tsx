@@ -22,6 +22,8 @@ export default function RoomsPage() {
     setCurrentPage,
     totalPages,
     totalElements,
+    sortOption,
+    setSortOption,
   } = useRooms();
 
   const containerRef = useRef<HTMLDivElement>(null);
@@ -77,6 +79,8 @@ export default function RoomsPage() {
             roomTypes={roomTypes}
             selectedTypeId={selectedTypeId}
             onSelectType={setSelectedTypeId}
+            sortOption={sortOption}
+            onSortChange={setSortOption}
           />
         </div>
       </section>

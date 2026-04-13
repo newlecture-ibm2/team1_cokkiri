@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { fetchSpaces, SpaceDTO } from './_api/spaceAdminApi';
 import SpaceCreateModal from './_components/SpaceCreateModal';
 import SpaceEditModal from './_components/SpaceEditModal';
@@ -8,7 +8,7 @@ import RoomTypeManager from './_components/RoomTypeManager';
 import AnnotationTypeManager from './_components/AnnotationTypeManager';
 import { FloorPlanEditor } from './_components/floor-plan/FloorPlanEditor';
 import { motion } from 'framer-motion';
-import { Plus, Pencil, LayoutGrid, Tag, Map, Shapes } from 'lucide-react';
+import { Plus, Pencil, LayoutGrid, Tag, Map, Shapes, ArrowUpDown, Check } from 'lucide-react';
 
 type Tab = 'spaces' | 'room-types' | 'floor-plan' | 'annotation-types';
 
@@ -20,13 +20,25 @@ export default function SpacesPage() {
 
   // 필터 상태
   const [filterType, setFilterType] = useState<'ALL' | 'PRIVATE' | 'COMMON'>('ALL');
+  const [sortOption, setSortOption] = useState('name,asc');
+  const [isSortOpen, setIsSortOpen] = useState(false);
+  const sortRef = React.useRef<HTMLDivElement>(null);
+
+  // 바깥 클릭 시 정렬 드롭다운 닫기
+  React.useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (sortRef.current && !sortRef.current.contains(e.target as Node)) {
+        setIsSortOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
 
   const loadSpaces = async () => {
     try {
-      const res = await fetchSpaces({ type: filterType });
-      // 프론트엔드에서 간편하게 정렬 (이름순)
-      const sorted = (res.data?.content || []).sort((a: SpaceDTO, b: SpaceDTO) => a.name.localeCompare(b.name));
-      setSpaces(sorted);
+      const res = await fetchSpaces({ type: filterType, sort: sortOption });
+      setSpaces(res.data?.content || []);
     } catch (e) {
       console.error(e);
     }
@@ -34,7 +46,7 @@ export default function SpacesPage() {
 
   useEffect(() => {
     loadSpaces();
-  }, [filterType]);
+  }, [filterType, sortOption]);
 
   const getStatusDisplay = (space: SpaceDTO) => {
     if (space.type === 'PRIVATE') {
@@ -118,6 +130,37 @@ export default function SpacesPage() {
                 {type === 'ALL' ? '전체 보기' : type}
               </button>
             ))}
+          </div>
+
+          {/* 정렬 드롭다운 */}
+          <div ref={sortRef} className="relative inline-block mb-6">
+            <button
+              onClick={() => setIsSortOpen(!isSortOpen)}
+              className="flex items-center gap-2 px-4 py-2 rounded-full text-xs font-bold tracking-tight bg-black/5 hover:bg-black/10 transition"
+            >
+              <ArrowUpDown size={14} />
+              {sortOption === 'name,asc' ? '이름순 (ㄱ→ㅎ)' : sortOption === 'name,desc' ? '이름순 (ㅎ→ㄱ)' : '최신 등록순'}
+            </button>
+            {isSortOpen && (
+              <div className="absolute left-0 top-full mt-2 w-44 bg-[var(--background)] border border-foreground/10 rounded-2xl shadow-2xl overflow-hidden z-50">
+                {[
+                  { value: 'name,asc', label: '이름순 (ㄱ→ㅎ)' },
+                  { value: 'name,desc', label: '이름순 (ㅎ→ㄱ)' },
+                  { value: 'spaceId,desc', label: '최신 등록순' },
+                ].map((opt) => (
+                  <button
+                    key={opt.value}
+                    onClick={() => { setSortOption(opt.value); setIsSortOpen(false); }}
+                    className={`w-full flex items-center justify-between px-4 py-3 text-xs font-bold tracking-tight hover:bg-black/5 transition cursor-pointer ${
+                      sortOption === opt.value ? 'text-[var(--color-accent)]' : ''
+                    }`}
+                  >
+                    {opt.label}
+                    {sortOption === opt.value && <Check size={14} className="text-[var(--color-accent)]" />}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">

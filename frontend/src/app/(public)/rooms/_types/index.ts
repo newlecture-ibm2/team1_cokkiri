@@ -42,6 +42,7 @@ export interface RoomFilterParams {
   floor?: number;
   page?: number;
   size?: number;
+  sort?: string;
 }
 
 export interface RoomTypeOption {

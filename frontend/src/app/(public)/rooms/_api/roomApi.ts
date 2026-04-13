@@ -10,6 +10,7 @@ export const fetchRooms = async (params?: RoomFilterParams) => {
   if (params?.floor !== undefined) searchParams.set('floor', String(params.floor));
   if (params?.page !== undefined) searchParams.set('page', String(params.page));
   if (params?.size !== undefined) searchParams.set('size', String(params.size));
+  if (params?.sort) searchParams.set('sort', params.sort);
 
   const query = searchParams.toString();
   const res = await fetch(`/api/rooms${query ? `?${query}` : ''}`);
