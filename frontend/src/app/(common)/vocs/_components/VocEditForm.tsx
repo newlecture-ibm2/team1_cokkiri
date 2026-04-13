@@ -134,7 +134,7 @@ export function VocEditForm({ initial }: Props) {
           );
           return;
         }
-        router.push(`/profile/vocs/${initial.vocId}`);
+        router.push(`/vocs/${initial.vocId}`);
         router.refresh();
       } catch {
         setError("네트워크 오류가 발생했습니다. 연결을 확인한 뒤 다시 시도해 주세요.");
@@ -146,7 +146,7 @@ export function VocEditForm({ initial }: Props) {
     <form onSubmit={submit} className="mx-auto max-w-4xl space-y-16 py-12">
       <LoginRequiredModal isOpen={showLoginModal} onClose={() => setShowLoginModal(false)} />
       <Link
-        href={`/profile/vocs/${initial.vocId}`}
+        href={`/vocs/${initial.vocId}`}
         className="group inline-flex items-center gap-3 text-[10px] font-black uppercase tracking-[0.4em] text-accent hover:text-primary transition-all"
       >
         ← Back to Inquiry
@@ -284,7 +284,7 @@ export function VocEditForm({ initial }: Props) {
       <CancelModal
         isOpen={showCancelModal}
         onClose={() => setShowCancelModal(false)}
-        onConfirm={() => router.push(`/profile/vocs/${initial.vocId}`)}
+        onConfirm={() => router.push(`/vocs/${initial.vocId}`)}
       />
     </form>
   );

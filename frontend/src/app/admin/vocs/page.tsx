@@ -61,7 +61,7 @@ export default async function AdminVocListPage({ searchParams }: { searchParams:
             </p>
           </div>
           <Link
-            href="/profile/vocs"
+            href="/vocs"
             className="shrink-0 rounded-xl bg-primary px-7 py-4 text-center text-sm font-black uppercase tracking-wider text-white transition-all hover:-translate-y-0.5 hover:bg-primary/90 hover:shadow-md md:self-start"
           >
             내 민원 화면(미리보기)

@@ -226,6 +226,7 @@ public class ContractService implements ContractUseCase {
                 .userId(userId)
                 .spaceId(contract.getSpaceId())
                 .spaceName(space.getName())
+                .monthlyRent(contract.getMonthlyRent())
                 .newStatus(ContractStatus.ACTIVE)
                 .message("계약이 성공적으로 체결되었습니다.")
                 .build());
