@@ -24,6 +24,8 @@ export default function RoomsPage() {
     totalElements,
     sortOption,
     setSortOption,
+    keyword,
+    setKeyword,
   } = useRooms();
 
   const containerRef = useRef<HTMLDivElement>(null);
@@ -81,6 +83,8 @@ export default function RoomsPage() {
             onSelectType={setSelectedTypeId}
             sortOption={sortOption}
             onSortChange={setSortOption}
+            keyword={keyword}
+            onSearch={setKeyword}
           />
         </div>
       </section>
@@ -104,7 +108,7 @@ export default function RoomsPage() {
 
           {/* Empty State */}
           {!loading && rooms.length === 0 && (
-            <EmptyState onReset={() => setSelectedTypeId(null)} />
+            <EmptyState onReset={() => { setSelectedTypeId(null); setKeyword(''); }} />
           )}
         </div>
       </section>

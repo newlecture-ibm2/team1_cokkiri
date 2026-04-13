@@ -4,6 +4,7 @@ export type { RoomDTO, PageResponse, RoomFilterParams };
 
 export const fetchRooms = async (params?: RoomFilterParams) => {
   const searchParams = new URLSearchParams();
+  if (params?.keyword) searchParams.set('keyword', params.keyword);
   if (params?.roomTypeId !== undefined) searchParams.set('roomTypeId', String(params.roomTypeId));
   if (params?.minRent !== undefined) searchParams.set('minRent', String(params.minRent));
   if (params?.maxRent !== undefined) searchParams.set('maxRent', String(params.maxRent));

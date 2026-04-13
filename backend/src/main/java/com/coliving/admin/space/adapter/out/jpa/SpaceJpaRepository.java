@@ -48,6 +48,7 @@ public interface SpaceJpaRepository extends JpaRepository<SpaceEntity, Long> {
     @Query(value = "SELECT s FROM SpaceEntity s " +
                     "JOIN FETCH s.privateDetail pd " +
                     "WHERE s.type = 'PRIVATE' " +
+                    "AND (:keyword IS NULL OR LOWER(s.name) LIKE LOWER(CONCAT('%', :keyword, '%'))) " +
                     "AND (:roomTypeId IS NULL OR pd.roomType.id = :roomTypeId) " +
                     "AND (:minRent IS NULL OR pd.monthlyRent >= :minRent) " +
                     "AND (:maxRent IS NULL OR pd.monthlyRent <= :maxRent) " +
@@ -55,11 +56,13 @@ public interface SpaceJpaRepository extends JpaRepository<SpaceEntity, Long> {
             countQuery = "SELECT COUNT(s) FROM SpaceEntity s " +
                     "JOIN s.privateDetail pd " +
                     "WHERE s.type = 'PRIVATE' " +
+                    "AND (:keyword IS NULL OR LOWER(s.name) LIKE LOWER(CONCAT('%', :keyword, '%'))) " +
                     "AND (:roomTypeId IS NULL OR pd.roomType.id = :roomTypeId) " +
                     "AND (:minRent IS NULL OR pd.monthlyRent >= :minRent) " +
                     "AND (:maxRent IS NULL OR pd.monthlyRent <= :maxRent) " +
                     "AND (:floor IS NULL OR s.floor = :floor)")
     Page<SpaceEntity> findRoomsWithFilter(
+            @Param("keyword") String keyword,
             @Param("roomTypeId") Long roomTypeId,
             @Param("minRent") BigDecimal minRent,
             @Param("maxRent") BigDecimal maxRent,

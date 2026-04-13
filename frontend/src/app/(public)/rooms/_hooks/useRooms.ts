@@ -15,6 +15,7 @@ export function useRooms() {
   const [totalElements, setTotalElements] = useState(0);
   const [roomTypes, setRoomTypes] = useState<RoomTypeOption[]>([]);
   const [sortOption, setSortOption] = useState<SortOption>('name,asc');
+  const [keyword, setKeyword] = useState<string>('');
 
   // 방 유형 목록 로드
   useEffect(() => {
@@ -27,6 +28,7 @@ export function useRooms() {
     setLoading(true);
     try {
       const params: RoomFilterParams = {
+        keyword: keyword || undefined,
         roomTypeId: selectedTypeId ?? undefined,
         page: currentPage,
         size: 12,
@@ -43,7 +45,7 @@ export function useRooms() {
     } finally {
       setLoading(false);
     }
-  }, [selectedTypeId, currentPage, sortOption]);
+  }, [selectedTypeId, currentPage, sortOption, keyword]);
 
   useEffect(() => {
     loadRooms();
@@ -52,7 +54,7 @@ export function useRooms() {
   // 필터 변경 시 페이지 리셋
   useEffect(() => {
     setCurrentPage(0);
-  }, [selectedTypeId, sortOption]);
+  }, [selectedTypeId, sortOption, keyword]);
 
   return {
     rooms,
@@ -66,5 +68,7 @@ export function useRooms() {
     totalElements,
     sortOption,
     setSortOption,
+    keyword,
+    setKeyword,
   };
 }

@@ -12,6 +12,8 @@ interface FilterChipsProps {
   onSelectType: (typeId: number | null) => void;
   sortOption: SortOption;
   onSortChange: (sort: SortOption) => void;
+  keyword: string;
+  onSearch: (keyword: string) => void;
 }
 
 const SORT_OPTIONS: { value: SortOption; label: string }[] = [
@@ -20,11 +22,16 @@ const SORT_OPTIONS: { value: SortOption; label: string }[] = [
   { value: 'spaceId,desc', label: '최신 등록순' },
 ];
 
-export function FilterChips({ roomTypes, selectedTypeId, onSelectType, sortOption, onSortChange }: FilterChipsProps) {
-  const [isSearchOpen, setIsSearchOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
+export function FilterChips({ roomTypes, selectedTypeId, onSelectType, sortOption, onSortChange, keyword, onSearch }: FilterChipsProps) {
+  const [isSearchOpen, setIsSearchOpen] = useState(!!keyword);
+  const [searchQuery, setSearchQuery] = useState(keyword || '');
   const [isSortOpen, setIsSortOpen] = useState(false);
   const sortRef = useRef<HTMLDivElement>(null);
+
+  // 외부 키워드 변경 시 로컬 상태 동기화
+  useEffect(() => {
+    setSearchQuery(keyword || '');
+  }, [keyword]);
 
   // 바깥 클릭 시 정렬 드롭다운 닫기
   useEffect(() => {
@@ -85,11 +92,17 @@ export function FilterChips({ roomTypes, selectedTypeId, onSelectType, sortOptio
                 className="bg-transparent text-[10px] md:text-xs font-bold uppercase tracking-widest focus:outline-none min-w-[140px] md:min-w-[200px]"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    onSearch(searchQuery);
+                  }
+                }}
               />
               <button
                 onClick={() => {
                   setIsSearchOpen(false);
                   setSearchQuery('');
+                  onSearch('');
                 }}
                 className="cursor-pointer"
               >

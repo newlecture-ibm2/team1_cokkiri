@@ -36,6 +36,7 @@ export interface PageResponse<T> {
 }
 
 export interface RoomFilterParams {
+  keyword?: string;
   roomTypeId?: number;
   minRent?: number;
   maxRent?: number;
