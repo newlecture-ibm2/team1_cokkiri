@@ -4,12 +4,11 @@ import { LOGIN_REQUIRED_MESSAGE } from "@/lib/auth-messages";
 import { LoginRequiredGate } from "@/components/shared/LoginRequiredGate";
 import { bffGet } from "@/app/(common)/vocs/_api/bff-server";
 import type { ApiResponse, VocListData } from "@/app/(common)/vocs/_types/vocs";
-import { VocShell } from "@/app/(common)/vocs/_components/VocShell";
-import { MotionEnter } from "@/app/(common)/community/_components/MotionEnter";
 import { VocCard } from "@/app/(common)/vocs/_components/VocCard";
 import { PaginationBar } from "@/app/(common)/community/_components/PaginationBar";
 import { NewVocForm } from "@/app/(common)/vocs/new/_components/NewVocForm";
 import { MyVocTabLinks } from "./_components/MyVocTabLinks";
+import { VocAccessDeniedState } from "@/app/(common)/vocs/_components/VocAccessDeniedState";
 
 type SearchParams = Promise<{ tab?: string; p?: string; s?: string }>;
 
@@ -31,23 +30,33 @@ export default async function ProfileVocsPage({ searchParams }: { searchParams: 
   let list: VocListData | null = null;
   let listError: string | null = null;
   let authError: string | null = null;
+  let isNotResident = false;
 
-  const res = await bffGet(`vocs/my?${qs.toString()}`);
-  if (res.status === 401) {
+  // 1. 현재 사용자 정보 로드 (Role 체크)
+  const meRes = await bffGet("users/me");
+  if (meRes.status === 401) {
     authError = LOGIN_REQUIRED_MESSAGE;
-  } else if (res.status === 403) {
-    const meRes = await bffGet("users/me");
-    if (meRes.status === 401 || meRes.status === 403) {
-      authError = LOGIN_REQUIRED_MESSAGE;
-    } else if (showList) {
-      listError = "목록을 불러오지 못했습니다.";
+  } else if (meRes.ok) {
+    const meBody = await meRes.json();
+    if (meBody.success && meBody.data?.role === "USER") {
+      isNotResident = true;
     }
-  } else if (showList && !res.ok) {
-    listError = "목록을 불러오지 못했습니다.";
-  } else if (showList) {
-    const body = (await res.json()) as ApiResponse<VocListData>;
-    if (body.success && body.data) list = body.data;
-    else listError = body.message ?? "목록을 불러오지 못했습니다.";
+  }
+
+  // 2. 민원 목록 로드 (Resident인 경우만)
+  if (!isNotResident && !authError) {
+    const res = await bffGet(`vocs/my?${qs.toString()}`);
+    if (res.status === 401) {
+      authError = LOGIN_REQUIRED_MESSAGE;
+    } else if (res.status === 403) {
+      listError = "권한이 없습니다.";
+    } else if (showList && !res.ok) {
+      listError = "목록을 불러오지 못했습니다.";
+    } else if (showList) {
+      const body = (await res.json()) as ApiResponse<VocListData>;
+      if (body.success && body.data) list = body.data;
+      else listError = body.message ?? "목록을 불러오지 못했습니다.";
+    }
   }
 
   const listBaseQuery = "tab=list";
@@ -69,7 +78,7 @@ export default async function ProfileVocsPage({ searchParams }: { searchParams: 
                 더 나은 주거 환경을 위해 입주민 여러분의 소중한 의견을 들려주세요. 모든 민원은 시간순으로 정성껏 검토됩니다.
               </p>
               <div className="mt-10">
-                 <MyVocTabLinks active={showList ? "list" : "register"} />
+                <MyVocTabLinks active={showList ? "list" : "register"} />
               </div>
             </div>
           </div>
@@ -78,14 +87,16 @@ export default async function ProfileVocsPage({ searchParams }: { searchParams: 
 
       {authError === LOGIN_REQUIRED_MESSAGE ? <LoginRequiredGate /> : null}
 
-      {!showList ? (
+      {isNotResident ? (
+        <VocAccessDeniedState />
+      ) : !showList ? (
         <div className="mx-auto max-w-4xl space-y-12">
           <div className="bg-white p-12 rounded-[3rem] border border-primary/5 shadow-2xl shadow-primary/5">
-             <div className="mb-12 space-y-2">
-               <span className="text-[9px] font-black uppercase tracking-[0.4em] text-accent">New Inquiry</span>
-               <h2 className="text-4xl font-black tracking-tighter uppercase">새 민원 등록</h2>
-             </div>
-             <NewVocForm />
+            <div className="mb-12 space-y-2">
+              <span className="text-[9px] font-black uppercase tracking-[0.4em] text-accent">New Inquiry</span>
+              <h2 className="text-4xl font-black tracking-tighter uppercase">새 민원 등록</h2>
+            </div>
+            <NewVocForm />
           </div>
         </div>
       ) : (
@@ -97,9 +108,9 @@ export default async function ProfileVocsPage({ searchParams }: { searchParams: 
                 {listError}
               </p>
               {authError === LOGIN_REQUIRED_MESSAGE && (
-                 <Link href="/login" className="mt-8 inline-flex h-12 bg-primary text-white px-8 rounded-xl items-center gap-2 text-[9px] font-black uppercase tracking-[0.2em] hover:bg-accent transition-all animate-pulse underline decoration-transparent">
-                   Go to Login <ArrowRight className="size-3" />
-                 </Link>
+                <Link href="/login" className="mt-8 inline-flex h-12 bg-primary text-white px-8 rounded-xl items-center gap-2 text-[9px] font-black uppercase tracking-[0.2em] hover:bg-accent transition-all animate-pulse underline decoration-transparent">
+                  Go to Login <ArrowRight className="size-3" />
+                </Link>
               )}
             </div>
           )}

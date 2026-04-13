@@ -19,7 +19,7 @@ export function VocAccessDeniedState({
             다른 회원의 민원은 조회할 수 없습니다. URL을 직접 입력한 경우 나의 민원 내역으로 돌아가 주세요.
           </p>
           <Link
-            href="/profile/vocs?tab=list"
+            href="/vocs?tab=list"
             className="inline-flex rounded-xl bg-primary px-6 py-3 text-sm font-black uppercase tracking-wider text-primary-foreground"
           >
             나의 민원 내역
