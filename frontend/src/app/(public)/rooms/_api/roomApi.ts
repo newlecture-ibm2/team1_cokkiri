@@ -4,12 +4,14 @@ export type { RoomDTO, PageResponse, RoomFilterParams };
 
 export const fetchRooms = async (params?: RoomFilterParams) => {
   const searchParams = new URLSearchParams();
+  if (params?.keyword) searchParams.set('keyword', params.keyword);
   if (params?.roomTypeId !== undefined) searchParams.set('roomTypeId', String(params.roomTypeId));
   if (params?.minRent !== undefined) searchParams.set('minRent', String(params.minRent));
   if (params?.maxRent !== undefined) searchParams.set('maxRent', String(params.maxRent));
   if (params?.floor !== undefined) searchParams.set('floor', String(params.floor));
   if (params?.page !== undefined) searchParams.set('page', String(params.page));
   if (params?.size !== undefined) searchParams.set('size', String(params.size));
+  if (params?.sort) searchParams.set('sort', params.sort);
 
   const query = searchParams.toString();
   const res = await fetch(`/api/rooms${query ? `?${query}` : ''}`);

@@ -12,6 +12,7 @@ public class AdminRoomTypeResponseDto {
     private String code;
     private String name;
     private Boolean isSystemDefault;
+    private Integer sortOrder;
 
     public static AdminRoomTypeResponseDto from(AdminRoomTypeResult result) {
         return AdminRoomTypeResponseDto.builder()
@@ -19,6 +20,7 @@ public class AdminRoomTypeResponseDto {
                 .code(result.getCode())
                 .name(result.getName())
                 .isSystemDefault(result.getIsSystemDefault())
+                .sortOrder(result.getSortOrder())
                 .build();
     }
 }

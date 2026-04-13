@@ -11,4 +11,5 @@ public interface AdminRoomTypeUseCase {
     AdminRoomTypeResult createRoomType(CreateRoomTypeCommand command);
     AdminRoomTypeResult updateRoomType(UpdateRoomTypeCommand command);
     void deleteRoomType(Long roomTypeId);
+    void updateRoomTypeOrder(List<Long> orderedIds);
 }

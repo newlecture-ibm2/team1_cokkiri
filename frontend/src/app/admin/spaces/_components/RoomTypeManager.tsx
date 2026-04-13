@@ -1,13 +1,20 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Plus, Pencil, Trash2, X, Check, Shield } from 'lucide-react';
+import { Plus, Pencil, Trash2, X, Check, Shield, GripVertical } from 'lucide-react';
+import {
+  DragDropContext,
+  Droppable,
+  Draggable,
+  type DropResult,
+} from '@hello-pangea/dnd';
 import {
   fetchRoomTypes,
   createRoomType,
   updateRoomType,
   deleteRoomType,
+  updateRoomTypeOrder,
   RoomTypeDTO,
 } from '../_api/spaceAdminApi';
 
@@ -28,21 +35,26 @@ export default function RoomTypeManager() {
   // 삭제 확인
   const [deletingId, setDeletingId] = useState<number | null>(null);
 
-  const loadRoomTypes = async () => {
+  // 순서 저장 상태
+  const [isSavingOrder, setIsSavingOrder] = useState(false);
+  const [orderChanged, setOrderChanged] = useState(false);
+
+  const loadRoomTypes = useCallback(async () => {
     try {
       setLoading(true);
       const res = await fetchRoomTypes();
       setRoomTypes(res.data || []);
+      setOrderChanged(false);
     } catch (e) {
       console.error(e);
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     loadRoomTypes();
-  }, []);
+  }, [loadRoomTypes]);
 
   const handleCreate = async () => {
     if (!newCode.trim() || !newName.trim()) return;
@@ -87,22 +99,66 @@ export default function RoomTypeManager() {
     setDeletingId(null);
   };
 
+  // === D&D 핸들러 ===
+  const handleDragEnd = (result: DropResult) => {
+    if (!result.destination) return;
+    if (result.source.index === result.destination.index) return;
+
+    const reordered = Array.from(roomTypes);
+    const [moved] = reordered.splice(result.source.index, 1);
+    reordered.splice(result.destination.index, 0, moved);
+
+    setRoomTypes(reordered);
+    setOrderChanged(true);
+  };
+
+  const handleSaveOrder = async () => {
+    setIsSavingOrder(true);
+    try {
+      const orderedIds = roomTypes.map((rt) => rt.roomTypeId);
+      await updateRoomTypeOrder(orderedIds);
+      setOrderChanged(false);
+    } catch (e: unknown) {
+      alert(e instanceof Error ? e.message : '순서 저장에 실패했습니다.');
+    } finally {
+      setIsSavingOrder(false);
+    }
+  };
+
   return (
     <div>
       {/* 헤더 */}
       <div className="flex items-center justify-between mb-8">
         <div>
           <p className="text-sm font-bold opacity-50 tracking-tight">
-            관리자가 방 유형을 자유롭게 등록·수정·삭제할 수 있습니다.
+            드래그하여 순서를 변경하고, 저장 버튼을 눌러 반영하세요.
           </p>
         </div>
-        <button
-          onClick={() => { setShowCreateForm(true); setEditingId(null); setDeletingId(null); }}
-          className="flex items-center gap-2 bg-[var(--foreground)] text-[var(--background)] px-5 py-3 rounded-full font-black tracking-tighter hover:scale-105 transition shadow-xl text-sm"
-        >
-          <Plus size={16} />
-          <span className="hidden sm:inline">유형 추가</span>
-        </button>
+        <div className="flex items-center gap-3">
+          {/* 순서 저장 버튼 */}
+          <AnimatePresence>
+            {orderChanged && (
+              <motion.button
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.8 }}
+                onClick={handleSaveOrder}
+                disabled={isSavingOrder}
+                className="flex items-center gap-2 bg-blue-600 text-white px-5 py-3 rounded-full font-black tracking-tighter hover:scale-105 transition shadow-xl text-sm disabled:opacity-50"
+              >
+                <Check size={16} />
+                {isSavingOrder ? '저장 중...' : '순서 저장'}
+              </motion.button>
+            )}
+          </AnimatePresence>
+          <button
+            onClick={() => { setShowCreateForm(true); setEditingId(null); setDeletingId(null); }}
+            className="flex items-center gap-2 bg-[var(--foreground)] text-[var(--background)] px-5 py-3 rounded-full font-black tracking-tighter hover:scale-105 transition shadow-xl text-sm"
+          >
+            <Plus size={16} />
+            <span className="hidden sm:inline">유형 추가</span>
+          </button>
+        </div>
       </div>
 
       {/* 등록 폼 */}
@@ -158,7 +214,7 @@ export default function RoomTypeManager() {
         )}
       </AnimatePresence>
 
-      {/* 목록 */}
+      {/* 목록 (D&D) */}
       {loading ? (
         <div className="space-y-3">
           {[...Array(4)].map((_, i) => (
@@ -170,99 +226,127 @@ export default function RoomTypeManager() {
           <p className="text-lg font-black tracking-tighter">등록된 방 유형이 없습니다</p>
         </div>
       ) : (
-        <div className="space-y-3">
-          {roomTypes.map((rt, idx) => (
-            <motion.div
-              key={rt.roomTypeId}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.03 * idx }}
-              className="flex items-center justify-between p-5 bg-black/5 rounded-2xl hover:bg-black/10 transition group"
-            >
-              <div className="flex items-center gap-4 flex-1">
-                {/* 코드 뱃지 */}
-                <span className="px-3 py-1 bg-[var(--color-accent)] text-white text-xs font-black rounded-full tracking-wider">
-                  {rt.code}
-                </span>
-
-                {/* 이름 (수정 모드 / 표시 모드) */}
-                {editingId === rt.roomTypeId ? (
-                  <div className="flex items-center gap-2 flex-1">
-                    <input
-                      type="text"
-                      value={editName}
-                      onChange={(e) => setEditName(e.target.value)}
-                      onKeyDown={(e) => e.key === 'Enter' && handleUpdate(rt.roomTypeId)}
-                      className="px-3 py-1.5 rounded-xl bg-[var(--color-muted)] outline-none text-sm font-bold flex-1 max-w-[200px]"
-                      autoFocus
-                    />
-                    <button
-                      onClick={() => handleUpdate(rt.roomTypeId)}
-                      className="p-1.5 bg-green-500 text-white rounded-full hover:scale-110 transition"
-                    >
-                      <Check size={14} />
-                    </button>
-                    <button
-                      onClick={() => setEditingId(null)}
-                      className="p-1.5 hover:bg-black/10 rounded-full transition"
-                    >
-                      <X size={14} />
-                    </button>
-                  </div>
-                ) : (
-                  <span className="text-sm font-bold tracking-tight">{rt.name}</span>
-                )}
-
-                {/* 시스템 기본 뱃지 */}
-                {rt.isSystemDefault && (
-                  <span className="flex items-center gap-1 px-2 py-0.5 bg-blue-100 text-blue-600 text-[10px] font-black rounded-full">
-                    <Shield size={10} />
-                    기본
-                  </span>
-                )}
-              </div>
-
-              {/* 액션 버튼 */}
-              {editingId !== rt.roomTypeId && (
-                <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition">
-                  <button
-                    onClick={() => startEdit(rt)}
-                    className="p-2 hover:bg-black/10 rounded-full transition"
-                    title="수정"
+        <DragDropContext onDragEnd={handleDragEnd}>
+          <Droppable droppableId="room-types">
+            {(provided) => (
+              <div
+                ref={provided.innerRef}
+                {...provided.droppableProps}
+                className="space-y-3"
+              >
+                {roomTypes.map((rt, idx) => (
+                  <Draggable
+                    key={rt.roomTypeId}
+                    draggableId={String(rt.roomTypeId)}
+                    index={idx}
                   >
-                    <Pencil size={14} />
-                  </button>
-                  {!rt.isSystemDefault && (
-                    deletingId === rt.roomTypeId ? (
-                      <div className="flex items-center gap-1">
-                        <button
-                          onClick={() => handleDelete(rt.roomTypeId)}
-                          className="px-3 py-1.5 bg-red-500 text-white text-xs font-bold rounded-full hover:bg-red-600 transition"
-                        >
-                          확인
-                        </button>
-                        <button
-                          onClick={() => setDeletingId(null)}
-                          className="px-3 py-1.5 text-xs font-bold hover:bg-black/10 rounded-full transition"
-                        >
-                          취소
-                        </button>
-                      </div>
-                    ) : (
-                      <button
-                        onClick={() => { setDeletingId(rt.roomTypeId); setEditingId(null); }}
-                        className="p-2 hover:bg-red-100 text-red-500 rounded-full transition"
-                        title="삭제"
+                    {(provided, snapshot) => (
+                      <div
+                        ref={provided.innerRef}
+                        {...provided.draggableProps}
+                        className={`flex items-center justify-between p-5 bg-black/5 rounded-2xl hover:bg-black/10 transition group ${
+                          snapshot.isDragging ? 'shadow-2xl ring-2 ring-[var(--color-accent)] bg-[var(--background)]' : ''
+                        }`}
                       >
-                        <Trash2 size={14} />
-                      </button>
-                    )
-                  )}
-                </div>
-              )}
-            </motion.div>
-          ))}
-        </div>
+                        {/* 드래그 핸들 */}
+                        <div
+                          {...provided.dragHandleProps}
+                          className="mr-3 cursor-grab active:cursor-grabbing p-1 hover:bg-black/10 rounded-lg transition opacity-40 hover:opacity-100"
+                          title="드래그하여 순서 변경"
+                        >
+                          <GripVertical size={16} />
+                        </div>
+
+                        <div className="flex items-center gap-4 flex-1">
+                          {/* 코드 뱃지 */}
+                          <span className="px-3 py-1 bg-[var(--color-accent)] text-white text-xs font-black rounded-full tracking-wider">
+                            {rt.code}
+                          </span>
+
+                          {/* 이름 (수정 모드 / 표시 모드) */}
+                          {editingId === rt.roomTypeId ? (
+                            <div className="flex items-center gap-2 flex-1">
+                              <input
+                                type="text"
+                                value={editName}
+                                onChange={(e) => setEditName(e.target.value)}
+                                onKeyDown={(e) => e.key === 'Enter' && handleUpdate(rt.roomTypeId)}
+                                className="px-3 py-1.5 rounded-xl bg-[var(--color-muted)] outline-none text-sm font-bold flex-1 max-w-[200px]"
+                                autoFocus
+                              />
+                              <button
+                                onClick={() => handleUpdate(rt.roomTypeId)}
+                                className="p-1.5 bg-green-500 text-white rounded-full hover:scale-110 transition"
+                              >
+                                <Check size={14} />
+                              </button>
+                              <button
+                                onClick={() => setEditingId(null)}
+                                className="p-1.5 hover:bg-black/10 rounded-full transition"
+                              >
+                                <X size={14} />
+                              </button>
+                            </div>
+                          ) : (
+                            <span className="text-sm font-bold tracking-tight">{rt.name}</span>
+                          )}
+
+                          {/* 시스템 기본 뱃지 */}
+                          {rt.isSystemDefault && (
+                            <span className="flex items-center gap-1 px-2 py-0.5 bg-blue-100 text-blue-600 text-[10px] font-black rounded-full">
+                              <Shield size={10} />
+                              기본
+                            </span>
+                          )}
+                        </div>
+
+                        {/* 액션 버튼 */}
+                        {editingId !== rt.roomTypeId && (
+                          <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition">
+                            <button
+                              onClick={() => startEdit(rt)}
+                              className="p-2 hover:bg-black/10 rounded-full transition"
+                              title="수정"
+                            >
+                              <Pencil size={14} />
+                            </button>
+                            {!rt.isSystemDefault && (
+                              deletingId === rt.roomTypeId ? (
+                                <div className="flex items-center gap-1">
+                                  <button
+                                    onClick={() => handleDelete(rt.roomTypeId)}
+                                    className="px-3 py-1.5 bg-red-500 text-white text-xs font-bold rounded-full hover:bg-red-600 transition"
+                                  >
+                                    확인
+                                  </button>
+                                  <button
+                                    onClick={() => setDeletingId(null)}
+                                    className="px-3 py-1.5 text-xs font-bold hover:bg-black/10 rounded-full transition"
+                                  >
+                                    취소
+                                  </button>
+                                </div>
+                              ) : (
+                                <button
+                                  onClick={() => { setDeletingId(rt.roomTypeId); setEditingId(null); }}
+                                  className="p-2 hover:bg-red-100 text-red-500 rounded-full transition"
+                                  title="삭제"
+                                >
+                                  <Trash2 size={14} />
+                                </button>
+                              )
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </Draggable>
+                ))}
+                {provided.placeholder}
+              </div>
+            )}
+          </Droppable>
+        </DragDropContext>
       )}
     </div>
   );
