@@ -468,69 +468,106 @@ public class DataInitializer implements ApplicationRunner {
         RoomTypeEntity studioType = getOrCreateRoomType("STUDIO", "스튜디오");
         RoomTypeEntity suiteType = getOrCreateRoomType("SUITE", "스위트");
 
-        SpaceEntity s301 = getOrCreatePrivateSpace(
+        // ═══════════ 1층 (101~103호) ═══════════
+        getOrCreatePrivateSpace(
+                "101호", 1, new BigDecimal("18.00"), "[\"에어컨\"]", "1층 코너 위치 소형 싱글룸",
+                singleType, 1, 1, "북향",
+                new BigDecimal("3000000"), new BigDecimal("350000"), new BigDecimal("35000"), false);
+        getOrCreatePrivateSpace(
+                "102호", 1, new BigDecimal("26.00"), "[\"에어컨\",\"냉장고\",\"세탁기\"]", "1층 넓은 더블룸",
+                doubleType, 2, 1, "남향",
+                new BigDecimal("6000000"), new BigDecimal("580000"), new BigDecimal("50000"), true);
+        getOrCreatePrivateSpace(
+                "103호", 1, new BigDecimal("20.00"), "[\"에어컨\"]", "1층 스튜디오 (관리동 인접)",
+                studioType, 1, 1, "서향",
+                new BigDecimal("3500000"), new BigDecimal("380000"), new BigDecimal("38000"), false);
+
+        // ═══════════ 2층 (201~203호) ═══════════
+        getOrCreatePrivateSpace(
+                "201호", 2, new BigDecimal("19.00"), "[\"에어컨\",\"냉장고\"]", "2층 조용한 싱글룸",
+                singleType, 1, 1, "북동향",
+                new BigDecimal("3500000"), new BigDecimal("380000"), new BigDecimal("36000"), false);
+        getOrCreatePrivateSpace(
+                "202호", 2, new BigDecimal("24.00"), "[\"에어컨\",\"냉장고\",\"Wi-Fi\"]", "2층 채광 좋은 더블룸",
+                doubleType, 2, 1, "남향",
+                new BigDecimal("5500000"), new BigDecimal("520000"), new BigDecimal("48000"), true);
+        getOrCreatePrivateSpace(
+                "203호", 2, new BigDecimal("35.00"), "[\"에어컨\",\"냉장고\",\"세탁기\",\"TV\",\"주차\"]", "2층 스위트룸",
+                suiteType, 2, 2, "남향",
+                new BigDecimal("10000000"), new BigDecimal("900000"), new BigDecimal("80000"), true);
+
+        // ═══════════ 3층 (301~303호) ═══════════
+        getOrCreatePrivateSpace(
                 "301호", 3, new BigDecimal("25.00"), "[\"에어컨\",\"냉장고\"]", "남향 채광 좋은 싱글룸",
                 singleType, 1, 1, "남향",
                 new BigDecimal("5000000"), new BigDecimal("500000"), new BigDecimal("50000"), true);
-        saveSpaceImageIfNotExists(s301, "https://picsum.photos/seed/room301a/800/600", ImageType.PHOTO, 1, true);
-        saveSpaceImageIfNotExists(s301, "https://picsum.photos/seed/room301b/800/600", ImageType.PHOTO, 2, false);
-
-        SpaceEntity s302 = getOrCreatePrivateSpace(
+        getOrCreatePrivateSpace(
                 "302호", 3, new BigDecimal("30.00"), "[\"에어컨\",\"세탁기\",\"냉장고\"]", "복층 구조 더블룸",
                 doubleType, 2, 1, "동향",
                 new BigDecimal("8000000"), new BigDecimal("700000"), new BigDecimal("60000"), true);
-        saveSpaceImageIfNotExists(s302, "https://picsum.photos/seed/room302a/800/600", ImageType.PHOTO, 1, true);
+        getOrCreatePrivateSpace(
+                "303호", 3, new BigDecimal("22.00"), "[\"에어컨\",\"냉장고\"]", "3층 중앙 스튜디오",
+                studioType, 1, 1, "서향",
+                new BigDecimal("4200000"), new BigDecimal("430000"), new BigDecimal("42000"), false);
 
-        SpaceEntity s401 = getOrCreatePrivateSpace(
+        // ═══════════ 4층 (401~403호) ═══════════
+        getOrCreatePrivateSpace(
                 "401호", 4, new BigDecimal("20.00"), "[\"에어컨\"]", "깔끔한 스튜디오",
                 studioType, 1, 1, "서향",
                 new BigDecimal("3000000"), new BigDecimal("400000"), new BigDecimal("40000"), false);
-        saveSpaceImageIfNotExists(s401, "https://picsum.photos/seed/room401a/800/600", ImageType.PHOTO, 1, true);
-
-        SpaceEntity s402 = getOrCreatePrivateSpace(
+        getOrCreatePrivateSpace(
                 "402호", 4, new BigDecimal("28.00"), "[\"에어컨\",\"냉장고\",\"Wi-Fi\"]", "현재 입주 중인 방",
                 SpaceStatus.OCCUPIED,
                 singleType, 1, 1, "남향",
                 new BigDecimal("6000000"), new BigDecimal("550000"), new BigDecimal("55000"), true);
-        saveSpaceImageIfNotExists(s402, "https://picsum.photos/seed/room402a/800/600", ImageType.PHOTO, 1, true);
+        getOrCreatePrivateSpace(
+                "403호", 4, new BigDecimal("38.00"), "[\"에어컨\",\"냉장고\",\"세탁기\",\"TV\",\"주차\",\"Wi-Fi\"]", "4층 최고급 스위트룸",
+                suiteType, 2, 2, "남동향",
+                new BigDecimal("13000000"), new BigDecimal("1100000"), new BigDecimal("95000"), true);
 
-        SpaceEntity s501 = getOrCreatePrivateSpace(
+        // ═══════════ 5층 (501~503호) ═══════════
+        getOrCreatePrivateSpace(
                 "501호", 5, new BigDecimal("35.00"), "[\"에어컨\",\"세탁기\",\"냉장고\",\"TV\",\"주차\"]", "프리미엄 스위트룸",
                 suiteType, 2, 2, "남동향",
                 new BigDecimal("15000000"), new BigDecimal("1200000"), new BigDecimal("100000"), true);
-        saveSpaceImageIfNotExists(s501, "https://picsum.photos/seed/room501a/800/600", ImageType.PHOTO, 1, true);
-        saveSpaceImageIfNotExists(s501, "https://picsum.photos/seed/room501b/800/600", ImageType.PHOTO, 2, false);
-        saveSpaceImageIfNotExists(s501, "https://picsum.photos/seed/room501fp/800/600", ImageType.FLOOR_PLAN, 3, false);
+        getOrCreatePrivateSpace(
+                "502호", 5, new BigDecimal("26.00"), "[\"에어컨\",\"냉장고\",\"Wi-Fi\"]", "5층 고층 싱글룸 (전망 우수)",
+                singleType, 1, 1, "남향",
+                new BigDecimal("5500000"), new BigDecimal("530000"), new BigDecimal("52000"), true);
+        getOrCreatePrivateSpace(
+                "503호", 5, new BigDecimal("30.00"), "[\"에어컨\",\"냉장고\",\"세탁기\"]", "5층 더블룸 (탁 트인 조망)",
+                doubleType, 2, 1, "동향",
+                new BigDecimal("8000000"), new BigDecimal("720000"), new BigDecimal("62000"), true);
 
         SpaceEntity lobby = getOrCreateCommonSpace(
                 "메인 로비 미팅룸", 1, new BigDecimal("30.50"), "[\"Wi-Fi\",\"TV\"]", "공용 로비에 위치한 6인 회의실",
                 6, "09:00~22:00", true, BigDecimal.ZERO);
-        saveSpaceImageIfNotExists(lobby, "https://picsum.photos/seed/lobby/800/600", ImageType.PHOTO, 1, true);
+        saveSpaceImageIfNotExists(lobby, "/api/seed/lobby.png", ImageType.PHOTO, 1, true);
 
         SpaceEntity rooftop = getOrCreateCommonSpace(
                 "루프탑 파티룸", 10, new BigDecimal("100.00"), "[]", "바비큐 및 파티 가능한 루프탑",
                 20, "12:00~23:00", true, new BigDecimal("50000"));
-        saveSpaceImageIfNotExists(rooftop, "https://picsum.photos/seed/rooftop/800/600", ImageType.PHOTO, 1, true);
+        saveSpaceImageIfNotExists(rooftop, "/api/seed/rooftop.png", ImageType.PHOTO, 1, true);
 
         SpaceEntity gym = getOrCreateCommonSpace(
                 "B1 헬스장", -1, new BigDecimal("300.00"), "[]", "24시간 무인 헬스장",
                 50, "00:00~24:00", false, BigDecimal.ZERO);
-        saveSpaceImageIfNotExists(gym, "https://picsum.photos/seed/gym/800/600", ImageType.PHOTO, 1, true);
+        saveSpaceImageIfNotExists(gym, "/api/seed/gym.png", ImageType.PHOTO, 1, true);
 
         SpaceEntity laundry = getOrCreateCommonSpace(
                 "1층 세탁실", 1, new BigDecimal("40.00"), "[\"세탁기\",\"건조기\"]", "코인형 세탁기·건조기 완비 세탁실",
                 10, "06:00~23:00", false, BigDecimal.ZERO);
-        saveSpaceImageIfNotExists(laundry, "https://picsum.photos/seed/laundry/800/600", ImageType.PHOTO, 1, true);
+        saveSpaceImageIfNotExists(laundry, "/api/seed/laundry.png", ImageType.PHOTO, 1, true);
 
         SpaceEntity library = getOrCreateCommonSpace(
                 "2층 도서관", 2, new BigDecimal("80.00"), "[\"Wi-Fi\",\"데스크\",\"콘센트\"]", "독서 및 자율학습을 위한 정숙 공간",
                 20, "07:00~24:00", false, BigDecimal.ZERO);
-        saveSpaceImageIfNotExists(library, "https://picsum.photos/seed/library/800/600", ImageType.PHOTO, 1, true);
+        saveSpaceImageIfNotExists(library, "/api/seed/library.png", ImageType.PHOTO, 1, true);
 
         SpaceEntity meetingRoom = getOrCreateCommonSpace(
                 "3층 화상 미팅룸", 3, new BigDecimal("20.00"), "[\"Wi-Fi\",\"대형 모니터\",\"화이트보드\",\"콘센트\"]", "팀 프로젝트 및 화상 회의를 위한 방음 미팅룸 (예약 필수)",
                 6, "09:00~22:00", true, new BigDecimal("10000"));
-        saveSpaceImageIfNotExists(meetingRoom, "https://picsum.photos/seed/meetingroom/800/600", ImageType.PHOTO, 1, true);
+        saveSpaceImageIfNotExists(meetingRoom, "/api/seed/meeting_room.png", ImageType.PHOTO, 1, true);
 
         log.info("[DataInitializer] 공간 시드 적재 완료 (idempotent)");
     }
