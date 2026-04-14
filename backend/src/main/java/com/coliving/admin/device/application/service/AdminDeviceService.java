@@ -218,11 +218,10 @@ public class AdminDeviceService implements CreateAdminDeviceUseCase, AdminDevice
             throw new BusinessException(ErrorCode.DEVICE_INACTIVE);
         }
 
-        // 3. 기기 상태 검증 — OFFLINE만 차단 (통신 불가), ERROR는 IoT에 재시도 위임
+        // 3. 기기 상태 검증 — OFFLINE만 차단 (통신 불가), ERROR는 IoT에 위임
         if ("OFFLINE".equals(device.status())) {
             throw new BusinessException(ErrorCode.DEVICE_OFFLINE);
         }
-        boolean wasError = "ERROR".equals(device.status());
 
         // 4. MockIoT 제어 명령 전송
         IotResponse iotResult = iotClient.sendCommand(
@@ -241,8 +240,7 @@ public class AdminDeviceService implements CreateAdminDeviceUseCase, AdminDevice
         );
 
         if (!iotResult.success()) {
-            // IoT 통신 실패 시 기기 상태를 ERROR로 전환
-            adminDeviceRepositoryPort.updateStatus(command.deviceId(), "ERROR");
+            // 제어 실패 결과만 반환 (DB 상태 변경 없음 — 상태 동기화는 헬스체크 스케줄러 전담)
             return new ControlAdminDeviceResult(
                     command.deviceId(),
                     command.command(),
@@ -264,12 +262,6 @@ public class AdminDeviceService implements CreateAdminDeviceUseCase, AdminDevice
             newState = DeviceStateUtil.mergeState(device.currentState(), command.params());
         }
         adminDeviceRepositoryPort.updateCurrentState(command.deviceId(), newState);
-
-        // 7. ERROR → 제어 성공 시 IoT 통신 정상 확인 → ONLINE 동기화
-        if (wasError) {
-            adminDeviceRepositoryPort.updateStatus(command.deviceId(), "ONLINE");
-            log.info("[IoT 상태 동기화] deviceId: {} — ERROR → ONLINE (IoT 통신 성공 확인)", command.deviceId());
-        }
 
         return new ControlAdminDeviceResult(
                 command.deviceId(),

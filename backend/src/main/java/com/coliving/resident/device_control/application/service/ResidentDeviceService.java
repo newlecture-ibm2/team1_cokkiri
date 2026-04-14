@@ -103,11 +103,10 @@ public class ResidentDeviceService implements ResidentDeviceUseCase {
             throw new BusinessException(ErrorCode.DEVICE_INACTIVE);
         }
 
-        // 5. 기기 상태 검증 — OFFLINE만 차단 (통신 불가), ERROR는 IoT에 재시도 위임
+        // 5. 기기 상태 검증 — OFFLINE만 차단 (통신 불가), ERROR는 IoT에 위임
         if ("OFFLINE".equals(device.status())) {
             throw new BusinessException(ErrorCode.DEVICE_OFFLINE);
         }
-        boolean wasError = "ERROR".equals(device.status());
 
         // 6. DOOR_LOCK 방어 코드 (ERD 비즈니스 규칙 #14: DOOR_LOCK=PRIVATE 전용)
         String spaceType = device.spaceType();
@@ -118,19 +117,15 @@ public class ResidentDeviceService implements ResidentDeviceUseCase {
 
         // 7. 공간 타입별 접근 권한 검증 (다중 계약 지원)
         if ("PRIVATE".equals(spaceType)) {
-            // PRIVATE 기기: 유저의 계약된 spaceIds에 기기 space_id 포함 여부 확인
             if (!spaceIds.contains(device.spaceId())) {
                 throw new BusinessException(ErrorCode.SPACE_MISMATCH);
             }
         } else if ("COMMON".equals(spaceType)) {
-            // COMMON 기기: 예약제 시설만 예약 검증 (자유이용 시설은 RESIDENT면 바로 허용)
             if (Boolean.TRUE.equals(device.isReservable())) {
-                // 예약제 시설: 현재시각 APPROVED 예약 보유 확인 (ERD 비즈니스 규칙 #9)
                 if (!residentDeviceRepositoryPort.hasApprovedReservationNow(command.userId(), device.spaceId())) {
                     throw new BusinessException(ErrorCode.NO_ACTIVE_RESERVATION);
                 }
             }
-            // 자유이용 시설(is_reservable=false): ACTIVE 계약만 있으면 제어 허용 (step 2에서 이미 검증)
         }
 
         // 8. MockIoT 제어 명령 전송
@@ -150,8 +145,7 @@ public class ResidentDeviceService implements ResidentDeviceUseCase {
         );
 
         if (!iotResult.success()) {
-            // IoT 통신 실패 시 기기 상태를 ERROR로 전환
-            residentDeviceRepositoryPort.updateDeviceStatus(command.deviceId(), "ERROR");
+            // 제어 실패 결과만 반환 (DB 상태 변경 없음 — 상태 동기화는 헬스체크 스케줄러 전담)
             return new ControlDeviceResult(
                     command.deviceId(),
                     command.command(),
@@ -173,12 +167,6 @@ public class ResidentDeviceService implements ResidentDeviceUseCase {
             newState = DeviceStateUtil.mergeState(existingState, command.params());
         }
         residentDeviceRepositoryPort.updateCurrentState(command.deviceId(), newState);
-
-        // 11. ERROR → 제어 성공 시 IoT 통신 정상 확인 → ONLINE 동기화
-        if (wasError) {
-            residentDeviceRepositoryPort.updateDeviceStatus(command.deviceId(), "ONLINE");
-            log.info("[IoT 상태 동기화] deviceId: {} — ERROR → ONLINE (IoT 통신 성공 확인)", command.deviceId());
-        }
 
         return new ControlDeviceResult(
                 command.deviceId(),
