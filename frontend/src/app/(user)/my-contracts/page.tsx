@@ -269,9 +269,11 @@ export default function MyContractsPage() {
                       <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
                         <div className="space-y-2">
                           <p className="text-[10px] font-black uppercase tracking-widest opacity-40">Contract Period</p>
-                          <p className="text-sm font-black tracking-tight whitespace-nowrap">
-                            {contract.startDate || '—'} — {contract.endDate || '—'}
-                          </p>
+                          <div className="flex flex-col text-sm font-black tracking-tight leading-tight">
+                            <span>{contract.startDate || '—'}</span>
+                            <span className="text-[10px] opacity-40 mt-1 mb-1 font-medium tracking-widest">TO</span>
+                            <span>{contract.endDate || '—'}</span>
+                          </div>
                         </div>
                         <div className="space-y-2">
                           <p className="text-[10px] font-black uppercase tracking-widest opacity-40">Monthly Rent</p>
