@@ -23,8 +23,14 @@ jwt:
   access-expiration: 1800000       # 30분
   refresh-expiration: 604800000    # 7일
 
+oauth2:
+  success-url: http://localhost:3111/login/oauth2-success
+  failure-url: http://localhost:3111/login?error=oauth2_failure
 mock-iot:
   base-url: ${MOCK_IOT_URL:http://mock-iot:8000}
+
+server:
+  forward-headers-strategy: framework
 
 logging:
   level:

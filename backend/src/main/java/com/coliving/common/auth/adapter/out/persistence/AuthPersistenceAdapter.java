@@ -46,6 +46,7 @@ public class AuthPersistenceAdapter implements AuthRepositoryPort {
     }
 
     @Override
+    @org.springframework.transaction.annotation.Transactional
     public void revokeAllRefreshTokensByUserId(Long userId) {
         refreshTokenJpaRepository.revokeAllByUserId(userId);
     }
