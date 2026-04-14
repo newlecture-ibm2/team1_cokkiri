@@ -198,7 +198,7 @@ export function CommentThreadSection({
                         <button
                           type="submit"
                           disabled={pending || !replyDraft.trim()}
-                          className="rounded-lg bg-primary px-4 py-1 text-xs font-semibold text-primary-foreground hover:bg-accent transition-colors disabled:opacity-40"
+                          className="rounded-lg bg-primary px-4 py-1 text-xs font-semibold text-primary-foreground hover:bg-primary/90 transition-colors disabled:opacity-40"
                         >
                           등록
                         </button>
@@ -264,7 +264,7 @@ export function CommentThreadSection({
             <button
               type="submit"
               disabled={pending || !rootDraft.trim()}
-              className="rounded-lg bg-primary px-5 py-2 text-xs font-semibold text-primary-foreground hover:bg-accent transition-colors disabled:opacity-40"
+              className="rounded-lg bg-primary px-5 py-2 text-xs font-semibold text-primary-foreground hover:bg-primary/90 transition-colors disabled:opacity-40"
             >
               등록
             </button>

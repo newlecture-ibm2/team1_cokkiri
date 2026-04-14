@@ -54,7 +54,7 @@ export default function LoginForm() {
   return (
     <form 
       onSubmit={handleSubmit} 
-      className="mt-8 flex flex-col gap-6"
+      className="mt-6 flex flex-col gap-4"
     >
       <AnimatePresence>
         {error && (
@@ -93,7 +93,7 @@ export default function LoginForm() {
         />
       </motion.div>
 
-      <motion.div variants={itemVariants} className="mt-6">
+      <motion.div variants={itemVariants} className="mt-4">
         <button
           type="submit"
           disabled={isLoading}

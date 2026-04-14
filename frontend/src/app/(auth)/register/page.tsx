@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import RegisterForm from './_components/register-form';
+import SocialLoginButtons from '../_components/SocialLoginButtons';
 import { motion } from 'framer-motion';
 
 const containerVariants = {
@@ -25,11 +26,11 @@ export default function RegisterPage() {
       animate="visible"
       className="w-full"
     >
-      <motion.div variants={itemVariants} className="mb-8">
-        <h2 className="text-4xl md:text-5xl font-black tracking-tighter uppercase text-primary mb-4">
+      <motion.div variants={itemVariants} className="mb-4">
+        <h2 className="text-4xl md:text-5xl font-black tracking-tighter uppercase text-primary mb-2">
           Create Account<span className="text-accent">.</span>
         </h2>
-        <p className="text-base text-primary/80 font-medium tracking-tight">
+        <p className="text-base text-primary/80 font-medium tracking-tight whitespace-nowrap">
           Already a member?{' '}
           <Link href="/login" className="text-primary font-bold underline decoration-accent underline-offset-4 hover:text-accent transition-colors">
             Log in here
@@ -38,6 +39,7 @@ export default function RegisterPage() {
       </motion.div>
 
       <RegisterForm />
+      <SocialLoginButtons />
     </motion.div>
   );
 }

@@ -16,6 +16,7 @@ import com.coliving.global.error.ErrorCode;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -84,6 +85,13 @@ public class NotificationController {
                 .build();
 
         return ApiResponse.ok(response);
+    }
+
+    @DeleteMapping("/api/notifications/{notificationId}")
+    public ApiResponse<Void> deleteNotification(@PathVariable Long notificationId) {
+        Long userId = getAuthenticatedUserId();
+        notificationUseCase.deleteNotification(notificationId, userId);
+        return ApiResponse.ok(null);
     }
 
     @GetMapping(path = "/api/notifications/stream", produces = MediaType.TEXT_EVENT_STREAM_VALUE)

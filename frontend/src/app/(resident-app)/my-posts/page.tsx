@@ -53,13 +53,10 @@ export default async function MyPostsPage({ params, searchParams }: PageProps) {
         <div className="flex flex-col gap-[clamp(0.75rem,1.5vw,1.5rem)]">
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-[clamp(1rem,2vw,2rem)] border-b border-primary/10 pb-[clamp(1rem,2vw,2rem)]">
             <div className="min-w-0 space-y-4">
-              <h1 className="text-[clamp(1.7rem,7.2vw,9rem)] font-black leading-[0.85] tracking-tighter uppercase whitespace-nowrap">
+              <h1 className="text-[clamp(1.4rem,5vw,5.5rem)] font-black leading-[0.85] tracking-tighter uppercase whitespace-nowrap">
                 MY POS<span className="underline underline-offset-[1vw] decoration-[var(--color-accent)]">TS.</span>
                 <span className="text-[clamp(1rem,2.25vw,2.7rem)] font-bold tracking-normal ml-[clamp(0.25rem,0.5vw,0.5rem)] align-bottom opacity-80">나의 게시글</span>
               </h1>
-              <p className="text-[clamp(0.75rem,1.5vw,1.5rem)] leading-tight font-medium opacity-70 whitespace-nowrap">
-                직접 작성하신 커뮤니티 게시글들을 한눈에 확인하세요.
-              </p>
             </div>
             <div className="flex items-center shrink-0 self-end pb-1">
               <Link

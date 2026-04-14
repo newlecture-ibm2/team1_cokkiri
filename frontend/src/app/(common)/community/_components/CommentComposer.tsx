@@ -91,7 +91,7 @@ export function CommentComposer({ postId }: { postId: number }) {
             disabled={pending || !content.trim()}
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
-            className="h-16 px-12 bg-primary text-white rounded-2xl flex items-center gap-3 text-[10px] font-black uppercase tracking-[0.25em] hover:bg-accent transition-all disabled:opacity-30 disabled:grayscale"
+            className="h-16 px-12 bg-primary text-white rounded-2xl flex items-center gap-3 text-[10px] font-black uppercase tracking-[0.25em] hover:bg-primary/90 transition-all disabled:opacity-30 disabled:grayscale shadow-lg shadow-primary/20"
           >
             <Send className="size-4" />
             {pending ? "POSTING..." : "POST COMMENT"}
