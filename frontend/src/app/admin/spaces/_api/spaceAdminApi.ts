@@ -63,11 +63,12 @@ export function extractRoomTypeName(space: SpaceDTO): string | undefined {
   return space.roomTypeName || nested?.roomTypeName;
 }
 
-export const fetchSpaces = async (params?: { type?: string; status?: string; sort?: string }) => {
+export const fetchSpaces = async (params?: { type?: string; status?: string; sort?: string; size?: number }) => {
   const query = new URLSearchParams();
   if (params?.type && params.type !== 'ALL') query.append('type', params.type);
   if (params?.status && params.status !== 'ALL') query.append('status', params.status);
   if (params?.sort) query.append('sort', params.sort);
+  if (params?.size) query.append('size', String(params.size));
   
   const queryString = query.toString() ? `?${query.toString()}` : '';
   const res = await apiFetch<any>(`/admin/spaces${queryString}`);
