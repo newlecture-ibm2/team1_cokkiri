@@ -43,17 +43,28 @@ async function handler(req: NextRequest) {
     }
   }
 
-  const xForwardedHost = req.headers.get('x-forwarded-host') || req.headers.get('host') || req.nextUrl.host;
+  let xForwardedHost = req.headers.get('x-forwarded-host') || req.headers.get('host') || req.nextUrl.host;
   const xForwardedProto = req.headers.get('x-forwarded-proto') || req.nextUrl.protocol.replace(':', '');
-  const xForwardedPort = req.headers.get('x-forwarded-port');
+
+  // 배포 환경(HTTPS)일 경우, 외부 Nginx 등에서 의도치 않게 내부 포트(:3000)까지 묶어서
+  // Host 헤더로 넘기는 오작동을 방어하기 위해 도메인만 남기고 포트를 강제로 제거합니다.
+  if (xForwardedProto === 'https') {
+    xForwardedHost = xForwardedHost.replace(/:\d+$/, '');
+  }
 
   const headers: HeadersInit = {
     'x-forwarded-host': xForwardedHost,
     'x-forwarded-proto': xForwardedProto,
   };
 
-  if (xForwardedPort) {
-    headers['x-forwarded-port'] = xForwardedPort;
+  // HTTPS면 무조건 443 외부 통신 포트 명시. 아니면 들어온 값 그대로(로컬 등)
+  if (xForwardedProto === 'https') {
+    headers['x-forwarded-port'] = '443';
+  } else {
+    const xForwardedPort = req.headers.get('x-forwarded-port');
+    if (xForwardedPort) {
+      headers['x-forwarded-port'] = xForwardedPort;
+    }
   }
 
   const contentType = req.headers.get('Content-Type');
