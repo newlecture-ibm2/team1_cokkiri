@@ -107,6 +107,7 @@ export default function ContractApplyForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const spaceId = searchParams.get("spaceId") || "1";
+  const minStartDate = searchParams.get("minStartDate") || ""; // 사전 예약 시 계약 종료일 이후만 선택 가능
 
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState<ContractFormData>(INITIAL_DATA);
@@ -569,8 +570,14 @@ export default function ContractApplyForm() {
                         onChange={handleInputChange}
                         required
                         disabled={isReadOnly}
+                        min={minStartDate || undefined}
                         className="w-full bg-primary/5 border-none p-6 rounded-2xl text-lg font-bold focus:ring-2 focus:ring-accent transition-all disabled:opacity-50"
                       />
+                      {minStartDate && (
+                        <p className="text-xs font-bold text-accent tracking-tight mt-2">
+                          현재 입주자의 계약 종료일({minStartDate}) 이후부터 입주 시작일을 선택할 수 있습니다.
+                        </p>
+                      )}
                     </div>
 
                     <div className="space-y-4">

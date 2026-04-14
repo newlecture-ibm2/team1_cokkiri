@@ -25,6 +25,7 @@ export interface RoomDTO {
   parkingAvailable?: boolean;
   thumbnailUrl?: string;
   images?: SpaceImageDTO[];
+  contractEndDate?: string; // OCCUPIED일 때 현재 계약 종료일 (yyyy-MM-dd)
 }
 
 export interface PageResponse<T> {
