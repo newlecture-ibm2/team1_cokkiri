@@ -9,8 +9,6 @@ interface ReservationRequestModalProps {
   startLabel: string;
   endLabel: string;
   durationMinutes: number;
-  startIso: string;
-  endIso: string;
   onClose: () => void;
   onSubmit: (form: { purpose: string; notes: string }) => Promise<void> | void;
   isSubmitting?: boolean;
@@ -22,8 +20,6 @@ export function ReservationRequestModal({
   startLabel,
   endLabel,
   durationMinutes,
-  startIso,
-  endIso,
   onClose,
   onSubmit,
   isSubmitting = false,
@@ -90,10 +86,6 @@ export function ReservationRequestModal({
               <p className="mt-1 text-xs font-medium text-muted-foreground">
                 이용 시간 {durationMinutes}분
               </p>
-              <div className="mt-4 space-y-2 rounded-xl bg-background/80 p-3 text-xs font-medium text-muted-foreground">
-                <p>Start ISO: {startIso}</p>
-                <p>End ISO: {endIso}</p>
-              </div>
             </div>
 
             <div className="mt-6 space-y-4">

@@ -81,27 +81,25 @@ export function ContractStatusStepper({ currentStatus }: ContractStatusStepperPr
               <motion.div
                 initial={false}
                 animate={{
-                  scale: isActive ? 1.2 : 1,
+                  scale: isActive ? 1.2 : isPending ? 0.2 : 1,
+                  opacity: isPending ? 0.3 : 1,
                   backgroundColor: isCompleted || isActive ? "var(--accent)" : "white",
                   borderColor: isCompleted || isActive ? "var(--accent)" : "var(--primary-10)",
                   color: isCompleted || isActive ? "white" : "var(--primary-20)"
                 }}
                 className={`w-12 h-12 rounded-full border-2 flex items-center justify-center transition-all bg-background`}
                 style={{
-                    backgroundColor: isCompleted || isActive ? '#768064' : '#fff',
-                    borderColor: isCompleted || isActive ? '#768064' : '#DADED8'
+                  backgroundColor: isCompleted || isActive ? '#768064' : (isPending ? 'transparent' : '#fff'),
+                  borderColor: isCompleted || isActive ? '#768064' : '#DADED8'
                 }}
               >
-                {isCompleted ? (
-                  <Check className="w-6 h-6" />
-                ) : (
-                  <StepIcon className={`w-6 h-6 ${isActive ? 'text-white' : 'text-primary/30'}`} />
+                {!isPending && (
+                  <StepIcon className="w-6 h-6 text-white" />
                 )}
               </motion.div>
               <div className="text-center">
-                <p className={`text-[10px] font-black tracking-[0.2em] uppercase whitespace-nowrap transition-colors ${
-                  isActive ? 'text-accent' : isCompleted ? 'text-primary' : 'text-primary/20'
-                }`}>
+                <p className={`text-[10px] font-black tracking-[0.2em] uppercase whitespace-nowrap transition-colors ${isActive ? 'text-accent' : isCompleted ? 'text-primary' : 'text-primary/10'
+                  }`}>
                   {step.label}
                 </p>
               </div>
