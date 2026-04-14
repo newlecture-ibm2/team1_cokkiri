@@ -109,9 +109,9 @@ public class DataInitializer implements ApplicationRunner {
     public void run(ApplicationArguments args) {
         UserEntity admin = getOrCreateDemoAdmin();
         UserEntity user = getOrCreateDemoUser();
-        UserEntity user2 = getOrCreateUser("user2", "김민지", "980315", Gender.FEMALE, "010-1234-5678", "minji@cokkiri.local");
-        UserEntity user3 = getOrCreateUser("user3", "이준호", "970820", Gender.MALE, "010-2345-6789", "junho@cokkiri.local");
-        UserEntity user4 = getOrCreateUser("user4", "박서연", "000112", Gender.FEMALE, "010-3456-7890", "seoyeon@cokkiri.local");
+        UserEntity user2 = getOrCreateUser("user2", "김민지", "980315", Gender.FEMALE, "010-1234-5678", "minji@cokkiri.local", UserRole.USER);
+        UserEntity user3 = getOrCreateUser("user3", "이준호", "970820", Gender.MALE, "010-2345-6789", "junho@cokkiri.local", UserRole.USER);
+        UserEntity user4 = getOrCreateUser("user4", "박서연", "000112", Gender.FEMALE, "010-3456-7890", "seoyeon@cokkiri.local", UserRole.RESIDENT);
 
         // ── 인프라 시드 (항상 idempotent 실행) ──
         seedDefaultAnnotationTypes();
@@ -163,7 +163,7 @@ public class DataInitializer implements ApplicationRunner {
     }
 
     private UserEntity getOrCreateUser(String loginId, String name, String birthDate,
-                                        Gender gender, String phone, String email) {
+                                        Gender gender, String phone, String email, UserRole role) {
         return userJpaRepository.findByLoginId(loginId)
                 .orElseGet(() -> userJpaRepository.save(UserEntity.builder()
                         .loginId(loginId)
@@ -174,7 +174,7 @@ public class DataInitializer implements ApplicationRunner {
                         .nationality("KR")
                         .phone(phone)
                         .email(email)
-                        .role(UserRole.USER)
+                        .role(role)
                         .status(UserStatus.ACTIVE)
                         .build()));
     }
@@ -516,6 +516,21 @@ public class DataInitializer implements ApplicationRunner {
                 "B1 헬스장", -1, new BigDecimal("300.00"), "[]", "24시간 무인 헬스장",
                 50, "00:00~24:00", false, BigDecimal.ZERO);
         saveSpaceImageIfNotExists(gym, "https://picsum.photos/seed/gym/800/600", ImageType.PHOTO, 1, true);
+
+        SpaceEntity laundry = getOrCreateCommonSpace(
+                "1층 세탁실", 1, new BigDecimal("40.00"), "[\"세탁기\",\"건조기\"]", "코인형 세탁기·건조기 완비 세탁실",
+                10, "06:00~23:00", false, BigDecimal.ZERO);
+        saveSpaceImageIfNotExists(laundry, "https://picsum.photos/seed/laundry/800/600", ImageType.PHOTO, 1, true);
+
+        SpaceEntity library = getOrCreateCommonSpace(
+                "2층 도서관", 2, new BigDecimal("80.00"), "[\"Wi-Fi\",\"데스크\",\"콘센트\"]", "독서 및 자율학습을 위한 정숙 공간",
+                20, "07:00~24:00", false, BigDecimal.ZERO);
+        saveSpaceImageIfNotExists(library, "https://picsum.photos/seed/library/800/600", ImageType.PHOTO, 1, true);
+
+        SpaceEntity meetingRoom = getOrCreateCommonSpace(
+                "3층 화상 미팅룸", 3, new BigDecimal("20.00"), "[\"Wi-Fi\",\"대형 모니터\",\"화이트보드\",\"콘센트\"]", "팀 프로젝트 및 화상 회의를 위한 방음 미팅룸 (예약 필수)",
+                6, "09:00~22:00", true, new BigDecimal("10000"));
+        saveSpaceImageIfNotExists(meetingRoom, "https://picsum.photos/seed/meetingroom/800/600", ImageType.PHOTO, 1, true);
 
         log.info("[DataInitializer] 공간 시드 적재 완료 (idempotent)");
     }
