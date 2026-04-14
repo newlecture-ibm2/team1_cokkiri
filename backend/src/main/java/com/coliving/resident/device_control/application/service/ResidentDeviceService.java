@@ -103,10 +103,11 @@ public class ResidentDeviceService implements ResidentDeviceUseCase {
             throw new BusinessException(ErrorCode.DEVICE_INACTIVE);
         }
 
-        // 5. 기기 온라인 상태 검증
-        if ("OFFLINE".equals(device.status()) || "ERROR".equals(device.status())) {
+        // 5. 기기 상태 검증 — OFFLINE만 차단 (통신 불가), ERROR는 IoT에 재시도 위임
+        if ("OFFLINE".equals(device.status())) {
             throw new BusinessException(ErrorCode.DEVICE_OFFLINE);
         }
+        boolean wasError = "ERROR".equals(device.status());
 
         // 6. DOOR_LOCK 방어 코드 (ERD 비즈니스 규칙 #14: DOOR_LOCK=PRIVATE 전용)
         String spaceType = device.spaceType();
@@ -149,7 +150,7 @@ public class ResidentDeviceService implements ResidentDeviceUseCase {
         );
 
         if (!iotResult.success()) {
-            // IoT 통신 실패 시 기기 상태를 자동으로 ERROR로 전환
+            // IoT 통신 실패 시 기기 상태를 ERROR로 전환
             residentDeviceRepositoryPort.updateDeviceStatus(command.deviceId(), "ERROR");
             return new ControlDeviceResult(
                     command.deviceId(),
@@ -172,6 +173,12 @@ public class ResidentDeviceService implements ResidentDeviceUseCase {
             newState = DeviceStateUtil.mergeState(existingState, command.params());
         }
         residentDeviceRepositoryPort.updateCurrentState(command.deviceId(), newState);
+
+        // 11. ERROR → 제어 성공 시 IoT 통신 정상 확인 → ONLINE 동기화
+        if (wasError) {
+            residentDeviceRepositoryPort.updateDeviceStatus(command.deviceId(), "ONLINE");
+            log.info("[IoT 상태 동기화] deviceId: {} — ERROR → ONLINE (IoT 통신 성공 확인)", command.deviceId());
+        }
 
         return new ControlDeviceResult(
                 command.deviceId(),

@@ -218,7 +218,7 @@ public class AdminDeviceService implements CreateAdminDeviceUseCase, AdminDevice
             throw new BusinessException(ErrorCode.DEVICE_INACTIVE);
         }
 
-        // 3. 기기 온라인 상태 검증 — OFFLINE만 차단, ERROR는 관리자 재시도 허용
+        // 3. 기기 상태 검증 — OFFLINE만 차단 (통신 불가), ERROR는 IoT에 재시도 위임
         if ("OFFLINE".equals(device.status())) {
             throw new BusinessException(ErrorCode.DEVICE_OFFLINE);
         }
@@ -241,9 +241,8 @@ public class AdminDeviceService implements CreateAdminDeviceUseCase, AdminDevice
         );
 
         if (!iotResult.success()) {
-            // IoT 통신 실패 시 기기 상태를 자동으로 ERROR로 전환
+            // IoT 통신 실패 시 기기 상태를 ERROR로 전환
             adminDeviceRepositoryPort.updateStatus(command.deviceId(), "ERROR");
-            // 예외를 던지지 않고 실패 결과 반환 → 트랜잭션 커밋 (CONTROL_LOG + status 변경 보존)
             return new ControlAdminDeviceResult(
                     command.deviceId(),
                     command.command(),
@@ -253,7 +252,6 @@ public class AdminDeviceService implements CreateAdminDeviceUseCase, AdminDevice
         }
 
         // 6. 제어 성공 시 기기 current_state 업데이트
-        //    IoT 서버가 반환한 state가 있으면 그것으로 동기화, 없으면 기존 params 병합 방식 폴백
         String newState;
         if (iotResult.state() != null && !iotResult.state().isEmpty()) {
             try {
@@ -267,17 +265,17 @@ public class AdminDeviceService implements CreateAdminDeviceUseCase, AdminDevice
         }
         adminDeviceRepositoryPort.updateCurrentState(command.deviceId(), newState);
 
-        // 7. ERROR 상태였던 기기가 제어 성공 시 → ONLINE 자동 복구
+        // 7. ERROR → 제어 성공 시 IoT 통신 정상 확인 → ONLINE 동기화
         if (wasError) {
             adminDeviceRepositoryPort.updateStatus(command.deviceId(), "ONLINE");
-            log.info("[기기 복구] deviceId: {} — ERROR → ONLINE 자동 전환", command.deviceId());
+            log.info("[IoT 상태 동기화] deviceId: {} — ERROR → ONLINE (IoT 통신 성공 확인)", command.deviceId());
         }
 
         return new ControlAdminDeviceResult(
                 command.deviceId(),
                 command.command(),
                 true,
-                wasError ? "기기가 복구되어 정상 작동합니다" : "기기 제어가 완료되었습니다"
+                "기기 제어가 완료되었습니다"
         );
     }
 
