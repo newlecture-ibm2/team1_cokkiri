@@ -26,22 +26,13 @@ export const fetchRoom = async (spaceId: number) => {
 };
 
 export const fetchPublicRoomTypes = async () => {
-  // 방 목록 전체를 가져와서 고유 roomType 추출 (공개 API로 roomTypes 별도 제공 전까지)
-  const res = await fetch('/api/rooms?size=100');
+  const res = await fetch('/api/room-types');
   if (!res.ok) return [];
   const data = await res.json();
-  const rooms: RoomDTO[] = data.data?.content || [];
-
-  const typeMap = new Map<number, { roomTypeId: number; code: string; name: string }>();
-  rooms.forEach((room) => {
-    if (room.roomTypeId && room.roomTypeName) {
-      typeMap.set(room.roomTypeId, {
-        roomTypeId: room.roomTypeId,
-        code: room.roomTypeName,
-        name: room.roomTypeName,
-      });
-    }
-  });
-
-  return Array.from(typeMap.values());
+  const types = data.data || [];
+  return types.map((rt: { roomTypeId: number; code: string; name: string; sortOrder: number }) => ({
+    roomTypeId: rt.roomTypeId,
+    code: rt.code,
+    name: rt.name,
+  }));
 };

@@ -63,7 +63,7 @@ public class GlobalExceptionHandler {
 
         return ResponseEntity
                 .status(HttpStatus.CONFLICT)
-                .body(ApiResponse.error(ErrorCode.CONCURRENCY_ERROR));
+                .body(ApiResponse.error(ErrorCode.DUPLICATE_SPACE_NAME, "데이터 무결성 제약 위반입니다. 이미 삭제된 데이터와 충돌하거나 중복된 값이 존재할 수 있습니다."));
     }
 
     @ExceptionHandler(org.springframework.http.converter.HttpMessageNotReadableException.class)

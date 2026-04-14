@@ -1,9 +1,11 @@
 package com.coliving.user.room.adapter.in.web;
 
 import com.coliving.user.room.adapter.in.web.dto.RoomResponseDto;
+import com.coliving.user.room.adapter.in.web.dto.RoomTypeResponseDto;
 import com.coliving.user.room.application.command.RoomListCommand;
 import com.coliving.user.room.application.port.in.RoomUseCase;
 import com.coliving.user.room.model.Room;
+import com.coliving.admin.space.adapter.out.jpa.RoomTypeJpaRepository;
 
 import com.coliving.global.dto.ApiResponse;
 import com.coliving.global.error.BusinessException;
@@ -18,17 +20,30 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 @Tag(name = "Room", description = "유저 방 조회 API (Public)")
 @RestController
-@RequestMapping("/api/rooms")
 @RequiredArgsConstructor
 public class RoomController {
 
     private final RoomUseCase roomUseCase;
+    private final RoomTypeJpaRepository roomTypeJpaRepository;
+
+    @Operation(summary = "방 유형 목록 조회 (Public, sort_order 정렬)")
+    @GetMapping("/api/room-types")
+    public ApiResponse<List<RoomTypeResponseDto>> getRoomTypes() {
+        List<RoomTypeResponseDto> result = roomTypeJpaRepository
+                .findAll(org.springframework.data.domain.Sort.by(
+                        org.springframework.data.domain.Sort.Direction.ASC, "sortOrder", "id"))
+                .stream()
+                .map(RoomTypeResponseDto::from)
+                .toList();
+        return ApiResponse.ok(result);
+    }
 
     @Operation(summary = "방 목록 조회 (필터 + 페이지네이션)")
-    @GetMapping
+    @GetMapping("/api/rooms")
     public ApiResponse<Page<RoomResponseDto>> getRooms(
             @RequestParam(required = false) String keyword,
             @RequestParam(required = false) Long roomTypeId,
@@ -52,7 +67,7 @@ public class RoomController {
     }
 
     @Operation(summary = "방 단건 상세 조회")
-    @GetMapping("/{spaceId}")
+    @GetMapping("/api/rooms/{spaceId}")
     public ApiResponse<RoomResponseDto> getRoom(@PathVariable Long spaceId) {
         Room room = roomUseCase.getRoom(spaceId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.SPACE_NOT_FOUND));

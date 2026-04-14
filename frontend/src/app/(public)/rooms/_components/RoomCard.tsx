@@ -75,9 +75,6 @@ export function RoomCard({ room, index }: RoomCardProps) {
             <h3 className="text-2xl font-black tracking-tighter text-foreground transition-colors duration-500 group-hover:text-secondary">
               {room.name}
             </h3>
-            <span className="text-base font-black text-foreground opacity-10 whitespace-nowrap">
-              / {String(room.spaceId).padStart(2, '0')}
-            </span>
           </div>
           <div className="flex items-center justify-between border-t border-foreground/10 pt-4">
             <p className="text-sm font-black tracking-[0.3em] text-secondary uppercase">
