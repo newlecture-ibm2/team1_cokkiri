@@ -41,12 +41,7 @@ public class AdminMonitoringPersistenceAdapter implements AdminMonitoringReposit
                 LEFT JOIN control_logs cl ON d.device_id = cl.device_id
                     AND cl.result = 'FAILURE' AND cl.deleted_at IS NULL
                 WHERE d.deleted_at IS NULL
-                  AND (d.status = 'ERROR' OR EXISTS (
-                      SELECT 1 FROM control_logs cl2
-                      WHERE cl2.device_id = d.device_id
-                        AND cl2.result = 'FAILURE'
-                        AND cl2.deleted_at IS NULL
-                  ))
+                  AND d.status = 'ERROR'
                 GROUP BY d.device_id, d.name, dt.code, dt.name,
                          s.name, d.status, d.last_online_at
                 ORDER BY error_count DESC

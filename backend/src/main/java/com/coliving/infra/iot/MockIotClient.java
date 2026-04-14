@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientRequestException;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
-import reactor.util.retry.Retry;
+
 
 import java.time.Duration;
 import java.util.*;
@@ -31,7 +31,7 @@ import java.util.concurrent.TimeoutException;
  * <ul>
  *   <li>Connection Timeout: 2초</li>
  *   <li>Response Timeout: 5초 (coliving-plan.md §3)</li>
- *   <li>Retry: 1회, 500ms 간격 (일시적 네트워크 오류 대응)</li>
+ *   <li>Retry: 없음 (재시도는 사용자가 직접 수행)</li>
  *   <li>Fallback: 통신 실패 시 IotResponse.failure() 반환 + 구체적 로그</li>
  * </ul>
  */
@@ -40,8 +40,7 @@ import java.util.concurrent.TimeoutException;
 public class MockIotClient implements IotClient {
 
     private static final Duration GLOBAL_TIMEOUT = Duration.ofSeconds(6);
-    private static final int MAX_RETRY = 1;
-    private static final Duration RETRY_DELAY = Duration.ofMillis(500);
+
     private static final String CONTROL_ENDPOINT = "/api/devices/control";
     private static final String DEVICES_ENDPOINT = "/api/devices";
     private static final ObjectMapper MAPPER = new ObjectMapper();
@@ -104,13 +103,6 @@ public class MockIotClient implements IotClient {
                     .bodyValue(requestBody)
                     .retrieve()
                     .bodyToMono(String.class)
-                    .retryWhen(Retry.fixedDelay(MAX_RETRY, RETRY_DELAY)
-                            .filter(this::isRetryable)
-                            .doBeforeRetry(signal ->
-                                    log.warn("[IoT 재시도 {}/{}] mac: {}, command: {}, 원인: {}",
-                                            signal.totalRetries() + 1, MAX_RETRY,
-                                            macAddress, command, signal.failure().getMessage())
-                            ))
                     .block();
 
             return parseResponse(response, deviceId, command);
@@ -293,15 +285,5 @@ public class MockIotClient implements IotClient {
         } catch (Exception e) {
             return IotResponse.failure(deviceId, command, "IoT 기기 오류");
         }
-    }
-
-    private boolean isRetryable(Throwable throwable) {
-        if (throwable instanceof WebClientRequestException) {
-            return true;
-        }
-        if (throwable instanceof WebClientResponseException e) {
-            return e.getStatusCode().is5xxServerError();
-        }
-        return false;
     }
 }
