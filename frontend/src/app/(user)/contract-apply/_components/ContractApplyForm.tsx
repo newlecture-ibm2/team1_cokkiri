@@ -131,6 +131,7 @@ export default function ContractApplyForm() {
   const [paymentComplete, setPaymentComplete] = useState(false);
   const [virtualAccount, setVirtualAccount] = useState<{ bank: string; account: string; holder: string } | null>(null);
   const [portonePaymentId, setPortonePaymentId] = useState<string | null>(null);
+  const [roomDeposit, setRoomDeposit] = useState<number>(0); // 방 보증금(결제 금액)
 
   // PortOne card payment handler
   const handlePortoneCardPayment = async () => {
@@ -150,7 +151,7 @@ export default function ContractApplyForm() {
         channelKey,
         paymentId,
         orderName: `코끼리 보증금 - Room ${spaceId}`,
-        totalAmount: 1000,
+        totalAmount: roomDeposit || 1000,
         currency: "CURRENCY_KRW",
         payMethod: "CARD",
       });
@@ -187,6 +188,24 @@ export default function ContractApplyForm() {
     };
     fetchProfile();
   }, []);
+
+  // Fetch room data for deposit amount
+  useEffect(() => {
+    const fetchRoomDeposit = async () => {
+      try {
+        const res = await fetch(`/api/rooms/${spaceId}`, { credentials: 'include' });
+        if (res.ok) {
+          const result = await res.json();
+          if (result.success && result.data) {
+            setRoomDeposit(result.data.deposit || 0);
+          }
+        }
+      } catch (e) {
+        console.warn('Failed to fetch room deposit', e);
+      }
+    };
+    fetchRoomDeposit();
+  }, [spaceId]);
 
 
   // Load draft from API & LocalStorage
@@ -939,10 +958,10 @@ export default function ContractApplyForm() {
                           <div className="p-6 bg-accent/5 rounded-2xl space-y-3">
                             <div className="flex items-center justify-between">
                               <span className="text-[10px] font-black tracking-[0.2em] uppercase text-primary/40">결제 금액</span>
-                              <span className="text-2xl font-black tracking-tight text-primary">₩1,000</span>
+                              <span className="text-2xl font-black tracking-tight text-primary">₩{(roomDeposit || 0).toLocaleString()}</span>
                             </div>
                             <p className="text-[10px] font-bold tracking-tight opacity-50">
-                              테스트 결제 금액입니다. 실제 보증금은 계약 승인 후 별도 안내됩니다.
+                              해당 방의 보증금 금액입니다. 결제 완료 후 계약 신청이 제출됩니다.
                             </p>
                           </div>
 
