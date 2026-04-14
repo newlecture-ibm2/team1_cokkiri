@@ -80,8 +80,8 @@ export default function MonitoringPage() {
         <h1 className="text-[12vw] leading-[0.85] font-black tracking-tighter text-[#2C3424] uppercase md:text-[6vw] mt-4">
           Device <span className="text-[#768064]">Monitor</span>
         </h1>
-        <div className="flex items-center justify-between mt-5">
-          <p className="max-w-2xl text-base font-medium tracking-tight text-balance text-[#4C583E] md:text-lg">
+        <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between mt-5">
+          <p className="max-w-2xl text-base font-medium tracking-tight text-balance text-muted md:text-lg">
             기기 상태, 제어 빈도, 에러 이력을 한눈에 확인합니다
           </p>
           <div className="flex items-center gap-3 shrink-0">

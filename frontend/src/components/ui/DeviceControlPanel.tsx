@@ -168,15 +168,17 @@ export function DeviceControlPanel({
       setBusy(true);
       try {
         await onControl(command, params);
-        // Optimistic: merge
+        // 성공 시에만 Optimistic UI 반영
         const newState = { ...localState, ...params };
         setLocalState(newState);
         onStateChange?.(newState);
+      } catch {
+        // 제어 실패 시 UI 상태 변경하지 않음
       } finally {
         setBusy(false);
       }
     },
-    [disabled, busy, onControl, currentState, onStateChange]
+    [disabled, busy, onControl, localState, onStateChange]
   );
 
   if (commands.length === 0) {
@@ -187,7 +189,7 @@ export function DeviceControlPanel({
 
   return (
     <div
-      className={`flex flex-wrap items-center gap-3 ${busy ? "animate-pulse pointer-events-none" : ""}`}
+      className={`flex flex-col gap-2 min-w-0 ${busy ? "animate-pulse pointer-events-none" : ""}`}
       onClick={(e) => e.stopPropagation()}
     >
       {/* ── 토글 쌍 ── */}
@@ -240,8 +242,8 @@ export function DeviceControlPanel({
         .map((cmd) => {
           const val = Number(currentState[cmd.stateKey] ?? cmd.min ?? 0);
           return (
-            <div key={`slider-${cmd.command}`} className="flex items-center gap-2">
-              <span className="text-[10px] font-bold text-muted-foreground whitespace-nowrap">
+            <div key={`slider-${cmd.command}`} className="flex items-center gap-2 min-w-0">
+              <span className="text-[10px] font-bold text-muted-foreground whitespace-nowrap shrink-0">
                 {cmd.label}
               </span>
               <input
@@ -262,12 +264,12 @@ export function DeviceControlPanel({
                   const newVal = Number((e.target as HTMLInputElement).value);
                   executeControl(cmd.command, { [cmd.stateKey]: newVal });
                 }}
-                className="h-1.5 w-20 cursor-pointer appearance-none rounded-full bg-muted/30
+                className="h-1.5 flex-1 min-w-0 cursor-pointer appearance-none rounded-full bg-muted/30
                   accent-accent [&::-webkit-slider-thumb]:h-3.5 [&::-webkit-slider-thumb]:w-3.5
                   [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-accent
                   [&::-webkit-slider-thumb]:appearance-none"
               />
-              <span className="text-[10px] font-mono font-bold text-primary min-w-[2.5rem] text-right">
+              <span className="text-[10px] font-mono font-bold text-primary shrink-0">
                 {val}{cmd.unit ?? ""}
               </span>
             </div>
@@ -314,7 +316,7 @@ export function DeviceControlPanel({
         return Array.from(groups.entries()).map(([key, cmds]) => (
           <div
             key={`btn-group-${key}`}
-            className="flex items-center gap-1.5 rounded-xl border border-border/60 bg-muted/5 px-2 py-1.5"
+            className="flex flex-wrap items-center gap-1.5 rounded-xl border border-border/60 bg-muted/5 px-2 py-1.5 min-w-0"
           >
             <span className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground/50 mr-0.5">
               {key}

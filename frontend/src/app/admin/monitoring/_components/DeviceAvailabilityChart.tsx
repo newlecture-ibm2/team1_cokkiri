@@ -112,7 +112,7 @@ export default function DeviceAvailabilityChart({
   return (
     <div>
       {/* 정렬 버튼 그룹 */}
-      <div className="flex items-center gap-2 mb-4">
+      <div className="flex flex-wrap items-center gap-2 mb-4">
         <span className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground mr-1">
           정렬
         </span>

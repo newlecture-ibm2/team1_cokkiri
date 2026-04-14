@@ -94,7 +94,7 @@ public class ResidentDeviceController {
 
         if (!result.success()) {
             return ResponseEntity.status(HttpStatus.BAD_GATEWAY)
-                    .body(ApiResponse.error(ErrorCode.IOT_COMMUNICATION_FAIL));
+                    .body(ApiResponse.error(ErrorCode.IOT_COMMUNICATION_FAIL, result.message()));
         }
 
         return ResponseEntity.ok(ApiResponse.ok(

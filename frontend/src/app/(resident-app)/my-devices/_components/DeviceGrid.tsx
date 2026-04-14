@@ -126,6 +126,7 @@ export function DeviceGrid() {
         showFeedback("제어에 실패했습니다", "error");
       }
       loadDevices(); // 제어 실패 시에도 기기 상태(ERROR 전환 등) 반영
+      throw err; // DeviceControlPanel에 에러 전파 → optimistic UI 방지
     } finally {
       setControllingId(null);
 
@@ -382,7 +383,7 @@ function DeviceCard({
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: idx * 0.05 }}
-      className={`group relative rounded-[2rem] border p-5 transition-all
+      className={`group relative rounded-[2rem] border p-3 md:p-5 transition-all overflow-hidden
         duration-200 hover:shadow-md ${cardColor}
         ${isControlling ? "animate-pulse pointer-events-none" : ""}
         ${isCooldown ? "opacity-70 pointer-events-none" : ""}`}
@@ -412,14 +413,14 @@ function DeviceCard({
 
       {/* ── 제어 가능: commands 기반 동적 제어 UI ── */}
       {device.controllable && device.status !== "OFFLINE" && (
-        <div className="mt-3" onClick={(e) => e.stopPropagation()}>
+        <div className="mt-3 min-w-0 overflow-hidden" onClick={(e) => e.stopPropagation()}>
           <DeviceControlPanel
             commandsJson={device.commands ?? "[]"}
             currentStateJson={device.currentState}
             modelName={device.modelName}
             disabled={isControlling || isCooldown}
             onControl={async (cmd, params) => {
-              onControl(device, cmd, params);
+              await onControl(device, cmd, params);
             }}
           />
         </div>
