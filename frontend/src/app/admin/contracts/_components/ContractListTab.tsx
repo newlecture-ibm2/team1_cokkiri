@@ -156,6 +156,22 @@ export function ContractListTab({ refreshKey, onRefresh }: Props) {
       deposit: c.deposit?.toString() || "",
       specialTerms: c.specialTerms || "",
     });
+
+    // 계약에 월세/보증금이 없으면 방 데이터에서 조회하여 폴백
+    if (!c.monthlyRent || !c.deposit) {
+      fetch(`/api/rooms/${c.spaceId}`)
+        .then((res) => res.json())
+        .then((result) => {
+          if (result.success && result.data) {
+            setEditForm((prev) => ({
+              ...prev,
+              monthlyRent: prev.monthlyRent || result.data.monthlyRent?.toString() || "",
+              deposit: prev.deposit || result.data.deposit?.toString() || "",
+            }));
+          }
+        })
+        .catch((err) => console.error("방 정보 조회 실패:", err));
+    }
   };
 
   const handleUpdate = async () => {
@@ -523,6 +539,19 @@ export function ContractListTab({ refreshKey, onRefresh }: Props) {
                                     deposit: "",
                                     specialTerms: "",
                                   });
+                                  // 방 데이터에서 월세/보증금 자동 조회
+                                  fetch(`/api/rooms/${c.spaceId}`)
+                                    .then((res) => res.json())
+                                    .then((result) => {
+                                      if (result.success && result.data) {
+                                        setApproveForm((prev) => ({
+                                          ...prev,
+                                          monthlyRent: result.data.monthlyRent?.toString() || prev.monthlyRent,
+                                          deposit: result.data.deposit?.toString() || prev.deposit,
+                                        }));
+                                      }
+                                    })
+                                    .catch((err) => console.error("방 정보 조회 실패:", err));
                                 }}
                                 className="p-2 rounded-lg hover:bg-green-50 text-muted hover:text-green-600 transition-colors"
                                 title="승인"

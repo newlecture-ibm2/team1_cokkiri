@@ -175,7 +175,7 @@ export default function RoomDetailPage() {
 
             {/* Image Gallery (내 도메인 전용 카드) */}
             {room.images && room.images.length > 0 && (
-              <RoomGallery images={room.images} />
+              <RoomGallery images={room.images} roomName={room.name} />
             )}
           </div>
 
