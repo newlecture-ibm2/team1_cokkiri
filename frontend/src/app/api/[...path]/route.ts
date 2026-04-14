@@ -43,11 +43,19 @@ async function handler(req: NextRequest) {
     }
   }
 
+  const xForwardedHost = req.headers.get('x-forwarded-host') || req.headers.get('host') || req.nextUrl.host;
+  const xForwardedProto = req.headers.get('x-forwarded-proto') || req.nextUrl.protocol.replace(':', '');
+  const xForwardedPort = req.headers.get('x-forwarded-port');
+
   const headers: HeadersInit = {
-    'x-forwarded-host': req.nextUrl.host,
-    'x-forwarded-proto': req.nextUrl.protocol.replace(':', ''),
-    'x-forwarded-port': req.nextUrl.port || (req.nextUrl.protocol === 'https:' ? '443' : '80'),
+    'x-forwarded-host': xForwardedHost,
+    'x-forwarded-proto': xForwardedProto,
   };
+
+  if (xForwardedPort) {
+    headers['x-forwarded-port'] = xForwardedPort;
+  }
+
   const contentType = req.headers.get('Content-Type');
   if (contentType) headers['Content-Type'] = contentType;
 
