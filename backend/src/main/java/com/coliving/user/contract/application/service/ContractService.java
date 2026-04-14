@@ -67,9 +67,15 @@ public class ContractService implements ContractUseCase {
     }
 
     private ContractDraftResult toDraftResult(Contract c) {
+        // Space 이름 조회 (READ 전용 — 도메인 협업 룰 §1 허용)
+        String spaceName = adminSpaceRepositoryPort.findById(c.getSpaceId())
+                .map(AdminSpace::getName)
+                .orElse("ROOM " + c.getSpaceId());
+
         return ContractDraftResult.builder()
                 .contractId(c.getContractId())
                 .spaceId(c.getSpaceId())
+                .spaceName(spaceName)
                 .status(c.getStatus())
                 .desiredStartDate(c.getDesiredStartDate())
                 .desiredDurationMonths(c.getDesiredDurationMonths())

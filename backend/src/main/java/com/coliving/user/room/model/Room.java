@@ -4,6 +4,7 @@ import com.coliving.admin.space.model.ImageType;
 import com.coliving.admin.space.model.SpaceStatus;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.List;
 
 import lombok.Builder;
@@ -38,6 +39,9 @@ public class Room {
     // 이미지
     private String thumbnailUrl;
     private List<SpaceImage> images;
+
+    // OCCUPIED일 때 현재 활성 계약 종료일 (사전 예약용)
+    private LocalDate contractEndDate;
 
     @Getter
     @Builder

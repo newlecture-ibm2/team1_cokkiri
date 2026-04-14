@@ -2,10 +2,9 @@
 
 import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
-import { useState, useTransition } from "react";
-import Link from "next/link";
-import { motion } from "framer-motion";
-import { ArrowLeft, ChevronDown, Loader2 } from "lucide-react";
+import { useEffect, useRef, useState, useTransition } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { ChevronDown, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { messageFromBffResponse } from "@/lib/bff-error-message";
 import { LoginRequiredModal } from "@/components/shared/LoginRequiredModal";
@@ -31,16 +30,15 @@ const VocRichTextEditor = dynamic(
   {
     ssr: false,
     loading: () => (
-      <div className="mt-3 min-h-[220px] rounded-xl border border-dashed border-border bg-muted/15" />
+      <div className="min-h-[240px] rounded-xl border border-dashed border-border bg-muted/15" />
     ),
   },
 );
 
-const labelClass =
-  "block text-[10px] font-black uppercase tracking-[0.5em] text-accent mb-4";
+const labelClass = "flex items-baseline gap-2 mb-4";
 
 const fieldClass =
-  "w-full rounded-[2rem] border border-primary/5 bg-white/40 backdrop-blur-sm p-8 font-medium tracking-tight text-xl text-primary focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-accent/10 transition-all placeholder:text-muted-foreground/30";
+  "w-full rounded-xl border border-primary/10 bg-white px-6 py-4 font-medium tracking-tight text-base text-primary focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-accent/10 transition-all placeholder:text-primary/30";
 
 type Props = {
   initial: VocDetail;
@@ -54,7 +52,7 @@ export function VocEditForm({ initial }: Props) {
   const [title, setTitle] = useState(initial.title);
   const [content, setContent] = useState(() => normalizeVocApiFileUrlsToBff(initial.content));
   const [attachments, setAttachments] = useState<VocAttachment[]>(initial.attachments ?? []);
-  const [newFiles, setNewFiles] = useState<FileList | null>(null);
+  const [newFiles, setNewFiles] = useState<File[]>([]);
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const [showLoginModal, setShowLoginModal] = useState(false);
@@ -101,9 +99,9 @@ export function VocEditForm({ initial }: Props) {
             })),
           ),
         );
-        if (newFiles?.length) {
-          for (let i = 0; i < newFiles.length; i++) {
-            formData.append("files", newFiles[i]);
+        if (newFiles.length > 0) {
+          for (const file of newFiles) {
+            formData.append("files", file);
           }
         }
 
@@ -143,142 +141,179 @@ export function VocEditForm({ initial }: Props) {
   }
 
   return (
-    <form onSubmit={submit} className="mx-auto max-w-4xl space-y-16 py-12">
+    <form onSubmit={submit} className="mx-auto max-w-5xl space-y-6">
       <LoginRequiredModal isOpen={showLoginModal} onClose={() => setShowLoginModal(false)} />
-      <Link
-        href={`/vocs/${initial.vocId}`}
-        className="group inline-flex items-center gap-3 text-[10px] font-black uppercase tracking-[0.4em] text-accent hover:text-primary transition-all"
-      >
-        ← Back to Inquiry
-      </Link>
 
       {error ? (
         <p
+          className="rounded-xl border border-destructive/20 bg-destructive/5 px-6 py-4 text-sm font-medium tracking-tight text-destructive"
           role="alert"
-          className="rounded-3xl border border-destructive/20 bg-destructive/5 px-8 py-4 text-sm font-black uppercase tracking-wider text-destructive"
         >
           {error}
         </p>
       ) : null}
 
-      <div className="space-y-16">
-        <section className="space-y-4">
-          <label htmlFor="edit-voc-category" className={labelClass}>
-            01 | CATEGORY
-          </label>
-          <div className="relative">
-            <select
-              id="edit-voc-category"
-              value={category}
-              onChange={(e) => setCategory(e.target.value as VocCategoryCode)}
-              className={cn(fieldClass, "appearance-none pr-12 leading-none py-0 h-24 cursor-pointer")}
-            >
-              {VOC_CATEGORIES.map((c) => (
-                <option key={c.value} value={c.value}>
-                  {c.label}
-                </option>
-              ))}
-            </select>
-            <ChevronDown
-              className="pointer-events-none absolute right-8 top-1/2 -translate-y-1/2 size-5 text-accent"
-              aria-hidden
-            />
-          </div>
-        </section>
+      <div className="space-y-8">
+        <VocEditCategoryDropdown
+          value={category}
+          onChange={setCategory}
+          fieldClass={fieldClass}
+        />
 
         <section className="space-y-4">
           <label htmlFor="edit-voc-title" className={labelClass}>
-            02 | VOC TITLE
+            <span className="text-lg font-black uppercase tracking-tight text-primary">TITLE.</span>
+            <span className="text-sm font-medium text-primary/80">제목</span>
           </label>
           <input
             id="edit-voc-title"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
+            placeholder="제목을 입력하세요."
             maxLength={VOC_TITLE_MAX_LENGTH}
             required
             className={fieldClass}
           />
+          <p className="text-xs font-medium tracking-tight text-primary/40">
+            최대 {VOC_TITLE_MAX_LENGTH.toLocaleString()}자까지 입력 가능합니다.
+          </p>
         </section>
 
         <section className="space-y-4">
           <label htmlFor="edit-voc-content" className={labelClass}>
-            03 | INQUIRY NARRATIVE
+            <span className="text-lg font-black uppercase tracking-tight text-primary">CONTENT.</span>
+            <span className="text-sm font-medium text-primary/80">내용</span>
           </label>
-          <div className="rounded-[2.5rem] border border-primary/5 bg-white/40 backdrop-blur-sm p-4">
+          <div className="rounded-[2rem] border border-primary/10 bg-white p-4 h-full">
             <VocRichTextEditor
               key={initial.vocId}
               id="edit-voc-content"
               value={content}
               onChange={setContent}
-              placeholder="Revise your inquiry message..."
+              placeholder="내용을 입력하세요."
             />
           </div>
         </section>
 
-        <section className="space-y-8">
-          <div className="space-y-4">
-            <p className={labelClass}>04 | EXISTING ASSETS</p>
-            {attachments.length === 0 ? (
-              <p className="px-8 text-xs font-black uppercase tracking-[0.2em] text-muted-foreground/40">No existing assets</p>
-            ) : (
-              <ul className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {attachments.map((a, i) => (
-                  <li
-                    key={`${a.fileUrl}-${i}`}
-                    className="group flex items-center justify-between p-6 bg-white rounded-2xl border border-primary/5 shadow-sm"
+        {/* Existing Attachments */}
+        <section className="space-y-4">
+          <label className={labelClass}>
+            <span className="text-lg font-black uppercase tracking-tight text-primary">ATTACHED.</span>
+            <span className="text-sm font-medium text-primary/80">기존 첨부파일</span>
+          </label>
+          {attachments.length === 0 ? (
+            <p className="text-xs font-medium tracking-tight text-primary/40">
+              기존 첨부파일이 없습니다.
+            </p>
+          ) : (
+            <ul className="space-y-1.5 pl-1">
+              {attachments.map((a, i) => (
+                <li
+                  key={`${a.fileUrl}-${i}`}
+                  className="flex items-center gap-2 text-sm font-semibold tracking-tight text-primary"
+                >
+                  <span className="text-primary/40">•</span>
+                  <span className="truncate max-w-md">{a.fileName}</span>
+                  <button
+                    type="button"
+                    onClick={() => removeAttachment(i)}
+                    className="text-xs font-semibold text-destructive/70 hover:text-destructive transition-colors shrink-0"
                   >
-                    <span className="truncate text-xs font-black tracking-tighter text-primary">{a.fileName}</span>
+                    삭제
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
+        </section>
+
+        {/* New Files */}
+        <section className="space-y-4">
+          <label className={labelClass}>
+            <span className="text-lg font-black uppercase tracking-tight text-primary">FILES.</span>
+            <span className="text-sm font-medium text-primary/80">새 첨부파일</span>
+          </label>
+          <div className="space-y-3">
+            <div className="flex items-center gap-4">
+              <label
+                htmlFor="edit-voc-new-files"
+                className="inline-flex cursor-pointer items-center gap-2 rounded-xl border-2 border-primary/10 bg-primary/5 px-6 py-3 text-sm font-semibold tracking-tight text-primary/70 transition-all hover:bg-primary/10 hover:border-primary/20 hover:text-primary"
+              >
+                파일 첨부
+              </label>
+              <input
+                id="edit-voc-new-files"
+                type="file"
+                multiple
+                onChange={(e) => {
+                  if (e.target.files && e.target.files.length > 0) {
+                    const selected = Array.from(e.target.files);
+                    setNewFiles((prev) => [...prev, ...selected]);
+                    e.target.value = "";
+                  }
+                }}
+                className="sr-only"
+              />
+              {newFiles.length === 0 && (
+                <span className="text-xs font-medium tracking-tight text-primary/30">
+                  선택된 파일 없음
+                </span>
+              )}
+            </div>
+            {newFiles.length > 0 && (
+              <ul className="space-y-1.5 pl-1">
+                {newFiles.map((file, i) => (
+                  <li key={`${file.name}-${i}`} className="flex items-center gap-2 text-sm font-semibold tracking-tight text-primary">
+                    <span className="text-primary/40">•</span>
+                    <a
+                      href={URL.createObjectURL(file)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="underline underline-offset-2 decoration-primary/30 hover:text-accent transition-colors truncate max-w-md"
+                    >
+                      {file.name}
+                    </a>
+                    <span className="text-xs text-primary/50 shrink-0">
+                      ({(file.size / 1024).toFixed(1)} KB)
+                    </span>
                     <button
                       type="button"
-                      onClick={() => removeAttachment(i)}
-                      className="shrink-0 px-4 py-2 text-[10px] font-black uppercase tracking-[0.2em] text-destructive hover:bg-destructive/10 rounded-full transition-colors"
+                      onClick={() => setNewFiles((prev) => prev.filter((_, idx) => idx !== i))}
+                      className="text-xs font-semibold text-destructive/70 hover:text-destructive transition-colors shrink-0"
                     >
-                      REMOVE
+                      삭제
                     </button>
                   </li>
                 ))}
               </ul>
             )}
           </div>
-          
-          <div className="space-y-4">
-            <label htmlFor="edit-voc-new-files" className={labelClass}>
-              ADD NEW EVIDENCE
-            </label>
-            <input
-              id="edit-voc-new-files"
-              type="file"
-              multiple
-              onChange={(e) => setNewFiles(e.target.files)}
-              className={cn(
-                fieldClass,
-                "cursor-pointer py-8 file:mr-8 file:rounded-xl file:border-0 file:bg-accent file:px-6 file:py-3 file:text-[10px] file:font-black file:uppercase file:tracking-[0.2em] file:text-white hover:file:bg-primary transition-all",
-              )}
-            />
-          </div>
+          <p className="text-xs font-medium tracking-tight text-primary/40">
+            여러 파일을 첨부할 수 있습니다. (파일당 최대 15MB, 총 50MB)
+          </p>
         </section>
       </div>
 
-      <div className="pt-20 flex flex-col md:flex-row justify-end gap-6 items-center">
+      <div className="pt-20 flex flex-col md:flex-row justify-end gap-4 items-center">
         <button
           type="button"
           onClick={() => setShowCancelModal(true)}
-          className="w-full md:w-auto px-12 py-6 text-[10px] font-black uppercase tracking-[0.4em] text-muted-foreground hover:text-primary transition-colors"
+          className="w-full md:w-auto px-10 py-3.5 text-sm font-semibold tracking-tight text-primary/60 rounded-xl border-2 border-primary/10 hover:border-primary/20 hover:text-primary transition-all"
         >
-          Discard Changes
+          취소
         </button>
         <motion.button
           type="submit"
           disabled={pending}
-          whileHover={{ scale: 1.05, y: -4 }}
-          whileTap={{ scale: 0.95 }}
+          whileHover={{ scale: 1.03, y: -2 }}
+          whileTap={{ scale: 0.97 }}
           className={cn(
-            "w-full md:w-auto inline-flex items-center justify-center gap-4 rounded-full bg-primary px-24 py-8 text-xs font-black uppercase tracking-[0.5em] text-white shadow-2xl shadow-primary/20",
+            "w-full md:w-auto inline-flex items-center justify-center gap-3 rounded-xl bg-primary px-12 py-3.5 text-sm font-semibold tracking-tight text-white shadow-lg shadow-primary/15 hover:bg-primary/90 transition-all",
             pending && "opacity-60",
           )}
         >
           {pending && <Loader2 className="size-4 animate-spin" aria-hidden />}
-          SAVE REVISIONS
+          저장하기
         </motion.button>
       </div>
       <CancelModal
@@ -287,5 +322,98 @@ export function VocEditForm({ initial }: Props) {
         onConfirm={() => router.push(`/vocs/${initial.vocId}`)}
       />
     </form>
+  );
+}
+
+/* ── Custom Category Dropdown (matches community style) ── */
+function VocEditCategoryDropdown({
+  value,
+  onChange,
+  fieldClass,
+}: {
+  value: VocCategoryCode;
+  onChange: (v: VocCategoryCode) => void;
+  fieldClass: string;
+}) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+  const selected = VOC_CATEGORIES.find((c) => c.value === value);
+
+  useEffect(() => {
+    function handleClick(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    }
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, []);
+
+  return (
+    <section className="space-y-4">
+      <label className={labelClass}>
+        <span className="text-lg font-black uppercase tracking-tight text-primary">CATEGORY.</span>
+        <span className="text-sm font-medium text-primary/80">유형선택</span>
+      </label>
+      <div className="flex items-center gap-4">
+        <div ref={ref} className="relative w-56">
+          <button
+            type="button"
+            onClick={() => setOpen((p) => !p)}
+            className={cn(
+              fieldClass,
+              "flex items-center justify-between pr-12 h-12 cursor-pointer rounded-xl text-left",
+            )}
+          >
+            <span className="font-semibold text-sm tracking-tight">
+              {selected?.label ?? "선택"}
+            </span>
+            <ChevronDown
+              className={cn(
+                "absolute right-5 top-1/2 -translate-y-1/2 size-[1.125rem] opacity-60 transition-transform duration-500 ease-[cubic-bezier(0.33,1,0.68,1)]",
+                open && "rotate-180",
+              )}
+              aria-hidden
+            />
+          </button>
+
+          <AnimatePresence>
+            {open && (
+              <motion.ul
+                initial={{ opacity: 0, y: -6, scale: 0.96 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: -4, scale: 0.98 }}
+                transition={{ duration: 0.3, ease: [0.33, 1, 0.68, 1] }}
+                style={{ transformOrigin: "top center" }}
+                className="absolute z-50 mt-2 w-full flex flex-col gap-1.5 rounded-3xl border-2 border-stone-200/70 bg-stone-50/98 p-3 shadow-md backdrop-blur-md dark:border-stone-600/50 dark:bg-stone-900/95"
+              >
+                {VOC_CATEGORIES.map((c, i) => (
+                  <motion.li
+                    key={c.value}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ duration: 0.34, delay: 0.1 + i * 0.055, ease: [0.33, 1, 0.68, 1] }}
+                  >
+                    <button
+                      type="button"
+                      onClick={() => {
+                        onChange(c.value);
+                        setOpen(false);
+                      }}
+                      className={cn(
+                        "flex w-full items-center justify-center rounded-md py-2.5 text-sm font-semibold tracking-tight transition-colors",
+                        c.value === value
+                          ? "bg-primary/10 text-primary"
+                          : "text-primary/70 hover:bg-primary/5 hover:text-primary",
+                      )}
+                    >
+                      {c.label}
+                    </button>
+                  </motion.li>
+                ))}
+              </motion.ul>
+            )}
+          </AnimatePresence>
+        </div>
+      </div>
+    </section>
   );
 }

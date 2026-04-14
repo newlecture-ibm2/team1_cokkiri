@@ -11,6 +11,7 @@ export type ContractStatus =
 export interface ContractDraftResult {
   contractId: number;
   spaceId: number;
+  spaceName?: string;
   status: ContractStatus;
   desiredStartDate: string;
   desiredDurationMonths: number;

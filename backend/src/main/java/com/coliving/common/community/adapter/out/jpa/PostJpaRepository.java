@@ -26,6 +26,8 @@ public interface PostJpaRepository extends JpaRepository<PostEntity, Long>, JpaS
     )
     Page<PostEntity> findAllNoticeFirst(Pageable pageable);
 
+    Page<PostEntity> findByUserIdOrderByCreatedAtDesc(Long userId, Pageable pageable);
+
     @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Query("UPDATE PostEntity p SET p.viewCount = p.viewCount + :delta WHERE p.postId = :postId")
     int addViewCount(@Param("postId") Long postId, @Param("delta") long delta);

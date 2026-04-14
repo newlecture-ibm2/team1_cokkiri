@@ -43,5 +43,36 @@ export function plainTextFromHtml(html: string): string {
  * 외부 URL 이미지·링크 펼치기는 폐쇄형 정책으로 하지 않습니다.
  */
 export function prepareCommunityPostBodyForDisplay(html: string): string {
-  return normalizePostBodyApiCommunityUrlsToBff(html);
+  let result = normalizePostBodyApiCommunityUrlsToBff(html);
+
+  // <a> 태그 후처리: 프로토콜 없는 href에 https:// 추가, target="_blank" + rel 추가
+  result = result.replace(
+    /<a\s+([^>]*?)href="([^"]*)"([^>]*?)>/gi,
+    (_match, before: string, href: string, after: string) => {
+      let fixedHref = href.trim();
+
+      // 프로토콜이 없으면 https:// 추가 (상대 경로 방지)
+      if (
+        fixedHref &&
+        !fixedHref.startsWith("http://") &&
+        !fixedHref.startsWith("https://") &&
+        !fixedHref.startsWith("mailto:") &&
+        !fixedHref.startsWith("tel:") &&
+        !fixedHref.startsWith("/") &&
+        !fixedHref.startsWith("#")
+      ) {
+        fixedHref = `https://${fixedHref}`;
+      }
+
+      // 기존 target/rel 제거 후 새로 추가
+      const attrs = `${before}${after}`
+        .replace(/target="[^"]*"/gi, "")
+        .replace(/rel="[^"]*"/gi, "")
+        .trim();
+
+      return `<a ${attrs} href="${fixedHref}" target="_blank" rel="noopener noreferrer">`.replace(/\s+/g, " ");
+    },
+  );
+
+  return result;
 }

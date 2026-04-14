@@ -1,10 +1,10 @@
 import Link from "next/link";
-import { ArrowLeft, ArrowRight, Eye, MessageCircle } from "lucide-react";
+import { ArrowLeft, ArrowRight, Eye, Heart, MessageCircle, Megaphone, HelpCircle, Lightbulb, Users, PenLine, type LucideIcon } from "lucide-react";
 import type { PostDetail } from "../_types/community";
 import { POST_CATEGORIES } from "../_types/community";
-import { LikeToggle } from "./LikeToggle";
+
 import { PostEditDeleteActions } from "./PostEditDeleteActions";
-import { CommentThreadSection } from "../../comment/_components/CommentThreadSection";
+import { CommentThreadSection } from "./CommentThreadSection";
 import { formatDateTimeKo } from "@/lib/format-date";
 import { apiFileUrlToBffPath } from "@/lib/bff-file-url";
 import { isRichTextBodyHtml, prepareCommunityPostBodyForDisplay } from "@/lib/post-html";
@@ -13,11 +13,28 @@ function categoryLabel(code: string) {
   return POST_CATEGORIES.find((c) => c.value === code)?.label ?? code;
 }
 
-function normalizeLiked(d: PostDetail & { isLikedByMe?: boolean }) {
-  if (typeof d.likedByMe === "boolean") return d.likedByMe;
-  if (typeof d.isLikedByMe === "boolean") return d.isLikedByMe;
-  return false;
+function categoryEnglish(code: string) {
+  switch (code) {
+    case "NOTICE": return "Notice";
+    case "QUESTION": return "Question";
+    case "SUGGESTION": return "Suggestion";
+    case "MEETUP": return "Meetup";
+    case "FREE": return "Free";
+    default: return "Post";
+  }
 }
+
+function categoryIcon(code: string): LucideIcon {
+  switch (code) {
+    case "NOTICE": return Megaphone;
+    case "QUESTION": return HelpCircle;
+    case "SUGGESTION": return Lightbulb;
+    case "MEETUP": return Users;
+    default: return PenLine;
+  }
+}
+
+
 
 type CurrentUser = {
   userId: number;
@@ -31,97 +48,97 @@ export function PostDetailSection({
   detail: PostDetail;
   currentUser?: CurrentUser;
 }) {
-  const liked = normalizeLiked(detail as PostDetail & { isLikedByMe?: boolean });
   const comments = detail.comments ?? [];
+  const WatermarkIcon = categoryIcon(detail.category);
 
   return (
-    <div className="mx-auto max-w-4xl pt-10 pb-32">
-      <div className="mb-20">
-        <Link
-          href="/community"
-          className="group inline-flex items-center gap-3 text-[10px] font-black uppercase tracking-[0.4em] text-accent hover:text-primary transition-all"
-        >
-          <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-2" />
-          목록으로
-        </Link>
-      </div>
+    <div className="pt-4 pb-32">
+      {/* Back link + Header */}
+      <header className="mx-auto max-w-5xl mb-12">
+        <div className="flex flex-col gap-6">
+          <Link
+            href="/community"
+            className="group inline-flex items-center gap-3 text-sm font-bold tracking-tight text-primary/60 hover:text-accent transition-colors w-fit"
+          >
+            <span className="flex items-center justify-center w-8 h-8 rounded-full bg-primary/5 group-hover:bg-accent/10 transition-colors">
+              <ArrowLeft className="w-4 h-4" />
+            </span>
+            목록으로 돌아가기
+          </Link>
 
-      <article className="space-y-20">
-        <header className="space-y-12">
-          <div className="flex flex-col gap-6">
-            <div className="flex items-center gap-4">
-              <span className="px-4 py-1.5 bg-accent/10 rounded-full text-[10px] font-black uppercase tracking-[0.2em] text-accent">
+          {/* Badge + Title with edit/delete on the right */}
+          <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-4 border-b border-primary/10 pb-6">
+            <h1 className="text-3xl md:text-5xl tracking-tight leading-snug text-primary min-w-0">
+              <span className={`font-bold ${detail.category === "NOTICE" ? "text-[#5B6E2D]" : "text-[#4A7C6F]"}`}>
                 {categoryLabel(detail.category)}
               </span>
-              <span className="text-[10px] font-black tracking-[0.3em] uppercase opacity-30">
-                POST-00{detail.postId}
+              <span className={`text-2xl font-medium align-middle ${detail.category === "NOTICE" ? "text-[#5B6E2D]/50" : "text-[#4A7C6F]/50"}`}>
+                .{categoryEnglish(detail.category).toLowerCase()}
               </span>
-            </div>
-
-            <h1 className="text-5xl md:text-7xl font-black tracking-tighter leading-[0.95] text-primary uppercase italic text-balance">
-              {detail.title}
+              <span className="mx-1.5 text-muted-foreground/30 font-light">|</span>
+              <span className="font-medium">{detail.title}</span>
             </h1>
-
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-8 pt-8 border-t border-primary/10">
-              <div className="flex items-center gap-6">
-                <div className="flex flex-col gap-1">
-                  <span className="text-xs font-bold tracking-tight text-primary/60">작성자</span>
-                  <span className="text-sm font-bold tracking-tight text-primary">{detail.author?.name ?? "Unknown Resident"}</span>
-                </div>
-                <div className="h-8 w-px bg-primary/10 hidden md:block" />
-                <div className="flex flex-col gap-1">
-                  <span className="text-xs font-bold tracking-tight text-primary/60">작성일</span>
-                  <time className="text-sm font-bold tracking-tight text-primary">
-                    {new Date(detail.createdAt).toLocaleDateString()}
-                  </time>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-4">
-                <div className="flex items-center gap-2 px-6 h-12 bg-primary/5 rounded-2xl">
-                  <Eye className="size-3 text-accent" strokeWidth={3} />
-                  <span className="text-sm font-bold tracking-tight text-primary">{detail.viewCount.toLocaleString()} 조회</span>
-                </div>
-                <LikeToggle
-                  postId={detail.postId}
-                  initialLiked={liked}
-                  initialCount={detail.likeCount}
-                />
-              </div>
+            <div className="shrink-0 self-end pb-1">
+              <PostEditDeleteActions
+                postId={detail.postId}
+                authorUserId={detail.author.userId}
+                currentUser={currentUser}
+              />
             </div>
           </div>
-        </header>
-
-        <PostEditDeleteActions
-          postId={detail.postId}
-          authorUserId={detail.author.userId}
-          currentUser={currentUser}
-        />
-
-        <div className="bg-primary/5 p-12 md:p-20 rounded-[2rem] border border-primary/10 relative overflow-hidden min-h-[400px]">
-          <div className="post-html font-medium leading-[1.8] tracking-tight text-primary text-xl relative z-10 opacity-80 lg:px-10">
-            {isRichTextBodyHtml(detail.content) ? (
-              <div
-                className="[&_img]:my-8 [&_img]:max-h-[min(70vh,520px)] [&_img]:w-full [&_img]:rounded-[3rem] [&_img]:object-cover [&_img]:shadow-2xl [&_p]:mb-6 [&_a]:break-all [&_a]:font-bold [&_a]:text-accent [&_a]:underline [&_a]:decoration-accent/30 [&_a]:underline-offset-8 [&_ul]:my-8 [&_ul]:list-disc [&_ul]:pl-10 [&_ol]:my-8 [&_ol]:list-decimal [&_ol]:pl-10 [&_blockquote]:my-10 [&_blockquote]:border-l-4 [&_blockquote]:border-accent [&_blockquote]:pl-10 [&_blockquote]:italic [&_pre]:my-8 [&_pre]:overflow-x-auto [&_pre]:rounded-3xl [&_pre]:border [&_pre]:border-primary/5 [&_pre]:bg-primary/5 [&_pre]:p-10 [&_code]:text-base"
-                dangerouslySetInnerHTML={{ __html: prepareCommunityPostBodyForDisplay(detail.content) }}
-              />
-            ) : (
-              <div className="whitespace-pre-wrap">{detail.content}</div>
-            )}
-          </div>
-
-          {/* Editorial Watermark */}
-          <span className="absolute -right-20 -bottom-20 text-[35vw] font-black opacity-[0.01] pointer-events-none select-none italic text-primary">
-            BODY
-          </span>
         </div>
 
+        {/* Meta info — below header line */}
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground mt-4">
+          <span className="font-medium text-primary/70">{detail.author?.name ?? "Unknown"}</span>
+          <span className="text-muted-foreground/30">·</span>
+          <time className="font-medium text-primary/70">{formatDateTimeKo(detail.createdAt)}</time>
+          <span className="text-muted-foreground/30">·</span>
+          <span className="inline-flex items-center gap-1 text-primary/50">
+            <Eye className="size-3" />
+            {detail.viewCount.toLocaleString()}
+          </span>
+          <span className="text-muted-foreground/30">·</span>
+          <span className="inline-flex items-center gap-1 text-primary/50">
+            <Heart className="size-3" />
+            {detail.likeCount.toLocaleString()}
+          </span>
+          <span className="text-muted-foreground/30">·</span>
+          <span className="inline-flex items-center gap-1 text-primary/50">
+            <MessageCircle className="size-3" />
+            {detail.commentCount.toLocaleString()}
+          </span>
+        </div>
+      </header>
+
+      <article className="mx-auto max-w-5xl space-y-12 mt-10">
+
+        {/* Content Body */}
+        <section className="space-y-3">
+          <h2 className="text-sm font-semibold tracking-tight text-primary">
+            내용
+          </h2>
+          <div className="bg-surface p-8 md:p-12 rounded-lg border border-primary/5 shadow-sm relative overflow-hidden">
+            <div className="post-html font-medium leading-[1.8] tracking-tight text-primary text-base relative z-10">
+              {isRichTextBodyHtml(detail.content) ? (
+                <div
+                  className="[&_img]:my-6 [&_img]:max-h-[min(70vh,520px)] [&_img]:w-full [&_img]:rounded-xl [&_img]:object-cover [&_img]:shadow-md [&_p]:mb-4 [&_a]:break-all [&_a]:font-bold [&_a]:text-accent [&_a]:underline [&_a]:decoration-accent/30 [&_a]:underline-offset-4 [&_ul]:my-6 [&_ul]:list-disc [&_ul]:pl-8 [&_ol]:my-6 [&_ol]:list-decimal [&_ol]:pl-8 [&_blockquote]:my-8 [&_blockquote]:border-l-4 [&_blockquote]:border-accent [&_blockquote]:pl-6 [&_blockquote]:italic [&_pre]:my-6 [&_pre]:overflow-x-auto [&_pre]:rounded-xl [&_pre]:border [&_pre]:border-primary/5 [&_pre]:bg-primary/5 [&_pre]:p-6 [&_code]:text-sm"
+                  dangerouslySetInnerHTML={{ __html: prepareCommunityPostBodyForDisplay(detail.content) }}
+                />
+              ) : (
+                <div className="whitespace-pre-wrap">{detail.content}</div>
+              )}
+            </div>
+          </div>
+        </section>
+
+        {/* Links */}
         {(detail.links?.length ?? 0) > 0 && (
-          <section className="space-y-8">
-            <h2 className="text-sm font-bold tracking-tight text-primary/80 border-b border-primary/10 pb-4 inline-block">
+          <section className="space-y-2">
+            <h2 className="text-sm font-semibold tracking-tight text-primary/50">
               외부 링크
             </h2>
-            <ul className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <ul className="space-y-1.5">
               {detail.links?.map((l, i) =>
                 l.url ? (
                   <li key={i}>
@@ -129,10 +146,10 @@ export function PostDetailSection({
                       href={l.url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="group flex items-center justify-between p-8 bg-white rounded-3xl border border-primary/5 hover:border-accent/40 transition-all shadow-lg shadow-primary/5"
+                      className="group inline-flex items-center gap-1.5 text-sm font-medium text-accent hover:text-primary transition-colors"
                     >
-                      <span className="text-sm font-black tracking-tighter text-primary group-hover:text-accent transition-colors truncate max-w-xs">{l.url}</span>
-                      <ArrowRight className="size-4 text-accent transition-transform group-hover:translate-x-2" />
+                      <ArrowRight className="size-3 shrink-0" />
+                      <span className="underline underline-offset-2 decoration-accent/30 truncate">{l.url}</span>
                     </a>
                   </li>
                 ) : null,
@@ -141,12 +158,13 @@ export function PostDetailSection({
           </section>
         )}
 
+        {/* Attachments */}
         {(detail.attachments?.length ?? 0) > 0 && (
-          <section className="space-y-8">
-            <h2 className="text-sm font-bold tracking-tight text-primary/80 border-b border-primary/10 pb-4 inline-block">
+          <section className="space-y-2">
+            <h2 className="text-sm font-semibold tracking-tight text-primary">
               첨부파일
             </h2>
-            <ul className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <ul className="space-y-1.5">
               {detail.attachments?.map((a, i) =>
                 a.fileUrl ? (
                   <li key={i}>
@@ -154,10 +172,10 @@ export function PostDetailSection({
                       href={apiFileUrlToBffPath(a.fileUrl)}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="group flex flex-col gap-2 p-8 bg-primary/5 rounded-3xl border border-transparent hover:border-accent transition-all"
+                      className="group inline-flex items-center gap-1.5 text-sm font-semibold text-primary hover:text-accent transition-colors"
                     >
-                      <span className="text-xs font-bold tracking-tight text-primary/50">파일 다운로드</span>
-                      <span className="text-sm font-black tracking-tighter text-primary group-hover:text-accent transition-colors truncate">{a.fileName ?? a.fileUrl}</span>
+                      <ArrowRight className="size-3 shrink-0" />
+                      <span className="underline underline-offset-2 decoration-accent/30 truncate">{a.fileName ?? a.fileUrl}</span>
                     </a>
                   </li>
                 ) : null,
@@ -166,11 +184,11 @@ export function PostDetailSection({
           </section>
         )}
 
-        <div className="pt-20 border-t border-primary/10">
-          <div className="mb-12 flex flex-col gap-2">
-            <span className="text-sm font-bold tracking-tight text-primary/60">댓글</span>
-            <h3 className="text-4xl md:text-5xl font-black tracking-tighter text-primary uppercase italic">REPLIES ({detail.commentCount})</h3>
-          </div>
+        {/* Comments */}
+        <div className="pt-8 border-t border-primary/10">
+          <h3 className="text-sm font-semibold tracking-tight text-primary mb-3">
+            댓글 ({detail.commentCount})
+          </h3>
           <CommentThreadSection
             postId={detail.postId}
             initialComments={comments}

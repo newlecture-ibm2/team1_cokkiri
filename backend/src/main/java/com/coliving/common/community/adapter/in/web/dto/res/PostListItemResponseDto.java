@@ -13,6 +13,7 @@ public class PostListItemResponseDto {
     private final String category;
     private final String title;
     private final Long authorUserId;
+    private final String authorName;
     private final Integer viewCount;
     private final Integer likeCount;
     private final Integer commentCount;
@@ -31,6 +32,7 @@ public class PostListItemResponseDto {
                 .category(category != null ? category.name() : null)
                 .title(title)
                 .authorUserId(authorUserId)
+                .authorName(null)
                 .viewCount(viewCount)
                 .likeCount(likeCount)
                 .commentCount(commentCount)

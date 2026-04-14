@@ -55,7 +55,7 @@ export function HeroImage({ images, roomName, selectedImage, onSelectImage }: He
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={currentSrc!}
-          alt={roomName}
+          alt={`${roomName} 공간 대표 사진`}
           className="h-full w-full object-cover opacity-80"
         />
       </motion.div>
@@ -101,7 +101,7 @@ export function HeroImage({ images, roomName, selectedImage, onSelectImage }: He
               }`}
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={img.imageUrl} alt="" className="h-full w-full object-cover" />
+              <img src={img.imageUrl} alt={`${roomName} 공간 사진 ${i + 1} 미리보기`} className="h-full w-full object-cover" />
             </button>
           ))}
         </div>

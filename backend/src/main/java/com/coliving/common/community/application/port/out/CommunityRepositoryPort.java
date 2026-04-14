@@ -16,6 +16,8 @@ public interface CommunityRepositoryPort {
 
     Page<Post> findPosts(PostCategory category, Pageable pageable);
 
+    Page<Post> findPostsByUserId(Long userId, Pageable pageable);
+
     Optional<Post> findPostById(Long postId);
 
     List<Comment> findCommentsByPostId(Long postId, Sort sort);

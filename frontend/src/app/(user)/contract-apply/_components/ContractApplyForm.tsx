@@ -23,6 +23,59 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 
+// ── Bank format definitions ────────────────────────────────
+interface BankFormat {
+  label: string;
+  groups: number[];   // digit groups, e.g. [3,2,6] → 000-00-000000
+  totalDigits: number;
+}
+
+const BANK_FORMATS: Record<string, BankFormat> = {
+  "국민": { label: "국민은행", groups: [3, 2, 4, 3, 2], totalDigits: 14 },
+  "신한": { label: "신한은행", groups: [3, 3, 6],        totalDigits: 12 },
+  "하나": { label: "하나은행", groups: [3, 6, 5],        totalDigits: 14 },
+  "우리": { label: "우리은행", groups: [4, 3, 6],        totalDigits: 13 },
+  "농협": { label: "농협은행", groups: [3, 4, 4, 2],     totalDigits: 13 },
+  "기업": { label: "IBK기업은행", groups: [3, 6, 2, 3],  totalDigits: 14 },
+  "SC":   { label: "SC제일은행", groups: [3, 2, 6],      totalDigits: 11 },
+  "카카오": { label: "카카오뱅크", groups: [4, 2, 7],     totalDigits: 13 },
+  "토스":  { label: "토스뱅크", groups: [4, 4, 4],        totalDigits: 12 },
+  "케이": { label: "케이뱅크", groups: [3, 3, 6],        totalDigits: 12 },
+  "수협": { label: "수협은행", groups: [3, 2, 6, 2],     totalDigits: 13 },
+  "대구": { label: "대구은행", groups: [3, 2, 6, 1],     totalDigits: 12 },
+  "부산": { label: "부산은행", groups: [3, 4, 4, 2],     totalDigits: 13 },
+  "광주": { label: "광주은행", groups: [3, 3, 6],        totalDigits: 12 },
+  "전북": { label: "전북은행", groups: [3, 2, 6, 2],     totalDigits: 13 },
+  "경남": { label: "경남은행", groups: [3, 4, 4, 2],     totalDigits: 13 },
+  "제주": { label: "제주은행", groups: [3, 2, 6],        totalDigits: 11 },
+  "산업": { label: "KDB산업은행", groups: [3, 6, 2, 3],  totalDigits: 14 },
+  "우체국": { label: "우체국", groups: [6, 2, 6],        totalDigits: 14 },
+  "씨티": { label: "한국씨티은행", groups: [3, 6, 3],    totalDigits: 12 },
+};
+
+const BANK_LIST = Object.entries(BANK_FORMATS).map(([key, fmt]) => ({
+  key,
+  label: fmt.label,
+}));
+
+/** Format raw digits according to bank group pattern */
+function formatAccountNumber(digits: string, groups: number[]): string {
+  let result = "";
+  let idx = 0;
+  for (let i = 0; i < groups.length; i++) {
+    const chunk = digits.slice(idx, idx + groups[i]);
+    if (!chunk) break;
+    result += (i > 0 ? "-" : "") + chunk;
+    idx += groups[i];
+  }
+  return result;
+}
+
+/** Strip non-digits from input */
+function stripNonDigits(value: string): string {
+  return value.replace(/[^0-9]/g, "");
+}
+
 interface ContractFormData {
   contractId?: number;
   desiredStartDate: string;
@@ -30,6 +83,7 @@ interface ContractFormData {
   usagePurpose: string;
   requestNote: string;
   address: string;
+  bankName: string;
   bankAccount: string;
   privacyAgreed: boolean;
   termsAgreed: boolean;
@@ -42,6 +96,7 @@ const INITIAL_DATA: ContractFormData = {
   usagePurpose: "",
   requestNote: "",
   address: "",
+  bankName: "",
   bankAccount: "",
   privacyAgreed: false,
   termsAgreed: false,
@@ -52,6 +107,7 @@ export default function ContractApplyForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const spaceId = searchParams.get("spaceId") || "1";
+  const minStartDate = searchParams.get("minStartDate") || ""; // 사전 예약 시 계약 종료일 이후만 선택 가능
 
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState<ContractFormData>(INITIAL_DATA);
@@ -60,6 +116,8 @@ export default function ContractApplyForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showToast, setShowToast] = useState(false);
+  const [bankAccountError, setBankAccountError] = useState<string | null>(null);
+  const [bankAccountTouched, setBankAccountTouched] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [userProfile, setUserProfile] = useState<{
     name?: string; phone?: string; email?: string;
@@ -151,13 +209,25 @@ export default function ContractApplyForm() {
           const result = await response.json();
           if (result.success && result.data) {
             serverHasData = true;
+            // Parse bankAccount from server ("국민은행 123-45-678901" → bankName + digits)
+            let loadedBankName = INITIAL_DATA.bankName;
+            let loadedBankAccount = result.data.bankAccount || INITIAL_DATA.bankAccount;
+            if (result.data.bankAccount) {
+              const ba = result.data.bankAccount as string;
+              const matchedBank = BANK_LIST.find(b => ba.startsWith(b.label));
+              if (matchedBank) {
+                loadedBankName = matchedBank.key;
+                loadedBankAccount = stripNonDigits(ba.replace(matchedBank.label, "").trim());
+              }
+            }
             setFormData({
               ...INITIAL_DATA,
               contractId: result.data.contractId,
               desiredStartDate: result.data.desiredStartDate || INITIAL_DATA.desiredStartDate,
               desiredDurationMonths: result.data.desiredDurationMonths || INITIAL_DATA.desiredDurationMonths,
               address: result.data.address || INITIAL_DATA.address,
-              bankAccount: result.data.bankAccount || INITIAL_DATA.bankAccount,
+              bankName: loadedBankName,
+              bankAccount: loadedBankAccount,
               usagePurpose: result.data.usagePurpose || INITIAL_DATA.usagePurpose,
               requestNote: result.data.requestNote || INITIAL_DATA.requestNote,
               privacyAgreed: result.data.privacyAgreed || INITIAL_DATA.privacyAgreed,
@@ -258,6 +328,46 @@ export default function ContractApplyForm() {
   const nextStep = () => setStep(s => Math.min(s + 1, 4));
   const prevStep = () => setStep(s => Math.max(s - 1, 1));
 
+  // 계좌번호 유효성 검사 (은행별 자릿수 기반)
+  const validateBankAccount = (bankName: string, rawDigits: string): string | null => {
+    if (!bankName) return "은행을 선택해주세요.";
+    if (!rawDigits.trim()) return "계좌번호를 입력해주세요.";
+
+    const fmt = BANK_FORMATS[bankName];
+    if (!fmt) return "지원하지 않는 은행입니다.";
+
+    const digits = stripNonDigits(rawDigits);
+    if (digits.length < fmt.totalDigits) {
+      return `${fmt.label} 계좌번호는 ${fmt.totalDigits}자리입니다. (현재 ${digits.length}자리)`;
+    }
+    if (digits.length > fmt.totalDigits) {
+      return `${fmt.label} 계좌번호는 ${fmt.totalDigits}자리입니다. (초과 입력)`;
+    }
+    return null;
+  };
+
+  /** Handle bank selection change */
+  const handleBankChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const newBankName = e.target.value;
+    // Reset account number when bank changes (formats differ)
+    setFormData(prev => ({ ...prev, bankName: newBankName, bankAccount: "" }));
+    setBankAccountError(null);
+    setBankAccountTouched(false);
+  };
+
+  /** Handle account number input with auto-formatting */
+  const handleAccountNumberChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const raw = stripNonDigits(e.target.value);
+    const fmt = BANK_FORMATS[formData.bankName];
+    // Cap digits at the bank's total
+    const capped = fmt ? raw.slice(0, fmt.totalDigits) : raw.slice(0, 16);
+    setFormData(prev => ({ ...prev, bankAccount: capped }));
+
+    if (bankAccountTouched) {
+      setBankAccountError(validateBankAccount(formData.bankName, capped));
+    }
+  };
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target;
     const val = type === "checkbox" ? (e.target as HTMLInputElement).checked : value;
@@ -272,9 +382,19 @@ export default function ContractApplyForm() {
     e.preventDefault();
     
     // Validate required fields before submission
-    if (!formData.address || !formData.bankAccount || !formData.usagePurpose) {
-      setError("주소, 계좌 정보, 입주 목적을 모두 입력해주세요.");
-      setStep(4); // Go back to billing/details if needed
+    if (!formData.address || !formData.bankName || !formData.bankAccount || !formData.usagePurpose) {
+      setError("주소, 은행 및 계좌 정보, 입주 목적을 모두 입력해주세요.");
+      setStep(4);
+      return;
+    }
+
+    // 계좌번호 유효성 재검증
+    const bankError = validateBankAccount(formData.bankName, formData.bankAccount);
+    if (bankError) {
+      setError(bankError);
+      setBankAccountError(bankError);
+      setBankAccountTouched(true);
+      setStep(4);
       return;
     }
 
@@ -300,7 +420,7 @@ export default function ContractApplyForm() {
       usagePurpose: formData.usagePurpose,
       requestNote: formData.requestNote || "",
       address: formData.address,
-      bankAccount: formData.bankAccount,
+      bankAccount: `${BANK_FORMATS[formData.bankName]?.label || formData.bankName} ${formatAccountNumber(formData.bankAccount, BANK_FORMATS[formData.bankName]?.groups || [])}`,
       privacyAgreed: formData.privacyAgreed
     };
 
@@ -450,8 +570,14 @@ export default function ContractApplyForm() {
                         onChange={handleInputChange}
                         required
                         disabled={isReadOnly}
+                        min={minStartDate || undefined}
                         className="w-full bg-primary/5 border-none p-6 rounded-2xl text-lg font-bold focus:ring-2 focus:ring-accent transition-all disabled:opacity-50"
                       />
+                      {minStartDate && (
+                        <p className="text-xs font-bold text-accent tracking-tight mt-2">
+                          현재 입주자의 계약 종료일({minStartDate}) 이후부터 입주 시작일을 선택할 수 있습니다.
+                        </p>
+                      )}
                     </div>
 
                     <div className="space-y-4">
@@ -659,19 +785,100 @@ export default function ContractApplyForm() {
                     </p>
                   </div>
 
-                  <div className="space-y-4">
+                  <div className="space-y-6">
                     <label className="text-[10px] font-black tracking-[0.3em] uppercase text-primary/40 block">
                       BANK ACCOUNT INFO (보증금 반환 계좌)
                     </label>
-                    <input
-                      type="text"
-                      name="bankAccount"
-                      value={formData.bankAccount}
-                      onChange={handleInputChange}
-                      disabled={isReadOnly}
-                      placeholder="은행명 및 계좌번호를 입력하세요."
-                      className="w-full bg-primary/5 border-none p-6 rounded-2xl text-lg font-bold focus:ring-2 focus:ring-accent transition-all disabled:opacity-50"
-                    />
+
+                    {/* Bank Selection */}
+                    <div className="space-y-2">
+                      <span className="text-[9px] font-black tracking-[0.3em] uppercase text-primary/30 block">
+                        BANK
+                      </span>
+                      <select
+                        name="bankName"
+                        value={formData.bankName}
+                        onChange={handleBankChange}
+                        disabled={isReadOnly}
+                        className="w-full bg-primary/5 border-none p-6 rounded-2xl text-lg font-bold focus:ring-2 focus:ring-accent transition-all appearance-none disabled:opacity-50"
+                      >
+                        <option value="">은행을 선택하세요</option>
+                        {BANK_LIST.map(b => (
+                          <option key={b.key} value={b.key}>{b.label}</option>
+                        ))}
+                      </select>
+                    </div>
+
+                    {/* Account Number Input – shown only after bank is selected */}
+                    {formData.bankName && (
+                      <motion.div
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.3 }}
+                        className="space-y-2"
+                      >
+                        <div className="flex items-center justify-between">
+                          <span className="text-[9px] font-black tracking-[0.3em] uppercase text-primary/30">
+                            ACCOUNT NUMBER
+                          </span>
+                          {BANK_FORMATS[formData.bankName] && (
+                            <span className="text-[9px] font-bold tracking-tight text-accent">
+                              {BANK_FORMATS[formData.bankName].groups.map(g => "0".repeat(g)).join("-")} ({BANK_FORMATS[formData.bankName].totalDigits}자리)
+                            </span>
+                          )}
+                        </div>
+                        <input
+                          type="text"
+                          inputMode="numeric"
+                          value={formData.bankAccount
+                            ? formatAccountNumber(formData.bankAccount, BANK_FORMATS[formData.bankName]?.groups || [])
+                            : ""}
+                          onChange={handleAccountNumberChange}
+                          onBlur={() => {
+                            setBankAccountTouched(true);
+                            setBankAccountError(validateBankAccount(formData.bankName, formData.bankAccount));
+                          }}
+                          disabled={isReadOnly}
+                          placeholder={BANK_FORMATS[formData.bankName]?.groups.map(g => "0".repeat(g)).join("-") || "계좌번호 입력"}
+                          className={`w-full bg-primary/5 p-6 rounded-2xl text-lg font-bold tracking-widest focus:ring-2 transition-all disabled:opacity-50 ${
+                            bankAccountTouched && bankAccountError
+                              ? "border-2 border-red-400 focus:ring-red-300"
+                              : bankAccountTouched && !bankAccountError && formData.bankAccount
+                                ? "border-2 border-green-400 focus:ring-green-300"
+                                : "border-none focus:ring-accent"
+                          }`}
+                        />
+
+                        {/* Validation Messages */}
+                        {bankAccountTouched && bankAccountError && (
+                          <div className="flex items-center gap-2 text-red-500">
+                            <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+                            <span className="text-xs font-bold">{bankAccountError}</span>
+                          </div>
+                        )}
+                        {bankAccountTouched && !bankAccountError && formData.bankAccount && (
+                          <div className="flex items-center gap-2 text-green-600">
+                            <CheckCircle2 className="w-3.5 h-3.5 shrink-0" />
+                            <span className="text-xs font-bold">유효한 계좌 형식입니다</span>
+                          </div>
+                        )}
+
+                        {/* Digit counter */}
+                        {BANK_FORMATS[formData.bankName] && (
+                          <div className="flex items-center justify-between">
+                            <p className="text-[10px] font-bold text-primary/30 tracking-tight">
+                              숫자만 입력하세요 — 하이픈은 자동 삽입됩니다
+                            </p>
+                            <span className={`text-[10px] font-black tracking-wider ${
+                              stripNonDigits(formData.bankAccount).length === BANK_FORMATS[formData.bankName].totalDigits
+                                ? "text-green-600" : "text-primary/30"
+                            }`}>
+                              {stripNonDigits(formData.bankAccount).length}/{BANK_FORMATS[formData.bankName].totalDigits}
+                            </span>
+                          </div>
+                        )}
+                      </motion.div>
+                    )}
                   </div>
 
                   {/* Payment Method Selection */}

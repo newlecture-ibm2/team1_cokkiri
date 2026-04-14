@@ -14,6 +14,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -24,6 +25,7 @@ import java.util.Optional;
 public class RoomPersistenceAdapter implements RoomRepositoryPort {
 
     private final SpaceJpaRepository spaceJpaRepository;
+    private final com.coliving.user.contract.adapter.out.jpa.ContractJpaRepository contractJpaRepository;
 
     @Override
     public Page<Room> findAvailablePrivateSpaces(Pageable pageable) {
@@ -92,6 +94,16 @@ public class RoomPersistenceAdapter implements RoomRepositoryPort {
 
         Room room = toRoom(entity);
 
+        // OCCUPIED일 때 현재 활성 계약 종료일 조회 (READ 전용 — 도메인 협업 룰 §1 허용)
+        LocalDate contractEndDate = null;
+        if (entity.getStatus() == SpaceStatus.OCCUPIED) {
+            contractEndDate = contractJpaRepository
+                    .findBySpaceIdAndStatus(entity.getSpaceId(),
+                            com.coliving.user.contract.model.ContractStatus.ACTIVE)
+                    .map(com.coliving.user.contract.adapter.out.jpa.ContractEntity::getEndDate)
+                    .orElse(null);
+        }
+
         return Room.builder()
                 .spaceId(room.getSpaceId())
                 .name(room.getName())
@@ -111,6 +123,7 @@ public class RoomPersistenceAdapter implements RoomRepositoryPort {
                 .parkingAvailable(room.getParkingAvailable())
                 .thumbnailUrl(room.getThumbnailUrl())
                 .images(images)
+                .contractEndDate(contractEndDate)
                 .build();
     }
 

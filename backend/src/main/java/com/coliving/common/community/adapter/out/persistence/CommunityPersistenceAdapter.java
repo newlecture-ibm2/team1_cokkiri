@@ -55,6 +55,11 @@ public class CommunityPersistenceAdapter implements CommunityRepositoryPort {
     }
 
     @Override
+    public Page<Post> findPostsByUserId(Long userId, Pageable pageable) {
+        return postJpaRepository.findByUserIdOrderByCreatedAtDesc(userId, pageable).map(this::mapPostEntityToModel);
+    }
+
+    @Override
     public Optional<Post> findPostById(Long postId) {
         return postJpaRepository.findById(postId).map(this::mapPostEntityToModel);
     }

@@ -7,6 +7,8 @@ public interface CommunityUseCase {
 
     PostListResult getPostList(GetPostListCommand command);
 
+    PostListResult getMyPosts(Long userId, int page, int size);
+
     PostDetailResult getPostDetail(GetPostDetailCommand command);
 
     CreatePostResult createPost(CreatePostCommand command);
