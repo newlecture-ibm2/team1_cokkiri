@@ -148,6 +148,12 @@ public class NotificationService implements NotificationUseCase, CreateNotificat
                 .build();
     }
 
+    @Override
+    @Transactional
+    public void deleteNotification(Long notificationId, Long userId) {
+        notificationRepositoryPort.deleteByUser(notificationId, userId);
+    }
+
     private Sort parseSort(String sort) {
         if (sort == null || sort.isBlank()) {
             return Sort.by(Sort.Direction.DESC, "createdAt");

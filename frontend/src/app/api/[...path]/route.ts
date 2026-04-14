@@ -13,6 +13,8 @@ const RESPONSE_HEADER_WHITELIST = new Set([
   'cache-control',
   'etag',
   'last-modified',
+  'location',
+  'set-cookie',
 ]);
 
 const HOP_BY_HOP_HEADERS = new Set([
@@ -24,18 +26,12 @@ const UNSAFE_FORWARD_HEADERS = new Set(['content-length', 'content-encoding']);
 
 /**
  * Catch-all BFF 프록시 (Node.js 런타임)
- *
- * Edge Middleware에서 Redis 접근이 불가능하므로,
- * 모든 /api/* 요청을 이 Route Handler에서 처리합니다.
- *   1. session_id 쿠키 → Redis에서 JWT 조회
- *   2. 백엔드로 프록시 + Authorization 헤더 주입
  */
 async function handler(req: NextRequest) {
-  const pathname = req.nextUrl.pathname;   // e.g. /api/rooms, /api/users/me
+  const pathname = req.nextUrl.pathname;
   const backendPath = pathname.replace(/^\/api\/bff/, '/api');
   const url = `${BACKEND_URL}${backendPath}${req.nextUrl.search}`;
 
-  // ── Redis에서 JWT 가져오기 ──
   const sessionId = req.cookies.get('session_id')?.value;
   let accessToken: string | null = null;
 
@@ -47,10 +43,20 @@ async function handler(req: NextRequest) {
     }
   }
 
-  // ── 백엔드 요청 헤더 구성 ──
-  const headers: HeadersInit = {};
+  const xForwardedHost = req.headers.get('x-forwarded-host') || req.headers.get('host') || req.nextUrl.host;
+  const xForwardedProto = req.headers.get('x-forwarded-proto') || req.nextUrl.protocol.replace(':', '');
+  const xForwardedPort = req.headers.get('x-forwarded-port') || req.nextUrl.port || (xForwardedProto === 'https' ? '443' : '80');
+
+  const headers: HeadersInit = {
+    'x-forwarded-host': xForwardedHost,
+    'x-forwarded-proto': xForwardedProto,
+    'x-forwarded-port': xForwardedPort,
+  };
   const contentType = req.headers.get('Content-Type');
   if (contentType) headers['Content-Type'] = contentType;
+
+  const cookieHeader = req.headers.get('Cookie');
+  if (cookieHeader) headers['Cookie'] = cookieHeader;
 
   if (accessToken) {
     headers['Authorization'] = `Bearer ${accessToken}`;
@@ -64,6 +70,7 @@ async function handler(req: NextRequest) {
       method: req.method,
       headers,
       body,
+      redirect: 'manual',
     });
 
     // 응답 헤더 필터링

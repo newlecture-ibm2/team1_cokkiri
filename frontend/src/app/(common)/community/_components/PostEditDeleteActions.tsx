@@ -3,9 +3,10 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import { Edit3, Loader2, Trash2 } from "lucide-react";
+import { Loader2, Trash2 } from "lucide-react";
 import { LoginRequiredModal } from "@/components/shared/LoginRequiredModal";
 import { LOGIN_REQUIRED_MESSAGE } from "@/lib/auth-messages";
+import { cn } from "@/lib/utils";
 
 type CurrentUser = {
   userId: number;
@@ -54,7 +55,7 @@ export function PostEditDeleteActions({
   if (!canMutate) return null;
 
   return (
-    <section className="mt-8">
+    <>
       <LoginRequiredModal isOpen={showLoginModal} onClose={() => setShowLoginModal(false)} />
       {submitError ? (
         <p
@@ -64,29 +65,29 @@ export function PostEditDeleteActions({
           {submitError}
         </p>
       ) : null}
-      <div className="flex flex-wrap items-center gap-3">
+      <div className="pt-20 flex flex-col md:flex-row justify-end gap-4 items-center">
         <motion.button
           type="button"
-          whileHover={{ scale: 1.02 }}
-          whileTap={{ scale: 0.98 }}
-          onClick={() => router.push(`/community/${postId}/edit`)}
-          className="inline-flex items-center gap-2 rounded-xl border-2 border-primary/10 bg-primary/5 px-5 py-2.5 text-sm font-semibold tracking-tight text-primary/70 hover:border-primary/20 hover:text-primary transition-all"
-        >
-          <Edit3 className="size-4" aria-hidden />
-          수정
-        </motion.button>
-        <motion.button
-          type="button"
-          whileHover={{ scale: 1.02 }}
-          whileTap={{ scale: 0.98 }}
+          whileHover={{ scale: 1.03, y: -2 }}
+          whileTap={{ scale: 0.97 }}
           onClick={deletePost}
           disabled={pending}
-          className="inline-flex items-center gap-2 rounded-xl border-2 border-destructive/20 bg-destructive/5 px-5 py-2.5 text-sm font-semibold tracking-tight text-destructive hover:border-destructive/30 hover:bg-destructive/10 transition-all disabled:opacity-60"
+          className={cn(
+            "w-full md:w-auto px-10 py-3.5 text-sm font-semibold tracking-tight text-primary rounded-xl border-2 border-primary/10 hover:border-primary/20 hover:text-primary transition-all",
+            pending && "opacity-60",
+          )}
         >
-          {pending ? <Loader2 className="size-4 animate-spin" aria-hidden /> : <Trash2 className="size-4" aria-hidden />}
+          {pending && <Loader2 className="size-4 animate-spin mr-2" aria-hidden />}
           삭제
         </motion.button>
+        <button
+          type="button"
+          onClick={() => router.push(`/community/${postId}/edit`)}
+          className="w-full md:w-auto px-12 py-3.5 text-sm font-semibold tracking-tight text-white bg-primary rounded-xl shadow-lg shadow-primary/15 hover:bg-primary/90 transition-all"
+        >
+          수정
+        </button>
       </div>
-    </section>
+    </>
   );
 }

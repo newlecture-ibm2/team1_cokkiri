@@ -18,6 +18,7 @@ interface ContractSignModalProps {
   onClose: () => void;
   onSign: (signatureData: string) => Promise<void>;
   contractId: number;
+  spaceId: number;
   isSubmitting: boolean;
 }
 
@@ -26,6 +27,7 @@ export function ContractSignModal({
   onClose,
   onSign,
   contractId,
+  spaceId,
   isSubmitting,
 }: ContractSignModalProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -36,6 +38,7 @@ export function ContractSignModal({
   const [step, setStep] = useState<"terms" | "sign">("terms");
 
   const [isLocalSubmitting, setIsLocalSubmitting] = useState(false);
+  const [roomInfo, setRoomInfo] = useState<{ monthlyRent: number; deposit: number; name: string } | null>(null);
 
   useEffect(() => {
     if (isOpen) {
@@ -44,8 +47,24 @@ export function ContractSignModal({
       setPrivacyAgreed(false);
       setHasSignature(false);
       setIsLocalSubmitting(false);
+
+      // 방 정보 조회 (월세/보증금)
+      if (spaceId) {
+        fetch(`/api/rooms/${spaceId}`, { credentials: 'include' })
+          .then(res => res.json())
+          .then(result => {
+            if (result.success && result.data) {
+              setRoomInfo({
+                monthlyRent: result.data.monthlyRent || 0,
+                deposit: result.data.deposit || 0,
+                name: result.data.name || `Room ${spaceId}`,
+              });
+            }
+          })
+          .catch(err => console.warn('방 정보 조회 실패:', err));
+      }
     }
-  }, [isOpen]);
+  }, [isOpen, spaceId]);
 
   useEffect(() => {
     if (step === "sign" && canvasRef.current) {
@@ -264,6 +283,25 @@ export function ContractSignModal({
                     </p>
                   </div>
                 </div>
+
+                {/* Contract Financial Summary */}
+                {roomInfo && (
+                  <div className="p-6 bg-accent/5 rounded-2xl border border-accent/10 space-y-4">
+                    <div className="flex items-center gap-3">
+                      <span className="text-[10px] font-black uppercase tracking-[0.3em] text-accent">CONTRACT SUMMARY</span>
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="p-4 bg-white rounded-xl space-y-1">
+                        <span className="text-[9px] font-black tracking-[0.2em] uppercase text-primary/40 block">보증금</span>
+                        <span className="text-xl font-black tracking-tight text-primary">₩{roomInfo.deposit.toLocaleString()}</span>
+                      </div>
+                      <div className="p-4 bg-white rounded-xl space-y-1">
+                        <span className="text-[9px] font-black tracking-[0.2em] uppercase text-primary/40 block">월세</span>
+                        <span className="text-xl font-black tracking-tight text-primary">₩{roomInfo.monthlyRent.toLocaleString()}<span className="text-xs font-bold text-primary/40">/월</span></span>
+                      </div>
+                    </div>
+                  </div>
+                )}
 
                 {/* Checkboxes */}
                 <div className="space-y-4 pt-2">

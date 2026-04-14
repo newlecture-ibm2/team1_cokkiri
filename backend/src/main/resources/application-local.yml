@@ -6,8 +6,8 @@ spring:
   datasource:
     url: jdbc:postgresql://localhost:5432/coliving
     driver-class-name: org.postgresql.Driver
-    username: coliving
-    password: coliving1234
+    username: ${DB_USERNAME:coliving}
+    password: ${DB_PASSWORD:coliving123}
   jpa:
     hibernate:
       ddl-auto: update
@@ -24,6 +24,10 @@ jwt:
   secret: 4de1f2a3c9b78e5d614088a2c5b7c8d9e0f12a3b4c5d6e7f8a9b0c1d2e3f4a5b
   access-expiration: 1800000
   refresh-expiration: 604800000
+
+oauth2:
+  success-url: http://localhost:3000/login/oauth2-success
+  failure-url: http://localhost:3000/login?error=oauth2_failure
 
 mock-iot:
   # 로컬 환경에서는 Docker 네트워크(mock-iot)가 아닌 localhost로 접근
