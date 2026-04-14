@@ -43,28 +43,19 @@ async function handler(req: NextRequest) {
     }
   }
 
-  let xForwardedHost = req.headers.get('x-forwarded-host') || req.headers.get('host') || req.nextUrl.host;
-  const xForwardedProto = req.headers.get('x-forwarded-proto') || req.nextUrl.protocol.replace(':', '');
+  const headers: HeadersInit = {};
 
-  // 배포 환경(HTTPS)일 경우, 외부 Nginx 등에서 의도치 않게 내부 포트(:3000)까지 묶어서
-  // Host 헤더로 넘기는 오작동을 방어하기 위해 도메인만 남기고 포트를 강제로 제거합니다.
+  let xForwardedHost = req.headers.get('x-forwarded-host');
+  const xForwardedProto = req.headers.get('x-forwarded-proto');
+
+  // 배포 환경(HTTPS)에서만 x-forwarded 헤더를 주입하여 도메인을 생성하게 합니다.
+  // 로컬 환경에서는 헤더를 넘기지 않아 Spring Boot가 원래대로 8080으로 생성하도록 복원합니다.
   if (xForwardedProto === 'https') {
-    xForwardedHost = xForwardedHost.replace(/:\d+$/, '');
-  }
-
-  const headers: HeadersInit = {
-    'x-forwarded-host': xForwardedHost,
-    'x-forwarded-proto': xForwardedProto,
-  };
-
-  // HTTPS 프로토콜인 경우, Nginx 등에서 내부망 포트(:3000)가 노출되는 것을 막기 위해 강제로 443 처리
-  if (xForwardedProto === 'https') {
-    headers['x-forwarded-port'] = '443';
-  } else {
-    const xForwardedPort = req.headers.get('x-forwarded-port') || req.nextUrl.port;
-    if (xForwardedPort) {
-      headers['x-forwarded-port'] = xForwardedPort;
+    if (xForwardedHost) {
+      headers['x-forwarded-host'] = xForwardedHost.replace(/:\d+$/, '');
     }
+    headers['x-forwarded-proto'] = 'https';
+    headers['x-forwarded-port'] = '443';
   }
 
   const contentType = req.headers.get('Content-Type');
