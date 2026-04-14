@@ -298,7 +298,7 @@ export function VocEditForm({ initial }: Props) {
         <button
           type="button"
           onClick={() => setShowCancelModal(true)}
-          className="w-full md:w-auto px-10 py-3.5 text-sm font-semibold tracking-tight text-primary/60 rounded-xl border-2 border-primary/10 hover:border-primary/20 hover:text-primary transition-all"
+          className="w-full md:w-auto px-10 py-3.5 text-sm font-semibold tracking-tight text-primary rounded-xl border-2 border-primary/10 hover:border-primary/20 hover:text-primary transition-all"
         >
           취소
         </button>

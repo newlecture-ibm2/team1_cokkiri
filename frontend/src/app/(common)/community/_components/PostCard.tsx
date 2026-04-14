@@ -60,10 +60,10 @@ export function PostCard({ post }: { post: PostListItem }) {
       {/* Category + Title row */}
       <div className="flex items-start justify-between gap-2 mb-3">
         <h2 className="text-lg tracking-tight leading-snug text-primary group-hover:text-accent transition-colors duration-300 line-clamp-2">
-          <span className={`font-bold ${post.category === "NOTICE" ? "text-[#5B6E2D]" : "text-[#4A7C6F]"}`}>
+          <span className={`font-bold ${post.category === "NOTICE" ? "text-[#7F1D1D]" : "text-[#4A7C6F]"}`}>
             {categoryLabel(post.category)}
           </span>
-          <span className={`text-[10px] font-medium align-middle ${post.category === "NOTICE" ? "text-[#5B6E2D]/50" : "text-[#4A7C6F]/50"}`}>
+          <span className={`text-[10px] font-medium align-middle ${post.category === "NOTICE" ? "text-[#7F1D1D]/50" : "text-[#4A7C6F]/50"}`}>
             .{categoryEnglish(post.category).toLowerCase()}
           </span>
           <span className="mx-1.5 text-muted-foreground/30 font-light">|</span>
@@ -83,15 +83,15 @@ export function PostCard({ post }: { post: PostListItem }) {
           {post.authorName || `사용자${post.authorUserId}`} · {formatDateTimeKo(post.createdAt)}
         </span>
         <div className="flex items-center gap-4">
-          <span className="inline-flex items-center gap-1 text-xs font-medium text-muted-foreground/60">
+          <span className="inline-flex items-center gap-1 text-xs font-medium text-primary/70">
             <Eye className="size-3.5 shrink-0" aria-hidden />
             {post.viewCount}
           </span>
-          <span className="inline-flex items-center gap-1 text-xs font-medium text-muted-foreground/60">
+          <span className="inline-flex items-center gap-1 text-xs font-medium text-primary/70">
             <Heart className="size-3.5 shrink-0" aria-hidden />
             {post.likeCount}
           </span>
-          <span className="inline-flex items-center gap-1 text-xs font-medium text-muted-foreground/60">
+          <span className="inline-flex items-center gap-1 text-xs font-medium text-primary/70">
             <MessageCircle className="size-3.5 shrink-0" aria-hidden />
             {post.commentCount}
           </span>

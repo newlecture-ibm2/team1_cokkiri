@@ -26,9 +26,6 @@ export default function CommunityNewPage() {
                 CREAT<span className="underline underline-offset-4 decoration-[var(--color-accent)]">E.</span>
                 <span className="text-3xl md:text-5xl font-bold tracking-normal ml-2 align-bottom opacity-80">글쓰기</span>
               </h1>
-              <p className="text-sm leading-tight font-medium opacity-70 md:text-base">
-                커뮤니티에 새로운 이야기를 공유해보세요.
-              </p>
             </div>
           </div>
         </div>
