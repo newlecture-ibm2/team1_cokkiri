@@ -1,10 +1,9 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import Link from "next/link";
 import { useState, useTransition } from "react";
 import { motion } from "framer-motion";
-import { Loader2, Pencil, Ban } from "lucide-react";
+import { Loader2, Ban } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { bffErrorMessageFromResponse } from "@/lib/bff-error-message";
 import { LoginRequiredModal } from "@/components/shared/LoginRequiredModal";
@@ -50,28 +49,28 @@ export function VocDetailActions({ vocId, status }: { vocId: number; status: str
   return (
     <>
       <LoginRequiredModal isOpen={showLoginModal} onClose={() => setShowLoginModal(false)} />
-      <div className="mt-10 flex flex-wrap items-center justify-end gap-3 border-t border-primary/10 pt-10">
-        <Link
-          href={`/vocs/${vocId}/edit`}
-          className="inline-flex items-center gap-2 rounded-full border border-secondary bg-secondary/15 px-5 py-2.5 text-xs font-black uppercase tracking-[0.24em] text-secondary transition-transform hover:-translate-y-0.5"
-        >
-          <Pencil className="size-4" aria-hidden />
-          수정
-        </Link>
+      <div className="pt-20 flex flex-col md:flex-row justify-end gap-4 items-center">
         <motion.button
           type="button"
-          disabled={pending}
-          whileHover={{ scale: 1.02 }}
-          whileTap={{ scale: 0.98 }}
+          whileHover={{ scale: 1.03, y: -2 }}
+          whileTap={{ scale: 0.97 }}
           onClick={cancelVoc}
+          disabled={pending}
           className={cn(
-            "inline-flex items-center gap-2 rounded-full border border-destructive/40 bg-destructive/10 px-5 py-2.5 text-xs font-black uppercase tracking-[0.24em] text-destructive",
+            "w-full md:w-auto px-10 py-3.5 text-sm font-semibold tracking-tight text-primary rounded-xl border-2 border-primary/10 hover:border-primary/20 hover:text-primary transition-all",
             pending && "opacity-60",
           )}
         >
-          {pending ? <Loader2 className="size-4 animate-spin" aria-hidden /> : <Ban className="size-4" aria-hidden />}
+          {pending && <Loader2 className="size-4 animate-spin mr-2" aria-hidden />}
           민원 취소
         </motion.button>
+        <button
+          type="button"
+          onClick={() => router.push(`/vocs/${vocId}/edit`)}
+          className="w-full md:w-auto px-12 py-3.5 text-sm font-semibold tracking-tight text-white bg-primary rounded-xl shadow-lg shadow-primary/15 hover:bg-primary/90 transition-all"
+        >
+          수정
+        </button>
       </div>
     </>
   );

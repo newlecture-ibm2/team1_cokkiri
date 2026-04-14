@@ -74,13 +74,10 @@ export default async function CommunityEditPage({ params }: { params: Params }) 
           </Link>
           <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-12 border-b border-primary/10 pb-8">
             <div className="max-w-2xl space-y-4">
-              <h1 className="text-6xl md:text-8xl font-black leading-tight tracking-tight uppercase">
-                EDI<span className="underline underline-offset-4 decoration-[var(--color-accent)]">T.</span>
-                <span className="text-3xl md:text-5xl font-bold tracking-normal ml-2 align-bottom opacity-80">수정하기</span>
+              <h1 className="text-5xl md:text-7xl font-black leading-tight tracking-tight uppercase whitespace-nowrap">
+                COMMUNITY EDI<span className="underline underline-offset-4 decoration-[var(--color-accent)]">T.</span>
+                <span className="text-2xl md:text-4xl font-bold tracking-normal ml-2 align-bottom opacity-80">수정</span>
               </h1>
-              <p className="text-sm leading-tight font-medium opacity-70 md:text-base">
-                게시글을 수정합니다.
-              </p>
             </div>
           </div>
         </div>

@@ -4,6 +4,7 @@ import type { PostDetail } from "../_types/community";
 import { POST_CATEGORIES } from "../_types/community";
 
 import { PostEditDeleteActions } from "./PostEditDeleteActions";
+import { LikeToggle } from "./LikeToggle";
 import { CommentThreadSection } from "./CommentThreadSection";
 import { formatDateTimeKo } from "@/lib/format-date";
 import { apiFileUrlToBffPath } from "@/lib/bff-file-url";
@@ -66,48 +67,57 @@ export function PostDetailSection({
             목록으로 돌아가기
           </Link>
 
+          {/* Header Title */}
+          <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-12 border-b border-primary/10 pb-8">
+            <div className="max-w-2xl">
+              <h1 className="text-5xl md:text-7xl font-black leading-tight tracking-tight uppercase whitespace-nowrap">
+                COMMUNITY REVIE<span className="underline underline-offset-4 decoration-[var(--color-accent)]">W.</span>
+                <span className="text-2xl md:text-4xl font-bold tracking-normal ml-2 align-bottom opacity-80">게시글</span>
+              </h1>
+            </div>
+          </div>
+
           {/* Badge + Title with edit/delete on the right */}
-          <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-4 border-b border-primary/10 pb-6">
-            <h1 className="text-3xl md:text-5xl tracking-tight leading-snug text-primary min-w-0">
-              <span className={`font-bold ${detail.category === "NOTICE" ? "text-[#5B6E2D]" : "text-[#4A7C6F]"}`}>
+          <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-4 border-b border-primary/10 pb-6 mt-12">
+            <h2 className="text-2xl md:text-4xl tracking-tight leading-snug text-primary min-w-0">
+              <span className={`font-bold ${detail.category === "NOTICE" ? "text-[#7F1D1D]" : "text-[#4A7C6F]"}`}>
                 {categoryLabel(detail.category)}
               </span>
-              <span className={`text-2xl font-medium align-middle ${detail.category === "NOTICE" ? "text-[#5B6E2D]/50" : "text-[#4A7C6F]/50"}`}>
+              <span className={`text-xl font-medium align-middle ${detail.category === "NOTICE" ? "text-[#7F1D1D]/50" : "text-[#4A7C6F]/50"}`}>
                 .{categoryEnglish(detail.category).toLowerCase()}
               </span>
               <span className="mx-1.5 text-muted-foreground/30 font-light">|</span>
               <span className="font-medium">{detail.title}</span>
-            </h1>
-            <div className="shrink-0 self-end pb-1">
-              <PostEditDeleteActions
-                postId={detail.postId}
-                authorUserId={detail.author.userId}
-                currentUser={currentUser}
-              />
-            </div>
+            </h2>
           </div>
         </div>
 
         {/* Meta info — below header line */}
-        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground mt-4">
-          <span className="font-medium text-primary/70">{detail.author?.name ?? "Unknown"}</span>
-          <span className="text-muted-foreground/30">·</span>
-          <time className="font-medium text-primary/70">{formatDateTimeKo(detail.createdAt)}</time>
-          <span className="text-muted-foreground/30">·</span>
-          <span className="inline-flex items-center gap-1 text-primary/50">
-            <Eye className="size-3" />
-            {detail.viewCount.toLocaleString()}
-          </span>
-          <span className="text-muted-foreground/30">·</span>
-          <span className="inline-flex items-center gap-1 text-primary/50">
-            <Heart className="size-3" />
-            {detail.likeCount.toLocaleString()}
-          </span>
-          <span className="text-muted-foreground/30">·</span>
-          <span className="inline-flex items-center gap-1 text-primary/50">
-            <MessageCircle className="size-3" />
-            {detail.commentCount.toLocaleString()}
-          </span>
+        <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 mt-4">
+          <div className="flex items-center gap-x-3 text-xs text-muted-foreground">
+            <span className="font-bold text-primary/80">{detail.author?.name ?? `사용자${detail.author?.userId}`}</span>
+            <span className="text-muted-foreground/30">·</span>
+            <time className="font-medium text-primary/70">{formatDateTimeKo(detail.createdAt)}</time>
+          </div>
+
+          <div className="flex items-center gap-4 text-xs font-semibold">
+            <span className="inline-flex items-center gap-1.5 text-primary/70">
+              <Eye className="size-4" />
+              {detail.viewCount.toLocaleString()}
+            </span>
+            <span className="text-muted-foreground/20">|</span>
+            <LikeToggle 
+              variant="minimal"
+              postId={detail.postId} 
+              initialLiked={detail.isLikedByMe || detail.likedByMe || false} 
+              initialCount={detail.likeCount} 
+            />
+            <span className="text-muted-foreground/20">|</span>
+            <span className="inline-flex items-center gap-1.5 text-primary/70">
+              <MessageCircle className="size-4" />
+              {detail.commentCount.toLocaleString()}
+            </span>
+          </div>
         </div>
       </header>
 
@@ -184,6 +194,16 @@ export function PostDetailSection({
           </section>
         )}
 
+        {/* Large Heart Toggle - Centered beneath content and attachments */}
+        <div className="flex flex-col items-center justify-center py-2">
+            <p className="text-[10px] font-bold uppercase tracking-widest text-primary/20 mb-3 select-none">Was this post helpful?</p>
+            <LikeToggle 
+              postId={detail.postId} 
+              initialLiked={detail.isLikedByMe || detail.likedByMe || false} 
+              initialCount={detail.likeCount} 
+            />
+        </div>
+
         {/* Comments */}
         <div className="pt-8 border-t border-primary/10">
           <h3 className="text-sm font-semibold tracking-tight text-primary mb-3">
@@ -195,6 +215,13 @@ export function PostDetailSection({
             currentUser={currentUser}
           />
         </div>
+
+        {/* Edit / Delete Actions (bottom) */}
+        <PostEditDeleteActions
+          postId={detail.postId}
+          authorUserId={detail.author.userId}
+          currentUser={currentUser}
+        />
       </article>
     </div>
   );

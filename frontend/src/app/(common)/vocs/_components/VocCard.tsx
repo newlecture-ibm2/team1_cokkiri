@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { ChevronRight } from "lucide-react";
 import { vocCategoryLabel, vocStatusLabel, type VocListItem } from "../_types/vocs";
 import { formatDateTimeKo } from "@/lib/format-date";
 import { cn } from "@/lib/utils";
@@ -7,62 +6,66 @@ import { cn } from "@/lib/utils";
 function statusStyles(status: string) {
   switch (status) {
     case "OPEN":
-      return "bg-accent/10 text-accent border-accent/30";
+      return "bg-accent/10 text-accent";
     case "IN_PROGRESS":
-      return "bg-primary/10 text-primary border-primary/20";
+      return "bg-primary/10 text-primary";
     case "RESOLVED":
-      return "bg-primary/5 text-primary/40 border-primary/10";
+      return "bg-primary/5 text-primary/50";
     case "CANCELLED":
-      return "bg-destructive/10 text-destructive border-destructive/20 opacity-60";
+      return "bg-destructive/10 text-destructive/70";
     default:
-      return "bg-primary/5 text-primary/50 border-primary/10";
+      return "bg-primary/5 text-primary/50";
   }
 }
 
 export function VocCard({ item }: { item: VocListItem }) {
+  const isResolved = item.status === "RESOLVED" || item.status === "CANCELLED";
+
   return (
-    <Link 
-      href={`/vocs/${item.vocId}`} 
-      className="group relative rounded-[clamp(1rem,2vw,2rem)] p-[clamp(1.25rem,3vw,2.5rem)] bg-primary/5 border border-primary/10 overflow-hidden transition-all hover:bg-primary/10 block"
+    <Link
+      href={`/vocs/${item.vocId}`}
+      className={cn(
+        "group relative rounded-xl p-5 md:p-6 border transition-all overflow-hidden block cursor-pointer active:scale-[0.99]",
+        isResolved
+          ? "bg-background border-primary/10 hover:bg-primary/3"
+          : "bg-white border-primary/15 border-l-4 border-l-accent shadow-sm hover:shadow-md hover:border-primary/20",
+      )}
     >
-      <div className="flex flex-col md:flex-row md:items-start justify-between gap-[clamp(1rem,2vw,2rem)] relative z-10">
-        <div className="flex flex-col gap-[clamp(0.5rem,1.5vw,1.5rem)] min-w-0">
+      <div className="flex items-start justify-between gap-4 relative z-10">
+        <div className="space-y-2 min-w-0">
+          {/* 메타: 상태 배지 + 카테고리 + 번호 */}
           <div className="flex flex-wrap items-center gap-2">
-            <span className="text-[clamp(0.55rem,0.8vw,0.65rem)] font-medium tracking-wider text-primary/30">
-              VOC-{String(item.vocId).padStart(3, '0')}
-            </span>
-            <span className={cn(
-               "text-[clamp(0.55rem,0.8vw,0.65rem)] font-bold tracking-[0.15em] uppercase px-2.5 py-1 rounded-lg border",
-               statusStyles(item.status)
-            )}>
+            <span
+              className={cn(
+                "inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-base font-bold tracking-tight",
+                statusStyles(item.status),
+              )}
+            >
+              {item.status === "OPEN" && (
+                <span className="size-2 rounded-full bg-accent animate-pulse" aria-hidden />
+              )}
               {vocStatusLabel(item.status)}
             </span>
-            <span className="text-[clamp(0.55rem,0.8vw,0.65rem)] font-bold tracking-[0.15em] uppercase px-2.5 py-1 rounded-lg bg-accent/10 text-accent border border-accent/20">
+            <span className="text-base font-medium tracking-tight text-primary/50">
               {vocCategoryLabel(item.category)}
             </span>
+            <span className="text-base font-normal tracking-tight text-primary/30">
+              #{item.vocId}
+            </span>
           </div>
-
-          <div>
-            <h2 className="text-[clamp(1rem,2vw,1.5rem)] font-bold tracking-tight leading-snug group-hover:text-accent transition-colors line-clamp-2">
-              {item.title}
-            </h2>
-            <p className="mt-[clamp(0.25rem,0.5vw,0.5rem)] text-[clamp(0.65rem,1vw,0.8rem)] font-medium tracking-tight text-primary/50">
-              {formatDateTimeKo(item.createdAt)}
-            </p>
-          </div>
+          <h2
+            className={cn(
+              "text-xl md:text-2xl font-semibold tracking-tight leading-snug transition-colors line-clamp-2",
+              isResolved ? "text-primary/70" : "text-primary group-hover:text-accent",
+            )}
+          >
+            {item.title}
+          </h2>
         </div>
-
-        <div className="shrink-0 flex items-center">
-           <div className="h-[clamp(2rem,3.5vw,3rem)] w-[clamp(2rem,3.5vw,3rem)] rounded-full border border-primary/10 flex items-center justify-center group-hover:bg-accent group-hover:border-accent transition-all">
-             <ChevronRight className="w-[clamp(0.75rem,1.2vw,1rem)] h-[clamp(0.75rem,1.2vw,1rem)] group-hover:text-white transition-colors" />
-           </div>
-        </div>
+        <span className="shrink-0 text-base font-medium tracking-tight text-primary/40 whitespace-nowrap pt-1">
+          {formatDateTimeKo(item.createdAt)}
+        </span>
       </div>
-
-      {/* Watermark */}
-      <span className="absolute -right-4 -bottom-6 text-[clamp(4rem,10vw,8rem)] font-black opacity-[0.03] select-none pointer-events-none group-hover:opacity-[0.06] transition-opacity leading-none">
-        {String(item.vocId % 100).padStart(2, '0')}
-      </span>
     </Link>
   );
 }

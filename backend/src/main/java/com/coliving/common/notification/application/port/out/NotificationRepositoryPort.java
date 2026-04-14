@@ -25,4 +25,6 @@ public interface NotificationRepositoryPort {
     void softDeleteByReference(ReferenceType referenceType, Long referenceId);
 
     boolean exists(Long userId, NotificationType type, ReferenceType referenceType, Long referenceId);
+
+    void deleteByUser(Long notificationId, Long userId);
 }

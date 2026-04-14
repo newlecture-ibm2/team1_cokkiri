@@ -103,6 +103,16 @@ public class NotificationPersistenceAdapter implements NotificationRepositoryPor
         );
     }
 
+    @Override
+    @Transactional
+    public void deleteByUser(Long notificationId, Long userId) {
+        NotificationEntity entity = notificationJpaRepository
+                .findByNotificationIdAndUserId(notificationId, userId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND));
+        entity.softDelete();
+        notificationJpaRepository.save(entity);
+    }
+
     private Notification toModel(NotificationEntity entity) {
         return Notification.builder()
                 .notificationId(entity.getNotificationId())
