@@ -54,7 +54,10 @@ public class RoomPersistenceAdapter implements RoomRepositoryPort {
                 .filter(img -> Boolean.TRUE.equals(img.getIsThumbnail()))
                 .map(SpaceImageEntity::getImageUrl)
                 .findFirst()
-                .orElse(null);
+                .orElseGet(() -> entity.getImages().stream()
+                        .findFirst()
+                        .map(SpaceImageEntity::getImageUrl)
+                        .orElse(null));
 
         Room.RoomBuilder builder = Room.builder()
                 .spaceId(entity.getSpaceId())
