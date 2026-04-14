@@ -338,22 +338,6 @@ export function Header() {
                       <span className="text-[9px] font-black uppercase tracking-[0.25em] text-primary/40 -mb-0.5">{user?.role === 'USER' ? 'GUEST' : user?.role || ''}</span>
                       <span className="text-[15px] font-black tracking-tight text-primary transition-colors">{user?.name}님</span>
                     </div>
-                    <Link href="/profile" className="shrink-0 relative">
-                      <Button
-                        size="icon"
-                        variant="ghost"
-                        className="h-11 w-11 overflow-hidden rounded-[1rem] border-2 border-primary/10 bg-primary/5 p-0 text-primary transition-all duration-500 group-hover:scale-105 group-hover:border-primary/30 group-hover:bg-primary/10 group-hover:shadow-sm md:h-12 md:w-12"
-                        aria-label="Profile"
-                      >
-                        {user?.profileImage ? (
-                          /* eslint-disable-next-line @next/next/no-img-element */
-                          <img src={user.profileImage} alt="Profile" className="h-full w-full object-cover" />
-                        ) : (
-                          <User className="h-5 w-5 md:h-6 md:w-6 opacity-70" />
-                        )}
-                      </Button>
-                      <span className="absolute -bottom-1 -right-1 h-4 w-4 rounded-full border-2 border-background bg-[#768064]" />
-                    </Link>
                   </div>
                 ) : (
                   <div className="hidden md:flex items-center gap-2">
