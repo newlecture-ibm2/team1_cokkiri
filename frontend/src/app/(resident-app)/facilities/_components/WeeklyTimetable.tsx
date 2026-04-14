@@ -10,8 +10,10 @@ import { ChevronLeft, ChevronRight, CalendarDays } from "lucide-react";
 import { fetchTimeSlots, createReservation } from "../_api";
 import type { Facility } from "../_types";
 import { ApiError } from "@/lib/api";
+import { useAuthStore } from "@/store/useAuthStore";
 import { ReservationRequestModal } from "./ReservationRequestModal";
 import { ReservationBlockedModal } from "./ReservationBlockedModal";
+import { ReservationAccessGateModal } from "./ReservationAccessGateModal";
 
 
 // ──────────────────────────────────────────
@@ -235,17 +237,20 @@ interface SlotCellProps {
   slotData?: SlotData;
   isSelected: boolean;
   isPast: boolean;
+  isBlocked?: boolean;
   onPointerDown: () => void;
   onPointerEnter: () => void;
 }
 
-function SlotCell({ slotData, isSelected, isPast, onPointerDown, onPointerEnter }: SlotCellProps) {
+function SlotCell({ slotData, isSelected, isPast, isBlocked = false, onPointerDown, onPointerEnter }: SlotCellProps) {
   const status = slotData?.status ?? "AVAILABLE";
 
   const baseClass = "h-8 w-full cursor-pointer rounded-lg border transition-all duration-150";
 
   const statusClass = isPast
     ? "border-transparent bg-muted/20 cursor-not-allowed opacity-40"
+    : isBlocked
+    ? "border-border/40 bg-muted/10 cursor-not-allowed opacity-60"
     : isSelected
     ? "border-primary bg-primary scale-[1.04] shadow-sm shadow-primary/30 cursor-pointer"
     : status === "MY_RESERVATION"
@@ -256,13 +261,14 @@ function SlotCell({ slotData, isSelected, isPast, onPointerDown, onPointerEnter 
 
   return (
     <motion.div
-      whileHover={!isPast && status === "AVAILABLE" ? { scale: 1.05 } : undefined}
-      whileTap={!isPast && status === "AVAILABLE" ? { scale: 0.95 } : undefined}
+      whileHover={!isPast && !isBlocked && status === "AVAILABLE" ? { scale: 1.05 } : undefined}
+      whileTap={!isPast && !isBlocked && status === "AVAILABLE" ? { scale: 0.95 } : undefined}
       className={`${baseClass} ${statusClass}`}
       onPointerDown={!isPast && status === "AVAILABLE" ? onPointerDown : undefined}
       onPointerEnter={!isPast ? onPointerEnter : undefined}
       title={
         isPast ? "지난 시간" :
+        isBlocked ? "로그인/입주자 권한 필요" :
         status === "MY_RESERVATION" ? "내 예약" :
         status === "OCCUPIED" ? "이미 예약된 시간" :
         isSelected ? "선택 취소" : "클릭하여 선택"
@@ -280,22 +286,6 @@ interface WeeklyTimetableProps {
   onReserved?: () => void;
 }
 
-function getUtcOffsetString(date: Date): string {
-  const offsetMinutes = -date.getTimezoneOffset();
-  const sign = offsetMinutes >= 0 ? "+" : "-";
-  const abs = Math.abs(offsetMinutes);
-  const hours = String(Math.floor(abs / 60)).padStart(2, "0");
-  const minutes = String(abs % 60).padStart(2, "0");
-  return `${sign}${hours}:${minutes}`;
-}
-
-function buildLocalIso(dateStr: string, timeStr: string): string {
-  const [year, month, day] = dateStr.split("-").map(Number);
-  const [hours, minutes, seconds = 0] = timeStr.split(":").map(Number);
-  const localDate = new Date(year, month - 1, day, hours, minutes, seconds, 0);
-  return `${dateStr}T${timeStr}${getUtcOffsetString(localDate)}`;
-}
-
 function getTimeValue(time: string): number {
   const [hours, minutes] = time.split(":").map(Number);
   return hours * 60 + minutes;
@@ -306,6 +296,7 @@ function isSelectableSlot(slotData?: SlotData, isPast?: boolean) {
 }
 
 export function WeeklyTimetable({ facility, onReserved }: WeeklyTimetableProps) {
+  const { isLoggedIn, user, isLoading: authLoading } = useAuthStore();
   const [weekStart, setWeekStart] = useState<Date>(() => getWeekStart(new Date()));
   const [timetable, setTimetable] = useState<TimetableData>({});
   const [loading, setLoading] = useState(false);
@@ -318,11 +309,42 @@ export function WeeklyTimetable({ facility, onReserved }: WeeklyTimetableProps) 
   const [feedback, setFeedback] = useState<{ type: "success" | "error"; msg: string } | null>(null);
   const [isReservationModalOpen, setIsReservationModalOpen] = useState(false);
   const [blockedReservationMessage, setBlockedReservationMessage] = useState<string | null>(null);
+  const [limitReservationMessage, setLimitReservationMessage] = useState<string | null>(null);
+  const [accessGate, setAccessGate] = useState<{ open: boolean; reason: "LOGIN_REQUIRED" | "RESIDENT_ONLY" }>({
+    open: false,
+    reason: "LOGIN_REQUIRED",
+  });
   const [dragState, setDragState] = useState<{ active: boolean; anchorDate: string | null; anchorTime: string | null }>({
     active: false,
     anchorDate: null,
     anchorTime: null,
   });
+
+  const canReserve = isLoggedIn && user?.role === "RESIDENT";
+
+  const openAccessGate = useCallback(() => {
+    if (authLoading) return;
+    setAccessGate({
+      open: true,
+      reason: isLoggedIn ? "RESIDENT_ONLY" : "LOGIN_REQUIRED",
+    });
+  }, [authLoading, isLoggedIn]);
+
+  const openLimitModal = useCallback((message: string) => {
+    setLimitReservationMessage((prev) => prev ?? message);
+  }, []);
+
+  const getMyReservedMinutesForDate = useCallback((date: string) => {
+    const day = timetable[date];
+    if (!day) return 0;
+    const reservedSlotCount = Object.values(day).filter((slot) => slot.status === "MY_RESERVATION").length;
+    return reservedSlotCount * SLOT_MINUTES;
+  }, [timetable]);
+
+  const getMaxSelectableSlotCountForDate = useCallback((date: string) => {
+    const remainingMinutes = MAX_RESERVATION_MINUTES - getMyReservedMinutesForDate(date);
+    return Math.max(0, Math.floor(remainingMinutes / SLOT_MINUTES));
+  }, [getMyReservedMinutesForDate]);
 
   // 이번 주 날짜 배열
   const weekDates = Array.from({ length: 7 }, (_, i) => {
@@ -336,6 +358,15 @@ export function WeeklyTimetable({ facility, onReserved }: WeeklyTimetableProps) 
 
   // 타임슬롯 로드
   const loadSlots = useCallback(async () => {
+    if (!canReserve) {
+      // 비회원/비입주자: 타임테이블 API 자체가 차단되므로, UX 유도 모달로 안내
+      setLoading(false);
+      setError(null);
+      setTimetable({});
+      openAccessGate();
+      return;
+    }
+
     setLoading(true);
     setError(null);
     setSelectedSlots([]);
@@ -343,12 +374,21 @@ export function WeeklyTimetable({ facility, onReserved }: WeeklyTimetableProps) 
       const res = await fetchTimeSlots(facility.spaceId, toDateStr(weekStart));
       setTimetable(parseSlots(res.data ?? {}));
     } catch (e) {
-      if (e instanceof ApiError) setError(e.message);
-      else setError("예약 현황을 불러올 수 없습니다.");
+      if (e instanceof ApiError) {
+        if (e.errorCode === "UNAUTHORIZED" || e.errorCode === "FORBIDDEN") {
+          setTimetable({});
+          setError(null);
+          openAccessGate();
+          return;
+        }
+        setError(e.message);
+      } else {
+        setError("예약 현황을 불러올 수 없습니다.");
+      }
     } finally {
       setLoading(false);
     }
-  }, [facility.spaceId, weekStart]);
+  }, [canReserve, facility.spaceId, openAccessGate, weekStart]);
 
   useEffect(() => {
     loadSlots();
@@ -374,6 +414,12 @@ export function WeeklyTimetable({ facility, onReserved }: WeeklyTimetableProps) 
   const updateDraggedSelection = useCallback((date: string, targetTime: string) => {
     setDragState((currentDrag) => {
       if (!currentDrag.active || currentDrag.anchorDate !== date || !currentDrag.anchorTime) {
+        return currentDrag;
+      }
+
+      const maxSlotCountForDay = getMaxSelectableSlotCountForDate(date);
+      if (maxSlotCountForDay <= 0) {
+        openLimitModal("오늘은 이미 최대 2시간 예약했습니다.");
         return currentDrag;
       }
 
@@ -405,10 +451,11 @@ export function WeeklyTimetable({ facility, onReserved }: WeeklyTimetableProps) 
       const targetIndex = TIME_SLOTS.indexOf(targetTime);
       const requestedSlotCount = Math.abs(targetIndex - anchorIndex) + 1;
 
-      if (requestedSlotCount > MAX_SLOT_COUNT) {
+      const effectiveMaxSlotCount = Math.min(MAX_SLOT_COUNT, maxSlotCountForDay);
+      if (requestedSlotCount > effectiveMaxSlotCount) {
         exceededMaxDuration = true;
         const limitedSelection: { date: string; time: string }[] = [];
-        for (let step = 0; step < MAX_SLOT_COUNT; step += 1) {
+        for (let step = 0; step < effectiveMaxSlotCount; step += 1) {
           const slotIndex = anchorIndex + step * direction;
           const time = TIME_SLOTS[slotIndex];
           if (!time) break;
@@ -432,23 +479,80 @@ export function WeeklyTimetable({ facility, onReserved }: WeeklyTimetableProps) 
       }
 
       if (exceededMaxDuration) {
-        setFeedback({
-          type: "error",
-          msg: "최대 2시간까지만 선택할 수 있습니다.",
-        });
+        const remainingMinutes = MAX_RESERVATION_MINUTES - getMyReservedMinutesForDate(date);
+        openLimitModal(`오늘 남은 예약 가능 시간은 최대 ${remainingMinutes}분입니다.`);
       }
 
       return currentDrag;
     });
-  }, [nowTime, timetable, today]);
+  }, [getMaxSelectableSlotCountForDate, getMyReservedMinutesForDate, nowTime, openLimitModal, timetable, today]);
 
   const handleSelectionStart = (date: string, time: string, slotData?: SlotData, isPast?: boolean) => {
+    if (!canReserve) {
+      openAccessGate();
+      return;
+    }
+
     if (!isSelectableSlot(slotData, isPast)) {
       setFeedback({ type: "error", msg: "선택할 수 없는 슬롯입니다." });
       return;
     }
 
-    setSelectedSlots([{ date, time }]);
+    // 같은 슬롯 단독 클릭 → 토글(해제)
+    if (selectedSlots.length === 1 && selectedSlots[0]?.date === date && selectedSlots[0]?.time === time) {
+      setSelectedSlots([]);
+      setDragState({ active: false, anchorDate: null, anchorTime: null });
+      return;
+    }
+
+    const maxSlotCountForDay = getMaxSelectableSlotCountForDate(date);
+    if (maxSlotCountForDay <= 0) {
+      openLimitModal("오늘은 이미 최대 2시간 예약했습니다.");
+      return;
+    }
+
+    setSelectedSlots((current) => {
+      const sameDay = current.length > 0 && current[0]?.date === date;
+      const selectedTimes = sameDay ? current.map((s) => s.time) : [];
+      const alreadySelected = selectedTimes.includes(time);
+
+      // 날짜가 다르거나 비어있으면 새로 시작
+      if (!sameDay || current.length === 0) {
+        return [{ date, time }];
+      }
+
+      // 이미 선택된 슬롯 재클릭 → 해당 슬롯 기준으로 단일 선택으로 리셋
+      if (alreadySelected) {
+        return [{ date, time }];
+      }
+
+      // 연속성 검증: 시작/끝에만 30분 단위로 붙일 수 있음
+      const sorted = [...current].sort((a, b) => getTimeValue(a.time) - getTimeValue(b.time));
+      const startTime = sorted[0]!.time;
+      const endTime = sorted[sorted.length - 1]!.time;
+      const timeValue = getTimeValue(time);
+      const startValue = getTimeValue(startTime);
+      const endValue = getTimeValue(endTime);
+
+      const canPrepend = timeValue === startValue - SLOT_MINUTES;
+      const canAppend = timeValue === endValue + SLOT_MINUTES;
+
+      if (!canPrepend && !canAppend) {
+        setFeedback({ type: "error", msg: "여러 슬롯은 시간 순서대로 끊기지 않게(연속) 선택해야 합니다." });
+        return current;
+      }
+
+      if (current.length + 1 > Math.min(MAX_SLOT_COUNT, maxSlotCountForDay)) {
+        const remainingMinutes = MAX_RESERVATION_MINUTES - getMyReservedMinutesForDate(date);
+        openLimitModal(`오늘 남은 예약 가능 시간은 최대 ${remainingMinutes}분입니다.`);
+        return current;
+      }
+
+      const next = [...current, { date, time }];
+      return next.sort((a, b) => getTimeValue(a.time) - getTimeValue(b.time));
+    });
+
+    // pointerdown 기반 드래그(선택 확장) 지원
     setDragState({ active: true, anchorDate: date, anchorTime: time });
   };
 
@@ -471,13 +575,15 @@ export function WeeklyTimetable({ facility, onReserved }: WeeklyTimetableProps) 
         date: selectedDate,
         startTime: `${selectedStart}:00`,
         endTime: `${selectedEnd}:00`,
-        startIso: buildLocalIso(selectedDate, `${selectedStart}:00`),
-        endIso: buildLocalIso(selectedDate, `${selectedEnd}:00`),
       }
     : null;
 
   const handleReserve = async (_form: { purpose: string; notes: string }) => {
     if (!reservationWindow) return;
+    if (!canReserve) {
+      openAccessGate();
+      return;
+    }
     setBooking(true);
     try {
       await createReservation({
@@ -493,12 +599,34 @@ export function WeeklyTimetable({ facility, onReserved }: WeeklyTimetableProps) 
       onReserved?.();
     } catch (e) {
       if (e instanceof ApiError) {
+        if (e.errorCode === "UNAUTHORIZED") {
+          setIsReservationModalOpen(false);
+          setSelectedSlots([]);
+          openAccessGate();
+          return;
+        }
+        if (e.errorCode === "FORBIDDEN" || e.errorCode === "NO_ACTIVE_CONTRACT") {
+          setIsReservationModalOpen(false);
+          setSelectedSlots([]);
+          setAccessGate({ open: true, reason: "RESIDENT_ONLY" });
+          return;
+        }
+        if (e.errorCode === "DAILY_LIMIT_EXCEEDED") {
+          setIsReservationModalOpen(false);
+          setSelectedSlots([]);
+          openLimitModal(e.message);
+          return;
+        }
+        if (e.errorCode === "INVALID_SEQUENCE") {
+          setFeedback({ type: "error", msg: e.message });
+          return;
+        }
         if (e.message.includes("입주 기간 종료로 인해 예약이 불가능합니다")) {
           setIsReservationModalOpen(false);
           setBlockedReservationMessage("계약 종료 이후에는 공용시설 예약이 불가능합니다. 계약 기간을 확인해주세요.");
-        } else {
-          setFeedback({ type: "error", msg: e.message });
+          return;
         }
+        setFeedback({ type: "error", msg: e.message });
       } else {
         setFeedback({ type: "error", msg: "예약 신청에 실패했습니다." });
       }
@@ -641,8 +769,10 @@ export function WeeklyTimetable({ facility, onReserved }: WeeklyTimetableProps) 
                 // 시간 레이블 셀
                 <div
                   key={`label-${time}`}
-                  className={`sticky left-0 flex items-center justify-end border-b border-border/40 bg-surface pr-2 ${
-                    isHourMark ? "text-[10px] font-semibold text-muted-foreground" : ""
+                  className={`sticky left-0 flex items-center justify-end bg-surface pr-2 ${
+                    isHourMark
+                      ? "border-b-2 border-border/70 text-[10px] font-semibold text-muted-foreground"
+                      : "border-b border-border/30"
                   }`}
                   style={{ minHeight: "2rem" }}
                 >
@@ -661,12 +791,15 @@ export function WeeklyTimetable({ facility, onReserved }: WeeklyTimetableProps) 
                   return (
                     <div
                       key={`${dateStr}-${time}`}
-                      className="border-b border-l border-border/30 p-0.5"
+                      className={`border-l border-border/30 p-0.5 ${
+                        isHourMark ? "border-b-2 border-border/70" : "border-b border-border/30"
+                      }`}
                     >
                       <SlotCell
                         slotData={slotData}
                         isSelected={isSelected}
                         isPast={isPast}
+                        isBlocked={!canReserve}
                         onPointerDown={() => handleSelectionStart(dateStr, time, slotData, isPast)}
                         onPointerEnter={() => handleSelectionEnter(dateStr, time)}
                       />
@@ -700,7 +833,7 @@ export function WeeklyTimetable({ facility, onReserved }: WeeklyTimetableProps) 
               </p>
               {reservationWindow ? (
                 <p className="text-[11px] font-medium text-muted-foreground/80">
-                  {reservationWindow.startIso} → {reservationWindow.endIso}
+                  {reservationWindow.startTime} → {reservationWindow.endTime}
                 </p>
               ) : null}
             </div>
@@ -742,8 +875,6 @@ export function WeeklyTimetable({ facility, onReserved }: WeeklyTimetableProps) 
           startLabel={`${reservationWindow.date} ${selectedStart}`}
           endLabel={`${reservationWindow.date} ${selectedEnd}`}
           durationMinutes={selectedSlots.length * SLOT_MINUTES}
-          startIso={reservationWindow.startIso}
-          endIso={reservationWindow.endIso}
           onClose={() => setIsReservationModalOpen(false)}
           onSubmit={handleReserve}
           isSubmitting={booking}
@@ -754,6 +885,19 @@ export function WeeklyTimetable({ facility, onReserved }: WeeklyTimetableProps) 
         isOpen={blockedReservationMessage !== null}
         message={blockedReservationMessage ?? ""}
         onClose={() => setBlockedReservationMessage(null)}
+      />
+
+      <ReservationBlockedModal
+        isOpen={limitReservationMessage !== null}
+        title="예약 시간 제한"
+        message={limitReservationMessage ?? ""}
+        onClose={() => setLimitReservationMessage(null)}
+      />
+
+      <ReservationAccessGateModal
+        isOpen={accessGate.open}
+        reason={accessGate.reason}
+        onClose={() => setAccessGate((prev) => ({ ...prev, open: false }))}
       />
     </div>
   );
