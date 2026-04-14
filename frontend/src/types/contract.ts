@@ -21,6 +21,10 @@ export interface ContractDraftResult {
   requestNote: string;
   privacyAgreed: boolean;
   rejectedReason?: string;
+  monthlyRent?: number;
+  deposit?: number;
+  startDate?: string;
+  endDate?: string;
   createdAt: string;
 }
 
