@@ -1,6 +1,7 @@
 package com.coliving.admin.monitoring.adapter.in.web;
 
 import com.coliving.admin.monitoring.adapter.in.web.dto.res.ControlFrequencyResponseDto;
+import com.coliving.admin.monitoring.adapter.in.web.dto.res.DeviceAvailabilityResponseDto;
 import com.coliving.admin.monitoring.adapter.in.web.dto.res.DeviceErrorStatsResponseDto;
 import com.coliving.admin.monitoring.adapter.in.web.dto.res.DeviceStatusSummaryResponseDto;
 import com.coliving.admin.monitoring.adapter.in.web.dto.res.DeviceTypeCommandFrequencyResponseDto;
@@ -52,6 +53,7 @@ public class AdminMonitoringController {
         List<ControlFrequencyResponseDto> dailyErrors = monitoringUseCase.getDailyErrorFrequency();
 
         var deviceStatusBySpace = monitoringUseCase.getDeviceStatusBySpace();
+        List<DeviceAvailabilityResponseDto> deviceAvailability = monitoringUseCase.getDeviceAvailability();
 
         Map<String, Object> data = new java.util.HashMap<>();
         data.put("statusSummary", statusSummary);
@@ -62,6 +64,7 @@ public class AdminMonitoringController {
         data.put("frequencyByDeviceTypeAndCommand", byTypeAndCommand);
         data.put("dailyErrorFrequency", dailyErrors);
         data.put("deviceStatusBySpace", deviceStatusBySpace);
+        data.put("deviceAvailability", deviceAvailability);
 
         return ResponseEntity.ok(ApiResponse.ok(data));
     }

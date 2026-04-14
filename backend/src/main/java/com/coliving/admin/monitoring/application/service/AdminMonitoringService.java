@@ -2,6 +2,7 @@ package com.coliving.admin.monitoring.application.service;
 
 import com.coliving.admin.monitoring.adapter.in.web.dto.res.AdminControlLogResponseDto;
 import com.coliving.admin.monitoring.adapter.in.web.dto.res.ControlFrequencyResponseDto;
+import com.coliving.admin.monitoring.adapter.in.web.dto.res.DeviceAvailabilityResponseDto;
 import com.coliving.admin.monitoring.adapter.in.web.dto.res.DeviceErrorStatsResponseDto;
 import com.coliving.admin.monitoring.adapter.in.web.dto.res.DeviceStatusSummaryResponseDto;
 import com.coliving.admin.monitoring.adapter.in.web.dto.res.DeviceTypeCommandFrequencyResponseDto;
@@ -203,6 +204,26 @@ public class AdminMonitoringService implements AdminMonitoringUseCase {
                         row[3] != null ? row[3].toString() : null,
                         ((Number) row[4]).longValue()
                 ))
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<DeviceAvailabilityResponseDto> getDeviceAvailability() {
+        return monitoringRepositoryPort.countDeviceAvailability().stream()
+                .map(row -> {
+                    long total = ((Number) row[4]).longValue();
+                    long success = ((Number) row[5]).longValue();
+                    long failure = ((Number) row[6]).longValue();
+                    double rate = total > 0 ? Math.round((double) success / total * 1000) / 10.0 : 0;
+
+                    return new DeviceAvailabilityResponseDto(
+                            ((Number) row[0]).longValue(),
+                            row[1] != null ? row[1].toString() : null,
+                            row[2] != null ? row[2].toString() : null,
+                            row[3] != null ? row[3].toString() : null,
+                            total, success, failure, rate
+                    );
+                })
                 .collect(Collectors.toList());
     }
 }

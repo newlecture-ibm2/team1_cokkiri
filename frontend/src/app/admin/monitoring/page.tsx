@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { motion } from "framer-motion";
 import SpaceDeviceStatusChart from "./_components/SpaceDeviceStatusChart";
 import ControlFrequencyBarChart from "./_components/ControlFrequencyBarChart";
@@ -9,43 +9,61 @@ import DailyTrendChart from "./_components/DailyTrendChart";
 import ErrorTrendChart from "./_components/ErrorTrendChart";
 import ErrorDeviceTable from "./_components/ErrorDeviceTable";
 import ControlLogTable from "./_components/ControlLogTable";
+import DeviceAvailabilityChart from "./_components/DeviceAvailabilityChart";
 import { fetchDeviceErrors, fetchEnergyStats } from "./_api";
 import type { DeviceErrorStats, EnergyStatsResponse } from "./_types";
+
+const AUTO_REFRESH_INTERVAL = 30_000; // 30초
 
 export default function MonitoringPage() {
   const [errors, setErrors] = useState<DeviceErrorStats[]>([]);
   const [energyData, setEnergyData] = useState<EnergyStatsResponse | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [autoRefresh, setAutoRefresh] = useState(true);
+  const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  useEffect(() => {
-    async function loadData() {
-      setIsLoading(true);
-      setError(null);
-      const errors: string[] = [];
+  const loadData = useCallback(async (showLoading = false) => {
+    if (showLoading) setIsLoading(true);
+    setError(null);
+    const errs: string[] = [];
 
-      // 각 API를 독립 호출 — 하나 실패해도 나머지 표시
-      try {
-        const errorsRes = await fetchDeviceErrors();
-        if (errorsRes.data) setErrors(errorsRes.data);
-      } catch (err) {
-        errors.push("장애 기기");
-      }
-
-      try {
-        const energyRes = await fetchEnergyStats();
-        if (energyRes.data) setEnergyData(energyRes.data);
-      } catch (err) {
-        errors.push("에너지 통계");
-      }
-
-      if (errors.length > 0) {
-        setError(`${errors.join(", ")} 데이터를 불러오지 못했습니다.`);
-      }
-      setIsLoading(false);
+    try {
+      const errorsRes = await fetchDeviceErrors();
+      if (errorsRes.data) setErrors(errorsRes.data);
+    } catch {
+      errs.push("장애 기기");
     }
-    loadData();
+
+    try {
+      const energyRes = await fetchEnergyStats();
+      if (energyRes.data) setEnergyData(energyRes.data);
+    } catch {
+      errs.push("에너지 통계");
+    }
+
+    if (errs.length > 0) {
+      setError(`${errs.join(", ")} 데이터를 불러오지 못했습니다.`);
+    }
+    setIsLoading(false);
+    setLastUpdated(new Date());
   }, []);
+
+  // 초기 로드
+  useEffect(() => {
+    loadData(true);
+  }, [loadData]);
+
+  // 자동 새로고침 (30초)
+  useEffect(() => {
+    if (autoRefresh) {
+      intervalRef.current = setInterval(() => loadData(false), AUTO_REFRESH_INTERVAL);
+    }
+    return () => {
+      if (intervalRef.current) clearInterval(intervalRef.current);
+    };
+  }, [autoRefresh, loadData]);
 
   return (
     <motion.div
@@ -62,9 +80,28 @@ export default function MonitoringPage() {
         <h1 className="text-[12vw] leading-[0.85] font-black tracking-tighter text-[#2C3424] uppercase md:text-[6vw] mt-4">
           Device <span className="text-[#768064]">Monitor</span>
         </h1>
-        <p className="max-w-2xl text-base font-medium tracking-tight text-balance text-[#4C583E] md:text-lg mt-5">
-          기기 상태, 제어 빈도, 에러 이력을 한눈에 확인합니다
-        </p>
+        <div className="flex items-center justify-between mt-5">
+          <p className="max-w-2xl text-base font-medium tracking-tight text-balance text-[#4C583E] md:text-lg">
+            기기 상태, 제어 빈도, 에러 이력을 한눈에 확인합니다
+          </p>
+          <div className="flex items-center gap-3 shrink-0">
+            {lastUpdated && (
+              <span className="text-[10px] text-muted-foreground">
+                {lastUpdated.toLocaleTimeString("ko-KR")} 갱신
+              </span>
+            )}
+            <button
+              onClick={() => setAutoRefresh(!autoRefresh)}
+              className={`text-xs px-3 py-1.5 rounded-full border transition-colors ${
+                autoRefresh
+                  ? "bg-[#768064] text-white border-[#768064]"
+                  : "bg-transparent text-muted-foreground border-border"
+              }`}
+            >
+              {autoRefresh ? "● 실시간" : "○ 수동"}
+            </button>
+          </div>
+        </div>
       </div>
 
       {/* 에러 표시 */}
@@ -206,11 +243,31 @@ export default function MonitoringPage() {
         ) : null}
       </motion.div>
 
-      {/* ─── ROW 6: 장애 기기 테이블 ─── */}
+      {/* ─── ROW 6: 기기별 제어 성공률 ─── */}
       <motion.div
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.4 }}
+        className="border-border bg-background rounded-[2rem] border p-6 shadow-sm mb-8"
+      >
+        <h2 className="text-lg font-black tracking-tighter text-foreground mb-1">
+          기기별 제어 성공률
+        </h2>
+        <p className="text-xs text-muted-foreground mb-4">
+          최근 30일 기준, 제어 이력이 있는 기기의 성공/실패 비율
+        </p>
+        {energyData ? (
+          <DeviceAvailabilityChart data={energyData.deviceAvailability} />
+        ) : isLoading ? (
+          <div className="animate-pulse h-[300px] bg-muted/20 rounded-xl" />
+        ) : null}
+      </motion.div>
+
+      {/* ─── ROW 7: 장애 기기 테이블 ─── */}
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.45 }}
         className="border-border bg-background rounded-[2rem] border p-6 shadow-sm"
       >
         <h2 className="text-lg font-black tracking-tighter text-foreground mb-4">
@@ -224,11 +281,11 @@ export default function MonitoringPage() {
         <ErrorDeviceTable data={errors} isLoading={isLoading} />
       </motion.div>
 
-      {/* ─── ROW 7: 제어 이력 테이블 ─── */}
+      {/* ─── ROW 8: 제어 이력 테이블 ─── */}
       <motion.div
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.45 }}
+        transition={{ delay: 0.5 }}
         className="border-border bg-background rounded-[2rem] border p-6 shadow-sm mt-8"
       >
         <h2 className="text-lg font-black tracking-tighter text-foreground mb-1">

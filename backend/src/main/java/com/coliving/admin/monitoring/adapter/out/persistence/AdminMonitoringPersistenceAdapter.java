@@ -248,5 +248,27 @@ public class AdminMonitoringPersistenceAdapter implements AdminMonitoringReposit
                 """)
                 .getResultList();
     }
+
+    @Override
+    public List<Object[]> countDeviceAvailability() {
+        return em.createNativeQuery("""
+                SELECT d.device_id, d.name, dt.name AS device_type_name, s.name AS space_name,
+                       COUNT(cl.control_log_id) AS total_count,
+                       COUNT(CASE WHEN cl.result = 'SUCCESS' THEN 1 END) AS success_count,
+                       COUNT(CASE WHEN cl.result = 'FAILURE' THEN 1 END) AS failure_count
+                FROM devices d
+                JOIN device_types dt ON d.device_type_id = dt.device_type_id
+                JOIN spaces s ON d.space_id = s.space_id
+                LEFT JOIN control_logs cl ON d.device_id = cl.device_id
+                    AND cl.deleted_at IS NULL
+                    AND cl.created_at >= CURRENT_DATE - INTERVAL '30 days'
+                WHERE d.deleted_at IS NULL AND s.deleted_at IS NULL
+                GROUP BY d.device_id, d.name, dt.name, s.name
+                HAVING COUNT(cl.control_log_id) > 0
+                ORDER BY total_count DESC
+                LIMIT 20
+                """)
+                .getResultList();
+    }
 }
 
