@@ -57,9 +57,14 @@ async function handler(req: NextRequest) {
     'x-forwarded-proto': xForwardedProto,
   };
 
-  const xForwardedPort = req.headers.get('x-forwarded-port');
-  if (xForwardedPort) {
-    headers['x-forwarded-port'] = xForwardedPort;
+  // HTTPS 프로토콜인 경우, Nginx 등에서 내부망 포트(:3000)가 노출되는 것을 막기 위해 강제로 443 처리
+  if (xForwardedProto === 'https') {
+    headers['x-forwarded-port'] = '443';
+  } else {
+    const xForwardedPort = req.headers.get('x-forwarded-port') || req.nextUrl.port;
+    if (xForwardedPort) {
+      headers['x-forwarded-port'] = xForwardedPort;
+    }
   }
 
   const contentType = req.headers.get('Content-Type');
