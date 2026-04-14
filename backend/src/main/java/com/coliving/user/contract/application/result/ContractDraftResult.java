@@ -21,5 +21,9 @@ public class ContractDraftResult {
     private final String requestNote;
     private final Boolean privacyAgreed;
     private final String rejectedReason;
+    private final Integer monthlyRent;
+    private final Integer deposit;
+    private final LocalDate startDate;
+    private final LocalDate endDate;
     private final OffsetDateTime createdAt;
 }
