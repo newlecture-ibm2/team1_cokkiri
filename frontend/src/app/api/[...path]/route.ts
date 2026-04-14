@@ -57,14 +57,9 @@ async function handler(req: NextRequest) {
     'x-forwarded-proto': xForwardedProto,
   };
 
-  // HTTPS면 무조건 443 외부 통신 포트 명시. 아니면 들어온 값 그대로(로컬 등)
-  if (xForwardedProto === 'https') {
-    headers['x-forwarded-port'] = '443';
-  } else {
-    const xForwardedPort = req.headers.get('x-forwarded-port');
-    if (xForwardedPort) {
-      headers['x-forwarded-port'] = xForwardedPort;
-    }
+  const xForwardedPort = req.headers.get('x-forwarded-port');
+  if (xForwardedPort) {
+    headers['x-forwarded-port'] = xForwardedPort;
   }
 
   const contentType = req.headers.get('Content-Type');
