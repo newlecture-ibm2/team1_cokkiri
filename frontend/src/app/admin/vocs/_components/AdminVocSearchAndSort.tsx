@@ -10,7 +10,7 @@ const SORT_OPTIONS = [
   { value: "createdAt,asc", label: "오래된순" },
 ] as const;
 
-export function VocSearchAndSort() {
+export function AdminVocSearchAndSort() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -23,7 +23,7 @@ export function VocSearchAndSort() {
   const buildUrl = useCallback(
     (overrides: Record<string, string | null>) => {
       const params = new URLSearchParams(searchParams.toString());
-      params.delete("p");
+      params.delete("p"); // Reset page
       for (const [key, val] of Object.entries(overrides)) {
         if (val === null || val === "") {
           params.delete(key);
@@ -31,8 +31,7 @@ export function VocSearchAndSort() {
           params.set(key, val);
         }
       }
-      if (!params.has("tab")) params.set("tab", "list");
-      return `/vocs?${params.toString()}`;
+      return `/admin/vocs?${params.toString()}`;
     },
     [searchParams],
   );
@@ -84,19 +83,18 @@ export function VocSearchAndSort() {
             className="flex items-center gap-1.5 text-xs md:text-sm font-bold uppercase tracking-wider hover:opacity-60 transition-opacity cursor-pointer pb-2"
           >
             <Search className="h-3.5 w-3.5" />
-            Search
+            SEARCH
           </button>
         )}
       </AnimatePresence>
 
-      {/* Sort Dropdown */}
       <div className="relative">
         <button
           onClick={() => setIsSortOpen(!isSortOpen)}
           className="flex items-center gap-1.5 text-xs md:text-sm font-bold uppercase tracking-wider hover:opacity-60 transition-opacity cursor-pointer pb-2"
         >
           <Filter className="h-3.5 w-3.5" />
-          Sort
+          SORT
         </button>
 
         <AnimatePresence>

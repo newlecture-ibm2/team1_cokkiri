@@ -7,64 +7,62 @@ function param(sp: SearchParamsLike, key: string): string {
   return Array.isArray(v) ? (v[0] ?? "") : v;
 }
 
-/** 목록 API·페이지네이션용 쿼리스트링 (필터 1개만 적용) */
+/** 목록 API용 쿼리스트링 (다중 필터 지원) */
 export function buildAdminVocListApiQuery(sp: SearchParamsLike): string {
+  const category = param(sp, "category").trim();
   const status = param(sp, "status").trim();
-  const all = param(sp, "all") === "1" || param(sp, "all") === "true";
-  const pending = param(sp, "pending") === "true" || param(sp, "pending") === "1";
+  const query = param(sp, "q").trim();
+  const sort = param(sp, "sort").trim() || "createdAt,desc";
 
   const qs = new URLSearchParams();
-  if (pending) qs.set("pending", "true");
-  else if (all) {
-    /* 전체: status·pending 생략 (백엔드 기본 목록) */
-  } else if (status) qs.set("status", status);
-  else qs.set("pending", "true");
+  if (category) qs.set("category", category);
+  if (status) qs.set("status", status);
+  if (query) qs.set("q", query);
+  qs.set("sort", sort);
 
   const page = Math.max(0, parseInt(param(sp, "p") || "0", 10) || 0);
   const size = Math.min(50, Math.max(1, parseInt(param(sp, "s") || "20", 10) || 20));
   qs.set("p", String(page));
   qs.set("s", String(size));
-  qs.set("sort", "createdAt,desc");
+  
   return qs.toString();
 }
 
 /** 페이지네이션 링크에 붙일 필터 부분 (p, s 제외) */
 export function buildAdminVocListBaseQuery(sp: SearchParamsLike): string {
+  const category = param(sp, "category").trim();
   const status = param(sp, "status").trim();
-  const all = param(sp, "all") === "1" || param(sp, "all") === "true";
-  const pending = param(sp, "pending") === "true" || param(sp, "pending") === "1";
+  const query = param(sp, "q").trim();
+  const sort = param(sp, "sort").trim();
 
-  if (pending) return "pending=true";
-  if (all) return "all=1";
-  if (status) return `status=${encodeURIComponent(status)}`;
-  return "pending=true";
+  const qs = new URLSearchParams();
+  if (category) qs.set("category", category);
+  if (status) qs.set("status", status);
+  if (query) qs.set("q", query);
+  if (sort && sort !== "createdAt,desc") qs.set("sort", sort);
+  
+  return qs.toString();
 }
 
+/** 현재 필터 상태 파싱 */
 export function parseAdminVocListScope(sp: SearchParamsLike): {
-  pending: boolean;
-  all: boolean;
+  category: string;
   status: string;
 } {
-  const status = param(sp, "status").trim();
-  const all = param(sp, "all") === "1" || param(sp, "all") === "true";
-  const pending = param(sp, "pending") === "true" || param(sp, "pending") === "1";
-  return { pending, all, status };
+  return {
+    category: param(sp, "category").trim(),
+    status: param(sp, "status").trim(),
+  };
 }
 
+/** 
+ * 관리자 리스트는 이제 특수한 리다이렉트 없이 
+ * /admin/vocs로 바로 접근 가능하게 변경 (기본값: 전체/최신순)
+ */
 export function adminVocListNeedsDefaultRedirect(sp: SearchParamsLike): boolean {
-  const status = param(sp, "status").trim();
-  const all = param(sp, "all") === "1" || param(sp, "all") === "true";
-  const pending = param(sp, "pending") === "true" || param(sp, "pending") === "1";
-  return !pending && !all && !status;
+  return false;
 }
 
-/** `/admin/vocs` 단독 진입 시 미처리 큐로 보냄(p·s 유지) */
 export function redirectToDefaultAdminVocList(sp: SearchParamsLike): string {
-  const qs = new URLSearchParams();
-  qs.set("pending", "true");
-  const p = param(sp, "p");
-  const s = param(sp, "s");
-  if (p) qs.set("p", p);
-  if (s) qs.set("s", s);
-  return `/admin/vocs?${qs.toString()}`;
+  return `/admin/vocs`;
 }

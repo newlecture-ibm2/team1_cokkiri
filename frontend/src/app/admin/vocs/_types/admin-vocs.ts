@@ -1,6 +1,7 @@
 export type AdminVocListItem = {
   vocId: number;
   userId: number;
+  userName?: string;
   category: string;
   title: string;
   status: string;

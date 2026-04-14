@@ -124,7 +124,7 @@ export default async function VocDetailPage({ params }: { params: Params }) {
             {vocStatusLabel(d.status)}
           </span>
           <span className="text-muted-foreground/30">·</span>
-          <time className="font-medium text-primary/70">{formatDateTimeKo(d.createdAt)}</time>
+          <time className="font-medium text-primary/70" suppressHydrationWarning>{formatDateTimeKo(d.createdAt)}</time>
         </div>
       </header>
 

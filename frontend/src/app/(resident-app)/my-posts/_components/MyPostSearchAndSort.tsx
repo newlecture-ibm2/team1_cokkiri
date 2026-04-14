@@ -8,9 +8,11 @@ import { Search, X, Filter } from "lucide-react";
 const SORT_OPTIONS = [
   { value: "createdAt,desc", label: "최신순" },
   { value: "createdAt,asc", label: "오래된순" },
+  { value: "viewCount,desc", label: "조회순" },
+  { value: "likeCount,desc", label: "인기순" },
 ] as const;
 
-export function VocSearchAndSort() {
+export function MyPostSearchAndSort() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -31,8 +33,7 @@ export function VocSearchAndSort() {
           params.set(key, val);
         }
       }
-      if (!params.has("tab")) params.set("tab", "list");
-      return `/vocs?${params.toString()}`;
+      return `/my-posts?${params.toString()}`;
     },
     [searchParams],
   );
@@ -68,7 +69,7 @@ export function VocSearchAndSort() {
           >
             <input
               autoFocus
-              placeholder="민원 검색..."
+              placeholder="게시글 검색..."
               className="bg-transparent text-xs md:text-sm font-bold uppercase tracking-wider focus:outline-none min-w-[120px] md:min-w-[160px]"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
@@ -84,19 +85,18 @@ export function VocSearchAndSort() {
             className="flex items-center gap-1.5 text-xs md:text-sm font-bold uppercase tracking-wider hover:opacity-60 transition-opacity cursor-pointer pb-2"
           >
             <Search className="h-3.5 w-3.5" />
-            Search
+            SEARCH
           </button>
         )}
       </AnimatePresence>
 
-      {/* Sort Dropdown */}
       <div className="relative">
         <button
           onClick={() => setIsSortOpen(!isSortOpen)}
           className="flex items-center gap-1.5 text-xs md:text-sm font-bold uppercase tracking-wider hover:opacity-60 transition-opacity cursor-pointer pb-2"
         >
           <Filter className="h-3.5 w-3.5" />
-          Sort
+          SORT
         </button>
 
         <AnimatePresence>

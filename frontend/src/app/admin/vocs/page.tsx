@@ -4,7 +4,9 @@ import { LayoutList } from "lucide-react";
 import { adminBffGet } from "./_api/admin-bff-server";
 import type { AdminVocListData, ApiResponse } from "./_types/admin-vocs";
 import { MotionEnter } from "./_components/MotionEnter";
-import { AdminVocStatusFilter } from "./_components/AdminVocStatusFilter";
+import { AdminVocDashboard } from "./_components/AdminVocDashboard";
+import { AdminVocFilter } from "./_components/AdminVocFilter";
+import { AdminVocSearchAndSort } from "./_components/AdminVocSearchAndSort";
 import { AdminVocListCard } from "./_components/AdminVocListCard";
 import { AdminVocPaginationBar } from "./_components/AdminVocPaginationBar";
 import {
@@ -28,7 +30,7 @@ export default async function AdminVocListPage({ searchParams }: { searchParams:
     redirect(redirectToDefaultAdminVocList(sp));
   }
 
-  const { pending, all, status } = parseAdminVocListScope(sp);
+  const { category, status } = parseAdminVocListScope(sp);
 
   const res = await adminBffGet(`admin/vocs?${buildAdminVocListApiQuery(sp)}`);
   let list: AdminVocListData | null = null;
@@ -49,27 +51,26 @@ export default async function AdminVocListPage({ searchParams }: { searchParams:
   return (
     <MotionEnter>
       <div className="max-w-5xl">
-        <header className="flex flex-col gap-10 md:flex-row md:items-end md:justify-between">
-          <div className="space-y-6">
-            <p className="font-black text-[10px] uppercase tracking-[0.35em] text-muted-foreground">Admin · VoC</p>
-            <h1 className="whitespace-nowrap text-balance text-[11vw] font-black uppercase leading-[0.85] tracking-tighter text-foreground sm:text-[9vw] md:text-[6vw] lg:text-[4rem]">
-              민원{" "}
-              <span className="underline decoration-secondary decoration-2 underline-offset-[0.18em]">관리</span>
-            </h1>
-            <p className="max-w-xl font-medium tracking-tight text-balance text-foreground/85 md:text-lg">
-              기본 화면은 미처리(접수·처리 중) 안건입니다. 답변 등록 시 해당 건은 처리 완료로 반영됩니다.
-            </p>
+        <header className="mb-12">
+          <div className="flex flex-col gap-6">
+            <div className="border-b border-primary/10 pb-8 space-y-4">
+              <p className="font-black text-[10px] uppercase tracking-[0.35em] text-muted-foreground">Admin · VoC</p>
+              <h1 className="text-5xl md:text-7xl font-black leading-tight tracking-tight uppercase whitespace-nowrap">
+                민원 <span className="underline underline-offset-4 decoration-accent">관리.</span>
+              </h1>
+              <p className="font-medium tracking-tight text-foreground/70 text-sm md:text-base">
+                기본 화면은 미처리(접수·처리 중) 안건입니다. 답변 등록 시 해당 건은 처리 완료로 반영됩니다.
+              </p>
+            </div>
           </div>
-          <Link
-            href="/vocs"
-            className="shrink-0 rounded-xl bg-primary px-7 py-4 text-center text-sm font-black uppercase tracking-wider text-white transition-all hover:-translate-y-0.5 hover:bg-primary/90 hover:shadow-md md:self-start"
-          >
-            내 민원 화면(미리보기)
-          </Link>
         </header>
 
-        <section className="mt-12 space-y-4">
-          <AdminVocStatusFilter pending={pending} all={all} status={status} />
+        {/* Dashboard Stats */}
+        <AdminVocDashboard />
+
+        <section className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-foreground/10 pb-4">
+          <AdminVocFilter activeCategory={category} activeStatus={status} />
+          <AdminVocSearchAndSort />
         </section>
 
         {error && (
