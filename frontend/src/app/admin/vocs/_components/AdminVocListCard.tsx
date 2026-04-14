@@ -29,27 +29,27 @@ export function AdminVocListCard({ item }: { item: AdminVocListItem }) {
         <div className="flex min-w-0 flex-1 items-start gap-6">
           <div className="mt-1 bg-stone-100 rounded-2xl p-3.5 shrink-0 group-hover:bg-stone-200 transition-colors">
             <ClipboardList
-              className="size-6 text-stone-700"
-              strokeWidth={2.5}
+              className="size-6 text-stone-900"
+              strokeWidth={1.5}
               aria-hidden
             />
           </div>
           <div className="min-w-0 space-y-3">
             <div className="flex items-center gap-2.5 flex-wrap">
-              <span className="font-medium text-sm uppercase tracking-widest text-stone-600">
+              <span className="font-medium text-sm uppercase tracking-widest text-stone-700">
                 {adminVocCategoryLabel(item.category)}
               </span>
               <span className="text-stone-300 text-sm">·</span>
-              <span className="font-medium text-sm text-stone-800">
+              <span className="font-medium text-sm text-stone-900">
                 {item.userName || `회원 #${item.userId}`}
               </span>
             </div>
-            <h2 className="font-normal text-2xl tracking-tight text-stone-900 group-hover:text-secondary md:text-3xl transition-colors line-clamp-1">
+            <div className="font-medium text-xl tracking-wide text-stone-800 group-hover:text-secondary md:text-2xl transition-colors line-clamp-1">
               {item.title}
-            </h2>
+            </div>
             <time
               dateTime={item.createdAt}
-              className="block font-medium text-[9px] md:text-[10px] uppercase tracking-[0.2em] text-stone-400"
+              className="block font-normal text-[10px] uppercase tracking-widest text-stone-500"
               suppressHydrationWarning
             >
               {formatDateTimeKo(item.createdAt)}

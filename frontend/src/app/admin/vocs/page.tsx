@@ -56,7 +56,8 @@ export default async function AdminVocListPage({ searchParams }: { searchParams:
             <div className="border-b border-primary/10 pb-8 space-y-4">
               <p className="font-black text-[10px] uppercase tracking-[0.35em] text-muted-foreground">Admin · VoC</p>
               <h1 className="text-5xl md:text-7xl font-black leading-tight tracking-tight uppercase whitespace-nowrap">
-                민원 <span className="underline underline-offset-4 decoration-accent">관리.</span>
+                ADMIN VOC <span className="underline underline-offset-4 decoration-accent">LIST.</span>
+                <span className="text-2xl md:text-4xl font-bold tracking-normal ml-2 align-bottom opacity-80">민원 관리</span>
               </h1>
               <p className="font-medium tracking-tight text-foreground/70 text-sm md:text-base">
                 기본 화면은 미처리(접수·처리 중) 안건입니다. 답변 등록 시 해당 건은 처리 완료로 반영됩니다.

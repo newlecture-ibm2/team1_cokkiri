@@ -145,9 +145,17 @@ public class AdminVocService implements AdminVocUseCase {
     }
 
     private VocResult toVocResult(Voc v) {
+        String userName;
+        try {
+            AdminUserResult user = adminUserRepositoryPort.findUserById(v.getUserId());
+            userName = user.getName();
+        } catch (Exception e) {
+            userName = "회원 #" + v.getUserId();
+        }
         return VocResult.builder()
                 .vocId(v.getVocId())
                 .userId(v.getUserId())
+                .userName(userName)
                 .category(v.getCategory())
                 .title(PlainTextHtmlSanitizer.sanitizeTitle(v.getTitle()))
                 .content(VocBodyHtmlSanitizer.sanitize(v.getContent()))

@@ -25,6 +25,7 @@ export type AdminVocAttachment = {
 export type AdminVocDetail = {
   vocId: number;
   userId: number;
+  userName?: string;
   category: string;
   title: string;
   content: string;
