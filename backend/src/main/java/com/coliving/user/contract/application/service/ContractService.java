@@ -85,6 +85,10 @@ public class ContractService implements ContractUseCase {
                 .requestNote(c.getRequestNote())
                 .privacyAgreed(c.getPrivacyAgreed())
                 .rejectedReason(c.getRejectedReason())
+                .monthlyRent(c.getMonthlyRent() != null ? c.getMonthlyRent().intValue() : null)
+                .deposit(c.getDeposit() != null ? c.getDeposit().intValue() : null)
+                .startDate(c.getStartDate())
+                .endDate(c.getEndDate())
                 .createdAt(c.getCreatedAt())
                 .build();
     }
