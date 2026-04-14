@@ -77,7 +77,7 @@ public class SecurityConfig {
                                                 .requestMatchers(HttpMethod.GET, "/api/files/community/**").permitAll()
 
                                                 // --- 업로드 파일 정적 서빙 (배경 도면 등) ---
-                                                .requestMatchers(HttpMethod.GET, "/api/uploads/**", "/api/seed/**").permitAll()
+                                                .requestMatchers(HttpMethod.GET, "/api/uploads/**").permitAll()
 
                                                 .requestMatchers("/swagger-ui/**", "/v3/api-docs/**",
                                                                 "/swagger-ui.html")
