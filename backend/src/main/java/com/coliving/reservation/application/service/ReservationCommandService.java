@@ -9,6 +9,7 @@ import com.coliving.reservation.adapter.out.jpa.ReservationEntity;
 import com.coliving.reservation.adapter.out.jpa.ReservationJpaRepository;
 import com.coliving.reservation.application.port.in.ReservationCommandUseCase;
 import com.coliving.reservation.exception.ReservationOverlapException;
+import com.coliving.reservation.model.ReservationStatus;
 import com.coliving.user.contract.adapter.out.jpa.ContractEntity;
 import com.coliving.user.contract.adapter.out.jpa.ContractJpaRepository;
 import com.coliving.user.contract.model.ContractStatus;
@@ -19,6 +20,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalTime;
+import java.time.temporal.ChronoUnit;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -39,6 +43,7 @@ import java.util.Objects;
 public class ReservationCommandService implements ReservationCommandUseCase {
 
     private static final long MAX_RESERVATION_MINUTES = 120;
+    private static final long SLOT_MINUTES = 30;
 
     private final ReservationJpaRepository reservationRepository;
     private final UserJpaRepository userRepository;
@@ -60,10 +65,8 @@ public class ReservationCommandService implements ReservationCommandUseCase {
     @Override
     @Transactional
     public Long reserveFacility(Long userId, ReservationCreateRequestDto request) {
-        // 1. 시간 범위 유효성 검사
-        if (!request.isValidTimeRange()) {
-            throw new BusinessException(ErrorCode.VALIDATION_ERROR, "종료 시간은 시작 시간보다 이후여야 합니다.");
-        }
+        // 1. 시간 범위/연속성(30분 단위) 유효성 검사
+        validateSlotSequence(request);
 
         // 2. 요청 사용자 조회
         Objects.requireNonNull(userId, "userId는 null일 수 없습니다.");
@@ -79,19 +82,36 @@ public class ReservationCommandService implements ReservationCommandUseCase {
         ContractEntity activeContract = contractJpaRepository.findByUserIdAndStatus(userId, ContractStatus.ACTIVE)
                 .stream()
                 .findFirst()
-                .orElseThrow(() -> new BusinessException(ErrorCode.NO_ACTIVE_CONTRACT, "유효한 활성 계약이 없어 예약할 수 없습니다."));
+                .orElseThrow(() -> new BusinessException(ErrorCode.FORBIDDEN, "입주자만 공용시설을 예약할 수 있습니다."));
 
         if (activeContract.getEndDate() == null) {
-            throw new BusinessException(ErrorCode.NO_ACTIVE_CONTRACT, "유효한 활성 계약 종료일이 없어 예약할 수 없습니다.");
+            throw new BusinessException(ErrorCode.FORBIDDEN, "입주자만 공용시설을 예약할 수 있습니다.");
         }
 
         if (request.getReservationDate().isAfter(activeContract.getEndDate())) {
             throw new BusinessException(ErrorCode.VALIDATION_ERROR, "입주 기간 종료로 인해 예약이 불가능합니다");
         }
 
-        // 5. 최대 이용 시간(2시간) 검증
-        if (!request.isWithinMaxUsageMinutes(MAX_RESERVATION_MINUTES)) {
-            throw new BusinessException(ErrorCode.VALIDATION_ERROR, "공용시설 예약은 최대 2시간까지만 가능합니다.");
+        // 5. 일일 최대 이용 시간(2시간) 검증 (프론트 UI 차단과 별개로 서버에서 재검증)
+        long requestedMinutes = ChronoUnit.MINUTES.between(request.getStartTime(), request.getEndTime());
+        if (requestedMinutes > MAX_RESERVATION_MINUTES) {
+            throw new BusinessException(ErrorCode.DAILY_LIMIT_EXCEEDED, "하루 최대 2시간까지만 예약할 수 있습니다.");
+        }
+
+        List<ReservationStatus> countableStatuses = List.of(
+                ReservationStatus.PENDING,
+                ReservationStatus.APPROVED,
+                ReservationStatus.COMPLETED
+        );
+
+        long alreadyReservedMinutes = reservationRepository
+                .findByUser_UserIdAndReservationDateAndStatusIn(userId, request.getReservationDate(), countableStatuses)
+                .stream()
+                .mapToLong(r -> ChronoUnit.MINUTES.between(r.getStartTime(), r.getEndTime()))
+                .sum();
+
+        if (alreadyReservedMinutes + requestedMinutes > MAX_RESERVATION_MINUTES) {
+            throw new BusinessException(ErrorCode.DAILY_LIMIT_EXCEEDED, "하루 최대 2시간까지만 예약할 수 있습니다.");
         }
 
         // 6. 동시성 체크: 해당 시간에 APPROVED 중복 예약 여부 확인
@@ -125,6 +145,33 @@ public class ReservationCommandService implements ReservationCommandUseCase {
                 savedReservation.getId(), savedReservation.getSpaceId(), savedReservation.getUserId());
 
         return savedReservation.getId();
+    }
+
+    private void validateSlotSequence(ReservationCreateRequestDto request) {
+        if (request.getStartTime() == null || request.getEndTime() == null) {
+            throw new BusinessException(ErrorCode.VALIDATION_ERROR, "시작/종료 시간은 필수입니다.");
+        }
+
+        LocalTime startTime = request.getStartTime();
+        LocalTime endTime = request.getEndTime();
+
+        if (!endTime.isAfter(startTime)) {
+            throw new BusinessException(ErrorCode.INVALID_SEQUENCE, "종료 시간은 시작 시간보다 이후여야 합니다.");
+        }
+
+        if (!isSlotAligned(startTime) || !isSlotAligned(endTime)) {
+            throw new BusinessException(ErrorCode.INVALID_SEQUENCE, "예약 시간은 30분 단위로 선택해야 합니다.");
+        }
+
+        long minutes = ChronoUnit.MINUTES.between(startTime, endTime);
+        if (minutes <= 0 || minutes % SLOT_MINUTES != 0) {
+            throw new BusinessException(ErrorCode.INVALID_SEQUENCE, "시간 선택이 올바르지 않습니다. 연속된 30분 단위로 선택해 주세요.");
+        }
+    }
+
+    private boolean isSlotAligned(LocalTime time) {
+        if (time.getSecond() != 0 || time.getNano() != 0) return false;
+        return time.getMinute() % SLOT_MINUTES == 0;
     }
 
     /**

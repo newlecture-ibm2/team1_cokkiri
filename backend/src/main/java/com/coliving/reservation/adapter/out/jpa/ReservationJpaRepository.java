@@ -44,6 +44,10 @@ public interface ReservationJpaRepository extends JpaRepository<ReservationEntit
     /** 특정 사용자의 예약 목록 조회 (상태 필터링) */
     List<ReservationEntity> findByUser_UserIdAndStatusIn(Long userId, List<ReservationStatus> statuses);
 
+    /** 특정 사용자의 특정 날짜 예약 목록 조회 (상태 필터링) */
+    List<ReservationEntity> findByUser_UserIdAndReservationDateAndStatusIn(
+            Long userId, LocalDate reservationDate, List<ReservationStatus> statuses);
+
     /** 특정 사용자의 전체 예약 목록 조회 (최신순 정렬) */
     List<ReservationEntity> findByUser_UserIdOrderByReservationDateDescStartTimeDesc(Long userId);
 
