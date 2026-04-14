@@ -65,6 +65,20 @@ export function ApplicationsTab({ refreshKey, onRefresh }: Props) {
         deposit: "",
         specialTerms: "",
       });
+
+      // 방 데이터에서 월세/보증금 자동 조회
+      fetch(`/api/rooms/${selectedContract.spaceId}`)
+        .then((res) => res.json())
+        .then((result) => {
+          if (result.success && result.data) {
+            setApproveForm((prev) => ({
+              ...prev,
+              monthlyRent: result.data.monthlyRent?.toString() || prev.monthlyRent,
+              deposit: result.data.deposit?.toString() || prev.deposit,
+            }));
+          }
+        })
+        .catch((err) => console.error("방 정보 조회 실패:", err));
     }
   }, [modalType, selectedContract]);
 
