@@ -350,6 +350,7 @@ export default function MyContractsPage() {
         onClose={() => setSigningContractId(null)}
         onSign={handleSign}
         contractId={signingContractId ?? 0}
+        spaceId={contracts.find(c => c.contractId === signingContractId)?.spaceId ?? 0}
         isSubmitting={isSubmitting}
       />
     </div>
