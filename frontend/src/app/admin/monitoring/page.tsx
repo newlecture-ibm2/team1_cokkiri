@@ -94,7 +94,7 @@ export default function MonitoringPage() {
               onClick={() => setAutoRefresh(!autoRefresh)}
               className={`text-xs px-3 py-1.5 rounded-full border transition-colors ${
                 autoRefresh
-                  ? "bg-[#768064] text-white border-[#768064]"
+                  ? "bg-accent text-white border-accent"
                   : "bg-transparent text-muted-foreground border-border"
               }`}
             >

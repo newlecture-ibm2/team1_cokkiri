@@ -84,6 +84,7 @@ export interface DeviceAvailability {
   deviceName: string;
   deviceTypeName: string;
   spaceName: string;
+  floor: number | null;
   totalCount: number;
   successCount: number;
   failureCount: number;

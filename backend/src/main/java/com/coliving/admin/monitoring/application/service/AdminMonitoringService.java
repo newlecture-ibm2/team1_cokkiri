@@ -211,9 +211,10 @@ public class AdminMonitoringService implements AdminMonitoringUseCase {
     public List<DeviceAvailabilityResponseDto> getDeviceAvailability() {
         return monitoringRepositoryPort.countDeviceAvailability().stream()
                 .map(row -> {
-                    long total = ((Number) row[4]).longValue();
-                    long success = ((Number) row[5]).longValue();
-                    long failure = ((Number) row[6]).longValue();
+                    Integer floor = row[4] != null ? ((Number) row[4]).intValue() : null;
+                    long total = ((Number) row[5]).longValue();
+                    long success = ((Number) row[6]).longValue();
+                    long failure = ((Number) row[7]).longValue();
                     double rate = total > 0 ? Math.round((double) success / total * 1000) / 10.0 : 0;
 
                     return new DeviceAvailabilityResponseDto(
@@ -221,6 +222,7 @@ public class AdminMonitoringService implements AdminMonitoringUseCase {
                             row[1] != null ? row[1].toString() : null,
                             row[2] != null ? row[2].toString() : null,
                             row[3] != null ? row[3].toString() : null,
+                            floor,
                             total, success, failure, rate
                     );
                 })

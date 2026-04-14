@@ -9,6 +9,7 @@ public record DeviceAvailabilityResponseDto(
         String deviceName,
         String deviceTypeName,
         String spaceName,
+        Integer floor,
         long totalCount,
         long successCount,
         long failureCount,
