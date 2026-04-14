@@ -45,13 +45,17 @@ async function handler(req: NextRequest) {
 
   const xForwardedHost = req.headers.get('x-forwarded-host') || req.headers.get('host') || req.nextUrl.host;
   const xForwardedProto = req.headers.get('x-forwarded-proto') || req.nextUrl.protocol.replace(':', '');
-  const xForwardedPort = req.headers.get('x-forwarded-port') || req.nextUrl.port || (xForwardedProto === 'https' ? '443' : '80');
+  const xForwardedPort = req.headers.get('x-forwarded-port');
 
   const headers: HeadersInit = {
     'x-forwarded-host': xForwardedHost,
     'x-forwarded-proto': xForwardedProto,
-    'x-forwarded-port': xForwardedPort,
   };
+
+  if (xForwardedPort) {
+    headers['x-forwarded-port'] = xForwardedPort;
+  }
+
   const contentType = req.headers.get('Content-Type');
   if (contentType) headers['Content-Type'] = contentType;
 
