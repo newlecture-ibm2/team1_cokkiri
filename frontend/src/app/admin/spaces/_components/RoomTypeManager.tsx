@@ -291,13 +291,7 @@ export default function RoomTypeManager() {
                             <span className="text-sm font-bold tracking-tight">{rt.name}</span>
                           )}
 
-                          {/* 시스템 기본 뱃지 */}
-                          {rt.isSystemDefault && (
-                            <span className="flex items-center gap-1 px-2 py-0.5 bg-blue-100 text-blue-600 text-[10px] font-black rounded-full">
-                              <Shield size={10} />
-                              기본
-                            </span>
-                          )}
+
                         </div>
 
                         {/* 액션 버튼 */}
@@ -310,8 +304,7 @@ export default function RoomTypeManager() {
                             >
                               <Pencil size={14} />
                             </button>
-                            {!rt.isSystemDefault && (
-                              deletingId === rt.roomTypeId ? (
+                            {deletingId === rt.roomTypeId ? (
                                 <div className="flex items-center gap-1">
                                   <button
                                     onClick={() => handleDelete(rt.roomTypeId)}
@@ -334,8 +327,7 @@ export default function RoomTypeManager() {
                                 >
                                   <Trash2 size={14} />
                                 </button>
-                              )
-                            )}
+                              )}
                           </div>
                         )}
                       </div>
