@@ -246,7 +246,7 @@ export default function MyContractsPage() {
 
                   <div>
                     <h4 className="text-5xl font-black tracking-tighter leading-tight group-hover:text-accent transition-colors uppercase">
-                      PRIVATE SPACE<br />ROOM 00{contract.spaceId}
+                      {contract.spaceName || `ROOM ${contract.spaceId}`}
                     </h4>
                     <p className="mt-4 text-[10px] font-black tracking-widest text-muted uppercase">
                       Applied at {new Date(contract.createdAt).toLocaleDateString()} — {contract.desiredDurationMonths} Months duration

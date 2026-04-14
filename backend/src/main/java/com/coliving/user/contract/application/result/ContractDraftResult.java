@@ -11,6 +11,7 @@ import java.time.OffsetDateTime;
 public class ContractDraftResult {
     private final Long contractId;
     private final Long spaceId;
+    private final String spaceName;
     private final ContractStatus status;
     private final LocalDate desiredStartDate;
     private final Integer desiredDurationMonths;

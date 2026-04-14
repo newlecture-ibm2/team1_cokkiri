@@ -78,7 +78,11 @@ export default function RoomDetailPage() {
     );
   }
 
-  const statusInfo = STATUS_MAP[room.status] || STATUS_MAP.AVAILABLE;
+  const baseStatusInfo = STATUS_MAP[room.status] || STATUS_MAP.AVAILABLE;
+  // OCCUPIED이지만 사전 예약 가능한 경우 뱃지 변경
+  const statusInfo = room.status === 'OCCUPIED' && room.contractEndDate
+    ? { text: '사전 예약 가능', className: 'bg-accent/20 text-accent border-accent/30' }
+    : baseStatusInfo;
   const isPrivate = room.roomTypeId !== undefined && room.roomTypeId !== null;
   const totalMonthly = (room.monthlyRent || 0) + (room.maintenanceFee || 0);
 
@@ -231,6 +235,20 @@ export default function RoomDetailPage() {
                   Reserve
                   <ArrowRight className="ml-3 h-5 w-5 transition-transform group-hover:translate-x-1" />
                 </Link>
+              ) : room.status === 'OCCUPIED' && isPrivate && room.contractEndDate ? (
+                <div className="flex flex-col items-end gap-4">
+                  <p className="text-xs md:text-sm font-bold tracking-tight opacity-60 text-right">
+                    현재 계약 종료일: <span className="text-white font-black opacity-100">{room.contractEndDate}</span>
+                    <br />이후 입주 시작일로 사전 신청이 가능합니다.
+                  </p>
+                  <Link
+                    href={`/contract-apply?spaceId=${room.spaceId}&minStartDate=${room.contractEndDate}`}
+                    className="group inline-flex items-center justify-center h-16 md:h-22 px-12 rounded-full bg-background text-primary hover:bg-secondary hover:text-white transition-all duration-500 font-black tracking-widest text-sm md:text-base"
+                  >
+                    Pre-book
+                    <ArrowRight className="ml-3 h-5 w-5 transition-transform group-hover:translate-x-1" />
+                  </Link>
+                </div>
               ) : (
                 <div className="inline-flex items-center justify-center h-16 md:h-22 px-12 rounded-full bg-white/10 text-white/40 font-black tracking-widest text-sm md:text-base cursor-not-allowed">
                   {room.status === 'OCCUPIED' ? 'Fully Booked' : 'Under Maintenance'}

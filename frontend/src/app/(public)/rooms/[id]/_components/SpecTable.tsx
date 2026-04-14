@@ -15,7 +15,13 @@ export function SpecGrid({ room }: SpecGridProps) {
     { label: '주차 가능 여부', value: room.parkingAvailable === true ? '가능' : room.parkingAvailable === false ? '불가능' : '-' },
     {
       label: '계약 상태',
-      value: room.status === 'AVAILABLE' ? '가능' : room.status === 'OCCUPIED' ? '불가' : '점검 중',
+      value: room.status === 'AVAILABLE'
+        ? '가능'
+        : room.status === 'OCCUPIED' && room.contractEndDate
+          ? `사전 예약 가능 (종료: ${room.contractEndDate})`
+          : room.status === 'OCCUPIED'
+            ? '불가'
+            : '점검 중',
     },
   ];
 
