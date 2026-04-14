@@ -56,7 +56,7 @@ export function useFloorPlan() {
   const loadSpaces = useCallback(async () => {
     try {
       setLoading(true);
-      const res = await fetchSpaces();
+      const res = await fetchSpaces({ size: 500 });
       const spaces: SpaceDTO[] = res.data?.content || res.data || [];
       setAllSpaces(spaces);
 
