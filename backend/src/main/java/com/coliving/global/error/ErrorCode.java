@@ -28,7 +28,9 @@ public enum ErrorCode {
     SPACE_NOT_AVAILABLE(HttpStatus.CONFLICT, "해당 호실은 현재 계약/예약이 불가합니다"),
     APPLICATION_EXISTS(HttpStatus.CONFLICT, "이미 진행 중인 신청이 있습니다"),
     NO_ACTIVE_CONTRACT(HttpStatus.CONFLICT, "유효한 활성 계약이 없습니다"),
+    DAILY_LIMIT_EXCEEDED(HttpStatus.CONFLICT, "일일 최대 예약 시간을 초과했습니다"),
     TIME_SLOT_CONFLICT(HttpStatus.CONFLICT, "해당 시간대는 이미 예약되었습니다"),
+    INVALID_SEQUENCE(HttpStatus.BAD_REQUEST, "시간 선택이 올바르지 않습니다"),
     INVALID_STATUS(HttpStatus.CONFLICT, "현재 상태에서 수행할 수 없는 작업입니다"),
 
     // ── 기기 제어 ──
