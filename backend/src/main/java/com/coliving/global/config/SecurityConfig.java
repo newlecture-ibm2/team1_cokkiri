@@ -63,21 +63,16 @@ public class SecurityConfig {
 
                                                 // --- 공개: 공간·룸 조회 ---
                                                 .requestMatchers(HttpMethod.GET, "/api/rooms/**").permitAll()
-                                                .requestMatchers(HttpMethod.GET, "/api/experience/**").permitAll() // EXPERIENCE
-                                                                                                                   // 공용시설
-                                                                                                                   // 소개
-                                                                                                                   // 🔓
-                                                                                                                   // Public
-                                                .requestMatchers(HttpMethod.GET, "/api/floors").permitAll() // FLOOR 층별
-                                                                                                            // 평면도 🔓
-                                                                                                            // Public
+                                                .requestMatchers(HttpMethod.GET, "/api/room-types").permitAll() // 방 유형
+                                                .requestMatchers(HttpMethod.GET, "/api/admin/spaces/*/images/serve/**")
+                                                .permitAll() // 관리자가 업로드한 이미지 조회 (비회원 허용)
+                                                .requestMatchers(HttpMethod.GET, "/api/experience/**").permitAll() // EXPERIENCE 공용시설 소개 🔓 Public
+                                                .requestMatchers(HttpMethod.GET, "/api/floors").permitAll() // FLOOR 층별 평면도 🔓 Public
 
                                                 // --- 커뮤니티: 목록·상세만 비로그인 조회 (Controller에서 Optional Actor 처리) ---
                                                 .requestMatchers(HttpMethod.GET, "/api/posts", "/api/posts/*")
                                                 .permitAll()
-                                                .requestMatchers(HttpMethod.GET, "/api/facilities").permitAll() // §6.1
-                                                                                                                // 🔓
-                                                                                                                // Public
+                                                .requestMatchers(HttpMethod.GET, "/api/facilities").permitAll() // §6.1 🔓 Public
                                                 // 게시글 본문(리치 텍스트)에 포함된 업로드 이미지 조회
                                                 .requestMatchers(HttpMethod.GET, "/api/files/community/**").permitAll()
 

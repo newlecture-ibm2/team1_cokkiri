@@ -8,7 +8,7 @@ app:
     view-sync-ms: 10000
 
 spring:
-  profiles.active: dev
+  profiles.active: local
   data:
     redis:
       host: ${REDIS_HOST:localhost}

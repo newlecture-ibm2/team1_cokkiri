@@ -52,6 +52,17 @@ public class AdminSpacePersistenceAdapter implements AdminSpaceRepositoryPort {
         }
 
         // === 신규 생성(Create) ===
+        // Soft-deleted 된 동명 공간이 DB에 남아있으면 Unique Index 잔존물과 충돌할 수 있으므로
+        // 해당 행(및 연관 상세 테이블)을 물리 삭제하여 충돌 방지
+        // FK 순서: 자식 테이블 먼저 → 부모 테이블
+        if (spaceJpaRepository.existsSoftDeletedByName(adminSpace.getName())) {
+            spaceJpaRepository.hardDeletePrivateDetailsByName(adminSpace.getName());
+            spaceJpaRepository.hardDeleteCommonDetailsByName(adminSpace.getName());
+            spaceJpaRepository.hardDeleteImagesByName(adminSpace.getName());
+            spaceJpaRepository.hardDeleteSoftDeletedByName(adminSpace.getName());
+            spaceJpaRepository.flush(); // 물리 삭제를 즉시 반영
+        }
+
         SpaceEntity entity = SpaceEntity.builder()
                 .name(adminSpace.getName())
                 .type(adminSpace.getType())

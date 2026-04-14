@@ -7,9 +7,10 @@ import type { SpaceImageDTO } from '../../_types';
 
 interface RoomGalleryProps {
   images: SpaceImageDTO[];
+  roomName: string;
 }
 
-export function RoomGallery({ images }: RoomGalleryProps) {
+export function RoomGallery({ images, roomName }: RoomGalleryProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
 
   if (!images || images.length === 0) return null;
@@ -29,7 +30,7 @@ export function RoomGallery({ images }: RoomGalleryProps) {
             <motion.img
               key={currentIndex}
               src={images[currentIndex].imageUrl}
-              alt={`Gallery ${currentIndex + 1}`}
+              alt={`${roomName} 방 상세 사진 ${currentIndex + 1}`}
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -20 }}
@@ -71,7 +72,7 @@ export function RoomGallery({ images }: RoomGalleryProps) {
                 }`}
               >
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={img.imageUrl} alt="Thumbnail" className="w-full h-full object-cover" />
+                <img src={img.imageUrl} alt={`${roomName} 방 썸네일 ${idx + 1}`} className="w-full h-full object-cover" />
               </button>
             ))}
           </div>

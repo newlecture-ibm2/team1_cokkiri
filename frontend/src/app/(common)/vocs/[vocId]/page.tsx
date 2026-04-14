@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { ArrowLeft, ArrowRight } from "lucide-react";
 import { LOGIN_REQUIRED_MESSAGE } from "@/lib/auth-messages";
 import { LoginRequiredGate } from "@/components/shared/LoginRequiredGate";
 import { bffGet } from "@/app/(common)/vocs/_api/bff-server";
@@ -22,7 +23,7 @@ export async function generateMetadata({ params }: { params: Params }) {
   return { title: `민원 #${vocId} | CoKkiri` };
 }
 
-function statusPillClass(status: string) {
+function statusBadgeClass(status: string) {
   switch (status) {
     case "OPEN":
       return "border-secondary/50 bg-secondary/10 text-secondary";
@@ -80,133 +81,124 @@ export default async function VocDetailPage({ params }: { params: Params }) {
   const d = body.data;
 
   return (
-    <div className="mx-auto max-w-4xl pt-10 pb-32">
-      <Link
-        href="/vocs?tab=list"
-        className="group mb-12 inline-flex items-center gap-3 text-[10px] font-black uppercase tracking-[0.4em] text-accent hover:text-primary transition-all"
-      >
-        ← Back to Inquiries
-      </Link>
+    <div className="pt-4 pb-32">
+      {/* Back link + Header */}
+      <header className="mx-auto max-w-5xl mb-12">
+        <div className="flex flex-col gap-6">
+          <Link
+            href="/vocs?tab=list"
+            className="group inline-flex items-center gap-3 text-sm font-bold tracking-tight text-primary/60 hover:text-accent transition-colors w-fit"
+          >
+            <span className="flex items-center justify-center w-8 h-8 rounded-full bg-primary/5 group-hover:bg-accent/10 transition-colors">
+              <ArrowLeft className="w-4 h-4" />
+            </span>
+            목록으로 돌아가기
+          </Link>
 
-      <article className="space-y-20 relative">
-        <header className="space-y-12">
-          <div className="flex flex-col gap-6">
-            <div className="flex items-center gap-4">
-              <span className="px-4 py-1.5 bg-accent/10 rounded-full text-[10px] font-black uppercase tracking-[0.2em] text-accent">
+          {/* Badge + Title */}
+          <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-4 border-b border-primary/10 pb-6">
+            <h1 className="text-3xl md:text-5xl tracking-tight leading-snug text-primary min-w-0">
+              <span className="font-bold text-[#4A7C6F]">
                 {vocCategoryLabel(d.category)}
               </span>
-              <span
-                className={cn(
-                  "rounded-full border px-4 py-1.5 text-[10px] font-black uppercase tracking-wider",
-                  statusPillClass(d.status),
-                )}
-              >
-                {vocStatusLabel(d.status)}
-              </span>
-            </div>
-
-            <h1 className="text-5xl md:text-7xl font-black tracking-tighter leading-[0.95] text-primary uppercase italic text-balance">
-              {d.title}
+              <span className="mx-1.5 text-muted-foreground/30 font-light">|</span>
+              <span className="font-medium">{d.title}</span>
             </h1>
-
-            <div className="flex items-center gap-6 pt-8 border-t border-primary/10">
-              <div className="flex flex-col gap-1">
-                <span className="text-[9px] font-black uppercase tracking-[0.4em] text-accent">Status</span>
-                <span className="text-xs font-black uppercase tracking-widest text-primary">{vocStatusLabel(d.status)}</span>
-              </div>
-              <div className="h-8 w-px bg-primary/10" />
-              <div className="flex flex-col gap-1">
-                <span className="text-[9px] font-black uppercase tracking-[0.4em] text-muted-foreground opacity-40">Submitted on</span>
-                <time dateTime={d.createdAt} className="text-xs font-black uppercase tracking-widest text-muted-foreground">
-                  {formatDateTimeKo(d.createdAt)}
-                </time>
-              </div>
+            <div className="shrink-0 self-end pb-1">
+              <VocDetailActions vocId={d.vocId} status={d.status} />
             </div>
           </div>
-        </header>
+        </div>
 
-        <div className="space-y-12">
-          <section className="bg-white p-12 md:p-16 rounded-[3rem] border border-primary/5 shadow-2xl shadow-primary/5 relative overflow-hidden">
-            <p className="mb-8 text-[10px] font-black uppercase tracking-[0.5em] text-accent border-b border-accent/20 pb-4 inline-block">01 | Inquiry Narrative</p>
-            {isRichTextBodyHtml(d.content) ? (
-              <div
-                className={cn(
-                  "font-medium leading-[1.8] tracking-tight text-primary text-xl opacity-80",
-                  VOC_RICH_BODY_CLASSNAME,
-                )}
-                dangerouslySetInnerHTML={{ __html: prepareVocBodyForDisplay(d.content) }}
-              />
-            ) : (
-              <p className="font-medium leading-[1.8] tracking-tight text-primary text-xl opacity-80 whitespace-pre-wrap">
-                {d.content}
-              </p>
+        {/* Meta info */}
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground mt-4">
+          <span
+            className={cn(
+              "rounded-full border px-3 py-1 text-xs font-semibold tracking-tight",
+              statusBadgeClass(d.status),
             )}
+          >
+            {vocStatusLabel(d.status)}
+          </span>
+          <span className="text-muted-foreground/30">·</span>
+          <time className="font-medium text-primary/70">{formatDateTimeKo(d.createdAt)}</time>
+        </div>
+      </header>
 
-            {/* Background Decoration */}
-            <span className="absolute -right-10 -bottom-10 text-[20vw] font-black opacity-[0.01] pointer-events-none select-none italic text-primary">
-              VOICE
-            </span>
-          </section>
+      <article className="mx-auto max-w-5xl space-y-12 mt-10">
 
-          {d.attachments?.length ? (
-            <section className="space-y-8">
-              <h2 className="text-[10px] font-black uppercase tracking-[0.5em] text-accent border-b border-accent/20 pb-4 inline-block">02 | Referenced Assets</h2>
-              <ul className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {d.attachments.map((a, i) => (
+        {/* Content Body */}
+        <section className="space-y-3">
+          <h2 className="text-sm font-semibold tracking-tight text-primary">
+            내용
+          </h2>
+          <div className="bg-surface p-8 md:p-12 rounded-lg border border-primary/5 shadow-sm relative overflow-hidden">
+            <div className={cn("post-html font-medium leading-[1.8] tracking-tight text-primary text-base relative z-10", VOC_RICH_BODY_CLASSNAME)}>
+              {isRichTextBodyHtml(d.content) ? (
+                <div
+                  className="[&_img]:my-6 [&_img]:max-h-[min(70vh,520px)] [&_img]:w-full [&_img]:rounded-xl [&_img]:object-cover [&_img]:shadow-md [&_p]:mb-4 [&_a]:break-all [&_a]:font-bold [&_a]:text-accent [&_a]:underline [&_a]:decoration-accent/30 [&_a]:underline-offset-4 [&_ul]:my-6 [&_ul]:list-disc [&_ul]:pl-8 [&_ol]:my-6 [&_ol]:list-decimal [&_ol]:pl-8 [&_blockquote]:my-8 [&_blockquote]:border-l-4 [&_blockquote]:border-accent [&_blockquote]:pl-6 [&_blockquote]:italic [&_pre]:my-6 [&_pre]:overflow-x-auto [&_pre]:rounded-xl [&_pre]:border [&_pre]:border-primary/5 [&_pre]:bg-primary/5 [&_pre]:p-6 [&_code]:text-sm"
+                  dangerouslySetInnerHTML={{ __html: prepareVocBodyForDisplay(d.content) }}
+                />
+              ) : (
+                <div className="whitespace-pre-wrap">{d.content}</div>
+              )}
+            </div>
+          </div>
+        </section>
+
+        {/* Attachments */}
+        {(d.attachments?.length ?? 0) > 0 && (
+          <section className="space-y-2">
+            <h2 className="text-sm font-semibold tracking-tight text-primary">
+              첨부파일
+            </h2>
+            <ul className="space-y-1.5">
+              {d.attachments?.map((a, i) =>
+                a.fileUrl ? (
                   <li key={`${a.fileUrl}-${i}`}>
                     <a
                       href={apiFileUrlToBffPath(a.fileUrl)}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="group flex flex-col gap-2 p-8 bg-primary/5 rounded-3xl border border-transparent hover:border-accent transition-all"
+                      className="group inline-flex items-center gap-1.5 text-sm font-semibold text-primary hover:text-accent transition-colors"
                     >
-                      <span className="text-[9px] font-black uppercase tracking-[0.4em] opacity-40">Download Resource</span>
-                      <span className="text-sm font-black tracking-tighter text-primary group-hover:text-accent transition-colors truncate">{a.fileName}</span>
+                      <ArrowRight className="size-3 shrink-0" />
+                      <span className="underline underline-offset-2 decoration-accent/30 truncate">{a.fileName}</span>
                     </a>
                   </li>
-                ))}
-              </ul>
-            </section>
-          ) : null}
+                ) : null,
+              )}
+            </ul>
+          </section>
+        )}
 
-          {(d.adminReply || d.status === "RESOLVED" || d.status === "IN_PROGRESS") && (
-            <section className="bg-primary p-12 md:p-16 rounded-[3rem] text-white relative overflow-hidden shadow-2xl shadow-primary/30">
-              <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12">
-                <p className="text-[10px] font-black uppercase tracking-[0.5em] text-white/60 border-b border-white/20 pb-2 inline-block">03 | Administrator Response</p>
-                {d.repliedAt && (
-                  <time dateTime={d.repliedAt} className="text-[10px] font-black uppercase tracking-widest text-white/40">
-                    Replied: {formatDateTimeKo(d.repliedAt)}
-                  </time>
-                )}
-              </div>
-
+        {/* Admin Reply */}
+        {(d.adminReply || d.status === "RESOLVED" || d.status === "IN_PROGRESS") && (
+          <section className="space-y-3">
+            <div className="flex items-center justify-between">
+              <h2 className="text-sm font-semibold tracking-tight text-primary">
+                관리자 답변
+              </h2>
+              {d.repliedAt && (
+                <time className="text-xs font-medium text-primary/50">
+                  {formatDateTimeKo(d.repliedAt)}
+                </time>
+              )}
+            </div>
+            <div className="bg-primary/5 p-8 md:p-12 rounded-lg border border-primary/10 shadow-sm">
               {d.adminReply && isRichTextBodyHtml(d.adminReply) ? (
                 <div
-                  className={cn("font-medium leading-[1.8] tracking-tight text-white/90 text-xl", VOC_RICH_BODY_CLASSNAME)}
+                  className={cn("font-medium leading-[1.8] tracking-tight text-primary text-base", VOC_RICH_BODY_CLASSNAME)}
                   dangerouslySetInnerHTML={{ __html: prepareVocBodyForDisplay(d.adminReply) }}
                 />
               ) : (
-                <p className="font-medium leading-[1.8] tracking-tight text-white/90 text-xl whitespace-pre-wrap">
-                  {d.adminReply ?? "Your inquiry is currently being reviewed by our administrative team."}
+                <p className="font-medium leading-[1.8] tracking-tight text-primary text-base whitespace-pre-wrap">
+                  {d.adminReply ?? "관리자 답변을 준비 중입니다."}
                 </p>
               )}
-
-              {/* Background Decoration */}
-              <span className="absolute -left-10 -bottom-20 text-[25vw] font-black opacity-[0.05] pointer-events-none select-none italic text-white">
-                REPLY
-              </span>
-            </section>
-          )}
-        </div>
-
-        <div className="pt-12">
-          <VocDetailActions vocId={d.vocId} status={d.status} />
-        </div>
-
-        {/* Global Watermark */}
-        <span className="absolute -left-32 top-1/2 -rotate-90 text-[12vw] font-black opacity-[0.02] pointer-events-none select-none italic text-primary">
-          ADMIN-VOICE
-        </span>
+            </div>
+          </section>
+        )}
       </article>
     </div>
   );

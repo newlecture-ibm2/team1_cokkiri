@@ -6,6 +6,7 @@ import lombok.Builder;
 import lombok.Getter;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.List;
 
 @Getter
@@ -34,6 +35,9 @@ public class RoomResponseDto {
     // 이미지
     private String thumbnailUrl;
     private List<SpaceImageDto> images;
+
+    // OCCUPIED일 때 현재 활성 계약 종료일 (사전 예약 가능 여부 표시용)
+    private LocalDate contractEndDate;
 
     @Getter
     @Builder
@@ -64,6 +68,7 @@ public class RoomResponseDto {
                 .maintenanceFee(room.getMaintenanceFee())
                 .parkingAvailable(room.getParkingAvailable())
                 .thumbnailUrl(room.getThumbnailUrl())
+                .contractEndDate(room.getContractEndDate())
                 .images(room.getImages() != null ? room.getImages().stream()
                         .map(img -> SpaceImageDto.builder()
                                 .spaceImageId(img.getSpaceImageId())

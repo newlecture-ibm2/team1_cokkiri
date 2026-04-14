@@ -62,7 +62,7 @@ export default async function CommunityPage({ searchParams }: { searchParams: Se
   const baseQuery = category ? `category=${encodeURIComponent(category)}` : "";
 
   return (
-    <>
+    <div className="mx-auto max-w-6xl">
       {/* Editorial Header */}
       <header className="mb-[clamp(2rem,5vw,5rem)]">
         <div className="flex flex-col gap-[clamp(0.75rem,1.5vw,1.5rem)]">
@@ -91,7 +91,7 @@ export default async function CommunityPage({ searchParams }: { searchParams: Se
       </header>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-3 gap-[clamp(0.5rem,1.5vw,2rem)] mb-[clamp(2rem,5vw,5rem)]">
+      <div className="mx-auto max-w-5xl grid grid-cols-3 gap-[clamp(0.5rem,1.5vw,2rem)] mb-[clamp(2rem,5vw,5rem)]">
         {[
           { label: "TOTAL", value: list?.totalElements.toString().padStart(2, '0') ?? "00", icon: FileText, href: "/community", watermark: "TOTAL" },
           { label: "NOTICE", value: list?.content.filter(p => p.category === 'NOTICE').length.toString().padStart(2, '0') ?? "00", icon: Layout, href: "/community?category=NOTICE", watermark: "NOTICE" },
@@ -119,7 +119,7 @@ export default async function CommunityPage({ searchParams }: { searchParams: Se
       </div>
 
       {/* Filter & List Area */}
-      <div className="space-y-[clamp(1.5rem,3vw,3rem)]">
+      <div className="mx-auto max-w-5xl space-y-[clamp(1.5rem,3vw,3rem)]">
         <section className="flex flex-col md:flex-row md:items-center justify-between gap-[clamp(1rem,2vw,2rem)] border-b border-foreground/10 pb-[clamp(1rem,2vw,2rem)]">
           <div className="flex flex-col gap-4">
             <CategoryFilter active={category || undefined} />
@@ -183,7 +183,7 @@ export default async function CommunityPage({ searchParams }: { searchParams: Se
           )
         }
       </div>
-    </>
+    </div>
   );
 
 }
