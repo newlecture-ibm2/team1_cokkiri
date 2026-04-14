@@ -71,10 +71,6 @@ public class AdminAnnotationTypeService implements AdminAnnotationTypeUseCase {
         AdminAnnotationType existing = annotationTypeRepositoryPort.findById(annotationTypeId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND));
 
-        if (Boolean.TRUE.equals(existing.getIsSystemDefault())) {
-            throw new BusinessException(ErrorCode.INVALID_STATUS);
-        }
-
         annotationTypeRepositoryPort.delete(annotationTypeId);
     }
 }
