@@ -620,7 +620,7 @@ public class DataInitializer implements ApplicationRunner {
                                 .name(name)
                                 .iconName(iconName)
                                 .defaultColor(defaultColor)
-                                .isSystemDefault(true)
+                                .isSystemDefault(false)
                                 .build()));
     }
 
@@ -630,7 +630,7 @@ public class DataInitializer implements ApplicationRunner {
                         RoomTypeEntity.builder()
                                 .code(code)
                                 .name(name)
-                                .isSystemDefault(true)
+                                .isSystemDefault(false)
                                 .sortOrder((int) roomTypeJpaRepository.count())
                                 .build()));
     }

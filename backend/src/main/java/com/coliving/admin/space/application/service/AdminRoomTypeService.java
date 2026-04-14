@@ -67,10 +67,6 @@ public class AdminRoomTypeService implements AdminRoomTypeUseCase {
         AdminRoomType existing = adminRoomTypeRepositoryPort.findById(roomTypeId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.ROOM_TYPE_NOT_FOUND));
 
-        if (Boolean.TRUE.equals(existing.getIsSystemDefault())) {
-            throw new BusinessException(ErrorCode.INVALID_STATUS); // "시스템 기본 유형은 삭제할 수 없습니다."
-        }
-
         if (adminRoomTypeRepositoryPort.isUsedInSpaces(roomTypeId)) {
             throw new BusinessException(ErrorCode.INVALID_STATUS); // "사용 중인 방 유형은 삭제할 수 없습니다."
         }
