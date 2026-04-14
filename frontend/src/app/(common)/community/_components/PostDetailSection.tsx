@@ -115,11 +115,11 @@ export function PostDetailSection({
 
         {/* Content Body */}
         <section className="space-y-3">
-          <h2 className="text-sm font-semibold tracking-tight text-primary/50">
+          <h2 className="text-sm font-semibold tracking-tight text-primary">
             내용
           </h2>
           <div className="bg-surface p-8 md:p-12 rounded-lg border border-primary/5 shadow-sm relative overflow-hidden">
-            <div className="post-html font-medium leading-[1.8] tracking-tight text-primary text-base relative z-10 opacity-90">
+            <div className="post-html font-medium leading-[1.8] tracking-tight text-primary text-base relative z-10">
               {isRichTextBodyHtml(detail.content) ? (
                 <div
                   className="[&_img]:my-6 [&_img]:max-h-[min(70vh,520px)] [&_img]:w-full [&_img]:rounded-xl [&_img]:object-cover [&_img]:shadow-md [&_p]:mb-4 [&_a]:break-all [&_a]:font-bold [&_a]:text-accent [&_a]:underline [&_a]:decoration-accent/30 [&_a]:underline-offset-4 [&_ul]:my-6 [&_ul]:list-disc [&_ul]:pl-8 [&_ol]:my-6 [&_ol]:list-decimal [&_ol]:pl-8 [&_blockquote]:my-8 [&_blockquote]:border-l-4 [&_blockquote]:border-accent [&_blockquote]:pl-6 [&_blockquote]:italic [&_pre]:my-6 [&_pre]:overflow-x-auto [&_pre]:rounded-xl [&_pre]:border [&_pre]:border-primary/5 [&_pre]:bg-primary/5 [&_pre]:p-6 [&_code]:text-sm"
@@ -161,7 +161,7 @@ export function PostDetailSection({
         {/* Attachments */}
         {(detail.attachments?.length ?? 0) > 0 && (
           <section className="space-y-2">
-            <h2 className="text-sm font-semibold tracking-tight text-primary/50">
+            <h2 className="text-sm font-semibold tracking-tight text-primary">
               첨부파일
             </h2>
             <ul className="space-y-1.5">
@@ -172,7 +172,7 @@ export function PostDetailSection({
                       href={apiFileUrlToBffPath(a.fileUrl)}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="group inline-flex items-center gap-1.5 text-sm font-medium text-accent hover:text-primary transition-colors"
+                      className="group inline-flex items-center gap-1.5 text-sm font-semibold text-primary hover:text-accent transition-colors"
                     >
                       <ArrowRight className="size-3 shrink-0" />
                       <span className="underline underline-offset-2 decoration-accent/30 truncate">{a.fileName ?? a.fileUrl}</span>
@@ -186,7 +186,7 @@ export function PostDetailSection({
 
         {/* Comments */}
         <div className="pt-8 border-t border-primary/10">
-          <h3 className="text-sm font-semibold tracking-tight text-primary/50 mb-3">
+          <h3 className="text-sm font-semibold tracking-tight text-primary mb-3">
             댓글 ({detail.commentCount})
           </h3>
           <CommentThreadSection

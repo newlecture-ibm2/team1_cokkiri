@@ -197,12 +197,13 @@ export function NewPostForm() {
                 type="file"
                 multiple
                 onChange={(e) => {
-                  if (e.target.files) {
-                    setFiles((prev) => [...prev, ...Array.from(e.target.files!)]);
+                  if (e.target.files && e.target.files.length > 0) {
+                    const selected = Array.from(e.target.files);
+                    setFiles((prev) => [...prev, ...selected]);
                     e.target.value = "";
                   }
                 }}
-                className="hidden"
+                className="sr-only"
               />
               {files.length === 0 && (
                 <span className="text-xs font-medium tracking-tight text-primary/30">

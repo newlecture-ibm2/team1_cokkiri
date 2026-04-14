@@ -116,8 +116,8 @@ export function CommentItem({
   }
 
   return (
-    <div className="rounded-lg bg-background border border-primary/15 p-4">
-      <div className="flex flex-col gap-2">
+    <div className="rounded-lg bg-background border border-primary/15 p-5 md:p-6">
+      <div className="flex flex-col gap-3">
         {/* Author + Date inline */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
@@ -135,7 +135,7 @@ export function CommentItem({
         <div>
           {!editing ? (
             <div className="space-y-3">
-              <p className="whitespace-pre-wrap text-sm font-semibold tracking-tight text-primary leading-relaxed">
+              <p className="whitespace-pre-wrap text-sm font-medium tracking-tight text-primary leading-relaxed">
                 {content}
               </p>
 
@@ -150,7 +150,7 @@ export function CommentItem({
                     onClick={startEdit}
                     className="inline-flex items-center gap-1 text-xs font-medium text-muted-foreground hover:text-accent transition-colors"
                   >
-                    <Edit3 className="size-3" />
+                    <Edit3 className="size-3.5" />
                   </button>
                   <button
                     type="button"
@@ -158,7 +158,7 @@ export function CommentItem({
                     disabled={pending}
                     className="inline-flex items-center gap-1 text-xs font-medium text-muted-foreground hover:text-destructive transition-colors disabled:opacity-30"
                   >
-                    <Trash2 className="size-3" />
+                    <Trash2 className="size-3.5" />
                   </button>
                 </div>
               )}
