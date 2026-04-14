@@ -13,6 +13,7 @@ public class PostListItemResult {
     private final PostCategory category;
     private final String title;
     private final Long authorUserId;
+    private final String authorName;
     private final Integer viewCount;
     private final Integer likeCount;
     private final Integer commentCount;

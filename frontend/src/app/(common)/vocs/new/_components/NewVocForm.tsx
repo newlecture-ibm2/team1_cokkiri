@@ -42,7 +42,7 @@ export function NewVocForm() {
   const [category, setCategory] = useState<VocCategoryCode>("FACILITY");
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
-  const [files, setFiles] = useState<FileList | null>(null);
+  const [files, setFiles] = useState<File[]>([]);
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const [showLoginModal, setShowLoginModal] = useState(false);
@@ -76,9 +76,9 @@ export function NewVocForm() {
         formData.append("category", category);
         formData.append("title", titleTrim);
         formData.append("content", body);
-        if (files?.length) {
-          for (let i = 0; i < files.length; i++) {
-            formData.append("files", files[i]);
+        if (files.length > 0) {
+          for (const file of files) {
+            formData.append("files", file);
           }
         }
 
@@ -123,7 +123,7 @@ export function NewVocForm() {
   }
 
   return (
-    <form onSubmit={submit} className="mx-auto max-w-5xl space-y-10">
+    <form onSubmit={submit} className="mx-auto max-w-5xl space-y-6">
       <LoginRequiredModal isOpen={showLoginModal} onClose={() => setShowLoginModal(false)} />
       <AccessDeniedModal isOpen={showAccessDenied} onClose={() => setShowAccessDenied(false)} />
 
@@ -136,7 +136,7 @@ export function NewVocForm() {
         </p>
       ) : null}
 
-      <div className="space-y-16">
+      <div className="space-y-8">
         <VocCategoryDropdown
           value={category}
           onChange={setCategory}
@@ -183,28 +183,59 @@ export function NewVocForm() {
             <span className="text-lg font-black uppercase tracking-tight text-primary">FILES.</span>
             <span className="text-sm font-medium text-primary/80">첨부파일</span>
           </label>
-          <div className="flex items-center gap-4">
-            <label
-              htmlFor="voc-files"
-              className="inline-flex cursor-pointer items-center gap-2 rounded-xl border-2 border-primary/10 bg-primary/5 px-6 py-3 text-sm font-semibold tracking-tight text-primary/70 transition-all hover:bg-primary/10 hover:border-primary/20 hover:text-primary"
-            >
-              파일 첨부
-            </label>
-            <input
-              id="voc-files"
-              type="file"
-              multiple
-              onChange={(e) => setFiles(e.target.files)}
-              className="hidden"
-            />
-            {files && files.length > 0 ? (
-              <span className="text-sm font-medium tracking-tight text-primary/60">
-                {files.length}개 파일 선택됨
-              </span>
-            ) : (
-              <span className="text-xs font-medium tracking-tight text-primary/30">
-                선택된 파일 없음
-              </span>
+          <div className="space-y-3">
+            <div className="flex items-center gap-4">
+              <label
+                htmlFor="voc-files"
+                className="inline-flex cursor-pointer items-center gap-2 rounded-xl border-2 border-primary/10 bg-primary/5 px-6 py-3 text-sm font-semibold tracking-tight text-primary/70 transition-all hover:bg-primary/10 hover:border-primary/20 hover:text-primary"
+              >
+                파일 첨부
+              </label>
+              <input
+                id="voc-files"
+                type="file"
+                multiple
+                onChange={(e) => {
+                  if (e.target.files && e.target.files.length > 0) {
+                    const selected = Array.from(e.target.files);
+                    setFiles((prev) => [...prev, ...selected]);
+                    e.target.value = "";
+                  }
+                }}
+                className="sr-only"
+              />
+              {files.length === 0 && (
+                <span className="text-xs font-medium tracking-tight text-primary/30">
+                  선택된 파일 없음
+                </span>
+              )}
+            </div>
+            {files.length > 0 && (
+              <ul className="space-y-1.5 pl-1">
+                {files.map((file, i) => (
+                  <li key={`${file.name}-${i}`} className="flex items-center gap-2 text-sm font-semibold tracking-tight text-primary">
+                    <span className="text-primary/40">•</span>
+                    <a
+                      href={URL.createObjectURL(file)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="underline underline-offset-2 decoration-primary/30 hover:text-accent transition-colors truncate max-w-md"
+                    >
+                      {file.name}
+                    </a>
+                    <span className="text-xs text-primary/50 shrink-0">
+                      ({(file.size / 1024).toFixed(1)} KB)
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => setFiles((prev) => prev.filter((_, idx) => idx !== i))}
+                      className="text-xs font-semibold text-destructive/70 hover:text-destructive transition-colors shrink-0"
+                    >
+                      삭제
+                    </button>
+                  </li>
+                ))}
+              </ul>
             )}
           </div>
           <p className="text-xs font-medium tracking-tight text-primary/40">
