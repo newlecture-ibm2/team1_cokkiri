@@ -10,4 +10,6 @@ public interface NotificationUseCase {
     NotificationListResult listNotifications(ListNotificationsCommand command);
 
     MarkNotificationReadResult markAsRead(MarkNotificationReadCommand command);
+
+    void deleteNotification(Long notificationId, Long userId);
 }

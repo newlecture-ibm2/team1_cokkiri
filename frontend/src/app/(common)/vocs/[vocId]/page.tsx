@@ -95,18 +95,21 @@ export default async function VocDetailPage({ params }: { params: Params }) {
             목록으로 돌아가기
           </Link>
 
+          {/* Header Title */}
+          <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-12 border-b border-primary/10 pb-8">
+            <div className="max-w-2xl">
+              <h1 className="text-5xl md:text-7xl font-black leading-tight tracking-tight uppercase whitespace-nowrap">
+                MY VOIC<span className="underline underline-offset-4 decoration-[var(--color-accent)]">E.</span>
+                <span className="text-2xl md:text-4xl font-bold tracking-normal ml-2 align-bottom opacity-80">나의 민원</span>
+              </h1>
+            </div>
+          </div>
+
           {/* Badge + Title */}
           <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-4 border-b border-primary/10 pb-6">
-            <h1 className="text-3xl md:text-5xl tracking-tight leading-snug text-primary min-w-0">
-              <span className="font-bold text-[#4A7C6F]">
-                {vocCategoryLabel(d.category)}
-              </span>
-              <span className="mx-1.5 text-muted-foreground/30 font-light">|</span>
+            <h2 className="text-3xl md:text-5xl tracking-tight leading-snug text-primary min-w-0">
               <span className="font-medium">{d.title}</span>
-            </h1>
-            <div className="shrink-0 self-end pb-1">
-              <VocDetailActions vocId={d.vocId} status={d.status} />
-            </div>
+            </h2>
           </div>
         </div>
 
@@ -199,6 +202,9 @@ export default async function VocDetailPage({ params }: { params: Params }) {
             </div>
           </section>
         )}
+
+        {/* Edit / Cancel Actions (bottom) */}
+        <VocDetailActions vocId={d.vocId} status={d.status} />
       </article>
     </div>
   );

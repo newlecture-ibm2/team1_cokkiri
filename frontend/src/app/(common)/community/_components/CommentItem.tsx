@@ -197,7 +197,7 @@ export function CommentItem({
                 <button
                   type="submit"
                   disabled={pending || !draft.trim()}
-                  className="px-4 py-1.5 bg-primary text-white rounded-lg text-xs font-semibold hover:bg-accent transition-colors disabled:opacity-30"
+                  className="px-4 py-1.5 bg-primary text-white rounded-lg text-xs font-semibold hover:bg-primary/90 transition-colors disabled:opacity-30"
                 >
                   {pending ? "저장 중..." : "저장"}
                 </button>

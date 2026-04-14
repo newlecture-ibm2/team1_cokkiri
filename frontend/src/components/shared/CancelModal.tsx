@@ -57,8 +57,8 @@ export function CancelModal({
           >
             <div className="p-8">
               <div className="mb-6 flex items-center justify-center">
-                <div className="flex h-16 w-16 items-center justify-center rounded-full bg-red-50">
-                  <AlertCircle className="h-8 w-8 text-red-500" strokeWidth={2.5} />
+                <div className="flex h-16 w-16 items-center justify-center rounded-full bg-[#7F1D1D]/5">
+                  <AlertCircle className="h-8 w-8 text-[#7F1D1D]" strokeWidth={2.5} />
                 </div>
               </div>
 
@@ -76,7 +76,7 @@ export function CancelModal({
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                   onClick={onConfirm}
-                  className="w-full rounded-xl bg-red-500 px-6 py-4 text-sm font-bold tracking-widest text-white transition-colors hover:bg-red-600"
+                  className="w-full rounded-xl bg-[#7F1D1D] px-6 py-4 text-sm font-bold tracking-widest text-white transition-colors hover:bg-[#7F1D1D]/90"
                 >
                   {confirmText}
                 </motion.button>
