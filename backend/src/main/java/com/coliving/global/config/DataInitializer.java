@@ -641,10 +641,18 @@ public class DataInitializer implements ApplicationRunner {
 
     private void saveSpaceImageIfNotExists(
             SpaceEntity space, String imageUrl, ImageType imageType, int sortOrder, boolean thumbnail) {
-        boolean exists = spaceImageJpaRepository.findAll().stream()
-                .anyMatch(img -> img.getSpace().getSpaceId().equals(space.getSpaceId())
-                        && imageUrl.equals(img.getImageUrl()));
+        
+        java.util.List<com.coliving.admin.space.adapter.out.jpa.SpaceImageEntity> existingImages = spaceImageJpaRepository.findBySpace_SpaceId(space.getSpaceId());
+        
+        // 이전 테스트에서 남겨진 잘못된 로컬 더미 이미지 일괄 삭제
+        existingImages.stream()
+                .filter(img -> img.getImageUrl().startsWith("/api/uploads/") && img.getImageUrl().endsWith(".png"))
+                .forEach(spaceImageJpaRepository::delete);
+
+        boolean exists = existingImages.stream()
+                .anyMatch(img -> imageUrl.equals(img.getImageUrl()));
         if (exists) return;
+        
         spaceImageJpaRepository.save(SpaceImageEntity.builder()
                 .space(space)
                 .imageUrl(imageUrl)
