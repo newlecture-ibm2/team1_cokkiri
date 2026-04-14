@@ -279,7 +279,7 @@ export default function ControlLogTable() {
                           실패
                         </span>
                         {log.errorMessage && (
-                          <div className="mt-0.5 text-[10px] text-red-400 max-w-[200px] truncate" title={log.errorMessage}>
+                          <div className="mt-0.5 text-[10px] text-red-400 break-words">
                             {log.errorMessage}
                           </div>
                         )}

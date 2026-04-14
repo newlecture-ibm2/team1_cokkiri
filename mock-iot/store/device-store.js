@@ -209,11 +209,15 @@ function setErrorMode(macAddress, mode) {
   const device = getByMac(macAddress);
   if (!device) return false;
   device.error_mode = mode;
-  if (mode !== 'normal') {
+  // error/fault: 기기 자체 장애 → 상태 ERROR
+  // timeout: 일시적 네트워크 지연 → 기기 상태 유지 (ONLINE)
+  // normal: 정상 복귀
+  if (mode === 'error' || mode === 'fault') {
     device.status = 'ERROR';
-  } else {
+  } else if (mode === 'normal') {
     device.status = 'ONLINE';
   }
+  // timeout은 status를 변경하지 않음
   save();
   return true;
 }

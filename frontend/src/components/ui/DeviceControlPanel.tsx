@@ -166,6 +166,7 @@ export function DeviceControlPanel({
     async (command: string, params: Record<string, unknown>) => {
       if (disabled || busy) return;
       setBusy(true);
+      const prevState = { ...localState }; // 슬라이더 onChange 이전 값 백업
       try {
         await onControl(command, params);
         // 성공 시에만 Optimistic UI 반영
@@ -173,7 +174,8 @@ export function DeviceControlPanel({
         setLocalState(newState);
         onStateChange?.(newState);
       } catch {
-        // 제어 실패 시 UI 상태 변경하지 않음
+        // 제어 실패 시 슬라이더 등 onChange로 변경된 상태를 이전 값으로 롤백
+        setLocalState(prevState);
       } finally {
         setBusy(false);
       }

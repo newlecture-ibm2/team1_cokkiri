@@ -111,9 +111,18 @@ public class MockIotClient implements IotClient {
                     macAddress, command, e.getStatusCode(), e.getResponseBodyAsString());
             return parseErrorResponse(e.getResponseBodyAsString(), deviceId, command);
         } catch (WebClientRequestException e) {
+            String detail;
+            Throwable cause = e.getCause();
+            if (cause instanceof java.net.ConnectException) {
+                detail = "IoT 서버에 연결할 수 없습니다 (서버 다운)";
+            } else if (cause instanceof java.io.IOException) {
+                detail = "IoT 기기와의 연결이 끊겼습니다 (연결 중단)";
+            } else {
+                detail = "IoT 서버 연결 실패: " + e.getMessage();
+            }
             log.error("[IoT 연결 실패] mac: {}, command: {} — {}",
-                    macAddress, command, e.getMessage());
-            return IotResponse.failure(deviceId, command, "IoT 서버 연결 실패");
+                    macAddress, command, detail);
+            return IotResponse.failure(deviceId, command, detail);
         } catch (Exception e) {
             log.error("[IoT 통신 실패] mac: {}, command: {} — {}",
                     macAddress, command, e.getMessage());

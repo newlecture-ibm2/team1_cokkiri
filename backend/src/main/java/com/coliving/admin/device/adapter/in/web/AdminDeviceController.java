@@ -18,6 +18,7 @@ import com.coliving.admin.device.application.port.in.CreateAdminDeviceUseCase;
 import com.coliving.admin.device.application.result.ControlAdminDeviceResult;
 import com.coliving.admin.device.application.result.CreateAdminDeviceResult;
 import com.coliving.admin.device.model.AdminDevice;
+import com.coliving.admin.device.model.DeviceStatus;
 import com.coliving.global.dto.ApiResponse;
 import com.coliving.global.error.BusinessException;
 import com.coliving.global.error.ErrorCode;
@@ -224,9 +225,9 @@ public class AdminDeviceController {
             @Valid @RequestBody ErrorModeRequestDto requestDto) {
 
         // DB에서 device_id → mac_address 조회
-        String macAddress = deviceJpaRepository.findById(id)
-                .map(DeviceEntity::getMacAddress)
+        DeviceEntity device = deviceJpaRepository.findById(id)
                 .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND));
+        String macAddress = device.getMacAddress();
 
         // Mock IoT 서버에 MAC 기반으로 에러 모드 전달
         try {
@@ -237,11 +238,22 @@ public class AdminDeviceController {
                     .bodyToMono(String.class)
                     .block();
 
+            // DB 즉시 동기화: error/fault → ERROR, normal → ONLINE, timeout → 변경 없음(일시적 오류)
+            String mode = requestDto.mode();
+            if ("error".equals(mode) || "fault".equals(mode)) {
+                device.updateStatus(DeviceStatus.ERROR);
+                deviceJpaRepository.save(device);
+            } else if ("normal".equals(mode)) {
+                device.updateStatus(DeviceStatus.ONLINE);
+                deviceJpaRepository.save(device);
+            }
+            // timeout은 일시적 네트워크 지연이므로 기기 상태 변경하지 않음
+
             Map<String, Object> result = Map.of(
                     "deviceId", id,
                     "macAddress", macAddress,
-                    "errorMode", requestDto.mode(),
-                    "message", "에러 모드가 '" + requestDto.mode() + "'로 설정되었습니다"
+                    "errorMode", mode,
+                    "message", "에러 모드가 '" + mode + "'로 설정되었습니다"
             );
             return ResponseEntity.ok(ApiResponse.ok(result));
         } catch (Exception e) {
