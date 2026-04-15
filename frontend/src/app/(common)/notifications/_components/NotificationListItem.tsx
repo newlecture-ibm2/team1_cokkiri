@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Trash2 } from "lucide-react";
 import { invalidateNotificationsUnreadCount } from "@/lib/notifications-events";
+import { useAuthStore } from "@/store/useAuthStore";
 
 type NotificationItem = {
   notificationId: number;
@@ -30,6 +31,7 @@ function senderLabel(referenceType: string | null): string {
 
 export function NotificationListItem({ item }: { item: NotificationItem }) {
   const router = useRouter();
+  const { user } = useAuthStore();
   const [readLocally, setReadLocally] = useState(false);
   const [deleted, setDeleted] = useState(false);
 
@@ -39,6 +41,7 @@ export function NotificationListItem({ item }: { item: NotificationItem }) {
   }, [item.notificationId]);
 
   const isRead = readLocally || item.isRead;
+  const isAdmin = user?.role === "ADMIN";
 
   const handleClick = async () => {
     if (!isRead) {
@@ -60,20 +63,15 @@ export function NotificationListItem({ item }: { item: NotificationItem }) {
 
     let targetPath = "/notifications";
     const refType = item.referenceType?.toUpperCase();
-    const type = item.type?.toUpperCase();
     const refId = item.referenceId;
 
     if (refId) {
       if (refType === "COMMUNITY") {
         targetPath = `/community/${refId}`;
       } else if (refType === "VOC") {
-        if (type === "VOC_CREATED") {
-          targetPath = `/admin/vocs/${refId}`;
-        } else {
-          targetPath = `/vocs/${refId}`;
-        }
+        targetPath = isAdmin ? `/admin/vocs/${refId}` : `/vocs/${refId}`;
       } else if (refType === "CONTRACT") {
-        targetPath = `/my-contracts`;
+        targetPath = isAdmin ? `/admin/contracts` : `/my-contracts`;
       } else if (refType === "RESERVATION") {
         targetPath = `/my-history/reservation`;
       } else if (refType === "PAYMENT") {
