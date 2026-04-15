@@ -134,7 +134,7 @@ export function SpaceBlock({ block, cellSize, onResizeEnd }: SpaceBlockProps) {
                   color: 'var(--background)',
                 }}
               >
-                {statusInfo.label}
+                {block.type === 'COMMON' ? '공용' : statusInfo.label}
               </span>
             </div>
           </div>
