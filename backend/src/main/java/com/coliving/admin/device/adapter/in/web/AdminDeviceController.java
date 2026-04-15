@@ -2,8 +2,11 @@ package com.coliving.admin.device.adapter.in.web;
 
 import com.coliving.admin.device.adapter.in.web.dto.req.ControlAdminDeviceRequestDto;
 import com.coliving.admin.device.adapter.in.web.dto.req.CreateAdminDeviceRequestDto;
+import com.coliving.admin.device.adapter.in.web.dto.req.ErrorModeRequestDto;
 import com.coliving.admin.device.adapter.in.web.dto.req.UpdateAdminDeviceActiveRequestDto;
 import com.coliving.admin.device.adapter.in.web.dto.req.UpdateAdminDeviceRequestDto;
+import com.coliving.admin.device.adapter.out.jpa.DeviceEntity;
+import com.coliving.admin.device.adapter.out.jpa.DeviceJpaRepository;
 import com.coliving.admin.device.adapter.in.web.dto.res.AdminDeviceResponseDto;
 import com.coliving.admin.device.adapter.in.web.dto.res.ControlAdminDeviceResponseDto;
 import com.coliving.admin.device.adapter.in.web.dto.res.CreateAdminDeviceResponseDto;
@@ -15,17 +18,23 @@ import com.coliving.admin.device.application.port.in.CreateAdminDeviceUseCase;
 import com.coliving.admin.device.application.result.ControlAdminDeviceResult;
 import com.coliving.admin.device.application.result.CreateAdminDeviceResult;
 import com.coliving.admin.device.model.AdminDevice;
+import com.coliving.admin.device.model.DeviceStatus;
 import com.coliving.global.dto.ApiResponse;
 import com.coliving.global.error.BusinessException;
 import com.coliving.global.error.ErrorCode;
 import com.coliving.global.security.JwtTokenProvider;
+import com.coliving.infra.iot.IotClient;
+import com.coliving.infra.iot.IotDeviceInfo;
+import com.coliving.infra.iot.IotGatewayInfo;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.reactive.function.client.WebClient;
 
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -39,6 +48,10 @@ public class AdminDeviceController {
     private final CreateAdminDeviceUseCase createAdminDeviceUseCase;
     private final AdminDeviceUseCase adminDeviceUseCase;
     private final JwtTokenProvider jwtTokenProvider;
+    private final IotClient iotClient;
+    private final DeviceJpaRepository deviceJpaRepository;
+    @Qualifier("iotWebClient")
+    private final WebClient iotWebClient;
 
     /**
      * 기기 목록 조회 (ADM-DEV-01)
@@ -72,6 +85,40 @@ public class AdminDeviceController {
         result.put("size", s);
         result.put("totalElements", totalElements);
         result.put("totalPages", totalPages);
+
+        return ResponseEntity.ok(ApiResponse.ok(result));
+    }
+
+    /**
+     * IoT 게이트웨이 목록 조회 — 네트워크 토폴로지 파악
+     * GET /api/admin/devices/gateways
+     */
+    @GetMapping("/gateways")
+    public ResponseEntity<ApiResponse<Map<String, Object>>> discoverGateways() {
+        List<IotGatewayInfo> gateways = iotClient.discoverGateways();
+
+        Map<String, Object> result = new LinkedHashMap<>();
+        result.put("gateways", gateways);
+        result.put("total", gateways.size());
+
+        return ResponseEntity.ok(ApiResponse.ok(result));
+    }
+
+    /**
+     * IoT 서버 기기 발견 — 게이트웨이별 로컬 기기 조회
+     * GET /api/admin/devices/iot-devices?host=192.168.1.101
+     */
+    @GetMapping("/iot-devices")
+    public ResponseEntity<ApiResponse<Map<String, Object>>> discoverIotDevices(
+            @RequestParam(required = false) String host) {
+
+        List<IotDeviceInfo> devices = (host != null && !host.isBlank())
+                ? iotClient.discoverDevicesByHost(host)
+                : iotClient.discoverDevices();
+
+        Map<String, Object> result = new LinkedHashMap<>();
+        result.put("devices", devices);
+        result.put("total", devices.size());
 
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
@@ -141,7 +188,7 @@ public class AdminDeviceController {
      * ADMIN은 space_id 제한 없이 전체 접근
      */
     @PostMapping("/{id}/control")
-    public ResponseEntity<ApiResponse<ControlAdminDeviceResponseDto>> controlDevice(
+    public ResponseEntity<ApiResponse<?>> controlDevice(
             @PathVariable Long id,
             @Valid @RequestBody ControlAdminDeviceRequestDto requestDto,
             HttpServletRequest request) {
@@ -157,8 +204,62 @@ public class AdminDeviceController {
         );
 
         ControlAdminDeviceResult result = adminDeviceUseCase.controlDevice(command);
+
+        if (!result.success()) {
+            return ResponseEntity.status(HttpStatus.BAD_GATEWAY)
+                    .body(ApiResponse.error(ErrorCode.IOT_COMMUNICATION_FAIL, result.message()));
+        }
+
         return ResponseEntity.ok(ApiResponse.ok(
                 ControlAdminDeviceResponseDto.from(result), result.message()));
+    }
+
+    /**
+     * 기기 에러 모드 설정 (Mock IoT 서버 프록시)
+     * POST /api/admin/devices/{id}/error-mode
+     * { "mode": "normal" | "error" | "timeout" | "fault" }
+     */
+    @PostMapping("/{id}/error-mode")
+    public ResponseEntity<ApiResponse<?>> setErrorMode(
+            @PathVariable Long id,
+            @Valid @RequestBody ErrorModeRequestDto requestDto) {
+
+        // DB에서 device_id → mac_address 조회
+        DeviceEntity device = deviceJpaRepository.findById(id)
+                .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND));
+        String macAddress = device.getMacAddress();
+
+        // Mock IoT 서버에 MAC 기반으로 에러 모드 전달
+        try {
+            iotWebClient.post()
+                    .uri("/api/devices/" + macAddress + "/error-mode")
+                    .bodyValue(Map.of("mode", requestDto.mode()))
+                    .retrieve()
+                    .bodyToMono(String.class)
+                    .block();
+
+            // DB 즉시 동기화: error/fault → ERROR, normal → ONLINE, timeout → 변경 없음(일시적 오류)
+            String mode = requestDto.mode();
+            if ("error".equals(mode) || "fault".equals(mode)) {
+                device.updateStatus(DeviceStatus.ERROR);
+                deviceJpaRepository.save(device);
+            } else if ("normal".equals(mode)) {
+                device.updateStatus(DeviceStatus.ONLINE);
+                deviceJpaRepository.save(device);
+            }
+            // timeout은 일시적 네트워크 지연이므로 기기 상태 변경하지 않음
+
+            Map<String, Object> result = Map.of(
+                    "deviceId", id,
+                    "macAddress", macAddress,
+                    "errorMode", mode,
+                    "message", "에러 모드가 '" + mode + "'로 설정되었습니다"
+            );
+            return ResponseEntity.ok(ApiResponse.ok(result));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_GATEWAY)
+                    .body(ApiResponse.error(ErrorCode.IOT_COMMUNICATION_FAIL));
+        }
     }
 
     // ── JWT 토큰 추출 ──

@@ -14,13 +14,19 @@ import com.coliving.admin.device.application.result.CreateAdminDeviceResult;
 import com.coliving.admin.device.model.AdminDevice;
 import com.coliving.global.error.BusinessException;
 import com.coliving.global.error.ErrorCode;
+import com.coliving.infra.iot.DeviceStateUtil;
 import com.coliving.infra.iot.IotClient;
+import com.coliving.infra.iot.IotDeviceInfo;
+import com.coliving.infra.iot.IotResponse;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Map;
 
 @Slf4j
 @Service
@@ -30,32 +36,45 @@ public class AdminDeviceService implements CreateAdminDeviceUseCase, AdminDevice
     private final AdminDeviceRepositoryPort adminDeviceRepositoryPort;
     private final IotClient iotClient;
 
-    // ── 기기 등록 (Create) ──
+    // ── 기기 등록 (Create) — IoT 서버 조회 → DB INSERT ──
 
     @Override
     @Transactional
     public CreateAdminDeviceResult execute(CreateAdminDeviceCommand command) {
-        if (command.macAddress() != null && !command.macAddress().isBlank()) {
-            if (adminDeviceRepositoryPort.existsByMacAddress(command.macAddress())) {
-                throw new BusinessException(ErrorCode.DUPLICATE_MAC_ADDRESS);
-            }
+        // 1. MAC 주소 중복 검증
+        if (adminDeviceRepositoryPort.existsByMacAddress(command.macAddress())) {
+            throw new BusinessException(ErrorCode.DUPLICATE_MAC_ADDRESS);
         }
 
-        if (command.deviceTypeId() != null) {
-            validateDoorLockSpaceType(command.spaceId(), command.deviceTypeId());
+        // 2. 도어락 → PRIVATE 공간만 허용
+        validateDoorLockSpaceType(command.spaceId(), command.deviceTypeId());
+
+        // 3. IoT 서버에서 MAC으로 기기 정보 조회
+        var iotDevice = iotClient.getDeviceByMac(command.macAddress());
+        if (iotDevice == null) {
+            throw new BusinessException(ErrorCode.NOT_FOUND, "IoT 서버에서 해당 MAC 주소의 기기를 찾을 수 없습니다");
         }
 
+        // 4. 초기 상태: 제어 이벤트 전까지 빈 객체
+        //    current_state는 IoT 제어 응답으로만 채워지며, device_types.commands는 사용하지 않음
+        String initialState = "{}";
+
+        // 5. AdminDevice 생성
+        //    - name: 관리자가 입력 (command.name())
+        //    - modelName: IoT 서버에서 조회
+        //    - mockEndpoint: 게이트웨이 IP (host)
         AdminDevice device = new AdminDevice(
                 null,
                 command.spaceId(),
                 null, null,   // spaceName, spaceFloor — PersistenceAdapter에서 채움
                 command.deviceTypeId(),
-                null, null,
-                command.name(),
-                command.modelName(),
-                command.macAddress(),
-                command.mockEndpoint(),
-                "ONLINE", "{}",
+                null, null, null, // deviceTypeCode, Name, Commands — PersistenceAdapter에서 채움
+                command.name(),            // 관리자가 부여한 이름
+                iotDevice.modelName(),     // IoT 서버에서 조회
+                command.macAddress(),      // 연결 키
+                iotDevice.host(),          // 게이트웨이 IP → mock_endpoint에 저장
+                iotDevice.status() != null ? iotDevice.status() : "ONLINE",
+                initialState,
                 true,
                 null, null, null, null
         );
@@ -67,15 +86,53 @@ public class AdminDeviceService implements CreateAdminDeviceUseCase, AdminDevice
     // ── 기기 목록 조회 (Read) ──
 
     @Override
-    @Transactional(readOnly = true)
+    @Transactional
     public List<AdminDevice> getDeviceList() {
+        syncDeviceStatusFromIot();
         return adminDeviceRepositoryPort.findAll();
     }
 
     @Override
-    @Transactional(readOnly = true)
+    @Transactional
     public List<AdminDevice> getDeviceList(AdminDeviceListCommand command) {
+        syncDeviceStatusFromIot();
         return adminDeviceRepositoryPort.findAll(command);
+    }
+
+    /**
+     * Mock IoT 서버의 실시간 기기 상태(status)를 백엔드 DB에 동기화.
+     * 에러 시뮬레이션에 의해 mock-iot에서 발생한 ERROR/ONLINE 전환이
+     * 관리자 UI에 반영되도록 합니다.
+     * <p>
+     * IoT 서버 통신 실패 시 기존 DB 상태를 유지합니다 (내결함성).
+     */
+    private void syncDeviceStatusFromIot() {
+        try {
+            List<IotDeviceInfo> iotDevices = iotClient.discoverDevices();
+            if (iotDevices.isEmpty()) return;
+
+            // MAC → IoT 상태 맵 구성
+            Map<String, String> iotStatusMap = new java.util.HashMap<>();
+            for (IotDeviceInfo iot : iotDevices) {
+                if (iot.macAddress() != null && iot.status() != null) {
+                    iotStatusMap.put(iot.macAddress(), iot.status());
+                }
+            }
+
+            // DB의 활성화(is_active=true) 기기만 동기화
+            List<AdminDevice> dbDevices = adminDeviceRepositoryPort.findAll();
+            for (AdminDevice db : dbDevices) {
+                if (!Boolean.TRUE.equals(db.isActive())) continue;
+                String iotStatus = iotStatusMap.get(db.macAddress());
+                if (iotStatus != null && !iotStatus.equals(db.status())) {
+                    adminDeviceRepositoryPort.updateStatus(db.deviceId(), iotStatus);
+                    log.debug("[IoT 상태 동기화] deviceId: {}, mac: {}, {} → {}",
+                            db.deviceId(), db.macAddress(), db.status(), iotStatus);
+                }
+            }
+        } catch (Exception e) {
+            log.warn("[IoT 상태 동기화 실패] 기존 DB 상태 유지 — {}", e.getMessage());
+        }
     }
 
     // ── 기기 수정 (ADM-DEV-05) ──
@@ -133,10 +190,7 @@ public class AdminDeviceService implements CreateAdminDeviceUseCase, AdminDevice
             throw new BusinessException(ErrorCode.DEVICE_ACTIVE);
         }
 
-        if (adminDeviceRepositoryPort.hasControlLogs(command.deviceId())) {
-            throw new BusinessException(ErrorCode.CONTROL_LOG_EXISTS);
-        }
-
+        // Soft Delete: deleted_at 설정 — 제어 이력(control_logs)은 감사 목적으로 보존
         adminDeviceRepositoryPort.softDelete(command.deviceId());
     }
 
@@ -164,13 +218,13 @@ public class AdminDeviceService implements CreateAdminDeviceUseCase, AdminDevice
             throw new BusinessException(ErrorCode.DEVICE_INACTIVE);
         }
 
-        // 3. 기기 온라인 상태 검증
-        if ("OFFLINE".equals(device.status()) || "ERROR".equals(device.status())) {
+        // 3. 기기 상태 검증 — OFFLINE만 차단 (통신 불가), ERROR는 IoT에 위임
+        if ("OFFLINE".equals(device.status())) {
             throw new BusinessException(ErrorCode.DEVICE_OFFLINE);
         }
 
         // 4. MockIoT 제어 명령 전송
-        boolean success = iotClient.sendCommand(
+        IotResponse iotResult = iotClient.sendCommand(
                 command.deviceId(), command.command(), command.params());
 
         // 5. CONTROL_LOG 감사 이력 기록 (성공/실패 모두 기록)
@@ -180,19 +234,33 @@ public class AdminDeviceService implements CreateAdminDeviceUseCase, AdminDevice
                 "ADMIN",
                 command.command(),
                 command.params(),
-                success ? "SUCCESS" : "FAILURE",
-                success ? null : "IoT 통신 실패",
+                iotResult.result(),
+                iotResult.success() ? null : iotResult.message(),
                 command.correlationId()
         );
 
-        if (!success) {
-            // IoT 통신 실패 시 기기 상태를 자동으로 ERROR로 전환
-            adminDeviceRepositoryPort.updateStatus(command.deviceId(), "ERROR");
-            throw new BusinessException(ErrorCode.IOT_COMMUNICATION_FAIL);
+        if (!iotResult.success()) {
+            // 제어 실패 결과만 반환 (DB 상태 변경 없음 — 상태 동기화는 헬스체크 스케줄러 전담)
+            return new ControlAdminDeviceResult(
+                    command.deviceId(),
+                    command.command(),
+                    false,
+                    iotResult.message() != null ? iotResult.message() : "IoT 기기 통신에 실패했습니다"
+            );
         }
 
         // 6. 제어 성공 시 기기 current_state 업데이트
-        String newState = buildCurrentState(command.command(), command.params());
+        String newState;
+        if (iotResult.state() != null && !iotResult.state().isEmpty()) {
+            try {
+                newState = new ObjectMapper().writeValueAsString(iotResult.state());
+            } catch (JsonProcessingException e) {
+                log.warn("[IoT 상태 직렬화 실패] deviceId: {}, 기존 방식으로 폴백", command.deviceId(), e);
+                newState = DeviceStateUtil.mergeState(device.currentState(), command.params());
+            }
+        } else {
+            newState = DeviceStateUtil.mergeState(device.currentState(), command.params());
+        }
         adminDeviceRepositoryPort.updateCurrentState(command.deviceId(), newState);
 
         return new ControlAdminDeviceResult(
@@ -215,45 +283,6 @@ public class AdminDeviceService implements CreateAdminDeviceUseCase, AdminDevice
         if (!"PRIVATE".equals(spaceType)) {
             throw new BusinessException(ErrorCode.VALIDATION_ERROR,
                     "도어락(DOOR_LOCK)은 개인 공간(PRIVATE)에만 설치할 수 있습니다");
-        }
-    }
-
-    /**
-     * 제어 명령에 따른 current_state JSON 생성
-     */
-    private String buildCurrentState(String command, java.util.Map<String, Object> params) {
-        java.util.Map<String, Object> state = new java.util.HashMap<>();
-        switch (command) {
-            case "ON" -> state.put("power", "ON");
-            case "OFF" -> state.put("power", "OFF");
-            case "LOCK" -> state.put("power", "ON");
-            case "UNLOCK" -> state.put("power", "OFF");
-            case "START" -> state.put("power", "ON");
-            case "STOP" -> state.put("power", "OFF");
-            case "SET_TEMP" -> {
-                state.put("power", "ON");
-                if (params != null && params.containsKey("temperature")) {
-                    state.put("temperature", params.get("temperature"));
-                }
-            }
-            case "SET_BRIGHTNESS" -> {
-                state.put("power", "ON");
-                if (params != null && params.containsKey("brightness")) {
-                    state.put("brightness", params.get("brightness"));
-                }
-            }
-            case "SET_MODE" -> {
-                state.put("power", "ON");
-                if (params != null && params.containsKey("mode")) {
-                    state.put("mode", params.get("mode"));
-                }
-            }
-            default -> state.put("power", "ON");
-        }
-        try {
-            return new com.fasterxml.jackson.databind.ObjectMapper().writeValueAsString(state);
-        } catch (Exception e) {
-            return "{\"power\":\"ON\"}";
         }
     }
 }

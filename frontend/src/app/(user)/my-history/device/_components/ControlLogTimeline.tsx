@@ -3,29 +3,7 @@
 import { motion } from "framer-motion";
 import type { ControlLogItem } from "../_types";
 
-/* ── 상수 매핑 ── */
 
-const DEVICE_ICONS: Record<string, string> = {
-  DOOR_LOCK: "🔒",
-  LIGHT: "💡",
-  AIR_CONDITIONER: "❄️",
-  WASHER: "🫧",
-  DRYER: "🌀",
-  HEATER: "🔥",
-  CCTV: "📹",
-};
-
-const COMMAND_LABELS: Record<string, string> = {
-  ON: "전원 켜기",
-  OFF: "전원 끄기",
-  LOCK: "잠금",
-  UNLOCK: "잠금 해제",
-  START: "시작",
-  STOP: "정지",
-  SET_TEMP: "온도 설정",
-  SET_BRIGHTNESS: "밝기 설정",
-  SET_MODE: "모드 변경",
-};
 
 /* ── 유틸 ── */
 
@@ -36,15 +14,16 @@ function formatDateTime(iso: string): { date: string; time: string } {
   return { date, time };
 }
 
+/** commandParams JSON을 "키: 값" 문자열로 변환 (모든 키 자동 표시) */
 function formatParams(params: string | null): string | null {
   if (!params) return null;
   try {
     const obj = JSON.parse(params);
     const parts: string[] = [];
-    if (obj.temperature !== undefined) parts.push(`${obj.temperature}°C`);
-    if (obj.brightness !== undefined) parts.push(`밝기 ${obj.brightness}%`);
-    if (obj.mode !== undefined) parts.push(`모드: ${obj.mode}`);
-    if (obj.course !== undefined) parts.push(`코스: ${obj.course}`);
+    for (const [key, value] of Object.entries(obj)) {
+      if (value === undefined || value === null) continue;
+      parts.push(`${key}: ${value}`);
+    }
     return parts.length > 0 ? parts.join(", ") : null;
   } catch {
     return null;
@@ -129,8 +108,7 @@ export default function ControlLogTimeline({ logs, isLoading }: ControlLogTimeli
 
 function LogCard({ log, index }: { log: ControlLogItem; index: number }) {
   const { time } = formatDateTime(log.createdAt);
-  const icon = DEVICE_ICONS[log.deviceTypeCode ?? ""] ?? "⚡";
-  const commandLabel = COMMAND_LABELS[log.command] ?? log.command;
+  const command = log.commandLabel || log.command;
   const paramText = formatParams(log.commandParams);
   const isSuccess = log.result === "SUCCESS";
 
@@ -146,14 +124,12 @@ function LogCard({ log, index }: { log: ControlLogItem; index: number }) {
       }`}
     >
       <div className="flex items-start gap-4">
-        {/* 아이콘 */}
+        {/* 상태 도트 */}
         <div
-          className={`flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center text-lg ${
-            isSuccess ? "bg-accent/10" : "bg-red-100"
+          className={`flex-shrink-0 w-2.5 h-2.5 rounded-full mt-1.5 ${
+            isSuccess ? "bg-accent" : "bg-red-500"
           }`}
-        >
-          {icon}
-        </div>
+        />
 
         {/* 본문 */}
         <div className="flex-1 min-w-0">
@@ -161,8 +137,8 @@ function LogCard({ log, index }: { log: ControlLogItem; index: number }) {
             <p className="text-sm font-bold tracking-tight text-primary truncate">
               {log.deviceName}
             </p>
-            <span className="text-xs font-medium text-muted-foreground flex-shrink-0">
-              {commandLabel}
+            <span className="text-xs font-mono font-medium text-muted-foreground flex-shrink-0">
+              {command}
             </span>
           </div>
 

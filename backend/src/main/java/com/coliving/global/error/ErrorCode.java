@@ -35,6 +35,7 @@ public enum ErrorCode {
 
     // ── 기기 제어 ──
     DEVICE_OFFLINE(HttpStatus.UNPROCESSABLE_ENTITY, "기기가 오프라인 상태입니다"),
+    DEVICE_ERROR(HttpStatus.UNPROCESSABLE_ENTITY, "기기에 오류가 발생하여 제어할 수 없습니다"),
     DEVICE_INACTIVE(HttpStatus.UNPROCESSABLE_ENTITY, "기기가 비활성화 상태입니다"),
     SPACE_MISMATCH(HttpStatus.FORBIDDEN, "해당 기기에 대한 접근 권한이 없습니다"),
     NO_ACTIVE_RESERVATION(HttpStatus.FORBIDDEN, "유효한 예약이 없어 공용 기기를 제어할 수 없습니다"),

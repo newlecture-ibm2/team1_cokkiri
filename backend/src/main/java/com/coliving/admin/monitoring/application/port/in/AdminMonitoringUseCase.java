@@ -1,5 +1,6 @@
 package com.coliving.admin.monitoring.application.port.in;
 
+import com.coliving.admin.monitoring.adapter.in.web.dto.res.DeviceAvailabilityResponseDto;
 import com.coliving.admin.monitoring.adapter.in.web.dto.res.ControlFrequencyResponseDto;
 import com.coliving.admin.monitoring.adapter.in.web.dto.res.DeviceErrorStatsResponseDto;
 import com.coliving.admin.monitoring.adapter.in.web.dto.res.DeviceStatusSummaryResponseDto;
@@ -41,4 +42,7 @@ public interface AdminMonitoringUseCase {
 
     /** 공간별 기기 종류·상태 현황 */
     List<SpaceDeviceStatusResponseDto> getDeviceStatusBySpace();
+
+    /** 기기별 제어 성공률 (최근 30일) */
+    List<DeviceAvailabilityResponseDto> getDeviceAvailability();
 }

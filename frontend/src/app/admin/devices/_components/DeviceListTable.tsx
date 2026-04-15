@@ -9,9 +9,12 @@ import {
   deleteDevice,
   updateDevice,
   controlAdminDevice,
+  setDeviceErrorMode,
 } from "../_api";
+import type { ErrorMode } from "../_api";
 import type { AdminDevice, UpdateDeviceRequest, Space } from "../_types";
 import { ApiError } from "@/lib/api";
+import { DeviceControlPanel } from "@/components/ui/DeviceControlPanel";
 
 /* ── 상수 ── */
 
@@ -23,15 +26,7 @@ const STATUS_OPTIONS = [
   { value: "ERROR", label: "에러", color: "bg-red-500" },
 ] as const;
 
-const DEVICE_ICONS: Record<string, string> = {
-  DOOR_LOCK: "🔒",
-  LIGHT: "💡",
-  AIR_CONDITIONER: "❄️",
-  WASHER: "🫧",
-  DRYER: "🌀",
-  HEATER: "🔥",
-  CCTV: "📹",
-};
+
 
 function getStatusBadge(status: string) {
   const opt = STATUS_OPTIONS.find((s) => s.value === status);
@@ -49,6 +44,26 @@ export function DeviceListTable() {
   const [controllingId, setControllingId] = useState<number | null>(null);
   const cooldownRef = useRef<Set<number>>(new Set());
   const [, forceUpdate] = useState(0);
+
+  // 정렬
+  type SortKey = "name" | "deviceTypeName" | "spaceName" | "status";
+  type SortDir = "asc" | "desc";
+  const [sortKey, setSortKey] = useState<SortKey | null>(null);
+  const [sortDir, setSortDir] = useState<SortDir>("asc");
+
+  const handleSort = (key: SortKey) => {
+    if (sortKey === key) {
+      setSortDir((prev) => (prev === "asc" ? "desc" : "asc"));
+    } else {
+      setSortKey(key);
+      setSortDir("asc");
+    }
+  };
+
+  const sortIndicator = (key: SortKey) => {
+    if (sortKey !== key) return " ↕";
+    return sortDir === "asc" ? " ▲" : " ▼";
+  };
 
   const loadDevices = useCallback(async () => {
     try {
@@ -124,47 +139,36 @@ export function DeviceListTable() {
   };
 
   /**
-   * 기기 제어 토글 (ADM-DEV-04)
-   * - Throttle: controllingId 잠금 + 쿨다운 방어
-   * - 성공 시 토스트 + 목록 재조회
-   * - MockIoT 지연 시 피드백 토스트
+   * 기기 제어 (ADM-DEV-04) — DeviceControlPanel 콜백
+   * commands 기반 동적 UI에서 호출됨
    */
-  const handleControl = async (device: AdminDevice) => {
-    // 오프라인/에러 기기 제어 불가
-    if (device.status !== "ONLINE") return;
-    // 비활성 기기 제어 불가
-    if (!device.isActive) return;
-    // Throttle: 제어 진행 중이면 무시
+  const handleControl = async (
+    deviceId: number,
+    deviceName: string,
+    command: string,
+    params: Record<string, unknown>
+  ) => {
     if (controllingId !== null) return;
-    // Throttle: 쿨다운 중이면 무시
-    if (cooldownRef.current.has(device.deviceId)) return;
+    if (cooldownRef.current.has(deviceId)) return;
 
-    setControllingId(device.deviceId);
+    setControllingId(deviceId);
 
     try {
-      // 현재 전원 상태 파싱
-      let currentState: Record<string, unknown> = {};
-      try {
-        currentState = JSON.parse(device.currentState || "{}");
-      } catch { /* ignore */ }
-
-      const isPowerOn = currentState.power === true || currentState.power === "ON";
-      const command = isPowerOn ? "OFF" : "ON";
-
-      await controlAdminDevice(device.deviceId, { command });
-      setSuccess(`"${device.name}" ${command} 제어 완료`);
+      await controlAdminDevice(deviceId, { command, params });
+      setSuccess(`"${deviceName}" ${command} 제어 완료`);
       loadDevices();
     } catch (err) {
       if (err instanceof ApiError) setError(err.message);
       else setError("기기 제어에 실패했습니다");
+      loadDevices(); // 제어 실패 시에도 기기 상태(ERROR 전환 등) 반영
     } finally {
       setControllingId(null);
 
       // Throttle 쿨다운 적용
-      cooldownRef.current.add(device.deviceId);
+      cooldownRef.current.add(deviceId);
       forceUpdate((n) => n + 1);
       setTimeout(() => {
-        cooldownRef.current.delete(device.deviceId);
+        cooldownRef.current.delete(deviceId);
         forceUpdate((n) => n + 1);
       }, CONTROL_COOLDOWN_MS);
     }
@@ -190,7 +194,7 @@ export function DeviceListTable() {
             initial={{ opacity: 0, y: -12 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -8 }}
-            className="fixed top-4 left-1/2 -translate-x-1/2 z-50 rounded-xl border px-5 py-3 text-sm font-bold shadow-2xl"
+            className="fixed top-4 left-1/2 -translate-x-1/2 z-[200] rounded-xl border px-5 py-3 text-sm font-bold shadow-2xl"
             style={{
               backgroundColor: "#2C3424",
               color: "#ffffff",
@@ -205,7 +209,7 @@ export function DeviceListTable() {
             initial={{ opacity: 0, y: -12 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -8 }}
-            className="fixed top-4 left-1/2 -translate-x-1/2 z-50 rounded-xl border px-5 py-3 text-sm font-bold shadow-2xl"
+            className="fixed top-4 left-1/2 -translate-x-1/2 z-[200] rounded-xl border px-5 py-3 text-sm font-bold shadow-2xl"
             style={{
               backgroundColor: "#dc2626",
               color: "#ffffff",
@@ -258,17 +262,29 @@ export function DeviceListTable() {
               <table className="w-full text-left text-sm">
                 <thead>
                   <tr className="border-b border-border bg-muted/20">
-                    <th className="px-5 py-3 font-black text-[10px] uppercase tracking-[0.3em] text-muted-foreground">
-                      기기명
+                    <th
+                      className="px-5 py-3 font-black text-[10px] uppercase tracking-[0.3em] text-muted-foreground cursor-pointer select-none hover:text-primary transition-colors"
+                      onClick={() => handleSort("name")}
+                    >
+                      기기명{sortIndicator("name")}
                     </th>
-                    <th className="px-5 py-3 font-black text-[10px] uppercase tracking-[0.3em] text-muted-foreground">
-                      종류
+                    <th
+                      className="px-5 py-3 font-black text-[10px] uppercase tracking-[0.3em] text-muted-foreground cursor-pointer select-none hover:text-primary transition-colors"
+                      onClick={() => handleSort("deviceTypeName")}
+                    >
+                      종류{sortIndicator("deviceTypeName")}
                     </th>
-                    <th className="px-5 py-3 font-black text-[10px] uppercase tracking-[0.3em] text-muted-foreground">
-                      설치 위치
+                    <th
+                      className="px-5 py-3 font-black text-[10px] uppercase tracking-[0.3em] text-muted-foreground cursor-pointer select-none hover:text-primary transition-colors"
+                      onClick={() => handleSort("spaceName")}
+                    >
+                      설치 위치{sortIndicator("spaceName")}
                     </th>
-                    <th className="px-5 py-3 font-black text-[10px] uppercase tracking-[0.3em] text-muted-foreground">
-                      상태
+                    <th
+                      className="px-5 py-3 font-black text-[10px] uppercase tracking-[0.3em] text-muted-foreground cursor-pointer select-none hover:text-primary transition-colors"
+                      onClick={() => handleSort("status")}
+                    >
+                      상태{sortIndicator("status")}
                     </th>
                     <th className="px-5 py-3 font-black text-[10px] uppercase tracking-[0.3em] text-muted-foreground">
                       제어
@@ -285,20 +301,25 @@ export function DeviceListTable() {
                   </tr>
                 </thead>
                 <tbody>
-                  {devices.map((device, idx) => {
+                  {[...devices]
+                    .sort((a, b) => {
+                      if (!sortKey) return 0;
+                      const dir = sortDir === "asc" ? 1 : -1;
+                      const valA = a[sortKey] ?? "";
+                      const valB = b[sortKey] ?? "";
+                      if (sortKey === "status") {
+                        const order = { ONLINE: 0, ERROR: 1, OFFLINE: 2 };
+                        return dir * ((order[valA as keyof typeof order] ?? 3) - (order[valB as keyof typeof order] ?? 3));
+                      }
+                      return dir * String(valA).localeCompare(String(valB), "ko", { numeric: true });
+                    })
+                    .map((device, idx) => {
                     const badge = getStatusBadge(device.status);
-                    const icon = DEVICE_ICONS[device.deviceTypeCode] ?? "📱";
                     const isThisControlling = controllingId === device.deviceId;
                     const isCooldown = cooldownRef.current.has(device.deviceId);
 
-                    // 전원 상태 파싱
-                    let currentState: Record<string, unknown> = {};
-                    try {
-                      currentState = JSON.parse(device.currentState || "{}");
-                    } catch { /* ignore */ }
-                    const isPowerOn = currentState.power === true || currentState.power === "ON";
-
-                    const canControl = device.status === "ONLINE" && device.isActive;
+                    const canControl = (device.status === "ONLINE" || device.status === "ERROR") && device.isActive;
+                    const isErrorRetry = device.status === "ERROR" && device.isActive;
 
                     return (
                       <motion.tr
@@ -307,12 +328,12 @@ export function DeviceListTable() {
                         animate={{ opacity: 1 }}
                         transition={{ delay: idx * 0.03 }}
                         className={`border-b border-border/50 transition-colors hover:bg-muted/10
-                          ${!device.isActive ? "opacity-50" : ""}`}
+                          ${!device.isActive ? "opacity-50" : ""}
+                          ${isErrorRetry ? "bg-red-50/30" : ""}`}
                       >
                         {/* 기기명 */}
                         <td className="px-5 py-3">
                           <div className="flex items-center gap-2">
-                            <span className="text-lg">{icon}</span>
                             <div>
                               <span className="font-semibold text-primary">{device.name}</span>
                               {device.modelName && (
@@ -347,37 +368,28 @@ export function DeviceListTable() {
                           </div>
                         </td>
 
-                        {/* 제어 토글 (ADM-DEV-04) */}
+                        {/* 제어 패널 (ADM-DEV-04) — commands 기반 동적 UI */}
                         <td className="px-5 py-3">
                           {canControl ? (
-                            <button
-                              onClick={() => handleControl(device)}
-                              disabled={isThisControlling || isCooldown}
-                              className={`group relative flex items-center gap-2 rounded-xl px-3 py-1.5
-                                text-xs font-bold transition-all duration-200
-                                ${isThisControlling ? "animate-pulse opacity-60" : ""}
-                                ${isCooldown ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}
-                                ${isPowerOn
-                                  ? "border border-accent/40 bg-accent/10 text-accent hover:bg-accent/20"
-                                  : "border border-border bg-muted/20 text-muted-foreground hover:bg-muted/30"
-                                }`}
-                            >
-                              {/* 토글 스위치 */}
-                              <div
-                                className={`relative h-4 w-7 rounded-full transition-colors duration-200
-                                  ${isPowerOn ? "bg-accent" : "bg-muted/40"}`}
-                              >
-                                <span
-                                  className={`absolute top-0.5 left-0.5 h-3 w-3 rounded-full bg-white shadow
-                                    transition-transform duration-200
-                                    ${isPowerOn ? "translate-x-3" : "translate-x-0"}`}
-                                />
-                              </div>
-                              <span>{isPowerOn ? "ON" : "OFF"}</span>
-                            </button>
+                            <div>
+                              {isErrorRetry && (
+                                <span className="mb-1 block text-[10px] font-bold text-red-500">
+                                  ⚡ 재시도 — 성공 시 자동 복구
+                                </span>
+                              )}
+                              <DeviceControlPanel
+                                commandsJson={device.deviceTypeCommands ?? "[]"}
+                                currentStateJson={device.currentState}
+                                modelName={device.modelName}
+                                disabled={isThisControlling || isCooldown}
+                                onControl={async (cmd, params) => {
+                                  await handleControl(device.deviceId, device.name, cmd, params);
+                                }}
+                              />
+                            </div>
                           ) : (
                             <span className="text-[10px] font-medium text-muted-foreground">
-                              {!device.isActive ? "비활성" : device.status === "OFFLINE" ? "오프라인" : "에러"}
+                              {!device.isActive ? "비활성" : "오프라인"}
                             </span>
                           )}
                         </td>
@@ -449,7 +461,9 @@ function EditDeviceModal({
   const [spaceId, setSpaceId] = useState(device.spaceId);
   const [modelName, setModelName] = useState(device.modelName || "");
   const [macAddress, setMacAddress] = useState(device.macAddress || "");
-  const [mockEndpoint, setMockEndpoint] = useState(device.mockEndpoint || "");
+  const [errorMode, setErrorMode] = useState<ErrorMode>("normal");
+  const [errorModeLoading, setErrorModeLoading] = useState(false);
+  const [errorModeMsg, setErrorModeMsg] = useState<string | null>(null);
   const [spaces, setSpaces] = useState<Space[]>([]);
 
   useEffect(() => {
@@ -475,7 +489,21 @@ function EditDeviceModal({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onSave({ name, spaceId, modelName, macAddress, mockEndpoint });
+    onSave({ name, spaceId, modelName, macAddress, mockEndpoint: device.mockEndpoint || "" });
+  };
+
+  const handleErrorModeChange = async (mode: ErrorMode) => {
+    setErrorModeLoading(true);
+    setErrorModeMsg(null);
+    try {
+      await setDeviceErrorMode(device.deviceId, mode);
+      setErrorMode(mode);
+      setErrorModeMsg(`에러 모드가 '${mode}'로 설정되었습니다`);
+    } catch {
+      setErrorModeMsg("에러 모드 설정 실패");
+    } finally {
+      setErrorModeLoading(false);
+    }
   };
 
   return (
@@ -557,15 +585,42 @@ function EditDeviceModal({
             />
           </label>
 
-          <label className="block">
-            <span className="text-xs font-bold text-primary">Mock Endpoint</span>
-            <input
-              value={mockEndpoint}
-              onChange={(e) => setMockEndpoint(e.target.value)}
-              className="mt-1 w-full rounded-xl border border-border bg-surface px-3 py-2
-                text-sm text-primary focus:outline-none focus:ring-2 focus:ring-ring/40"
-            />
-          </label>
+          <div className="space-y-2">
+            <span className="text-xs font-bold text-primary">IoT 에러 모드</span>
+            <div className="flex gap-2 flex-wrap">
+              {(["normal", "error", "timeout", "fault"] as ErrorMode[]).map((mode) => {
+                const labels: Record<ErrorMode, { icon: string; text: string }> = {
+                  normal: { icon: "🟢", text: "정상" },
+                  error: { icon: "🔴", text: "에러 (500)" },
+                  timeout: { icon: "⏳", text: "타임아웃" },
+                  fault: { icon: "⚡", text: "연결 끊김" },
+                };
+                const { icon, text } = labels[mode];
+                const isActive = errorMode === mode;
+                return (
+                  <button
+                    key={mode}
+                    type="button"
+                    disabled={errorModeLoading}
+                    onClick={() => handleErrorModeChange(mode)}
+                    className={`rounded-xl border px-3 py-1.5 text-xs font-bold transition-all
+                      ${isActive
+                        ? "border-accent bg-accent/20 text-accent ring-1 ring-accent/40"
+                        : "border-border text-muted-foreground hover:border-secondary"
+                      } ${errorModeLoading ? "opacity-50 cursor-not-allowed" : ""}`}
+                  >
+                    {icon} {text}
+                  </button>
+                );
+              })}
+            </div>
+            {errorModeMsg && (
+              <p className="text-[10px] text-muted-foreground">{errorModeMsg}</p>
+            )}
+            <p className="text-[10px] text-muted-foreground">
+              에러 모드 변경은 Mock IoT 서버에 즉시 적용됩니다
+            </p>
+          </div>
 
           <div className="flex justify-end gap-3 pt-2">
             <button
