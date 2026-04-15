@@ -93,11 +93,14 @@ public class UserEntity extends BaseEntity {
         this.status = UserStatus.ACTIVE;
     }
 
-    public void updateProfile(String name, String phone, String email, String profileImage) {
+    public void updateProfile(String name, String phone, String email, String profileImage, String birthDate, Gender gender, String nationality) {
         if (name != null) this.name = name;
         if (phone != null) this.phone = phone;
         if (email != null) this.email = email;
         if (profileImage != null) this.profileImage = profileImage;
+        if (birthDate != null) this.birthDate = birthDate;
+        if (gender != null) this.gender = gender;
+        if (nationality != null) this.nationality = nationality;
     }
 
     public void updatePassword(String passwordHash) {

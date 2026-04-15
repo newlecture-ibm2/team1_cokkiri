@@ -14,11 +14,20 @@ public class CustomOAuth2User implements OAuth2User {
     private final UserEntity userEntity;
     private final Map<String, Object> attributes;
     private final String nameAttributeKey;
+    private boolean isNewUser = false;
 
     public CustomOAuth2User(UserEntity userEntity, Map<String, Object> attributes, String nameAttributeKey) {
         this.userEntity = userEntity;
         this.attributes = attributes;
         this.nameAttributeKey = nameAttributeKey;
+    }
+
+    public boolean isNewUser() {
+        return isNewUser;
+    }
+
+    public void setNewUser(boolean isNewUser) {
+        this.isNewUser = isNewUser;
     }
 
     public UserEntity getUserEntity() {

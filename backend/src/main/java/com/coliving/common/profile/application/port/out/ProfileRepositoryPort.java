@@ -10,4 +10,6 @@ public interface ProfileRepositoryPort {
     void updatePassword(Long userId, String newPasswordHash);
     
     void withdrawUser(Long userId);
+    
+    void updateProfile(Long userId, String name, String phone, String email, String birthDate, com.coliving.common.auth.model.Gender gender, String nationality);
 }

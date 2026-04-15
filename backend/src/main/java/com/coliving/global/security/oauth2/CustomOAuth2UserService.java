@@ -42,15 +42,25 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
         String name = extractName(registrationId, attributes);
         String email = extractEmail(registrationId, attributes);
 
-        UserEntity userEntity = authRepositoryPort.findByLoginId(loginId)
-                .orElseGet(() -> createUser(loginId, name, email));
+        boolean isNewUser = false;
+        UserEntity userEntity;
+        var optUser = authRepositoryPort.findByLoginId(loginId);
+        
+        if (optUser.isPresent()) {
+            userEntity = optUser.get();
+        } else {
+            userEntity = createUser(loginId, name, email);
+            isNewUser = true;
+        }
 
         if (userEntity.getStatus() == UserStatus.DEACTIVATED) {
             userEntity.activate();
             authRepositoryPort.save(userEntity);
         }
 
-        return new CustomOAuth2User(userEntity, attributes, userNameAttributeName);
+        CustomOAuth2User customUser = new CustomOAuth2User(userEntity, attributes, userNameAttributeName);
+        customUser.setNewUser(isNewUser);
+        return customUser;
     }
 
     private String extractProviderId(String registrationId, Map<String, Object> attributes) {

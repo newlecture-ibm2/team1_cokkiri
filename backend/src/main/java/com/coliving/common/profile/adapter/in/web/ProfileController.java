@@ -24,6 +24,14 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.PostMapping;
+import com.coliving.common.profile.adapter.in.web.dto.req.UpdateProfileRequestDto;
+import com.coliving.common.profile.adapter.in.web.dto.req.SendVerificationRequestDto;
+import com.coliving.common.profile.adapter.in.web.dto.req.ConfirmVerificationRequestDto;
+import com.coliving.common.profile.adapter.in.web.dto.res.VerificationTokenResponseDto;
+import com.coliving.common.profile.application.command.UpdateProfileCommand;
+import com.coliving.common.profile.application.port.in.EditProfileUseCase;
+
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/users/me")
@@ -31,8 +39,51 @@ public class ProfileController {
 
     private final GetProfileUseCase getProfileUseCase;
     private final UpdatePasswordUseCase updatePasswordUseCase;
+    private final EditProfileUseCase editProfileUseCase;
     private final WithdrawUseCase withdrawUseCase;
     private final LogoutUseCase logoutUseCase;
+
+    private Long getUserId() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || authentication.getPrincipal() == null) {
+            throw new BusinessException(ErrorCode.FORBIDDEN);
+        }
+        return Long.parseLong(authentication.getPrincipal().toString());
+    }
+
+    @PutMapping
+    public ApiResponse<Void> updateProfile(@Valid @RequestBody UpdateProfileRequestDto request) {
+        Long userId = getUserId();
+        
+        UpdateProfileCommand command = UpdateProfileCommand.builder()
+                .name(request.getName())
+                .phone(request.getPhone())
+                .email(request.getEmail())
+                .birthDate(request.getBirthDate())
+                .gender(request.getGender())
+                .nationality(request.getNationality())
+
+                .emailVerificationToken(request.getEmailVerificationToken())
+                .build();
+                
+        editProfileUseCase.editProfile(userId, command);
+        return ApiResponse.ok(null, "프로필 정보가 성공적으로 수정되었습니다.");
+    }
+
+
+    @PostMapping("/verify/email/send")
+    public ApiResponse<Void> sendEmailVerification(@Valid @RequestBody SendVerificationRequestDto request) {
+        if (!"EMAIL".equals(request.getType())) throw new BusinessException(ErrorCode.VALIDATION_ERROR);
+        editProfileUseCase.sendVerificationCode(getUserId(), request.getContact(), "EMAIL");
+        return ApiResponse.ok(null, "인증 번호가 발송되었습니다.");
+    }
+
+    @PostMapping("/verify/email/confirm")
+    public ApiResponse<VerificationTokenResponseDto> confirmEmailVerification(@Valid @RequestBody ConfirmVerificationRequestDto request) {
+        if (!"EMAIL".equals(request.getType())) throw new BusinessException(ErrorCode.VALIDATION_ERROR);
+        String token = editProfileUseCase.confirmVerificationCode(getUserId(), request.getContact(), request.getCode(), "EMAIL");
+        return ApiResponse.ok(new VerificationTokenResponseDto(token), "이메일 인증이 완료되었습니다.");
+    }
 
     @GetMapping
     public ApiResponse<ProfileResponseDto> getMyProfile() {
