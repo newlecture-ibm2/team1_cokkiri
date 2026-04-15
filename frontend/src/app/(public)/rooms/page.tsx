@@ -141,15 +141,15 @@ export default function RoomsPage() {
             </span>
           </motion.h2>
           <p className="mx-auto max-w-2xl text-sm md:text-2xl font-medium text-white/40">
-            COKKIRI의 새로운 스페이스 소식을 가장 먼저 받아보세요.
+            COKKIRI가 제공하는 다양한 공용 시설을 둘러보세요.
           </p>
-          <Link href="/login">
+          <Link href="/experience">
             <motion.button
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               className="h-12 md:h-24 px-8 md:px-16 rounded-xl md:rounded-2xl bg-primary text-primary-foreground hover:bg-secondary hover:text-white transition-all duration-500 text-xs md:text-xl font-black uppercase tracking-[0.2em] border-none w-full md:w-auto cursor-pointer"
             >
-              Get Started
+              시설 둘러보기
               <ArrowRight className="inline-block ml-3 h-5 w-5" />
             </motion.button>
           </Link>
