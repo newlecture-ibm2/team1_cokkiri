@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { createDevice, discoverIotDevices, fetchDeviceTypes, fetchGateways, fetchSpaces, updateDeviceType } from "../_api";
+import { createDevice, discoverIotDevices, fetchDeviceTypes, fetchDevices, fetchGateways, fetchSpaces, updateDeviceType } from "../_api";
 import type { CreateDeviceRequest, DeviceType, Space, IotDeviceInfo, DeviceCapability, GatewayInfo } from "../_types";
 import { ApiError } from "@/lib/api";
 import { parseCommands, type DeviceCommand } from "@/components/ui/DeviceControlPanel";
@@ -26,6 +26,9 @@ export function DeviceRegisterForm() {
   const [iotLoading, setIotLoading] = useState(false);
   const [iotError, setIotError] = useState<string | null>(null);
   const [selectedDevice, setSelectedDevice] = useState<IotDeviceInfo | null>(null);
+
+  // ── 이미 등록된 MAC 주소 목록 ──
+  const [registeredMacs, setRegisteredMacs] = useState<Set<string>>(new Set());
 
   // ── 등록 폼 ──
   const [form, setForm] = useState<CreateDeviceRequest>({
@@ -94,11 +97,23 @@ export function DeviceRegisterForm() {
     }
   }, []);
 
+  // ── 등록된 기기 MAC 조회 ──
+  const loadRegisteredMacs = useCallback(async () => {
+    try {
+      const res = await fetchDevices({ s: 9999 });
+      const content = res.data?.content ?? [];
+      setRegisteredMacs(new Set(content.map((d) => d.macAddress)));
+    } catch {
+      // 실패해도 등록 자체에는 영향 없음
+    }
+  }, []);
+
   useEffect(() => {
     loadDeviceTypes();
     loadSpaces();
     loadGateways();
-  }, [loadDeviceTypes, loadSpaces, loadGateways]);
+    loadRegisteredMacs();
+  }, [loadDeviceTypes, loadSpaces, loadGateways, loadRegisteredMacs]);
 
   // ── 게이트웨이 선택 → 로컬 네트워크 스캔 ──
   const handleSelectGateway = async (gw: GatewayInfo) => {
@@ -121,8 +136,9 @@ export function DeviceRegisterForm() {
     }
   };
 
-  // ── 기기 선택 ──
+  // ── 기기 선택 (이미 등록된 기기는 선택 불가) ──
   const handleSelectDevice = (device: IotDeviceInfo) => {
+    if (registeredMacs.has(device.macAddress)) return;
     setSelectedDevice(device);
     setForm((prev) => ({
       ...prev,
@@ -240,7 +256,8 @@ export function DeviceRegisterForm() {
       const submittedMac = form.macAddress;
       setForm({ macAddress: "", name: "", spaceId: 0, deviceTypeId: 0 });
       setSelectedDevice(null);
-      setIotDevices((prev) => prev.filter((d) => d.macAddress !== submittedMac));
+      // 등록 완료된 기기를 registeredMacs에 추가하여 즉시 "등록됨" 표시
+      setRegisteredMacs((prev) => new Set([...prev, submittedMac]));
     } catch (err) {
       if (err instanceof ApiError) {
         if (err.errorCode === "DUPLICATE_MAC_ADDRESS") {
@@ -444,39 +461,51 @@ export function DeviceRegisterForm() {
                 <p className="text-xs text-muted-foreground pl-1">
                   {iotDevices.length}개 기기 발견 — 등록할 기기를 선택하세요
                 </p>
-                {iotDevices.map((device) => (
-                  <motion.div
-                    key={device.macAddress}
-                    whileHover={{ y: -2 }}
-                    onClick={() => handleSelectDevice(device)}
-                    className={`cursor-pointer rounded-xl border px-4 py-3 transition-all duration-200
-                      ${selectedDevice?.macAddress === device.macAddress
-                        ? "border-accent bg-accent/10 ring-2 ring-accent/30"
-                        : "border-border bg-surface hover:border-secondary"
-                      }`}
-                  >
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="text-sm font-semibold text-primary font-mono">{device.modelName}</p>
-                        <p className="text-xs text-muted-foreground font-mono">
-                          MAC: {device.macAddress} · Local: {device.localIp}
-                        </p>
-                        {device.capabilities?.length > 0 && (
-                          <p className="text-xs text-muted-foreground mt-1">
-                            지원: {device.capabilities.map(c => c.command).join(", ")}
+                {iotDevices.map((device) => {
+                  const isRegistered = registeredMacs.has(device.macAddress);
+                  return (
+                    <motion.div
+                      key={device.macAddress}
+                      whileHover={isRegistered ? {} : { y: -2 }}
+                      onClick={() => handleSelectDevice(device)}
+                      className={`rounded-xl border px-4 py-3 transition-all duration-200
+                        ${isRegistered
+                          ? "border-border/50 bg-muted/10 opacity-60 cursor-not-allowed"
+                          : selectedDevice?.macAddress === device.macAddress
+                            ? "border-accent bg-accent/10 ring-2 ring-accent/30 cursor-pointer"
+                            : "border-border bg-surface hover:border-secondary cursor-pointer"
+                        }`}
+                    >
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <p className="text-sm font-semibold text-primary font-mono">{device.modelName}</p>
+                            {isRegistered && (
+                              <span className="inline-flex items-center rounded-md bg-secondary/30 border border-secondary/50 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                                등록됨
+                              </span>
+                            )}
+                          </div>
+                          <p className="text-xs text-muted-foreground font-mono">
+                            MAC: {device.macAddress} · Local: {device.localIp}
                           </p>
-                        )}
+                          {device.capabilities?.length > 0 && (
+                            <p className="text-xs text-muted-foreground mt-1">
+                              지원: {device.capabilities.map(c => c.command).join(", ")}
+                            </p>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className={`inline-block w-2 h-2 rounded-full ${
+                            device.status === "ONLINE" ? "bg-green-500" :
+                            device.status === "ERROR" ? "bg-red-500" : "bg-gray-400"
+                          }`} />
+                          <span className="text-xs text-muted-foreground">{device.status}</span>
+                        </div>
                       </div>
-                      <div className="flex items-center gap-2">
-                        <span className={`inline-block w-2 h-2 rounded-full ${
-                          device.status === "ONLINE" ? "bg-green-500" :
-                          device.status === "ERROR" ? "bg-red-500" : "bg-gray-400"
-                        }`} />
-                        <span className="text-xs text-muted-foreground">{device.status}</span>
-                      </div>
-                    </div>
-                  </motion.div>
-                ))}
+                    </motion.div>
+                  );
+                })}
               </div>
             )}
 
