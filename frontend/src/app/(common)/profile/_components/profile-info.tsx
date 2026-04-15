@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { apiFetch, ApiError } from "@/lib/api";
 import { Profile } from "../_types/profile";
 import { UserRound } from "lucide-react";
+import Link from "next/link";
 import { motion } from "framer-motion";
 import { PasswordChangeModal } from "./password-change-modal";
 import { WithdrawModal } from "./withdraw-modal";
@@ -136,13 +137,15 @@ export default function ProfileInfo() {
           이름, 이메일, 연락처 등 나의 기본 정보와 비밀번호를 관리하세요. 안전한 주거 환경을 위해 항상 최신 정보로 유지해주세요.
         </p>
         <div className="flex flex-wrap gap-4">
-          <motion.button 
-            whileHover={{ scale: 1.02, y: -2 }}
-            whileTap={{ scale: 0.98 }}
-            className="rounded-none bg-primary px-8 py-4 text-primary-foreground shadow-lg transition-colors hover:bg-primary/90 text-xs font-black uppercase tracking-[0.2em]"
-          >
-            기본정보 수정
-          </motion.button>
+          <Link href="/profile/edit">
+            <motion.button 
+              whileHover={{ scale: 1.02, y: -2 }}
+              whileTap={{ scale: 0.98 }}
+              className="rounded-none bg-primary px-8 py-4 text-primary-foreground shadow-lg transition-colors hover:bg-primary/90 text-xs font-black uppercase tracking-[0.2em]"
+            >
+              기본정보 수정
+            </motion.button>
+          </Link>
           <motion.button 
             whileHover={{ scale: 1.02, y: -2 }}
             whileTap={{ scale: 0.98 }}

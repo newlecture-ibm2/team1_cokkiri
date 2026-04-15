@@ -71,7 +71,9 @@ public class OAuth2AuthenticationSuccessHandler implements AuthenticationSuccess
                 .build();
         authRepositoryPort.saveRefreshToken(refreshTokenEntity);
 
-        String redirectUrl = String.format("%s?accessToken=%s&refreshToken=%s", defaultSuccessUrl, accessToken, refreshToken);
+        boolean isNewUser = oAuth2User.isNewUser();
+
+        String redirectUrl = String.format("%s?accessToken=%s&refreshToken=%s&isNewUser=%b", defaultSuccessUrl, accessToken, refreshToken, isNewUser);
         response.sendRedirect(redirectUrl);
     }
 }

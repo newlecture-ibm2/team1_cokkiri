@@ -68,6 +68,7 @@ public class SecurityConfig {
                                                 .permitAll() // 관리자가 업로드한 이미지 조회 (비회원 허용)
                                                 .requestMatchers(HttpMethod.GET, "/api/experience/**").permitAll() // EXPERIENCE 공용시설 소개 🔓 Public
                                                 .requestMatchers(HttpMethod.GET, "/api/floors").permitAll() // FLOOR 층별 평면도 🔓 Public
+                                                .requestMatchers(HttpMethod.GET, "/api/nationalities").permitAll() // 🔓 Public
 
                                                 // --- 커뮤니티: 목록·상세만 비로그인 조회 (Controller에서 Optional Actor 처리) ---
                                                 .requestMatchers(HttpMethod.GET, "/api/posts", "/api/posts/*")

@@ -40,9 +40,18 @@ public class ProfilePersistenceAdapter implements ProfileRepositoryPort {
         UserEntity user = userJpaRepository.findById(userId)
                 .orElseThrow(() -> new com.coliving.global.error.BusinessException(com.coliving.global.error.ErrorCode.ACCOUNT_NOT_FOUND));
         
-        user.updateProfile("탈퇴한 사용자", "탈퇴한 사용자", "탈퇴한 사용자", null);
+        user.updateProfile("탈퇴한 사용자", "탈퇴한 사용자", "탈퇴한 사용자", null, null, null, null);
         user.deactivate();
         user.softDelete();
+        userJpaRepository.save(user);
+    }
+
+    @Override
+    public void updateProfile(Long userId, String name, String phone, String email, String birthDate, com.coliving.common.auth.model.Gender gender, String nationality) {
+        UserEntity user = userJpaRepository.findById(userId)
+                .orElseThrow(() -> new com.coliving.global.error.BusinessException(com.coliving.global.error.ErrorCode.ACCOUNT_NOT_FOUND));
+        
+        user.updateProfile(name, phone, email, null, birthDate, gender, nationality);
         userJpaRepository.save(user);
     }
 

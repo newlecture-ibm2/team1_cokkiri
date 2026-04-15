@@ -45,6 +45,8 @@ import com.coliving.admin.space.adapter.out.jpa.AnnotationTypeEntity;
 import com.coliving.admin.space.adapter.out.jpa.AnnotationTypeJpaRepository;
 import com.coliving.admin.space.model.SpaceStatus;
 import com.coliving.admin.space.model.SpaceType;
+import com.coliving.common.profile.adapter.out.jpa.NationalityEntity;
+import com.coliving.common.profile.adapter.out.jpa.NationalityJpaRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -100,6 +102,7 @@ public class DataInitializer implements ApplicationRunner {
     private final NotificationJpaRepository notificationJpaRepository;
     private final ContractJpaRepository contractJpaRepository;
     private final PaymentJpaRepository paymentJpaRepository;
+    private final NationalityJpaRepository nationalityJpaRepository;
     private final ObjectMapper objectMapper;
     @Value("${app.demo-data.seed-content-on-existing-users:true}")
     private boolean seedContentOnExistingUsers;
@@ -114,6 +117,7 @@ public class DataInitializer implements ApplicationRunner {
         UserEntity user4 = getOrCreateUser("user4", "박서연", "000112", Gender.FEMALE, "010-3456-7890", "seoyeon@cokkiri.local", UserRole.RESIDENT);
 
         // ── 인프라 시드 (항상 idempotent 실행) ──
+        seedNationalities();
         seedDefaultAnnotationTypes();
         seedSpacesFromDevDataset();
 
@@ -662,6 +666,49 @@ public class DataInitializer implements ApplicationRunner {
         getOrCreateAnnotationType("GARDEN", "정원", "TreePine", "accent");
         getOrCreateAnnotationType("CUSTOM", "기타", "MapPin", "primary");
         log.info("[DataInitializer] 어노테이션 유형 시드 데이터 적재 완료 (6종)");
+    }
+
+    private void seedNationalities() {
+        java.util.Map<String, NationalityEntity> existingEntities = new java.util.HashMap<>();
+        nationalityJpaRepository.findAll().forEach(e -> existingEntities.put(e.getCode(), e));
+
+        if (!existingEntities.isEmpty()) {
+            Optional<NationalityEntity> first = existingEntities.values().stream().findFirst();
+            if (first.isPresent() && first.get().getNameNative() != null) return;
+        }
+        
+        java.util.Map<String, java.util.Locale> countryLocales = new java.util.HashMap<>();
+        for (java.util.Locale l : java.util.Locale.getAvailableLocales()) {
+            if (!l.getCountry().isEmpty() && !countryLocales.containsKey(l.getCountry())) {
+                countryLocales.put(l.getCountry(), l);
+            }
+        }
+
+        String[] isoCountries = java.util.Locale.getISOCountries();
+        List<NationalityEntity> entitiesToSave = new java.util.ArrayList<>();
+        for (String countryCode : isoCountries) {
+            java.util.Locale local = new java.util.Locale("", countryCode);
+            String nameEn = local.getDisplayCountry(java.util.Locale.ENGLISH);
+            String nameKo = local.getDisplayCountry(java.util.Locale.KOREAN);
+            
+            java.util.Locale nativeLocale = countryLocales.get(countryCode);
+            String nameNative = nativeLocale != null ? local.getDisplayCountry(nativeLocale) : nameEn;
+            
+            if (existingEntities.containsKey(countryCode)) {
+                NationalityEntity existing = existingEntities.get(countryCode);
+                existing.setNameNative(nameNative);
+                entitiesToSave.add(existing);
+            } else {
+                entitiesToSave.add(NationalityEntity.builder()
+                        .code(countryCode)
+                        .nameKo(nameKo)
+                        .nameEn(nameEn)
+                        .nameNative(nameNative)
+                        .build());
+            }
+        }
+        nationalityJpaRepository.saveAll(entitiesToSave);
+        log.info("[DataInitializer] 국적 시드 데이터 적재 완료 ({}개국)", entitiesToSave.size());
     }
 
     private AnnotationTypeEntity getOrCreateAnnotationType(String code, String name, String iconName, String defaultColor) {

@@ -18,16 +18,57 @@ import com.coliving.admin.payment.model.PaymentStatus;
 import com.coliving.user.contract.adapter.out.jpa.ContractJpaRepository;
 import com.coliving.user.contract.model.ContractStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import java.util.List;
+import com.coliving.common.profile.application.port.in.EditProfileUseCase;
+import com.coliving.common.profile.application.command.UpdateProfileCommand;
+import org.springframework.data.redis.core.StringRedisTemplate;
+import java.util.concurrent.TimeUnit;
+import java.util.UUID;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
-public class ProfileService implements GetProfileUseCase, UpdatePasswordUseCase, WithdrawUseCase {
+public class ProfileService implements GetProfileUseCase, UpdatePasswordUseCase, WithdrawUseCase, EditProfileUseCase {
 
     private final ProfileRepositoryPort profileRepositoryPort;
     private final ContractJpaRepository contractJpaRepository;
     private final PaymentJpaRepository paymentJpaRepository;
     private final PasswordEncoder passwordEncoder;
+    private final StringRedisTemplate redisTemplate;
+
+    private static final long VERIFICATION_CODE_EXPIRATION_MINUTES = 3;
+    private static final long VERIFIED_TOKEN_EXPIRATION_MINUTES = 30;
+
+    @Override
+    @Transactional
+    public void editProfile(Long userId, UpdateProfileCommand command) {
+        profileRepositoryPort.updateProfile(userId, command.getName(), command.getPhone(), command.getEmail(), command.getBirthDate(), command.getGender(), command.getNationality());
+    }
+
+    @Override
+    public void sendVerificationCode(Long userId, String contact, String type) {
+        String code = String.format("%06d", (int)(Math.random() * 1000000));
+        String redisKey = "verification:" + userId + ":" + type + ":" + contact;
+        // In real world, send SMS / Email right here
+        redisTemplate.opsForValue().set(redisKey, code, VERIFICATION_CODE_EXPIRATION_MINUTES, TimeUnit.MINUTES);
+        log.info("[Verification Code] userId: {}, type: {}, contact: {}, code: {}", userId, type, contact, code);
+    }
+
+    @Override
+    public String confirmVerificationCode(Long userId, String contact, String code, String type) {
+        String redisKeyCode = "verification:" + userId + ":" + type + ":" + contact;
+        String expectedCode = redisTemplate.opsForValue().get(redisKeyCode);
+        if (expectedCode == null || !expectedCode.equals(code)) {
+            throw new BusinessException(ErrorCode.VALIDATION_ERROR, "인증 코드가 일치하지 않습니다.");
+        }
+        
+        // 검증 완료 후 토큰 발급
+        String token = UUID.randomUUID().toString();
+        String redisKeyToken = "verified:" + userId + ":" + type + ":" + contact;
+        redisTemplate.opsForValue().set(redisKeyToken, token, VERIFIED_TOKEN_EXPIRATION_MINUTES, TimeUnit.MINUTES);
+        redisTemplate.delete(redisKeyCode);
+        return token;
+    }
 
     @Override
     @Transactional(readOnly = true)
