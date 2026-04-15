@@ -7,6 +7,13 @@ import { Button } from '@/components/ui/button';
 import { motion, AnimatePresence } from 'framer-motion';
 import { CheckCircle2, AlertCircle } from 'lucide-react';
 
+interface NationalityItem {
+  code: string;
+  nameKo: string;
+  nameEn: string;
+  nameNative: string;
+}
+
 export default function RegisterForm() {
   const router = useRouter();
   const [formData, setFormData] = useState({
@@ -33,9 +40,29 @@ export default function RegisterForm() {
   const [tempDate, setTempDate] = useState({ year: 2000, month: 1, day: 1 });
   const [isTermsOpen, setIsTermsOpen] = useState(false);
   const [isServiceTermsOpen, setIsServiceTermsOpen] = useState(false);
+  const [nationalityList, setNationalityList] = useState<NationalityItem[]>([]);
+  const [isNationalityOpen, setIsNationalityOpen] = useState(false);
 
   const genderRef = useRef<HTMLDivElement>(null);
   const dateRef = useRef<HTMLDivElement>(null);
+  const nationalityRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    let isMounted = true;
+    async function fetchNationalities() {
+      try {
+        const res = await apiFetch<NationalityItem[]>("/nationalities");
+        if (isMounted && res.data) {
+          const sortedList = [...res.data].sort((a, b) => a.nameEn.localeCompare(b.nameEn));
+          setNationalityList(sortedList);
+        }
+      } catch (err) {
+        console.error("Failed to fetch nationalities", err);
+      }
+    }
+    fetchNationalities();
+    return () => { isMounted = false; };
+  }, []);
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
@@ -44,6 +71,9 @@ export default function RegisterForm() {
       }
       if (dateRef.current && !dateRef.current.contains(e.target as Node)) {
         setIsDateWidgetOpen(false);
+      }
+      if (nationalityRef.current && !nationalityRef.current.contains(e.target as Node)) {
+        setIsNationalityOpen(false);
       }
     };
     document.addEventListener('mousedown', handleClickOutside);
@@ -115,7 +145,7 @@ export default function RegisterForm() {
       else if (value.length < 4 || value.length > 50 || !/^[a-zA-Z0-9]+$/.test(value)) error = "아이디는 4~50자의 영문자와 숫자로만 구성되어야 합니다.";
     } else if (name === 'password') {
       if (!value) error = "비밀번호를 입력해주세요.";
-      else if (value.length < 8 || !/^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]+$/.test(value)) error = "비밀번호는 영문자, 숫자, 특수문자를 포함해 8자 이상이어야 합니다.";
+      else if (value.length < 8 || !/^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]+$/.test(value)) error = "영문, 숫자, 특수문자 포함 8자 이상 작성하세요.";
     } else if (name === 'passwordConfirm') {
       if (!value) error = "비밀번호 확인을 입력해주세요.";
       else if (value !== formData.password) error = "비밀번호가 일치하지 않습니다.";
@@ -218,7 +248,7 @@ export default function RegisterForm() {
     <>
       <form
         onSubmit={handleSubmit}
-        className="flex flex-col gap-4"
+        className="flex flex-col gap-6"
         noValidate
       >
         <AnimatePresence>
@@ -243,21 +273,21 @@ export default function RegisterForm() {
           )}
         </AnimatePresence>
 
-        <motion.div variants={itemVariants} className="space-y-4">
+        <motion.div variants={itemVariants} className="space-y-6">
           <div className="relative">
             <label className={labelClasses}>LOGIN ID *</label>
             <input name="loginId" value={formData.loginId} onChange={handleChange} onBlur={handleBlur} className={getInputClasses(!!fieldErrors.loginId)} placeholder="아이디를 입력하세요 (4자 이상)" />
             {fieldErrors.loginId && <p className="absolute top-full left-0 mt-1.5 text-red-500 text-xs font-medium leading-tight">{fieldErrors.loginId}</p>}
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-8">
             <div className="relative">
               <label className={labelClasses}>PASSWORD *</label>
               <input name="password" type="password" value={formData.password} onChange={handleChange} onBlur={handleBlur} className={getInputClasses(!!fieldErrors.password)} placeholder="비밀번호" />
               {fieldErrors.password ? (
                 <p className="absolute top-full left-0 mt-1.5 text-red-500 text-xs font-medium leading-tight">{fieldErrors.password}</p>
               ) : (
-                <p className="absolute top-full left-0 mt-1.5 text-primary/60 text-[11px] font-medium tracking-tight">8자 이상, 영문+숫자+특수문자 조합</p>
+                <p className="absolute top-full left-0 mt-1.5 text-primary/60 text-[11px] font-medium tracking-tight">8자 이상, 특수문자 조합</p>
               )}
             </div>
             <div className="relative">
@@ -268,8 +298,8 @@ export default function RegisterForm() {
           </div>
         </motion.div>
 
-        <motion.div variants={itemVariants} className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <motion.div variants={itemVariants} className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-8">
             <div className="relative">
               <label className={labelClasses}>FULL NAME *</label>
               <input name="name" value={formData.name} onChange={handleChange} onBlur={handleBlur} className={getInputClasses(!!fieldErrors.name)} placeholder="이름을 입력하세요" />
@@ -289,14 +319,15 @@ export default function RegisterForm() {
           </div>
         </motion.div>
 
-        <motion.div variants={itemVariants} className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <motion.div variants={itemVariants} className={`space-y-6 relative ${isGenderOpen || isDateWidgetOpen || isNationalityOpen ? 'z-50' : 'z-20'}`}>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-8">
             <div className="col-span-1 md:col-span-1 relative flex flex-col justify-end z-20" ref={genderRef}>
               <label className={labelClasses}>M/F</label>
               <div
                 onClick={() => {
                   setIsGenderOpen(!isGenderOpen);
                   setIsDateWidgetOpen(false);
+                  setIsNationalityOpen(false);
                 }}
                 className={`${getInputClasses(false)} cursor-pointer flex justify-between items-center`}
               >
@@ -332,6 +363,7 @@ export default function RegisterForm() {
                   </motion.div>
                 )}
               </AnimatePresence>
+              {fieldErrors.birthDate && <p className="absolute top-full left-0 mt-1.5 text-red-500 text-xs font-medium leading-tight">{fieldErrors.birthDate}</p>}
             </div>
             <div className="col-span-1 md:col-span-1 flex flex-col justify-end relative z-30" ref={dateRef}>
               <label className={labelClasses}>BIRTH DATE</label>
@@ -340,6 +372,7 @@ export default function RegisterForm() {
                   setIsDateWidgetOpen(!isDateWidgetOpen);
                   setDateWidgetStep('YEAR');
                   setIsGenderOpen(false);
+                  setIsNationalityOpen(false);
                 }}
                 className={`${getInputClasses(!!fieldErrors.birthDate)} cursor-pointer flex items-center justify-between`}
               >
@@ -402,15 +435,59 @@ export default function RegisterForm() {
               </AnimatePresence>
               {fieldErrors.birthDate && <p className="absolute top-full left-0 mt-1.5 text-red-500 text-xs font-medium leading-tight">{fieldErrors.birthDate}</p>}
             </div>
-            <div className="col-span-1 md:col-span-1 flex flex-col justify-end">
-              <label className={labelClasses}>NATION</label>
-              <input name="nationality" value={formData.nationality} onChange={handleChange} className={getInputClasses(false)} placeholder="대한민국" />
-            </div>
           </div>
+
+          <div className={`relative ${isNationalityOpen ? 'z-50' : 'z-10'} mt-6`} ref={nationalityRef}>
+              <label className={labelClasses}>LOCATION</label>
+              <div
+                onClick={() => {
+                  setIsNationalityOpen(!isNationalityOpen);
+                  setIsGenderOpen(false);
+                  setIsDateWidgetOpen(false);
+                }}
+                className={`${getInputClasses(!!fieldErrors.nationality)} cursor-pointer flex justify-between items-center`}
+              >
+                <span className={formData.nationality ? '' : 'text-primary/50'}>
+                  {formData.nationality ? nationalityList.find(n => n.code === formData.nationality)?.nameNative || formData.nationality : '국적을 선택해주세요'}
+                </span>
+                <motion.span animate={{ rotate: isNationalityOpen ? 180 : 0 }} className="text-[10px] text-primary/50">▼</motion.span>
+              </div>
+
+              <AnimatePresence>
+                {isNationalityOpen && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 10, filter: 'blur(4px)' }}
+                    animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+                    exit={{ opacity: 0, y: 10, filter: 'blur(4px)' }}
+                    transition={{ duration: 0.2 }}
+                    className="absolute bottom-full left-0 right-0 mb-3 bg-[#e8ebe6] border border-primary/10 rounded-lg shadow-xl overflow-y-auto max-h-60 z-50 origin-bottom [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-thumb]:bg-primary/20 [&::-webkit-scrollbar-thumb]:rounded-full"
+                  >
+                    {nationalityList.map((item) => (
+                      <div
+                        key={item.code}
+                        onClick={() => {
+                          setFormData(prev => ({ ...prev, nationality: item.code }));
+                          setIsNationalityOpen(false);
+                          if (fieldErrors.nationality) setFieldErrors(prev => ({ ...prev, nationality: '' }));
+                        }}
+                        className="px-5 py-3 cursor-pointer hover:bg-primary/5 transition-colors flex items-center justify-between group relative"
+                      >
+                        {formData.nationality === item.code && <motion.div layoutId="nationality-active" className="absolute left-0 top-0 bottom-0 w-1 bg-accent" />}
+                        <span className={`text-lg font-bold tracking-tight group-hover:tracking-normal transition-all duration-300 ${formData.nationality === item.code ? 'text-accent' : 'text-primary'}`}>
+                          {item.nameEn.toUpperCase()}
+                        </span>
+                        <span className="text-xs text-primary/60 font-black uppercase tracking-[0.2em]">{item.nameNative}</span>
+                      </div>
+                    ))}
+                  </motion.div>
+                )}
+              </AnimatePresence>
+              {fieldErrors.nationality && <p className="absolute top-full left-0 mt-1.5 text-red-500 text-xs font-medium leading-tight">{fieldErrors.nationality}</p>}
+            </div>
         </motion.div>
 
-        <motion.div variants={itemVariants} className="pt-2 flex flex-col gap-3">
-          <div className="relative flex items-center gap-3">
+        <motion.div variants={itemVariants} className="pt-0 flex flex-col gap-8">
+          <div className="relative flex items-center gap-4">
             <label className="flex items-center gap-3 cursor-pointer group">
               <div className={`w-5 h-5 rounded border flex items-center justify-center transition-colors ${formData.termsConsent ? 'bg-accent border-accent text-background' : 'border-primary/30 group-hover:border-primary/60'}`}>
                 <CheckCircle2 className={`w-3.5 h-3.5 ${formData.termsConsent ? 'opacity-100' : 'opacity-0'}`} />
@@ -436,7 +513,7 @@ export default function RegisterForm() {
             {fieldErrors.termsConsent && <p className="absolute top-full left-0 mt-1 text-red-500 text-xs font-medium leading-tight">{fieldErrors.termsConsent}</p>}
           </div>
 
-          <div className="relative flex items-center gap-3">
+          <div className="relative flex items-center gap-4">
             <label className="flex items-center gap-3 cursor-pointer group">
               <div className={`w-5 h-5 rounded border flex items-center justify-center transition-colors ${formData.privacyConsent ? 'bg-accent border-accent text-background' : 'border-primary/30 group-hover:border-primary/60'}`}>
                 <CheckCircle2 className={`w-3.5 h-3.5 ${formData.privacyConsent ? 'opacity-100' : 'opacity-0'}`} />

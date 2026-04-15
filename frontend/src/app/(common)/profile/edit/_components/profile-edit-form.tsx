@@ -330,7 +330,7 @@ export function ProfileEditForm() {
           </div>
 
           <div className={`relative mt-4 ${isNationalityOpen ? 'z-50' : 'z-30'}`} ref={nationalityRef}>
-            <label className={labelClasses}>NATIONALITY</label>
+            <label className={labelClasses}>LOCATION</label>
             <div
               onClick={() => {
                 setIsNationalityOpen(!isNationalityOpen);
