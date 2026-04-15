@@ -17,6 +17,7 @@ public record ControlLog(
         String spaceType,
         String actorType,
         String command,
+        String commandLabel,
         String commandParams,
         String result,
         String errorMessage,

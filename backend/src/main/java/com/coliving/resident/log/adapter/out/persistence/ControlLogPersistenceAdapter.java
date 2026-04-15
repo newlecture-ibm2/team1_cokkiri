@@ -145,6 +145,7 @@ public class ControlLogPersistenceAdapter implements ControlLogRepositoryPort {
     }
 
     private ControlLog toModel(ControlLogEntity entity, DeviceEntity device, SpaceEntity space) {
+        String commandLabel = resolveCommandLabel(device, entity.getCommand());
         return new ControlLog(
                 entity.getControlLogId(),
                 entity.getDeviceId(),
@@ -156,11 +157,39 @@ public class ControlLogPersistenceAdapter implements ControlLogRepositoryPort {
                 space != null ? space.getType().name() : null,
                 entity.getActorType().name(),
                 entity.getCommand(),
+                commandLabel,
                 entity.getCommandParams(),
                 entity.getResult().name(),
                 entity.getErrorMessage(),
                 entity.getCorrelationId(),
                 entity.getCreatedAt()
         );
+    }
+
+    /**
+     * device_type.commands JSON에서 해당 command 코드의 label을 찾아 반환.
+     * 매칭 실패 시 command 코드를 그대로 반환.
+     */
+    private String resolveCommandLabel(DeviceEntity device, String command) {
+        if (device == null || command == null) return command;
+        try {
+            String commandsJson = device.getDeviceType().getCommands();
+            if (commandsJson == null || commandsJson.isBlank()) return command;
+
+            com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
+            com.fasterxml.jackson.databind.JsonNode root = mapper.readTree(commandsJson);
+            if (root.isArray()) {
+                for (com.fasterxml.jackson.databind.JsonNode node : root) {
+                    if (node.has("command") && command.equals(node.get("command").asText())) {
+                        if (node.has("label") && !node.get("label").asText().isBlank()) {
+                            return node.get("label").asText();
+                        }
+                    }
+                }
+            }
+        } catch (Exception ignored) {
+            // JSON 파싱 실패 시 command 코드 반환
+        }
+        return command;
     }
 }

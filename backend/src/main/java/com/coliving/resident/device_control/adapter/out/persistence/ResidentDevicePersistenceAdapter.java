@@ -41,9 +41,10 @@ public class ResidentDevicePersistenceAdapter implements ResidentDeviceRepositor
         String spaceName = spaceInfo != null ? (String) spaceInfo[0] : null;
         String spaceType = spaceInfo != null ? (String) spaceInfo[1] : null;
         Integer spaceFloor = spaceInfo != null && spaceInfo[2] != null ? ((Number) spaceInfo[2]).intValue() : null;
+        Boolean isReservable = spaceInfo != null && spaceInfo[3] != null ? (Boolean) spaceInfo[3] : false;
 
         return deviceJpaRepository.findBySpaceIdAndIsActiveTrue(spaceId).stream()
-                .map(entity -> toModel(entity, spaceName, spaceType, spaceFloor))
+                .map(entity -> toModel(entity, spaceName, spaceType, spaceFloor, isReservable))
                 .toList();
     }
 
@@ -57,7 +58,10 @@ public class ResidentDevicePersistenceAdapter implements ResidentDeviceRepositor
         @SuppressWarnings("unchecked")
         List<Object[]> commonSpaces = entityManager
                 .createNativeQuery(
-                        "SELECT s.space_id, s.name, s.type, s.floor FROM spaces s " +
+                        "SELECT s.space_id, s.name, s.type, s.floor, " +
+                        "COALESCE(csd.is_reservable, false) " +
+                        "FROM spaces s " +
+                        "LEFT JOIN common_space_details csd ON s.space_id = csd.space_id " +
                         "WHERE s.type = 'COMMON' AND s.deleted_at IS NULL")
                 .getResultList();
 
@@ -69,7 +73,7 @@ public class ResidentDevicePersistenceAdapter implements ResidentDeviceRepositor
         Map<Long, Object[]> spaceInfoMap = new HashMap<>();
         for (Object[] row : commonSpaces) {
             Long spaceId = ((Number) row[0]).longValue();
-            spaceInfoMap.put(spaceId, new Object[]{row[1], row[2], row[3]});
+            spaceInfoMap.put(spaceId, new Object[]{row[1], row[2], row[3], row[4]});
         }
 
         return spaceInfoMap.keySet().stream()
@@ -77,7 +81,8 @@ public class ResidentDevicePersistenceAdapter implements ResidentDeviceRepositor
                         .map(entity -> {
                             Object[] info = spaceInfoMap.get(spaceId);
                             Integer floor = info[2] != null ? ((Number) info[2]).intValue() : null;
-                            return toModel(entity, (String) info[0], (String) info[1], floor);
+                            Boolean isReservable = info[3] != null ? (Boolean) info[3] : false;
+                            return toModel(entity, (String) info[0], (String) info[1], floor, isReservable);
                         }))
                 .toList();
     }
@@ -89,7 +94,8 @@ public class ResidentDevicePersistenceAdapter implements ResidentDeviceRepositor
             return toModel(entity,
                     spaceInfo != null ? (String) spaceInfo[0] : null,
                     spaceInfo != null ? (String) spaceInfo[1] : null,
-                    spaceInfo != null && spaceInfo[2] != null ? ((Number) spaceInfo[2]).intValue() : null);
+                    spaceInfo != null && spaceInfo[2] != null ? ((Number) spaceInfo[2]).intValue() : null,
+                    spaceInfo != null && spaceInfo[3] != null ? (Boolean) spaceInfo[3] : false);
         });
     }
 
@@ -170,6 +176,14 @@ public class ResidentDevicePersistenceAdapter implements ResidentDeviceRepositor
                 deviceId, userId, command, result);
     }
 
+
+    @Override
+    public String findCurrentState(Long deviceId) {
+        return deviceJpaRepository.findById(deviceId)
+                .map(DeviceEntity::getCurrentState)
+                .orElse("{}");
+    }
+
     @Override
     public void updateCurrentState(Long deviceId, String currentState) {
         deviceJpaRepository.findById(deviceId).ifPresent(device -> {
@@ -184,7 +198,10 @@ public class ResidentDevicePersistenceAdapter implements ResidentDeviceRepositor
         @SuppressWarnings("unchecked")
         List<Object[]> resultList = entityManager
                 .createNativeQuery(
-                        "SELECT s.name, s.type, s.floor FROM spaces s " +
+                        "SELECT s.name, s.type, s.floor, " +
+                        "COALESCE(csd.is_reservable, false) " +
+                        "FROM spaces s " +
+                        "LEFT JOIN common_space_details csd ON s.space_id = csd.space_id " +
                         "WHERE s.space_id = :spaceId AND s.deleted_at IS NULL")
                 .setParameter("spaceId", spaceId)
                 .getResultList();
@@ -193,19 +210,21 @@ public class ResidentDevicePersistenceAdapter implements ResidentDeviceRepositor
 
     // ── Entity → 도메인 모델 변환 ──
 
-    private ResidentDevice toModel(DeviceEntity entity, String spaceName, String spaceType, Integer spaceFloor) {
+    private ResidentDevice toModel(DeviceEntity entity, String spaceName, String spaceType, Integer spaceFloor, Boolean isReservable) {
         return new ResidentDevice(
                 entity.getDeviceId(),
                 entity.getSpaceId(),
                 spaceName,
                 spaceType,
                 spaceFloor,
+                isReservable,
                 entity.getDeviceType().getCode(),
                 entity.getDeviceType().getName(),
                 entity.getDeviceType().getUiType(),
                 entity.getDeviceType().getCommands(),
                 entity.getName(),
                 entity.getModelName(),
+                entity.getMockEndpoint(),
                 entity.getStatus().name(),
                 entity.getCurrentState(),
                 entity.getIsActive(),

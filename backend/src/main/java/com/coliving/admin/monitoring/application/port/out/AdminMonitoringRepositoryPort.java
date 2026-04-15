@@ -38,4 +38,7 @@ public interface AdminMonitoringRepositoryPort {
 
     /** 공간별 기기 종류·상태 현황 (space_name, space_type, device_type_name, status, count) */
     List<Object[]> findDeviceStatusBySpace();
+
+    /** 기기별 제어 성공률 (device_id, device_name, device_type_name, space_name, total, success, failure) */
+    List<Object[]> countDeviceAvailability();
 }

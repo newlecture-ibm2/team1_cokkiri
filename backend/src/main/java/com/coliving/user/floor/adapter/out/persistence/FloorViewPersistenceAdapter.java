@@ -45,16 +45,12 @@ public class FloorViewPersistenceAdapter implements FloorViewRepositoryPort {
         Map<Integer, FloorPlanEntity> plansByFloor = floorPlanJpaRepository.findAll().stream()
                 .collect(Collectors.toMap(FloorPlanEntity::getFloor, fp -> fp, (a, b) -> a));
 
-        // 3. 공간 또는 floor_plan이 존재하는 모든 층 번호 수집
-        TreeMap<Integer, Object> allFloors = new TreeMap<>();
-        spacesByFloor.keySet().forEach(f -> allFloors.put(f, null));
-        plansByFloor.keySet().forEach(f -> allFloors.put(f, null));
-
+        // 3. 공간이 존재하는 층만 표시 (관리자 에디터와 동일한 기준)
         // 4. 층별로 FloorView 생성
         List<FloorView> result = new ArrayList<>();
-        for (Integer floor : allFloors.keySet()) {
+        for (Integer floor : spacesByFloor.keySet()) {
             FloorPlanEntity plan = plansByFloor.get(floor);
-            List<SpaceEntity> spaces = spacesByFloor.getOrDefault(floor, Collections.emptyList());
+            List<SpaceEntity> spaces = spacesByFloor.get(floor);
 
             result.add(FloorView.builder()
                     .floor(floor)

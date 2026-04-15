@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { fetchMyDevices, controlDevice } from "../_api";
 import type { MyDevice } from "../_types";
 import { ApiError } from "@/lib/api";
+import { DeviceControlPanel } from "@/components/ui/DeviceControlPanel";
 
 /* ── 상수 ── */
 
@@ -17,15 +18,7 @@ const STATUS_MAP: Record<string, { label: string; color: string; dot: string }> 
   ERROR: { label: "에러", color: "border-red-400/40 bg-red-50/80", dot: "bg-red-500" },
 };
 
-const DEVICE_ICONS: Record<string, string> = {
-  DOOR_LOCK: "🔒",
-  LIGHT: "💡",
-  AIR_CONDITIONER: "❄️",
-  WASHER: "🫧",
-  DRYER: "🌀",
-  HEATER: "🔥",
-  CCTV: "📹",
-};
+
 
 /* ── 컴포넌트 ── */
 
@@ -49,6 +42,11 @@ export function DeviceGrid() {
     open: boolean;
     device: MyDevice | null;
   }>({ open: false, device: null });
+
+  // 정렬
+  type SortKey = "name" | "deviceTypeName" | "status";
+  const [sortKey, setSortKey] = useState<SortKey>("name");
+  const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
 
   const loadDevices = useCallback(async () => {
     try {
@@ -87,48 +85,48 @@ export function DeviceGrid() {
     setFeedback(msg);
   };
 
-  const handleToggle = async (device: MyDevice) => {
-    // 공용 기기는 제어 차단 → 예약 안내 모달 표시
-    if (device.spaceType === "COMMON") {
-      setReservationModal({ open: true, device });
-      return;
-    }
-
-    // 상태 검증
-    if (device.status !== "ONLINE") return;
-
-    // Throttle: 제어 진행 중이면 무시
+  const handleControl = async (
+    device: MyDevice,
+    command: string,
+    params: Record<string, unknown>
+  ) => {
+    // 상태 검증 — OFFLINE만 차단, ERROR는 재시도 허용 (mock-iot에서 자동 복구)
+    if (device.status === "OFFLINE") return;
     if (controllingId !== null) return;
-
-    // Throttle: 쿨다운 중이면 무시
     if (cooldownRef.current.has(device.deviceId)) return;
 
     setControllingId(device.deviceId);
 
     try {
-      // 현재 상태 파싱
+      await controlDevice(device.deviceId, { command, params });
+
+      // Optimistic UI: 로컬 상태 즉시 반영
       let currentState: Record<string, unknown> = {};
       try {
         currentState = JSON.parse(device.currentState || "{}");
       } catch { /* ignore */ }
-
-      const isPowerOn = currentState.power === true || currentState.power === "ON";
-      const command = isPowerOn ? "OFF" : "ON";
-
-      await controlDevice(device.deviceId, { command });
-
-      // Optimistic UI: 로컬 상태 즉시 반영
+      const newState = { ...currentState, ...params };
       setDevices((prev) =>
         prev.map((d) =>
           d.deviceId === device.deviceId
-            ? { ...d, currentState: JSON.stringify({ ...currentState, power: command }) }
+            ? { ...d, currentState: JSON.stringify(newState), status: "ONLINE" }
             : d
         )
       );
       showFeedback(`"${device.name}" ${command}`, "success");
     } catch (err) {
-      if (err instanceof ApiError) showFeedback(err.message, "error");
-      else showFeedback("제어에 실패했습니다", "error");
+      if (err instanceof ApiError) {
+        // 공용 기기 예약 없음 → 예약 안내 모달
+        if (err.errorCode === "NO_ACTIVE_RESERVATION") {
+          setReservationModal({ open: true, device });
+        } else {
+          showFeedback(err.message, "error");
+        }
+      } else {
+        showFeedback("제어에 실패했습니다", "error");
+      }
+      loadDevices(); // 제어 실패 시에도 기기 상태(ERROR 전환 등) 반영
+      throw err; // DeviceControlPanel에 에러 전파 → optimistic UI 방지
     } finally {
       setControllingId(null);
 
@@ -149,9 +147,18 @@ export function DeviceGrid() {
     router.push(spaceId ? `/facilities?spaceId=${spaceId}` : "/facilities");
   };
 
-  /* ── 기기 분류 ── */
-  const privateDevices = devices.filter((d) => d.spaceType === "PRIVATE");
-  const commonDevices = devices.filter((d) => d.spaceType === "COMMON");
+  /* ── 기기 분류 + 정렬 ── */
+  const sortDevices = (list: MyDevice[]) =>
+    [...list].sort((a, b) => {
+      const dir = sortDir === "asc" ? 1 : -1;
+      if (sortKey === "status") {
+        const order = { ONLINE: 0, ERROR: 1, OFFLINE: 2 };
+        return dir * ((order[a.status] ?? 3) - (order[b.status] ?? 3));
+      }
+      return dir * String(a[sortKey] ?? "").localeCompare(String(b[sortKey] ?? ""), "ko", { numeric: true });
+    });
+  const privateDevices = sortDevices(devices.filter((d) => d.spaceType === "PRIVATE"));
+  const commonDevices = sortDevices(devices.filter((d) => d.spaceType === "COMMON"));
 
   // ── 로딩 ──
   if (loading && devices.length === 0) {
@@ -203,7 +210,7 @@ export function DeviceGrid() {
             initial={{ opacity: 0, y: -12 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -8 }}
-            className="fixed top-4 left-1/2 -translate-x-1/2 z-50 rounded-xl border px-5 py-3 text-sm font-bold shadow-2xl"
+            className="fixed top-4 left-1/2 -translate-x-1/2 z-[200] rounded-xl border px-5 py-3 text-sm font-bold shadow-2xl"
             style={{
               backgroundColor: feedbackType === "error" ? "#dc2626" : "#2C3424",
               color: "#ffffff",
@@ -275,6 +282,30 @@ export function DeviceGrid() {
         )}
       </AnimatePresence>
 
+      {/* ── 정렬 선택기 ── */}
+      <div className="flex items-center justify-end gap-2">
+        <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground">
+          정렬
+        </span>
+        <select
+          value={sortKey}
+          onChange={(e) => setSortKey(e.target.value as SortKey)}
+          className="rounded-lg border border-border bg-surface px-2 py-1 text-xs font-medium text-primary
+            focus:outline-none focus:ring-1 focus:ring-ring/40"
+        >
+          <option value="name">기기명</option>
+          <option value="deviceTypeName">종류</option>
+          <option value="status">상태</option>
+        </select>
+        <button
+          onClick={() => setSortDir((d) => (d === "asc" ? "desc" : "asc"))}
+          className="rounded-lg border border-border bg-surface px-2 py-1 text-xs font-medium text-primary
+            transition-colors hover:bg-muted/20"
+        >
+          {sortDir === "asc" ? "▲ 오름차순" : "▼ 내림차순"}
+        </button>
+      </div>
+
       {/* 개인 공간 기기 */}
       {privateDevices.length > 0 && (
         <section>
@@ -289,7 +320,7 @@ export function DeviceGrid() {
                 idx={idx}
                 isControlling={controllingId === device.deviceId}
                 isCooldown={cooldownRef.current.has(device.deviceId)}
-                onToggle={handleToggle}
+                onControl={handleControl}
               />
             ))}
           </div>
@@ -310,7 +341,7 @@ export function DeviceGrid() {
                 idx={idx}
                 isControlling={controllingId === device.deviceId}
                 isCooldown={cooldownRef.current.has(device.deviceId)}
-                onToggle={handleToggle}
+                onControl={handleControl}
               />
             ))}
           </div>
@@ -327,47 +358,38 @@ function DeviceCard({
   idx,
   isControlling,
   isCooldown,
-  onToggle,
+  onControl,
 }: {
   device: MyDevice;
   idx: number;
   isControlling: boolean;
   isCooldown: boolean;
-  onToggle: (device: MyDevice) => void;
+  onControl: (device: MyDevice, command: string, params: Record<string, unknown>) => void;
 }) {
   const isCommon = device.spaceType === "COMMON";
   const status = STATUS_MAP[device.status] ?? STATUS_MAP.OFFLINE;
-  const icon = DEVICE_ICONS[device.deviceTypeCode] ?? "📱";
 
-  let currentState: Record<string, unknown> = {};
-  try {
-    currentState = JSON.parse(device.currentState || "{}");
-  } catch { /* ignore */ }
-  const isPowerOn = currentState.power === true || currentState.power === "ON";
+  // 카드 색상: 기기 상태 기반 (개인/공용 공통)
+  const cardColor = isCommon && !device.controllable
+    ? "border-border bg-muted/10 opacity-60"
+    : isCommon
+      ? `${status.color} ring-1 ring-accent/20`
+      : status.color;
 
-  // 공용 기기: 회색 계열 스타일 (제어 불가)
-  const cardColor = isCommon
-    ? "border-border bg-muted/10 opacity-75"
-    : status.color;
-
-  const dotColor = isCommon ? "bg-gray-400" : status.dot;
+  const dotColor = isCommon && !device.controllable ? "bg-gray-400" : status.dot;
 
   return (
     <motion.div
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: idx * 0.05 }}
-      className={`group relative cursor-pointer rounded-[2rem] border p-5 transition-all
+      className={`group relative rounded-[2rem] border p-3 md:p-5 transition-all overflow-hidden
         duration-200 hover:shadow-md ${cardColor}
         ${isControlling ? "animate-pulse pointer-events-none" : ""}
         ${isCooldown ? "opacity-70 pointer-events-none" : ""}`}
-      onClick={() => onToggle(device)}
     >
       {/* 상태 점 */}
       <span className={`absolute right-4 top-4 h-2.5 w-2.5 rounded-full ${dotColor}`} />
-
-      {/* 아이콘 */}
-      <div className={`text-3xl ${isCommon ? "grayscale opacity-60" : ""}`}>{icon}</div>
 
       {/* 기기명 */}
       <p className={`mt-3 text-sm font-bold tracking-tight ${isCommon ? "text-muted-foreground" : "text-primary"}`}>
@@ -389,40 +411,36 @@ function DeviceCard({
         {device.deviceTypeName}
       </p>
 
-      {/* ── 개인 기기: 전원 토글 ── */}
-      {!isCommon && device.status === "ONLINE" && (
-        <div className="mt-3 flex items-center gap-2">
-          <div
-            className={`relative h-5 w-9 rounded-full transition-colors duration-200
-              ${isPowerOn ? "bg-accent" : "bg-muted/40"}`}
-          >
-            <span
-              className={`absolute top-0.5 left-0.5 h-4 w-4 rounded-full bg-white shadow
-                transition-transform duration-200
-                ${isPowerOn ? "translate-x-4" : "translate-x-0"}`}
-            />
-          </div>
-          <span className="text-[10px] font-semibold text-muted-foreground">
-            {isPowerOn ? "ON" : "OFF"}
-          </span>
+      {/* ── 제어 가능: commands 기반 동적 제어 UI ── */}
+      {device.controllable && device.status !== "OFFLINE" && (
+        <div className="mt-3 min-w-0 overflow-hidden" onClick={(e) => e.stopPropagation()}>
+          <DeviceControlPanel
+            commandsJson={device.commands ?? "[]"}
+            currentStateJson={device.currentState}
+            modelName={device.modelName}
+            disabled={isControlling || isCooldown}
+            onControl={async (cmd, params) => {
+              await onControl(device, cmd, params);
+            }}
+          />
         </div>
       )}
 
-      {/* ── 개인 기기: 오프라인/에러 표시 ── */}
-      {!isCommon && device.status !== "ONLINE" && (
-        <p className="mt-3 text-[10px] font-semibold text-muted-foreground">
-          {status.label}
-        </p>
-      )}
-
-      {/* ── 공용 기기: 제어 불가 라벨 ── */}
-      {isCommon && (
+      {/* ── 제어 불가: 예약 필요 안내 (COMMON + 예약 없음) ── */}
+      {!device.controllable && isCommon && (
         <div className="mt-3 flex items-center gap-1.5">
-          <span className="inline-block w-1.5 h-1.5 rounded-full bg-gray-400" />
+          <span className="inline-block w-1.5 h-1.5 rounded-full bg-amber-400" />
           <span className="text-[10px] font-bold text-muted-foreground">
             예약 후 이용 가능
           </span>
         </div>
+      )}
+
+      {/* ── 오프라인 표시 ── */}
+      {device.status === "OFFLINE" && (
+        <p className="mt-3 text-[10px] font-semibold text-muted-foreground">
+          {status.label}
+        </p>
       )}
     </motion.div>
   );

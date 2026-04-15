@@ -50,4 +50,7 @@ public interface AdminDeviceRepositoryPort {
 
     /** 기기 제어 성공 후 current_state(JSONB) 업데이트 */
     void updateCurrentState(Long deviceId, String currentState);
+
+    /** deviceTypeId로 기기 종류의 commands JSON 조회. 없으면 null 반환 */
+    String findDeviceTypeCommandsById(Long deviceTypeId);
 }
