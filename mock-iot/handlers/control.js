@@ -38,21 +38,7 @@ function handleControl(req, res) {
     });
   }
 
-  // 기기 상태가 ERROR인 경우 → 제어 불가 (복구는 랜덤 시뮬레이션에서만)
-  if (device.status === 'ERROR') {
-    console.log(`[Control] mac: ${mac_address}, command: ${command} → 기기 ERROR 상태, 제어 실패`);
-    return res.status(503).json({
-      success: false,
-      mac_address,
-      command,
-      result: 'FAILURE',
-      state: null,
-      message: '기기가 오류 상태입니다. 자동 복구를 기다려주세요',
-      executed_at: new Date().toISOString(),
-    });
-  }
-
-  // 에러 모드 확인 (관리자 테스트 트리거)
+  // 에러 모드 확인 (관리자 테스트 트리거 — status 체크보다 우선)
   const errorMode = store.getErrorMode(mac_address);
 
   if (errorMode === 'error') {
@@ -88,6 +74,20 @@ function handleControl(req, res) {
     console.log(`[Control] mac: ${mac_address}, command: ${command} → FAULT 모드 (연결 끊김)`);
     res.destroy();
     return;
+  }
+
+  // 기기 상태가 ERROR인 경우 → 제어 불가 (자동 시뮬레이션에 의한 에러, error_mode=normal)
+  if (device.status === 'ERROR') {
+    console.log(`[Control] mac: ${mac_address}, command: ${command} → 기기 ERROR 상태, 제어 실패`);
+    return res.status(503).json({
+      success: false,
+      mac_address,
+      command,
+      result: 'FAILURE',
+      state: null,
+      message: '기기가 오류 상태입니다. 자동 복구를 기다려주세요',
+      executed_at: new Date().toISOString(),
+    });
   }
 
   // 일시적 통신 오류 시뮬레이션 (ONLINE 기기도 10% 확률로 통신 실패)
