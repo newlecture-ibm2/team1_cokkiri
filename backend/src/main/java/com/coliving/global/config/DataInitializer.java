@@ -35,10 +35,7 @@ import com.coliving.admin.space.adapter.out.jpa.CommonSpaceDetailJpaRepository;
 import com.coliving.admin.space.adapter.out.jpa.PrivateSpaceDetailEntity;
 import com.coliving.admin.space.adapter.out.jpa.PrivateSpaceDetailJpaRepository;
 import com.coliving.admin.space.adapter.out.jpa.SpaceEntity;
-import com.coliving.admin.space.adapter.out.jpa.SpaceImageEntity;
-import com.coliving.admin.space.adapter.out.jpa.SpaceImageJpaRepository;
 import com.coliving.admin.space.adapter.out.jpa.SpaceJpaRepository;
-import com.coliving.admin.space.model.ImageType;
 import com.coliving.admin.space.adapter.out.jpa.RoomTypeEntity;
 import com.coliving.admin.space.adapter.out.jpa.RoomTypeJpaRepository;
 import com.coliving.admin.space.adapter.out.jpa.AnnotationTypeEntity;
@@ -91,7 +88,6 @@ public class DataInitializer implements ApplicationRunner {
     private final CommonSpaceDetailJpaRepository commonSpaceDetailJpaRepository;
     private final RoomTypeJpaRepository roomTypeJpaRepository;
     private final AnnotationTypeJpaRepository annotationTypeJpaRepository;
-    private final SpaceImageJpaRepository spaceImageJpaRepository;
 
     private final PostLikeJpaRepository postLikeJpaRepository;
     private final PostJpaRepository postJpaRepository;
@@ -533,34 +529,28 @@ public class DataInitializer implements ApplicationRunner {
                 new BigDecimal("8000000"), new BigDecimal("720000"), new BigDecimal("62000"), true);
 
         SpaceEntity lobby = getOrCreateCommonSpace(
-                "메인 로비 미팅룸", 1, new BigDecimal("30.50"), "[\"Wi-Fi\",\"TV\"]", "공용 로비에 위치한 6인 회의실",
+                "메인 로비 회의실", 1, new BigDecimal("30.50"), "[\"Wi-Fi\",\"TV\"]", "공용 로비에 위치한 6인 회의실",
                 6, "09:00~22:00", true, BigDecimal.ZERO);
-        saveSpaceImageIfNotExists(lobby, "https://picsum.photos/seed/lobby/800/600", ImageType.PHOTO, 1, true);
 
         SpaceEntity rooftop = getOrCreateCommonSpace(
-                "루프탑 파티룸", 10, new BigDecimal("100.00"), "[]", "바비큐 및 파티 가능한 루프탑",
+                "파티룸", 5, new BigDecimal("100.00"), "[]", "바비큐 및 파티 가능한 루프탑",
                 20, "12:00~23:00", true, new BigDecimal("50000"));
-        saveSpaceImageIfNotExists(rooftop, "https://picsum.photos/seed/rooftop/800/600", ImageType.PHOTO, 1, true);
 
         SpaceEntity gym = getOrCreateCommonSpace(
-                "B1 헬스장", -1, new BigDecimal("300.00"), "[]", "24시간 무인 헬스장",
+                "헬스장", -1, new BigDecimal("300.00"), "[]", "24시간 무인 헬스장",
                 50, "00:00~24:00", false, BigDecimal.ZERO);
-        saveSpaceImageIfNotExists(gym, "https://picsum.photos/seed/gym/800/600", ImageType.PHOTO, 1, true);
 
         SpaceEntity laundry = getOrCreateCommonSpace(
                 "1층 세탁실", 1, new BigDecimal("40.00"), "[\"세탁기\",\"건조기\"]", "코인형 세탁기·건조기 완비 세탁실",
                 10, "06:00~23:00", false, BigDecimal.ZERO);
-        saveSpaceImageIfNotExists(laundry, "https://picsum.photos/seed/laundry/800/600", ImageType.PHOTO, 1, true);
 
         SpaceEntity library = getOrCreateCommonSpace(
                 "2층 도서관", 2, new BigDecimal("80.00"), "[\"Wi-Fi\",\"데스크\",\"콘센트\"]", "독서 및 자율학습을 위한 정숙 공간",
                 20, "07:00~24:00", false, BigDecimal.ZERO);
-        saveSpaceImageIfNotExists(library, "https://picsum.photos/seed/library/800/600", ImageType.PHOTO, 1, true);
 
         SpaceEntity meetingRoom = getOrCreateCommonSpace(
-                "3층 화상 미팅룸", 3, new BigDecimal("20.00"), "[\"Wi-Fi\",\"대형 모니터\",\"화이트보드\",\"콘센트\"]", "팀 프로젝트 및 화상 회의를 위한 방음 미팅룸 (예약 필수)",
+                "3층 화상 회의실", 3, new BigDecimal("20.00"), "[\"Wi-Fi\",\"대형 모니터\",\"화이트보드\",\"콘센트\"]", "팀 프로젝트 및 화상 회의를 위한 방음 미팅룸 (예약 필수)",
                 6, "09:00~22:00", true, new BigDecimal("10000"));
-        saveSpaceImageIfNotExists(meetingRoom, "https://picsum.photos/seed/meeting/800/600", ImageType.PHOTO, 1, true);
 
         log.info("[DataInitializer] 공간 시드 적재 완료 (idempotent)");
     }
@@ -632,20 +622,7 @@ public class DataInitializer implements ApplicationRunner {
         });
     }
 
-    private void saveSpaceImageIfNotExists(
-            SpaceEntity space, String imageUrl, ImageType imageType, int sortOrder, boolean thumbnail) {
-        boolean exists = spaceImageJpaRepository.findAll().stream()
-                .anyMatch(img -> img.getSpace().getSpaceId().equals(space.getSpaceId())
-                        && imageUrl.equals(img.getImageUrl()));
-        if (exists) return;
-        spaceImageJpaRepository.save(SpaceImageEntity.builder()
-                .space(space)
-                .imageUrl(imageUrl)
-                .imageType(imageType)
-                .sortOrder(sortOrder)
-                .isThumbnail(thumbnail)
-                .build());
-    }
+
 
     private void seedDefaultAnnotationTypes() {
         getOrCreateAnnotationType("DOOR", "출입문", "DoorOpen", "primary");
