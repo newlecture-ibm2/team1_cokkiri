@@ -324,4 +324,26 @@ public class MockIotClient implements IotClient {
         }
         return false;
     }
+
+    // ── 에러 모드 설정 ──
+
+    private static final String ERROR_MODE_ENDPOINT = "/api/devices/";
+
+    @Override
+    public boolean setErrorMode(String macAddress, String mode) {
+        try {
+            webClient.post()
+                    .uri(ERROR_MODE_ENDPOINT + macAddress + "/error-mode")
+                    .bodyValue(Map.of("mode", mode))
+                    .retrieve()
+                    .bodyToMono(String.class)
+                    .block(Duration.ofSeconds(5));
+
+            log.info("[IoT 에러 모드] mac: {} → {}", macAddress, mode);
+            return true;
+        } catch (Exception e) {
+            log.error("[IoT 에러 모드 설정 실패] mac: {}, mode: {} — {}", macAddress, mode, e.getMessage());
+            return false;
+        }
+    }
 }
