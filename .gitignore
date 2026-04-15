@@ -11,6 +11,6 @@ build/
 .vscode/
 *.swp
 *.log
-
+application-local.yml
 # Docker overrides
 docker-compose.override.yml

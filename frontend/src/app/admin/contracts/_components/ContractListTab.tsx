@@ -348,7 +348,7 @@ export function ContractListTab({ refreshKey, onRefresh }: Props) {
               onClick={() => setStatusFilter(s)}
               className={`px-4 py-2 rounded-full text-[10px] font-black uppercase tracking-[0.15em] transition-all ${statusFilter === s
                   ? "bg-primary text-background"
-                  : "bg-primary/5 text-muted hover:bg-primary/10"
+                  : "bg-primary/5 text-primary/60 hover:bg-primary/10"
                 }`}
             >
               {s === "ALL" ? "전체" : STATUS_LABELS[s] || s}
