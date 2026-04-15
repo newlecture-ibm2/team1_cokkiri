@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 
 /**
@@ -158,6 +158,9 @@ export function DeviceControlPanel({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentStateJson]);
 
+  // 드래그 시작 전 원본 상태 보관 (onChange가 localState를 먼저 변경하므로 ref로 백업)
+  const stateBeforeDrag = useRef<Record<string, unknown> | null>(null);
+
   const currentState = localState;
 
   const { togglePairs, others } = groupTogglePairs(commands);
@@ -166,17 +169,19 @@ export function DeviceControlPanel({
     async (command: string, params: Record<string, unknown>) => {
       if (disabled || busy) return;
       setBusy(true);
-      const prevState = { ...localState }; // 슬라이더 onChange 이전 값 백업
+      // 드래그 시작 전 보관된 원본 값 사용 (없으면 현재 localState 사용)
+      const rollbackState = stateBeforeDrag.current ?? { ...localState };
       try {
         await onControl(command, params);
-        // 성공 시에만 Optimistic UI 반영
+        // 성공: localState는 이미 onChange로 업데이트됨, 추가 처리
         const newState = { ...localState, ...params };
         setLocalState(newState);
         onStateChange?.(newState);
       } catch {
-        // 제어 실패 시 슬라이더 등 onChange로 변경된 상태를 이전 값으로 롤백
-        setLocalState(prevState);
+        // 제어 실패 시 드래그 이전 원본 값으로 롤백
+        setLocalState(rollbackState);
       } finally {
+        stateBeforeDrag.current = null;
         setBusy(false);
       }
     },
@@ -256,6 +261,10 @@ export function DeviceControlPanel({
                 disabled={disabled}
                 onChange={(e) => {
                   const newVal = Number(e.target.value);
+                  // 드래그 시작 시점의 원본 상태를 최초 1회만 저장
+                  if (!stateBeforeDrag.current) {
+                    stateBeforeDrag.current = { ...localState };
+                  }
                   setLocalState((prev) => ({ ...prev, [cmd.stateKey]: newVal }));
                 }}
                 onMouseUp={(e) => {

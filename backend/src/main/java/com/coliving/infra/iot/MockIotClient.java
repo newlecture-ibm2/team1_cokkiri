@@ -80,10 +80,20 @@ public class MockIotClient implements IotClient {
             log.error("[IoT 타임아웃] deviceId: {}, mac: {}, command: {} — 전체 타임아웃({}초) 초과",
                     deviceId, macAddress, command, GLOBAL_TIMEOUT.toSeconds());
             return IotResponse.failure(deviceId, command, "IoT 기기 응답 타임아웃");
+        } catch (java.util.concurrent.ExecutionException e) {
+            // CompletableFuture 내부 예외를 꺼내서 원본 메시지 활용
+            Throwable cause = e.getCause();
+            String message = cause != null && cause.getMessage() != null
+                    ? cause.getMessage()
+                    : "IoT 통신 실패 (원인 불명)";
+            log.error("[IoT 통신 실패] deviceId: {}, mac: {}, command: {} — {}",
+                    deviceId, macAddress, command, message);
+            return IotResponse.failure(deviceId, command, message);
         } catch (Exception e) {
             log.error("[IoT 통신 실패] deviceId: {}, mac: {}, command: {} — {}",
                     deviceId, macAddress, command, e.getMessage());
-            return IotResponse.failure(deviceId, command, "IoT 통신 실패: " + e.getMessage());
+            return IotResponse.failure(deviceId, command,
+                    "IoT 통신 실패: " + (e.getMessage() != null ? e.getMessage() : "알 수 없는 오류"));
         }
     }
 
@@ -113,12 +123,14 @@ public class MockIotClient implements IotClient {
         } catch (WebClientRequestException e) {
             String detail;
             Throwable cause = e.getCause();
-            if (cause instanceof java.net.ConnectException) {
+            if (isTimeoutException(cause)) {
+                detail = "IoT 기기 응답 타임아웃";
+            } else if (cause instanceof java.net.ConnectException) {
                 detail = "IoT 서버에 연결할 수 없습니다 (서버 다운)";
             } else if (cause instanceof java.io.IOException) {
                 detail = "IoT 기기와의 연결이 끊겼습니다 (연결 중단)";
             } else {
-                detail = "IoT 서버 연결 실패: " + e.getMessage();
+                detail = "IoT 서버 연결 실패: " + (e.getMessage() != null ? e.getMessage() : "알 수 없는 오류");
             }
             log.error("[IoT 연결 실패] mac: {}, command: {} — {}",
                     macAddress, command, detail);
@@ -126,7 +138,8 @@ public class MockIotClient implements IotClient {
         } catch (Exception e) {
             log.error("[IoT 통신 실패] mac: {}, command: {} — {}",
                     macAddress, command, e.getMessage());
-            return IotResponse.failure(deviceId, command, "IoT 통신 실패: " + e.getMessage());
+            return IotResponse.failure(deviceId, command,
+                    "IoT 통신 실패: " + (e.getMessage() != null ? e.getMessage() : "알 수 없는 오류"));
         }
     }
 
@@ -294,5 +307,21 @@ public class MockIotClient implements IotClient {
         } catch (Exception e) {
             return IotResponse.failure(deviceId, command, "IoT 기기 오류");
         }
+    }
+
+    /**
+     * Cause 체인에서 타임아웃 관련 예외를 탐지.
+     * Netty의 ReadTimeoutException은 직접 import 없이 클래스명으로 판별.
+     */
+    private boolean isTimeoutException(Throwable cause) {
+        Throwable current = cause;
+        while (current != null) {
+            String name = current.getClass().getSimpleName();
+            if (name.contains("TimeoutException") || name.contains("ReadTimeout")) {
+                return true;
+            }
+            current = current.getCause();
+        }
+        return false;
     }
 }

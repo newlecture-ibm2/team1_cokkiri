@@ -145,6 +145,20 @@ function saveData(data) {
 
 // 서버 시작 시 파일에서 로드
 let devices = load();
+
+// error_mode ↔ status 정합성 보정 (볼륨에 남아있는 구 데이터 마이그레이션)
+let fixedCount = 0;
+devices.forEach(device => {
+  if ((device.error_mode === 'error' || device.error_mode === 'fault') && device.status !== 'ERROR') {
+    device.status = 'ERROR';
+    fixedCount++;
+  }
+});
+if (fixedCount > 0) {
+  saveData(devices);
+  console.log(`[DeviceStore] error_mode ↔ status 정합성 보정: ${fixedCount}개 기기 → ERROR`);
+}
+
 console.log(`[DeviceStore] ${devices.length}개 기기 로드 완료`);
 
 /** 저장 (현재 devices 배열을 파일에 기록) */
