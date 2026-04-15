@@ -10,7 +10,22 @@ import type {
   ControlAdminDeviceRequest,
   ControlAdminDeviceResponse,
   DevicePageResponse,
+  IotDevicesResponse,
+  GatewayInfo,
 } from "../_types";
+
+// ── IoT 게이트웨이 조회 ──
+
+export async function fetchGateways() {
+  return apiFetch<{ gateways: GatewayInfo[]; total: number }>("/admin/devices/gateways");
+}
+
+// ── IoT 기기 발견 (게이트웨이별 로컬 네트워크 스캔) ──
+
+export async function discoverIotDevices(host?: string) {
+  const query = host ? `?host=${encodeURIComponent(host)}` : "";
+  return apiFetch<IotDevicesResponse>(`/admin/devices/iot-devices${query}`);
+}
 
 // ── Device CRUD ──
 
@@ -110,4 +125,18 @@ export async function controlAdminDevice(
 
 export async function fetchSpaces() {
   return apiFetch<Space[]>("/admin/spaces?size=100");
+}
+
+// ── Device Error Mode (Mock IoT) ──
+
+export type ErrorMode = "normal" | "error" | "timeout" | "fault";
+
+export async function setDeviceErrorMode(deviceId: number, mode: ErrorMode) {
+  return apiFetch<{ deviceId: number; errorMode: string; message: string }>(
+    `/admin/devices/${deviceId}/error-mode`,
+    {
+      method: "POST",
+      body: JSON.stringify({ mode }),
+    }
+  );
 }

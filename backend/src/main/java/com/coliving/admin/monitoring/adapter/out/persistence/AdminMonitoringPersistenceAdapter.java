@@ -41,12 +41,7 @@ public class AdminMonitoringPersistenceAdapter implements AdminMonitoringReposit
                 LEFT JOIN control_logs cl ON d.device_id = cl.device_id
                     AND cl.result = 'FAILURE' AND cl.deleted_at IS NULL
                 WHERE d.deleted_at IS NULL
-                  AND (d.status = 'ERROR' OR EXISTS (
-                      SELECT 1 FROM control_logs cl2
-                      WHERE cl2.device_id = d.device_id
-                        AND cl2.result = 'FAILURE'
-                        AND cl2.deleted_at IS NULL
-                  ))
+                  AND d.status = 'ERROR'
                 GROUP BY d.device_id, d.name, dt.code, dt.name,
                          s.name, d.status, d.last_online_at
                 ORDER BY error_count DESC
@@ -89,7 +84,8 @@ public class AdminMonitoringPersistenceAdapter implements AdminMonitoringReposit
                        dt.name AS device_type_name, s.name AS space_name,
                        cl.user_id, u.name AS user_name,
                        cl.actor_type, cl.command, cl.command_params,
-                       cl.result, cl.error_message, cl.correlation_id, cl.created_at
+                       cl.result, cl.error_message, cl.correlation_id, cl.created_at,
+                       dt.commands AS device_type_commands
                 FROM control_logs cl
                 JOIN devices d ON cl.device_id = d.device_id
                 JOIN device_types dt ON d.device_type_id = dt.device_type_id
@@ -139,6 +135,9 @@ public class AdminMonitoringPersistenceAdapter implements AdminMonitoringReposit
         if (command.spaceId() != null) {
             sql.append(" AND d.space_id = :spaceId");
         }
+        if (command.deviceTypeId() != null) {
+            sql.append(" AND d.device_type_id = :deviceTypeId");
+        }
         if (command.result() != null) {
             sql.append(" AND cl.result = :result");
         }
@@ -159,6 +158,9 @@ public class AdminMonitoringPersistenceAdapter implements AdminMonitoringReposit
         }
         if (command.spaceId() != null) {
             query.setParameter("spaceId", command.spaceId());
+        }
+        if (command.deviceTypeId() != null) {
+            query.setParameter("deviceTypeId", command.deviceTypeId());
         }
         if (command.result() != null) {
             query.setParameter("result", command.result());
@@ -238,6 +240,29 @@ public class AdminMonitoringPersistenceAdapter implements AdminMonitoringReposit
                 WHERE d.deleted_at IS NULL AND s.deleted_at IS NULL
                 GROUP BY s.name, s.type, dt.name, d.status
                 ORDER BY s.type, s.name, dt.name, d.status
+                """)
+                .getResultList();
+    }
+
+    @Override
+    public List<Object[]> countDeviceAvailability() {
+        return em.createNativeQuery("""
+                SELECT d.device_id, d.name, dt.name AS device_type_name, s.name AS space_name,
+                       s.floor,
+                       COUNT(cl.control_log_id) AS total_count,
+                       COUNT(CASE WHEN cl.result = 'SUCCESS' THEN 1 END) AS success_count,
+                       COUNT(CASE WHEN cl.result = 'FAILURE' THEN 1 END) AS failure_count
+                FROM devices d
+                JOIN device_types dt ON d.device_type_id = dt.device_type_id
+                JOIN spaces s ON d.space_id = s.space_id
+                LEFT JOIN control_logs cl ON d.device_id = cl.device_id
+                    AND cl.deleted_at IS NULL
+                    AND cl.created_at >= CURRENT_DATE - INTERVAL '30 days'
+                WHERE d.deleted_at IS NULL AND s.deleted_at IS NULL
+                GROUP BY d.device_id, d.name, dt.name, s.name, s.floor
+                HAVING COUNT(cl.control_log_id) > 0
+                ORDER BY total_count DESC
+                LIMIT 20
                 """)
                 .getResultList();
     }

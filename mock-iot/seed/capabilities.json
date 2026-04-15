@@ -1,0 +1,54 @@
+{
+  "SmartLight-100W": [
+    { "command": "ON",  "stateKey": "power", "stateValue": true },
+    { "command": "OFF", "stateKey": "power", "stateValue": false },
+    { "command": "SET_BRIGHTNESS", "stateKey": "brightness", "min": 0, "max": 100, "unit": "%" }
+  ],
+  "SmartLight-200W": [
+    { "command": "ON",  "stateKey": "power", "stateValue": true },
+    { "command": "OFF", "stateKey": "power", "stateValue": false },
+    { "command": "SET_BRIGHTNESS", "stateKey": "brightness", "min": 0, "max": 100, "unit": "%" }
+  ],
+  "SmartLight-300W": [
+    { "command": "ON",  "stateKey": "power", "stateValue": true },
+    { "command": "OFF", "stateKey": "power", "stateValue": false },
+    { "command": "SET_BRIGHTNESS", "stateKey": "brightness", "min": 0, "max": 100, "unit": "%" },
+    { "command": "SET_COLOR_TEMP", "stateKey": "colorTemp", "min": 2700, "max": 6500, "unit": "K" }
+  ],
+  "CoolMax-500": [
+    { "command": "ON",  "stateKey": "power", "stateValue": true },
+    { "command": "OFF", "stateKey": "power", "stateValue": false },
+    { "command": "SET_TEMP", "stateKey": "temperature", "min": 16, "max": 30, "unit": "℃" },
+    { "command": "SET_MODE", "stateKey": "mode", "options": ["cool", "heat", "dry", "fan"] }
+  ],
+  "CoolMax-1000": [
+    { "command": "ON",  "stateKey": "power", "stateValue": true },
+    { "command": "OFF", "stateKey": "power", "stateValue": false },
+    { "command": "SET_TEMP", "stateKey": "temperature", "min": 16, "max": 30, "unit": "℃" },
+    { "command": "SET_MODE", "stateKey": "mode", "options": ["cool", "heat", "dry", "fan"] },
+    { "command": "SET_FAN_SPEED", "stateKey": "fanSpeed", "options": ["low", "mid", "high", "auto"] }
+  ],
+  "SecureLock-Pro": [
+    { "command": "UNLOCK", "stateKey": "power", "stateValue": true },
+    { "command": "LOCK",   "stateKey": "power", "stateValue": false }
+  ],
+  "HeatFlow-300": [
+    { "command": "ON",  "stateKey": "power", "stateValue": true },
+    { "command": "OFF", "stateKey": "power", "stateValue": false },
+    { "command": "SET_TEMP", "stateKey": "temperature", "min": 16, "max": 30, "unit": "℃" }
+  ],
+  "WashMaster-700": [
+    { "command": "START", "stateKey": "running", "stateValue": true },
+    { "command": "STOP",  "stateKey": "running", "stateValue": false },
+    { "command": "SET_COURSE", "stateKey": "course", "options": ["normal", "delicate", "quick", "heavy"] }
+  ],
+  "DryMax-400": [
+    { "command": "START", "stateKey": "running", "stateValue": true },
+    { "command": "STOP",  "stateKey": "running", "stateValue": false },
+    { "command": "SET_COURSE", "stateKey": "course", "options": ["normal", "delicate", "quick"] }
+  ],
+  "SecureCam-HD": [
+    { "command": "ON",  "stateKey": "power", "stateValue": true },
+    { "command": "OFF", "stateKey": "power", "stateValue": false }
+  ]
+}

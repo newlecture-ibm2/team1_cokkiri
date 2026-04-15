@@ -2,7 +2,14 @@ package com.coliving.resident.device_control.application.service;
 
 import com.coliving.global.error.BusinessException;
 import com.coliving.global.error.ErrorCode;
+import com.coliving.infra.iot.DeviceStateUtil;
 import com.coliving.infra.iot.IotClient;
+import com.coliving.infra.iot.IotResponse;
+import com.coliving.user.contract.adapter.out.jpa.ContractEntity;
+import com.coliving.user.contract.adapter.out.jpa.ContractJpaRepository;
+import com.coliving.user.contract.model.ContractStatus;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.coliving.resident.device_control.application.command.ControlDeviceCommand;
 import com.coliving.resident.device_control.application.port.in.ResidentDeviceUseCase;
 import com.coliving.resident.device_control.application.port.out.ResidentDeviceRepositoryPort;
@@ -24,24 +31,31 @@ public class ResidentDeviceService implements ResidentDeviceUseCase {
 
     private final ResidentDeviceRepositoryPort residentDeviceRepositoryPort;
     private final IotClient iotClient;
+    // 도메인 협업 룰 §4-1: 타 도메인 JpaRepository READ 전용 접근 허용
+    private final ContractJpaRepository contractJpaRepository;
 
     /**
-     * 내 기기 목록 조회 (RES-DEV-01)
-     * - 개인(PRIVATE): space_id 기기 (is_active=true)
-     * - 공용(COMMON): 전체 공용 기기 + 예약 여부 표시는 프론트에서 처리
+     * 내 기기 목록 조회 (RES-DEV-01) — 다중 계약 지원
+     * - DB에서 ACTIVE 계약의 space_id 목록 조회
+     * - 개인(PRIVATE): 모든 ACTIVE 계약의 space_id 기기 (is_active=true)
+     * - 공용(COMMON): 전체 공용 기기
      * - CCTV 제외 (관리자 전용)
      */
     @Override
     @Transactional(readOnly = true)
-    public List<ResidentDevice> getMyDevices(Long spaceId) {
-        if (spaceId == null) {
+    public List<ResidentDevice> getMyDevices(Long userId) {
+        List<Long> spaceIds = findActiveSpaceIds(userId);
+
+        if (spaceIds.isEmpty()) {
             throw new BusinessException(ErrorCode.NO_ACTIVE_CONTRACT);
         }
 
         List<ResidentDevice> result = new ArrayList<>();
 
-        // 1. 개인 공간 기기
-        result.addAll(residentDeviceRepositoryPort.findActiveDevicesBySpaceId(spaceId));
+        // 1. 모든 계약된 개인 공간 기기 조회
+        for (Long spaceId : spaceIds) {
+            result.addAll(residentDeviceRepositoryPort.findActiveDevicesBySpaceId(spaceId));
+        }
 
         // 2. 공용 공간 기기 (CCTV 제외 — CCTV는 관리자 전용, ERD 비즈니스 규칙 #13)
         residentDeviceRepositoryPort.findActiveCommonDevices().stream()
@@ -52,16 +66,16 @@ public class ResidentDeviceService implements ResidentDeviceUseCase {
     }
 
     /**
-     * 기기 제어 (RES-DEV-02)
+     * 기기 제어 (RES-DEV-02) — 다중 계약 지원
      * 검증 순서:
      *   1. 기기 존재 확인
-     *   2. 계약 ACTIVE 여부 DB 재검증
+     *   2. ACTIVE 계약 space_id 목록 DB 조회 (다중 계약 지원)
      *   3. CCTV 관리자 전용 차단 (ERD 비즈니스 규칙 #13)
      *   4. 기기 활성화(isActive) 상태 검증
      *   5. 기기 온라인(ONLINE) 상태 검증
      *   6. DOOR_LOCK 방어 코드 (ERD 비즈니스 규칙 #14)
      *   7. 공간 타입별 접근 권한 검증
-     *      - PRIVATE: JWT space_id와 기기 space_id 일치 확인
+     *      - PRIVATE: 유저의 ACTIVE 계약 spaceIds에 기기 space_id 포함 확인
      *      - COMMON: 현재시각 APPROVED 예약 보유 확인 (ERD 비즈니스 규칙 #9)
      *   8. MockIoT 명령 전송
      *   9. CONTROL_LOG 감사 이력 기록 (성공/실패 모두)
@@ -73,9 +87,9 @@ public class ResidentDeviceService implements ResidentDeviceUseCase {
         ResidentDevice device = residentDeviceRepositoryPort.findById(command.deviceId())
                 .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND, "기기를 찾을 수 없습니다"));
 
-        // 2. 계약 ACTIVE 여부 DB 재검증
-        //    (JWT 만료 전에 계약이 해지될 수 있으므로 DB 상태를 재확인)
-        if (!residentDeviceRepositoryPort.hasActiveContract(command.userId())) {
+        // 2. ACTIVE 계약 space_id 목록 DB 조회 (다중 계약 지원)
+        List<Long> spaceIds = findActiveSpaceIds(command.userId());
+        if (spaceIds.isEmpty()) {
             throw new BusinessException(ErrorCode.NO_ACTIVE_CONTRACT);
         }
 
@@ -89,8 +103,8 @@ public class ResidentDeviceService implements ResidentDeviceUseCase {
             throw new BusinessException(ErrorCode.DEVICE_INACTIVE);
         }
 
-        // 5. 기기 온라인 상태 검증
-        if ("OFFLINE".equals(device.status()) || "ERROR".equals(device.status())) {
+        // 5. 기기 상태 검증 — OFFLINE만 차단 (통신 불가), ERROR는 IoT에 위임
+        if ("OFFLINE".equals(device.status())) {
             throw new BusinessException(ErrorCode.DEVICE_OFFLINE);
         }
 
@@ -101,21 +115,21 @@ public class ResidentDeviceService implements ResidentDeviceUseCase {
                     "도어락은 개인 공간에서만 제어할 수 있습니다");
         }
 
-        // 7. 공간 타입별 접근 권한 검증
+        // 7. 공간 타입별 접근 권한 검증 (다중 계약 지원)
         if ("PRIVATE".equals(spaceType)) {
-            // PRIVATE 기기: JWT space_id와 기기 설치 space_id 일치 확인
-            if (!device.spaceId().equals(command.spaceId())) {
+            if (!spaceIds.contains(device.spaceId())) {
                 throw new BusinessException(ErrorCode.SPACE_MISMATCH);
             }
         } else if ("COMMON".equals(spaceType)) {
-            // COMMON 기기: 현재시각 APPROVED 예약 보유 확인 (ERD 비즈니스 규칙 #9)
-            if (!residentDeviceRepositoryPort.hasApprovedReservationNow(command.userId(), device.spaceId())) {
-                throw new BusinessException(ErrorCode.NO_ACTIVE_RESERVATION);
+            if (Boolean.TRUE.equals(device.isReservable())) {
+                if (!residentDeviceRepositoryPort.hasApprovedReservationNow(command.userId(), device.spaceId())) {
+                    throw new BusinessException(ErrorCode.NO_ACTIVE_RESERVATION);
+                }
             }
         }
 
         // 8. MockIoT 제어 명령 전송
-        boolean success = iotClient.sendCommand(
+        IotResponse iotResult = iotClient.sendCommand(
                 command.deviceId(), command.command(), command.params());
 
         // 9. CONTROL_LOG 감사 이력 기록 (성공/실패 모두 기록, RES-DEV-02 필수)
@@ -125,19 +139,33 @@ public class ResidentDeviceService implements ResidentDeviceUseCase {
                 "RESIDENT",
                 command.command(),
                 command.params(),
-                success ? "SUCCESS" : "FAILURE",
-                success ? null : "IoT 통신 실패",
+                iotResult.result(),
+                iotResult.success() ? null : iotResult.message(),
                 command.correlationId()
         );
 
-        if (!success) {
-            // IoT 통신 실패 시 기기 상태를 자동으로 ERROR로 전환
-            residentDeviceRepositoryPort.updateDeviceStatus(command.deviceId(), "ERROR");
-            throw new BusinessException(ErrorCode.IOT_COMMUNICATION_FAIL);
+        if (!iotResult.success()) {
+            // 제어 실패 결과만 반환 (DB 상태 변경 없음 — 상태 동기화는 헬스체크 스케줄러 전담)
+            return new ControlDeviceResult(
+                    command.deviceId(),
+                    command.command(),
+                    false,
+                    iotResult.message() != null ? iotResult.message() : "IoT 기기 통신에 실패했습니다"
+            );
         }
 
         // 10. 제어 성공 시 기기 current_state 업데이트
-        String newState = buildCurrentState(command.command(), command.params());
+        String existingState = residentDeviceRepositoryPort.findCurrentState(command.deviceId());
+        String newState;
+        if (iotResult.state() != null && !iotResult.state().isEmpty()) {
+            try {
+                newState = new ObjectMapper().writeValueAsString(iotResult.state());
+            } catch (JsonProcessingException e) {
+                newState = DeviceStateUtil.mergeState(existingState, command.params());
+            }
+        } else {
+            newState = DeviceStateUtil.mergeState(existingState, command.params());
+        }
         residentDeviceRepositoryPort.updateCurrentState(command.deviceId(), newState);
 
         return new ControlDeviceResult(
@@ -149,41 +177,20 @@ public class ResidentDeviceService implements ResidentDeviceUseCase {
     }
 
     /**
-     * 제어 명령에 따른 current_state JSON 생성
+     * 해당 유저가 특정 공용 공간에 현재시각 기준 APPROVED 예약을 보유하고 있는지 확인
      */
-    private String buildCurrentState(String command, Map<String, Object> params) {
-        Map<String, Object> state = new java.util.HashMap<>();
-        switch (command) {
-            case "ON" -> state.put("power", "ON");
-            case "OFF" -> state.put("power", "OFF");
-            case "LOCK" -> state.put("power", "ON");
-            case "UNLOCK" -> state.put("power", "OFF");
-            case "START" -> state.put("power", "ON");
-            case "STOP" -> state.put("power", "OFF");
-            case "SET_TEMP" -> {
-                state.put("power", "ON");
-                if (params != null && params.containsKey("temperature")) {
-                    state.put("temperature", params.get("temperature"));
-                }
-            }
-            case "SET_BRIGHTNESS" -> {
-                state.put("power", "ON");
-                if (params != null && params.containsKey("brightness")) {
-                    state.put("brightness", params.get("brightness"));
-                }
-            }
-            case "SET_MODE" -> {
-                state.put("power", "ON");
-                if (params != null && params.containsKey("mode")) {
-                    state.put("mode", params.get("mode"));
-                }
-            }
-            default -> state.put("power", "ON");
-        }
-        try {
-            return new com.fasterxml.jackson.databind.ObjectMapper().writeValueAsString(state);
-        } catch (Exception e) {
-            return "{\"power\":\"ON\"}";
-        }
+    @Override
+    @Transactional(readOnly = true)
+    public boolean hasApprovedReservationNow(Long userId, Long spaceId) {
+        return residentDeviceRepositoryPort.hasApprovedReservationNow(userId, spaceId);
+    }
+
+    // ── DB에서 ACTIVE 계약의 space_id 목록 조회 ──
+    // 도메인 협업 룰 §4-1: 타 도메인 JpaRepository READ 전용 접근 허용
+    private List<Long> findActiveSpaceIds(Long userId) {
+        return contractJpaRepository.findByUserIdAndStatus(userId, ContractStatus.ACTIVE)
+                .stream()
+                .map(ContractEntity::getSpaceId)
+                .toList();
     }
 }
