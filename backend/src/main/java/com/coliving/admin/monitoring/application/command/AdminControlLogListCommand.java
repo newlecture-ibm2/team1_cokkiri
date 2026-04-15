@@ -9,6 +9,7 @@ public record AdminControlLogListCommand(
         Long deviceId,
         Long userId,
         Long spaceId,
+        Long deviceTypeId,
         String result,
         LocalDate startDate,
         LocalDate endDate,

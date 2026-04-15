@@ -13,6 +13,7 @@ public record AdminDevice(
         Long deviceTypeId,
         String deviceTypeCode,
         String deviceTypeName,
+        String deviceTypeCommands,
         String name,
         String modelName,
         String macAddress,

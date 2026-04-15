@@ -36,6 +36,7 @@ export interface EnergyStatsResponse {
   frequencyByDeviceTypeAndCommand: DeviceTypeCommandFrequency[];
   dailyErrorFrequency: ControlFrequency[];
   deviceStatusBySpace: SpaceDeviceStatus[];
+  deviceAvailability: DeviceAvailability[];
 }
 
 export interface SpaceDeviceStatus {
@@ -56,6 +57,7 @@ export interface ControlLog {
   userName: string | null;
   actorType: string;
   command: string;
+  commandLabel: string | null;
   commandParams: string | null;
   result: "SUCCESS" | "FAILURE";
   errorMessage: string | null;
@@ -75,4 +77,16 @@ export interface SpaceOption {
   spaceId: number;
   name: string;
   type: "PRIVATE" | "COMMON";
+}
+
+export interface DeviceAvailability {
+  deviceId: number;
+  deviceName: string;
+  deviceTypeName: string;
+  spaceName: string;
+  floor: number | null;
+  totalCount: number;
+  successCount: number;
+  failureCount: number;
+  successRate: number;
 }

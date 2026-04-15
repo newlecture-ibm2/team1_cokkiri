@@ -21,10 +21,10 @@ export default function DevicesPage() {
             등록된 기기의 활성화/비활성화, 제어, 수정, 삭제를 관리합니다.
           </p>
         </div>
-        <div className="flex gap-3">
+        <div className="flex flex-wrap gap-3">
           <Link
             href="/admin/monitoring"
-            className="inline-flex items-center gap-2 whitespace-nowrap rounded-xl border border-border px-5 py-3
+            className="inline-flex items-center gap-2 whitespace-nowrap rounded-xl border border-border px-4 py-2.5 md:px-5 md:py-3
               text-xs font-bold uppercase tracking-[0.2em] text-primary
               transition-colors duration-200 hover:bg-muted"
           >
@@ -32,7 +32,7 @@ export default function DevicesPage() {
           </Link>
           <Link
             href="/admin/devices/types"
-            className="inline-flex items-center gap-2 whitespace-nowrap rounded-xl border border-border px-5 py-3
+            className="inline-flex items-center gap-2 whitespace-nowrap rounded-xl border border-border px-4 py-2.5 md:px-5 md:py-3
               text-xs font-bold uppercase tracking-[0.2em] text-primary
               transition-colors duration-200 hover:bg-muted"
           >
@@ -40,7 +40,7 @@ export default function DevicesPage() {
           </Link>
           <Link
             href="/admin/devices/register"
-            className="inline-flex items-center gap-2 whitespace-nowrap rounded-xl bg-primary px-5 py-3
+            className="inline-flex items-center gap-2 whitespace-nowrap rounded-xl bg-primary px-4 py-2.5 md:px-5 md:py-3
               text-xs font-bold uppercase tracking-[0.2em] text-primary-foreground
               transition-colors duration-200 hover:bg-secondary"
           >

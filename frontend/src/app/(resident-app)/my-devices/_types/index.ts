@@ -14,6 +14,7 @@ export interface MyDevice {
   currentState: string;
   isActive: boolean;
   lastOnlineAt: string | null;
+  controllable: boolean;
 }
 
 export interface ControlDeviceRequest {

@@ -64,8 +64,7 @@ public class SecurityConfig {
                                                 // --- 공개: 공간·룸 조회 ---
                                                 .requestMatchers(HttpMethod.GET, "/api/rooms/**").permitAll()
                                                 .requestMatchers(HttpMethod.GET, "/api/room-types").permitAll() // 방 유형
-                                                .requestMatchers(HttpMethod.GET, "/api/admin/spaces/*/images/serve/**")
-                                                .permitAll() // 관리자가 업로드한 이미지 조회 (비회원 허용)
+                                                .requestMatchers(HttpMethod.GET, "/api/admin/spaces/*/images/serve/**").permitAll() // 관리자가 업로드한 이미지 조회 (비회원 허용)
                                                 .requestMatchers(HttpMethod.GET, "/api/experience/**").permitAll() // EXPERIENCE 공용시설 소개 🔓 Public
                                                 .requestMatchers(HttpMethod.GET, "/api/floors").permitAll() // FLOOR 층별 평면도 🔓 Public
                                                 .requestMatchers(HttpMethod.GET, "/api/nationalities").permitAll() // 🔓 Public

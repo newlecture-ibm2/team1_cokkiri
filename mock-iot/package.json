@@ -1,0 +1,12 @@
+{
+  "name": "mock-iot-server",
+  "version": "1.0.0",
+  "description": "Custom Mock IoT Server for CoLiving Platform",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.21.0"
+  }
+}
