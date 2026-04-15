@@ -1,18 +1,41 @@
 "use client";
 
 import Link from "next/link";
-import { useRef } from "react";
-import { ArrowRight, Globe, LifeBuoy, Zap } from "lucide-react";
+import { useRef, useState, useEffect, useCallback } from "react";
+import { ArrowRight, Globe, LifeBuoy, Zap, Home as HomeIcon, Clock, Users } from "lucide-react";
 import { motion, useScroll, useTransform, useSpring } from "framer-motion";
 import { Header } from "@/components/shared/Header";
 import { Footer } from "@/components/shared/Footer";
-import { listings } from "@/data/landingListings";
 import { ImageWithFallback } from "@/components/shared/ImageWithFallback";
 import { LandingFeaturedListing } from "@/components/shared/LandingFeaturedListing";
+import type { LandingRoom } from "@/components/shared/LandingFeaturedListing";
+
+interface CommonSpaceSummary {
+  spaceId: number;
+  name: string;
+  description: string;
+  operatingHours: string;
+  maxCapacity: number;
+  isReservable: boolean;
+  thumbnailUrl: string | null;
+}
+
+/** Fisher-Yates 셔플 */
+function shuffle<T>(arr: T[]): T[] {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
 
 export default function Home() {
-  const featuredListings = listings.slice(0, 3);
   const containerRef = useRef(null);
+  const [featuredRooms, setFeaturedRooms] = useState<LandingRoom[]>([]);
+  const [facilities, setFacilities] = useState<CommonSpaceSummary[]>([]);
+  const [roomsLoading, setRoomsLoading] = useState(true);
+  const [facilitiesLoading, setFacilitiesLoading] = useState(true);
 
   const { scrollYProgress } = useScroll({
     target: containerRef,
@@ -25,6 +48,42 @@ export default function Home() {
     restDelta: 0.001,
   });
 
+  const fetchFeaturedRooms = useCallback(async () => {
+    try {
+      const res = await fetch("/api/rooms?size=20");
+      if (!res.ok) throw new Error("rooms fetch failed");
+      const json = await res.json();
+      const rooms: LandingRoom[] = json.data?.content ?? [];
+      setFeaturedRooms(shuffle(rooms).slice(0, 3));
+    } catch (e) {
+      console.error("[Landing] Failed to fetch rooms:", e);
+      setFeaturedRooms([]);
+    } finally {
+      setRoomsLoading(false);
+    }
+  }, []);
+
+  const fetchFacilities = useCallback(async () => {
+    try {
+      const res = await fetch("/api/experience");
+      if (!res.ok) throw new Error("experience fetch failed");
+      const json = await res.json();
+      setFacilities(json.data ?? []);
+    } catch (e) {
+      console.error("[Landing] Failed to fetch facilities:", e);
+      setFacilities([]);
+    } finally {
+      setFacilitiesLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchFeaturedRooms();
+    fetchFacilities();
+  }, [fetchFeaturedRooms, fetchFacilities]);
+
+  const sizeMap: ("large" | "small" | "medium")[] = ["large", "small", "medium"];
+
   return (
     <div
       ref={containerRef}
@@ -32,6 +91,9 @@ export default function Home() {
     >
       <Header />
 
+      {/* ═══════════════════════════════════════════
+          ① HERO SECTION (유지)
+      ═══════════════════════════════════════════ */}
       <section className="relative flex h-screen flex-col justify-center overflow-hidden px-6 md:px-12 lg:px-24">
         <div className="mx-auto w-full max-w-[1400px] pt-20">
           <motion.div
@@ -159,6 +221,9 @@ export default function Home() {
         />
       </section>
 
+      {/* ═══════════════════════════════════════════
+          ② OUR SPACES — 실제 AVAILABLE 방 3개 (셔플)
+      ═══════════════════════════════════════════ */}
       <section className="px-6 py-20 md:px-12 md:py-32 lg:px-24">
         <div className="mx-auto max-w-[1400px]">
           <motion.div
@@ -167,23 +232,165 @@ export default function Home() {
             whileInView={{ opacity: 1 }}
             viewport={{ once: true }}
           >
-            <h2 className="text-5xl font-black tracking-tighter md:text-7xl">CURATED SPACES</h2>
+            <h2 className="text-5xl font-black tracking-tighter md:text-7xl">OUR SPACES</h2>
+            <Link
+              href="/rooms"
+              className="mt-4 text-sm font-bold tracking-[0.15em] uppercase text-accent transition-colors hover:text-primary md:mt-0"
+            >
+              전체 보기 →
+            </Link>
           </motion.div>
 
-          <div className="grid grid-cols-1 gap-12 md:grid-cols-12 lg:gap-24">
-            <div className="md:col-span-8">
-              <LandingFeaturedListing listing={featuredListings[0]} size="large" />
+          {roomsLoading ? (
+            /* 스켈레톤 로딩 */
+            <div className="grid grid-cols-1 gap-12 md:grid-cols-12 lg:gap-24">
+              {[8, 4, 6].map((span, i) => (
+                <div key={i} className={`md:col-span-${span} ${i === 1 ? "md:mt-48" : ""} ${i === 2 ? "md:col-start-4" : ""}`}>
+                  <div className={`w-full animate-pulse bg-muted/40 rounded-lg ${
+                    i === 0 ? "aspect-[16/10]" : i === 2 ? "aspect-[4/5]" : "aspect-square"
+                  }`} />
+                  <div className="mt-6 space-y-3">
+                    <div className="h-8 w-3/4 animate-pulse rounded bg-muted/30" />
+                    <div className="h-4 w-1/2 animate-pulse rounded bg-muted/20" />
+                  </div>
+                </div>
+              ))}
             </div>
-            <div className="md:col-span-4 md:mt-48">
-              <LandingFeaturedListing listing={featuredListings[1]} size="small" />
+          ) : featuredRooms.length === 0 ? (
+            /* Empty State */
+            <motion.div
+              className="flex flex-col items-center justify-center py-32 text-center"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+            >
+              <HomeIcon className="mb-6 h-16 w-16 opacity-20" />
+              <h3 className="mb-3 text-2xl font-black tracking-tighter md:text-3xl">
+                곧 새로운 공간이 열립니다
+              </h3>
+              <p className="max-w-md text-sm font-medium opacity-50">
+                현재 준비 중인 공간이 있습니다. 조금만 기다려 주세요.
+              </p>
+            </motion.div>
+          ) : (
+            /* 실제 방 카드 */
+            <div className="grid grid-cols-1 gap-12 md:grid-cols-12 lg:gap-24">
+              {featuredRooms[0] && (
+                <div className="md:col-span-8">
+                  <LandingFeaturedListing room={featuredRooms[0]} size={sizeMap[0]} />
+                </div>
+              )}
+              {featuredRooms[1] && (
+                <div className="md:col-span-4 md:mt-48">
+                  <LandingFeaturedListing room={featuredRooms[1]} size={sizeMap[1]} />
+                </div>
+              )}
+              {featuredRooms[2] && (
+                <div className="md:col-span-6 md:col-start-4">
+                  <LandingFeaturedListing room={featuredRooms[2]} size={sizeMap[2]} />
+                </div>
+              )}
             </div>
-            <div className="md:col-span-6 md:col-start-4">
-              <LandingFeaturedListing listing={featuredListings[2]} size="medium" />
-            </div>
-          </div>
+          )}
         </div>
       </section>
 
+      {/* ═══════════════════════════════════════════
+          ③ FACILITIES — 공용시설 소개
+      ═══════════════════════════════════════════ */}
+      <section className="bg-muted/20 px-6 py-20 md:px-12 md:py-32 lg:px-24">
+        <div className="mx-auto max-w-[1400px]">
+          <motion.div
+            className="mb-16 flex flex-col items-baseline justify-between border-b border-primary/10 pb-8 md:flex-row"
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            viewport={{ once: true }}
+          >
+            <h2 className="text-5xl font-black tracking-tighter md:text-7xl">FACILITIES</h2>
+            <Link
+              href="/experience"
+              className="mt-4 text-sm font-bold tracking-[0.15em] uppercase text-accent transition-colors hover:text-primary md:mt-0"
+            >
+              자세히 보기 →
+            </Link>
+          </motion.div>
+
+          {facilitiesLoading ? (
+            <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-4">
+              {Array.from({ length: 4 }).map((_, i) => (
+                <div key={i} className="animate-pulse rounded-[2rem] bg-muted/30 aspect-[4/3]" />
+              ))}
+            </div>
+          ) : facilities.length === 0 ? (
+            <motion.div
+              className="flex flex-col items-center justify-center py-20 text-center"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+            >
+              <p className="text-sm font-medium opacity-50">공용시설 정보가 준비 중입니다.</p>
+            </motion.div>
+          ) : (
+            <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-4">
+              {facilities.map((space, i) => (
+                <motion.div
+                  key={space.spaceId}
+                  initial={{ opacity: 0, y: 40 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.6, delay: i * 0.1 }}
+                >
+                  <Link href={`/experience/${space.spaceId}`} className="group block">
+                    <div className="relative aspect-[4/3] overflow-hidden rounded-[2rem] mb-5">
+                      <motion.div whileHover={{ scale: 1.05 }} transition={{ duration: 0.6 }}>
+                        <ImageWithFallback
+                          src={space.thumbnailUrl || `https://picsum.photos/seed/fac${space.spaceId}/600/450`}
+                          alt={space.name}
+                          className="h-full w-full object-cover transition-all duration-700"
+                        />
+                      </motion.div>
+                      <div className="absolute top-4 left-4">
+                        <span className={`px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest backdrop-blur-md ${
+                          space.isReservable
+                            ? "bg-accent/90 text-white"
+                            : "bg-white/90 text-foreground"
+                        }`}>
+                          {space.isReservable ? "예약제" : "자유 이용"}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="space-y-2 px-1">
+                      <h3 className="text-lg font-black tracking-tighter transition-colors group-hover:text-accent">
+                        {space.name}
+                      </h3>
+                      {space.description && (
+                        <p className="text-xs font-medium leading-relaxed opacity-50 line-clamp-2">
+                          {space.description}
+                        </p>
+                      )}
+                      <div className="flex items-center gap-4 pt-1">
+                        {space.operatingHours && (
+                          <span className="flex items-center gap-1 text-[10px] font-bold opacity-40">
+                            <Clock size={11} /> {space.operatingHours}
+                          </span>
+                        )}
+                        {space.maxCapacity > 0 && (
+                          <span className="flex items-center gap-1 text-[10px] font-bold opacity-40">
+                            <Users size={11} /> 최대 {space.maxCapacity}인
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </Link>
+                </motion.div>
+              ))}
+            </div>
+          )}
+        </div>
+      </section>
+
+      {/* ═══════════════════════════════════════════
+          ④ SMART LIVING — IoT 특장점 (유지)
+      ═══════════════════════════════════════════ */}
       <section className="relative overflow-hidden bg-[#030213] py-24 text-white md:py-48">
         <div className="container mx-auto px-6">
           <div className="grid grid-cols-1 items-center gap-24 md:grid-cols-2">
@@ -250,7 +457,7 @@ export default function Home() {
               >
                 <ImageWithFallback
                   src="https://images.unsplash.com/photo-1758448500688-3ababa93fd67?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxtb2Rlcm4lMjBjb3dvcmtpbmclMjBzcGFjZSUyMGxvdW5nZXxlbnwxfHx8fDE3NzQ0ODc3OTN8MA&ixlib=rb-4.1.0&q=80&w=1080"
-                  alt="Philosophy"
+                  alt="Smart Living Philosophy"
                   className="h-full w-full object-cover brightness-75 transition-all duration-1000"
                 />
               </motion.div>
