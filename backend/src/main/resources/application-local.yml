@@ -6,15 +6,10 @@ spring:
   config:
     import: optional:file:../.env[.properties]
   datasource:
-    url: jdbc:postgresql://localhost:5432/coliving
+    url: jdbc:postgresql://127.0.0.1:5432/coliving
     driver-class-name: org.postgresql.Driver
-<<<<<<< HEAD
-    username: ${DB_USERNAME:coliving}
-    password: ${DB_PASSWORD:coliving1234}
-=======
     username: coliving
     password: coliving1234
->>>>>>> 368319e493a9dd8c8fe01e9f14fe28f68de7b052
   jpa:
     hibernate:
       ddl-auto: update
@@ -24,7 +19,7 @@ spring:
         format_sql: true
   data:
     redis:
-      host: ${REDIS_HOST:localhost}
+      host: ${REDIS_HOST:127.0.0.1}
       port: ${REDIS_PORT:6379}
 
 jwt:
@@ -34,7 +29,7 @@ jwt:
 
 mock-iot:
   # 로컬 환경에서는 Docker 네트워크(mock-iot)가 아닌 localhost로 접근
-  base-url: http://localhost:8000
+  base-url: http://127.0.0.1:8000
 
 oauth2:
   success-url: http://localhost:3000/login/oauth2-success

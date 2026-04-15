@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { redirect } from "next/navigation";
 import { LayoutList } from "lucide-react";
 import { adminBffGet } from "./_api/admin-bff-server";
@@ -6,8 +5,8 @@ import type { AdminVocListData, ApiResponse } from "./_types/admin-vocs";
 import { MotionEnter } from "./_components/MotionEnter";
 import { AdminVocDashboard } from "./_components/AdminVocDashboard";
 import { AdminVocFilter } from "./_components/AdminVocFilter";
-import { AdminVocSearchAndSort } from "./_components/AdminVocSearchAndSort";
-import { AdminVocListCard } from "./_components/AdminVocListCard";
+import { AdminVocDateFilter, AdminVocSearchAndSort } from "./_components/AdminVocSearchAndSort";
+import { AdminVocListRow } from "./_components/AdminVocListCard";
 import { AdminVocPaginationBar } from "./_components/AdminVocPaginationBar";
 import {
   adminVocListNeedsDefaultRedirect,
@@ -70,7 +69,10 @@ export default async function AdminVocListPage({ searchParams }: { searchParams:
         <AdminVocDashboard />
 
         <section className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-foreground/10 pb-4">
-          <AdminVocFilter activeCategory={category} activeStatus={status} />
+          <div className="flex flex-col gap-3">
+            <AdminVocFilter activeCategory={category} activeStatus={status} />
+            <AdminVocDateFilter />
+          </div>
           <AdminVocSearchAndSort />
         </section>
 
@@ -85,22 +87,45 @@ export default async function AdminVocListPage({ searchParams }: { searchParams:
 
         {list && (
           <>
-            <ul className="mt-12 space-y-6">
-              {list.content.length === 0 ? (
-                <li className="flex flex-col items-center justify-center gap-4 rounded-[2rem] border border-dashed border-border bg-muted/25 px-6 py-16 text-center">
-                  <LayoutList className="size-10 text-muted-foreground" strokeWidth={1.25} aria-hidden />
-                  <p className="max-w-sm font-medium tracking-tight text-balance text-muted-foreground">
-                    조건에 맞는 민원이 없습니다.
-                  </p>
-                </li>
-              ) : (
-                list.content.map((item) => (
-                  <li key={item.vocId}>
-                    <AdminVocListCard item={item} />
-                  </li>
-                ))
-              )}
-            </ul>
+            <div className="mt-12 bg-white rounded-[2rem] border border-primary/5 shadow-sm overflow-hidden">
+              <div className="overflow-x-auto">
+                <table className="w-full border-collapse">
+                  <thead>
+                    <tr className="bg-primary/[0.03] border-b border-primary/10">
+                      {["No.", "유형", "제목", "작성자", "상태", "등록일"].map((h) => (
+                        <th key={h} className="px-5 py-4 text-center text-[13px] font-black uppercase tracking-widest text-primary/60">
+                          {h}
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {list.content.length === 0 ? (
+                      <tr>
+                        <td colSpan={6} className="px-6 py-20 text-center">
+                          <div className="flex flex-col items-center gap-4">
+                            <div className="w-14 h-14 rounded-full bg-primary/5 flex items-center justify-center">
+                              <LayoutList className="w-7 h-7 text-muted" strokeWidth={1.25} />
+                            </div>
+                            <p className="text-sm font-bold text-muted">
+                              조건에 맞는 민원이 없습니다.
+                            </p>
+                          </div>
+                        </td>
+                      </tr>
+                    ) : (
+                      list.content.map((item, idx) => (
+                        <AdminVocListRow
+                          key={item.vocId}
+                          item={item}
+                          rowNumber={list.page * list.size + idx + 1}
+                        />
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
             <AdminVocPaginationBar
               page={list.page}
               totalPages={list.totalPages}

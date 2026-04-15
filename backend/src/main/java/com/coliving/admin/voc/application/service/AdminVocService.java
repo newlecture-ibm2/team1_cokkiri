@@ -57,7 +57,15 @@ public class AdminVocService implements AdminVocUseCase {
                 ? PageRequest.of(safePage, safeSize)
                 : PageRequest.of(safePage, safeSize, parseSort(command.getSort()));
 
-        Page<Voc> page = vocRepositoryPort.findPageForAdmin(command.getStatus(), command.isPendingOnly(), pageRequest);
+        Page<Voc> page = vocRepositoryPort.findPageForAdmin(
+                command.getStatus(),
+                command.getCategory(),
+                command.getKeyword(),
+                command.getCreatedFrom(),
+                command.getCreatedTo(),
+                command.isPendingOnly(),
+                pageRequest
+        );
 
         List<AdminVocListItemResult> content = page.getContent().stream()
                 .map(v -> {

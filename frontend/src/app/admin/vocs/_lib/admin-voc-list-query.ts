@@ -13,11 +13,24 @@ export function buildAdminVocListApiQuery(sp: SearchParamsLike): string {
   const status = param(sp, "status").trim();
   const query = param(sp, "q").trim();
   const sort = param(sp, "sort").trim() || "createdAt,desc";
+  const createdFrom = param(sp, "createdFrom").trim();
+  const createdTo = param(sp, "createdTo").trim();
+  const pending = param(sp, "pending").trim();
+  const all = param(sp, "all").trim();
+  const pendingOnly = pending === "true" || pending === "1";
+  const showAll = all === "1" || all.toLowerCase() === "true";
 
   const qs = new URLSearchParams();
-  if (category) qs.set("category", category);
-  if (status) qs.set("status", status);
+  if (pendingOnly) {
+    qs.set("pending", "true");
+  } else {
+    if (category) qs.set("category", category);
+    if (status) qs.set("status", status);
+    if (showAll) qs.set("all", "1");
+  }
   if (query) qs.set("q", query);
+  if (createdFrom) qs.set("createdFrom", createdFrom);
+  if (createdTo) qs.set("createdTo", createdTo);
   qs.set("sort", sort);
 
   const page = Math.max(0, parseInt(param(sp, "p") || "0", 10) || 0);
@@ -34,11 +47,24 @@ export function buildAdminVocListBaseQuery(sp: SearchParamsLike): string {
   const status = param(sp, "status").trim();
   const query = param(sp, "q").trim();
   const sort = param(sp, "sort").trim();
+  const createdFrom = param(sp, "createdFrom").trim();
+  const createdTo = param(sp, "createdTo").trim();
+  const pending = param(sp, "pending").trim();
+  const all = param(sp, "all").trim();
+  const pendingOnly = pending === "true" || pending === "1";
+  const showAll = all === "1" || all.toLowerCase() === "true";
 
   const qs = new URLSearchParams();
-  if (category) qs.set("category", category);
-  if (status) qs.set("status", status);
+  if (pendingOnly) {
+    qs.set("pending", "true");
+  } else {
+    if (category) qs.set("category", category);
+    if (status) qs.set("status", status);
+    if (showAll) qs.set("all", "1");
+  }
   if (query) qs.set("q", query);
+  if (createdFrom) qs.set("createdFrom", createdFrom);
+  if (createdTo) qs.set("createdTo", createdTo);
   if (sort && sort !== "createdAt,desc") qs.set("sort", sort);
   
   return qs.toString();
@@ -49,9 +75,11 @@ export function parseAdminVocListScope(sp: SearchParamsLike): {
   category: string;
   status: string;
 } {
+  const pending = param(sp, "pending").trim();
+  const pendingOnly = pending === "true" || pending === "1";
   return {
-    category: param(sp, "category").trim(),
-    status: param(sp, "status").trim(),
+    category: pendingOnly ? "" : param(sp, "category").trim(),
+    status: pendingOnly ? "" : param(sp, "status").trim(),
   };
 }
 

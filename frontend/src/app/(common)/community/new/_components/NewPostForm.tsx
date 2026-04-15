@@ -1,7 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState, useTransition } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
@@ -41,6 +41,7 @@ const fieldClass =
 
 export function NewPostForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [category, setCategory] = useState("FREE");
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
@@ -51,6 +52,14 @@ export function NewPostForm() {
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [showAccessDenied, setShowAccessDenied] = useState(false);
   const [showCancelModal, setShowCancelModal] = useState(false);
+
+  useEffect(() => {
+    const categoryFromQuery = searchParams.get("category")?.trim();
+    if (!categoryFromQuery) return;
+    const exists = POST_CATEGORIES.some((item) => item.value === categoryFromQuery);
+    if (!exists) return;
+    setCategory(categoryFromQuery);
+  }, [searchParams]);
 
   function submit(e: React.FormEvent) {
     e.preventDefault();

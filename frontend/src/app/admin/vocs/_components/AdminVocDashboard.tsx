@@ -64,7 +64,7 @@ export async function AdminVocDashboard() {
         return (
           <div
             key={stat.label}
-            className="group relative overflow-hidden rounded-[2rem] border border-primary/10 bg-transparent p-6 transition-all hover:bg-white/50"
+            className="group relative overflow-hidden rounded-[2rem] border border-primary/20 bg-transparent p-6 transition-all hover:bg-white/50"
           >
             <div className="flex items-start justify-between">
               <div className="space-y-1">

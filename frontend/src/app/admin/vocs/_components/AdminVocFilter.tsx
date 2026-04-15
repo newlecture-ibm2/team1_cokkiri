@@ -27,11 +27,15 @@ export function AdminVocFilter({ activeCategory, activeStatus }: Props) {
   const searchParams = useSearchParams();
 
   const base =
-    "shrink-0 text-sm md:text-base font-bold uppercase tracking-wider transition-all whitespace-nowrap pb-2 border-b-2 border-transparent";
+    "shrink-0 text-center text-sm md:text-base font-bold uppercase tracking-wider transition-all whitespace-nowrap pb-2 border-b-2 border-transparent";
 
   function buildHref(overrides: { category?: string; status?: string }) {
     const params = new URLSearchParams(searchParams.toString());
     params.delete("p"); // Reset page on filter change
+    // Legacy scope params can override category/status behavior on backend.
+    // Remove them when user explicitly changes category/status filters.
+    params.delete("pending");
+    params.delete("all");
     
     if ("category" in overrides) {
       if (overrides.category) params.set("category", overrides.category);

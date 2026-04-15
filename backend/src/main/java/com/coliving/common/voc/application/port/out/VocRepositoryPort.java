@@ -7,6 +7,7 @@ import com.coliving.common.voc.model.VocStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -23,7 +24,15 @@ public interface VocRepositoryPort {
     /**
      * @param pendingOnly true이면 OPEN·IN_PROGRESS만 조회(미처리 큐). status는 무시됩니다.
      */
-    Page<Voc> findPageForAdmin(VocStatus status, boolean pendingOnly, Pageable pageable);
+    Page<Voc> findPageForAdmin(
+            VocStatus status,
+            VocCategory category,
+            String keyword,
+            LocalDate createdFrom,
+            LocalDate createdTo,
+            boolean pendingOnly,
+            Pageable pageable
+    );
 
     Voc updateOwned(Long vocId, Long userId, VocCategory category, String title, String content,
                     List<VocAttachment> attachments);

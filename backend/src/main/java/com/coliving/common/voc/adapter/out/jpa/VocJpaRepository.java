@@ -10,7 +10,7 @@ import org.springframework.data.repository.query.Param;
 import java.util.List;
 import java.util.Optional;
 
-public interface VocJpaRepository extends JpaRepository<VocEntity, Long> {
+public interface VocJpaRepository extends JpaRepository<VocEntity, Long>, org.springframework.data.jpa.repository.JpaSpecificationExecutor<VocEntity> {
 
     Optional<VocEntity> findByVocIdAndUserId(Long vocId, Long userId);
 
