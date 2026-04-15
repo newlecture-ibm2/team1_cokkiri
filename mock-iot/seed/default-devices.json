@@ -1,5 +1,185 @@
 [
   {
+    "mac_address": "AA:BB:CC:DD:07:01",
+    "model_name": "SmartLight-200W",
+    "host": "192.168.1.1",
+    "local_ip": "10.1.0.1",
+    "state": {},
+    "status": "ONLINE",
+    "error_mode": "normal"
+  },
+  {
+    "mac_address": "AA:BB:CC:DD:07:02",
+    "model_name": "CoolMax-500",
+    "host": "192.168.1.1",
+    "local_ip": "10.1.0.2",
+    "state": {},
+    "status": "ONLINE",
+    "error_mode": "normal"
+  },
+  {
+    "mac_address": "AA:BB:CC:DD:07:03",
+    "model_name": "SecureLock-Pro",
+    "host": "192.168.1.1",
+    "local_ip": "10.1.0.3",
+    "state": {},
+    "status": "ONLINE",
+    "error_mode": "normal"
+  },
+  {
+    "mac_address": "AA:BB:CC:DD:07:04",
+    "model_name": "HeatFlow-300",
+    "host": "192.168.1.1",
+    "local_ip": "10.1.0.4",
+    "state": {},
+    "status": "ONLINE",
+    "error_mode": "normal"
+  },
+  {
+    "mac_address": "AA:BB:CC:DD:07:05",
+    "model_name": "SmartLight-200W",
+    "host": "192.168.1.2",
+    "local_ip": "10.1.0.1",
+    "state": {},
+    "status": "ONLINE",
+    "error_mode": "normal"
+  },
+  {
+    "mac_address": "AA:BB:CC:DD:07:06",
+    "model_name": "CoolMax-500",
+    "host": "192.168.1.2",
+    "local_ip": "10.1.0.2",
+    "state": {},
+    "status": "ONLINE",
+    "error_mode": "normal"
+  },
+  {
+    "mac_address": "AA:BB:CC:DD:07:07",
+    "model_name": "SecureLock-Pro",
+    "host": "192.168.1.2",
+    "local_ip": "10.1.0.3",
+    "state": {},
+    "status": "ONLINE",
+    "error_mode": "normal"
+  },
+  {
+    "mac_address": "AA:BB:CC:DD:07:08",
+    "model_name": "HeatFlow-300",
+    "host": "192.168.1.2",
+    "local_ip": "10.1.0.4",
+    "state": {},
+    "status": "ONLINE",
+    "error_mode": "normal"
+  },
+  {
+    "mac_address": "AA:BB:CC:DD:08:01",
+    "model_name": "SmartLight-200W",
+    "host": "192.168.2.1",
+    "local_ip": "10.1.0.1",
+    "state": {},
+    "status": "ONLINE",
+    "error_mode": "normal"
+  },
+  {
+    "mac_address": "AA:BB:CC:DD:08:02",
+    "model_name": "CoolMax-500",
+    "host": "192.168.2.1",
+    "local_ip": "10.1.0.2",
+    "state": {},
+    "status": "ONLINE",
+    "error_mode": "normal"
+  },
+  {
+    "mac_address": "AA:BB:CC:DD:08:03",
+    "model_name": "SecureLock-Pro",
+    "host": "192.168.2.1",
+    "local_ip": "10.1.0.3",
+    "state": {},
+    "status": "ONLINE",
+    "error_mode": "normal"
+  },
+  {
+    "mac_address": "AA:BB:CC:DD:08:04",
+    "model_name": "HeatFlow-300",
+    "host": "192.168.2.1",
+    "local_ip": "10.1.0.4",
+    "state": {},
+    "status": "ONLINE",
+    "error_mode": "normal"
+  },
+  {
+    "mac_address": "AA:BB:CC:DD:08:05",
+    "model_name": "SmartLight-200W",
+    "host": "192.168.2.2",
+    "local_ip": "10.1.0.1",
+    "state": {},
+    "status": "ONLINE",
+    "error_mode": "normal"
+  },
+  {
+    "mac_address": "AA:BB:CC:DD:08:06",
+    "model_name": "CoolMax-500",
+    "host": "192.168.2.2",
+    "local_ip": "10.1.0.2",
+    "state": {},
+    "status": "ONLINE",
+    "error_mode": "normal"
+  },
+  {
+    "mac_address": "AA:BB:CC:DD:08:07",
+    "model_name": "SecureLock-Pro",
+    "host": "192.168.2.2",
+    "local_ip": "10.1.0.3",
+    "state": {},
+    "status": "ONLINE",
+    "error_mode": "normal"
+  },
+  {
+    "mac_address": "AA:BB:CC:DD:08:08",
+    "model_name": "HeatFlow-300",
+    "host": "192.168.2.2",
+    "local_ip": "10.1.0.4",
+    "state": {},
+    "status": "ONLINE",
+    "error_mode": "normal"
+  },
+  {
+    "mac_address": "AA:BB:CC:DD:09:01",
+    "model_name": "SmartLight-300W",
+    "host": "192.168.2.3",
+    "local_ip": "10.1.0.1",
+    "state": {},
+    "status": "ONLINE",
+    "error_mode": "normal"
+  },
+  {
+    "mac_address": "AA:BB:CC:DD:09:02",
+    "model_name": "CoolMax-1000",
+    "host": "192.168.2.3",
+    "local_ip": "10.1.0.2",
+    "state": {},
+    "status": "ONLINE",
+    "error_mode": "normal"
+  },
+  {
+    "mac_address": "AA:BB:CC:DD:09:03",
+    "model_name": "SecureLock-Pro",
+    "host": "192.168.2.3",
+    "local_ip": "10.1.0.3",
+    "state": {},
+    "status": "ONLINE",
+    "error_mode": "normal"
+  },
+  {
+    "mac_address": "AA:BB:CC:DD:09:04",
+    "model_name": "HeatFlow-300",
+    "host": "192.168.2.3",
+    "local_ip": "10.1.0.4",
+    "state": {},
+    "status": "ONLINE",
+    "error_mode": "normal"
+  },
+  {
     "mac_address": "AA:BB:CC:DD:01:01",
     "model_name": "SmartLight-200W",
     "host": "192.168.3.1",
@@ -35,7 +215,6 @@
     "status": "ONLINE",
     "error_mode": "normal"
   },
-
   {
     "mac_address": "AA:BB:CC:DD:01:05",
     "model_name": "SmartLight-200W",
@@ -72,7 +251,6 @@
     "status": "ONLINE",
     "error_mode": "normal"
   },
-
   {
     "mac_address": "AA:BB:CC:DD:01:09",
     "model_name": "SmartLight-200W",
@@ -109,7 +287,6 @@
     "status": "ONLINE",
     "error_mode": "normal"
   },
-
   {
     "mac_address": "AA:BB:CC:DD:02:01",
     "model_name": "SmartLight-200W",
@@ -146,7 +323,42 @@
     "status": "ONLINE",
     "error_mode": "normal"
   },
-
+  {
+    "mac_address": "AA:BB:CC:DD:09:05",
+    "model_name": "SmartLight-300W",
+    "host": "192.168.4.3",
+    "local_ip": "10.1.0.1",
+    "state": {},
+    "status": "ONLINE",
+    "error_mode": "normal"
+  },
+  {
+    "mac_address": "AA:BB:CC:DD:09:06",
+    "model_name": "CoolMax-1000",
+    "host": "192.168.4.3",
+    "local_ip": "10.1.0.2",
+    "state": {},
+    "status": "ONLINE",
+    "error_mode": "normal"
+  },
+  {
+    "mac_address": "AA:BB:CC:DD:09:07",
+    "model_name": "SecureLock-Pro",
+    "host": "192.168.4.3",
+    "local_ip": "10.1.0.3",
+    "state": {},
+    "status": "ONLINE",
+    "error_mode": "normal"
+  },
+  {
+    "mac_address": "AA:BB:CC:DD:09:08",
+    "model_name": "HeatFlow-300",
+    "host": "192.168.4.3",
+    "local_ip": "10.1.0.4",
+    "state": {},
+    "status": "ONLINE",
+    "error_mode": "normal"
+  },
   {
     "mac_address": "AA:BB:CC:DD:02:05",
     "model_name": "SmartLight-300W",
@@ -183,7 +395,78 @@
     "status": "ONLINE",
     "error_mode": "normal"
   },
-
+  {
+    "mac_address": "AA:BB:CC:DD:0A:01",
+    "model_name": "SmartLight-200W",
+    "host": "192.168.5.2",
+    "local_ip": "10.1.0.1",
+    "state": {},
+    "status": "ONLINE",
+    "error_mode": "normal"
+  },
+  {
+    "mac_address": "AA:BB:CC:DD:0A:02",
+    "model_name": "CoolMax-500",
+    "host": "192.168.5.2",
+    "local_ip": "10.1.0.2",
+    "state": {},
+    "status": "ONLINE",
+    "error_mode": "normal"
+  },
+  {
+    "mac_address": "AA:BB:CC:DD:0A:03",
+    "model_name": "SecureLock-Pro",
+    "host": "192.168.5.2",
+    "local_ip": "10.1.0.3",
+    "state": {},
+    "status": "ONLINE",
+    "error_mode": "normal"
+  },
+  {
+    "mac_address": "AA:BB:CC:DD:0A:04",
+    "model_name": "HeatFlow-300",
+    "host": "192.168.5.2",
+    "local_ip": "10.1.0.4",
+    "state": {},
+    "status": "ONLINE",
+    "error_mode": "normal"
+  },
+  {
+    "mac_address": "AA:BB:CC:DD:0A:05",
+    "model_name": "SmartLight-300W",
+    "host": "192.168.5.3",
+    "local_ip": "10.1.0.1",
+    "state": {},
+    "status": "ONLINE",
+    "error_mode": "normal"
+  },
+  {
+    "mac_address": "AA:BB:CC:DD:0A:06",
+    "model_name": "CoolMax-1000",
+    "host": "192.168.5.3",
+    "local_ip": "10.1.0.2",
+    "state": {},
+    "status": "ONLINE",
+    "error_mode": "normal"
+  },
+  {
+    "mac_address": "AA:BB:CC:DD:0A:07",
+    "model_name": "SecureLock-Pro",
+    "host": "192.168.5.3",
+    "local_ip": "10.1.0.3",
+    "state": {},
+    "status": "ONLINE",
+    "error_mode": "normal"
+  },
+  {
+    "mac_address": "AA:BB:CC:DD:0A:08",
+    "model_name": "HeatFlow-300",
+    "host": "192.168.5.3",
+    "local_ip": "10.1.0.4",
+    "state": {},
+    "status": "ONLINE",
+    "error_mode": "normal"
+  },
   {
     "mac_address": "AA:BB:CC:DD:03:01",
     "model_name": "SmartLight-300W",
@@ -211,7 +494,6 @@
     "status": "ONLINE",
     "error_mode": "normal"
   },
-
   {
     "mac_address": "AA:BB:CC:DD:04:01",
     "model_name": "SmartLight-300W",
@@ -239,7 +521,6 @@
     "status": "ONLINE",
     "error_mode": "normal"
   },
-
   {
     "mac_address": "AA:BB:CC:DD:05:01",
     "model_name": "SmartLight-300W",
@@ -263,6 +544,96 @@
     "model_name": "SecureCam-HD",
     "host": "192.168.0.10",
     "local_ip": "10.0.0.3",
+    "state": {},
+    "status": "ONLINE",
+    "error_mode": "normal"
+  },
+  {
+    "mac_address": "AA:BB:CC:DD:0B:01",
+    "model_name": "SmartLight-300W",
+    "host": "192.168.12.1",
+    "local_ip": "10.1.0.1",
+    "state": {},
+    "status": "ONLINE",
+    "error_mode": "normal"
+  },
+  {
+    "mac_address": "AA:BB:CC:DD:0B:02",
+    "model_name": "WashMaster-700",
+    "host": "192.168.12.1",
+    "local_ip": "10.1.0.2",
+    "state": {},
+    "status": "ONLINE",
+    "error_mode": "normal"
+  },
+  {
+    "mac_address": "AA:BB:CC:DD:0B:03",
+    "model_name": "DryMax-400",
+    "host": "192.168.12.1",
+    "local_ip": "10.1.0.3",
+    "state": {},
+    "status": "ONLINE",
+    "error_mode": "normal"
+  },
+  {
+    "mac_address": "AA:BB:CC:DD:0B:04",
+    "model_name": "SecureCam-HD",
+    "host": "192.168.12.1",
+    "local_ip": "10.1.0.4",
+    "state": {},
+    "status": "ONLINE",
+    "error_mode": "normal"
+  },
+  {
+    "mac_address": "AA:BB:CC:DD:0C:01",
+    "model_name": "SmartLight-300W",
+    "host": "192.168.13.1",
+    "local_ip": "10.1.0.1",
+    "state": {},
+    "status": "ONLINE",
+    "error_mode": "normal"
+  },
+  {
+    "mac_address": "AA:BB:CC:DD:0C:02",
+    "model_name": "CoolMax-1000",
+    "host": "192.168.13.1",
+    "local_ip": "10.1.0.2",
+    "state": {},
+    "status": "ONLINE",
+    "error_mode": "normal"
+  },
+  {
+    "mac_address": "AA:BB:CC:DD:0C:03",
+    "model_name": "SecureCam-HD",
+    "host": "192.168.13.1",
+    "local_ip": "10.1.0.3",
+    "state": {},
+    "status": "ONLINE",
+    "error_mode": "normal"
+  },
+  {
+    "mac_address": "AA:BB:CC:DD:0D:01",
+    "model_name": "SmartLight-300W",
+    "host": "192.168.14.1",
+    "local_ip": "10.1.0.1",
+    "state": {},
+    "status": "ONLINE",
+    "error_mode": "normal"
+  },
+  {
+    "mac_address": "AA:BB:CC:DD:0D:02",
+    "model_name": "CoolMax-1000",
+    "host": "192.168.14.1",
+    "local_ip": "10.1.0.2",
+    "state": {},
+    "status": "ONLINE",
+    "error_mode": "normal"
+  },
+  {
+    "mac_address": "AA:BB:CC:DD:0D:03",
+    "model_name": "SecureCam-HD",
+    "host": "192.168.14.1",
+    "local_ip": "10.1.0.3",
     "state": {},
     "status": "ONLINE",
     "error_mode": "normal"

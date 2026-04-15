@@ -12,10 +12,7 @@ import org.hibernate.annotations.SQLRestriction;
 import org.hibernate.type.SqlTypes;
 
 @Entity
-@Table(
-        name = "device_types",
-        uniqueConstraints = {@UniqueConstraint(columnNames = "code")}
-)
+@Table(name = "device_types")
 @SQLDelete(sql = "UPDATE device_types SET deleted_at = CURRENT_TIMESTAMP WHERE device_type_id = ?")
 @SQLRestriction("deleted_at IS NULL")
 @Getter
