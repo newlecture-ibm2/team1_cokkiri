@@ -36,16 +36,20 @@ const shortcuts: { href: string; label: string; description: string; icon: typeo
 
 export default function AdminHomePage() {
   return (
-    <div className="space-y-12">
-      <header className="space-y-4">
-        <p className="font-black text-[10px] uppercase tracking-[0.35em] text-muted-foreground">CoKkiri Admin</p>
-        <h1 className="text-balance text-4xl font-black uppercase tracking-tighter text-foreground md:text-5xl">
-          관리자{" "}
-          <span className="underline decoration-secondary decoration-2 underline-offset-[0.15em]">홈</span>
-        </h1>
-        <p className="max-w-2xl text-lg font-medium tracking-tight text-foreground/80">
-          왼쪽 메뉴 또는 아래 바로가기에서 업무 영역으로 이동하세요.
-        </p>
+    <div className="max-w-[1400px] mx-auto space-y-12">
+      <header className="mb-12">
+        <div className="flex flex-col gap-6">
+          <div className="border-b border-primary/10 pb-8 space-y-4">
+            <p className="font-black text-[10px] uppercase tracking-[0.35em] text-muted-foreground">CoKkiri · Admin</p>
+            <h1 className="text-5xl md:text-7xl font-black leading-tight tracking-tight uppercase whitespace-nowrap">
+              ADMIN <span className="underline underline-offset-4 decoration-accent">HOME.</span>
+              <span className="text-2xl md:text-4xl font-bold tracking-normal ml-2 align-bottom opacity-80">관리자 홈</span>
+            </h1>
+            <p className="font-medium tracking-tight text-foreground/70 text-sm md:text-base">
+              왼쪽 메뉴 또는 아래 바로가기에서 업무 영역을 선택하여 관리 작업을 시작하세요.
+            </p>
+          </div>
+        </div>
       </header>
 
       <section>

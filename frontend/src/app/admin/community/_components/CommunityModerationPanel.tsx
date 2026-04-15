@@ -293,7 +293,7 @@ export function CommunityModerationPanel() {
   const toDate = parseDateInput(createdTo);
   const calendarCells = buildCalendarCells(viewMonth);
 
-  const tabBase = "shrink-0 text-[15px] font-bold uppercase tracking-wider transition-all whitespace-nowrap pb-1.5 border-b-2 border-transparent cursor-pointer";
+  const tabBase = "shrink-0 text-sm md:text-base font-bold uppercase tracking-wider transition-all whitespace-nowrap pb-1.5 border-b-2 border-transparent cursor-pointer";
 
   function openPicker(target: "from" | "to") {
     const current = target === "from" ? fromDate : toDate;
@@ -325,20 +325,20 @@ export function CommunityModerationPanel() {
       <div className="flex flex-col gap-4 border-b border-primary/10 pb-4">
         <div className="flex items-center gap-6">
           <div className="flex items-center gap-3 shrink-0">
-            <span className="text-[13px] font-bold uppercase tracking-widest text-primary">글 종류</span>
+            <span className="text-sm md:text-base font-bold uppercase tracking-widest text-primary">글 종류</span>
             <span className="text-primary/10 select-none">|</span>
           </div>
           <button
             type="button"
             onClick={() => setTab("posts")}
-            className={cn(tabBase, tab === "posts" ? "text-accent border-accent" : "text-primary/40 hover:text-primary")}
+            className={cn(tabBase, tab === "posts" ? "text-accent border-accent" : "text-primary/60 hover:text-primary")}
           >
             게시글
           </button>
           <button
             type="button"
             onClick={() => setTab("comments")}
-            className={cn(tabBase, tab === "comments" ? "text-accent border-accent" : "text-primary/40 hover:text-primary")}
+            className={cn(tabBase, tab === "comments" ? "text-accent border-accent" : "text-primary/60 hover:text-primary")}
           >
             댓글
           </button>
@@ -347,7 +347,7 @@ export function CommunityModerationPanel() {
         {tab === "posts" && (
           <div className="flex items-center gap-6 overflow-x-auto no-scrollbar">
             <div className="flex items-center gap-3 shrink-0">
-              <span className="text-[13px] font-bold uppercase tracking-widest text-primary">유형별</span>
+              <span className="text-sm md:text-base font-bold uppercase tracking-widest text-primary">유형별</span>
               <span className="text-primary/10 select-none">|</span>
             </div>
             {POST_CATEGORIES.map((c) => (
@@ -355,7 +355,7 @@ export function CommunityModerationPanel() {
                 key={c.value}
                 type="button"
                 onClick={() => setCategory(c.value)}
-                className={cn(tabBase, category === c.value ? "text-accent border-accent" : "text-primary/40 hover:text-primary")}
+                className={cn(tabBase, category === c.value ? "text-accent border-accent" : "text-primary/60 hover:text-primary")}
               >
                 {c.label}
               </button>
@@ -366,23 +366,23 @@ export function CommunityModerationPanel() {
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="flex flex-wrap items-center gap-4">
             <div className="flex items-center gap-3 shrink-0">
-              <span className="text-[13px] font-bold uppercase tracking-widest text-primary">날짜별</span>
+              <span className="text-sm md:text-base font-bold uppercase tracking-widest text-primary">날짜별</span>
               <span className="text-primary/10 select-none">|</span>
             </div>
             <div className="relative flex items-center gap-2">
               <button
                 type="button"
                 onClick={() => openPicker("from")}
-                className="inline-flex h-9 items-center gap-2 rounded-full border border-stone-200 bg-white px-4 text-xs font-semibold text-foreground/80 shadow-sm transition-colors hover:border-primary/40"
+                className="inline-flex h-9 items-center gap-2 rounded-full border border-stone-200 bg-white px-4 text-sm font-semibold text-foreground/80 shadow-sm transition-colors hover:border-primary/40"
               >
                 <CalendarDays className="h-4 w-4 text-stone-400" />
                 {createdFrom || "시작일"}
               </button>
-              <span className="text-foreground/30 text-xs text-center">~</span>
+              <span className="text-foreground/30 text-sm text-center">~</span>
               <button
                 type="button"
                 onClick={() => openPicker("to")}
-                className="inline-flex h-9 items-center gap-2 rounded-full border border-stone-200 bg-white px-4 text-xs font-semibold text-foreground/80 shadow-sm transition-colors hover:border-primary/40"
+                className="inline-flex h-9 items-center gap-2 rounded-full border border-stone-200 bg-white px-4 text-sm font-semibold text-foreground/80 shadow-sm transition-colors hover:border-primary/40"
               >
                 <CalendarDays className="h-4 w-4 text-stone-400" />
                 {createdTo || "종료일"}
@@ -461,14 +461,14 @@ export function CommunityModerationPanel() {
                   <button onClick={handleClearSearch}><X className="h-3.5 w-3.5" /></button>
                 </motion.div>
               ) : (
-                <button onClick={() => setIsSearchOpen(true)} className="flex items-center gap-1.5 text-[13px] font-black tracking-widest hover:opacity-60 transition-opacity">
+                <button onClick={() => setIsSearchOpen(true)} className="flex items-center gap-1.5 text-xs md:text-sm font-black tracking-widest hover:opacity-60 transition-opacity">
                   <Search className="h-4 w-4" /> SEARCH
                 </button>
               )}
             </AnimatePresence>
 
             <div className="relative">
-              <button onClick={() => setIsSortOpen(!isSortOpen)} className="flex items-center gap-1.5 text-[13px] font-black tracking-widest hover:opacity-60 transition-opacity">
+              <button onClick={() => setIsSortOpen(!isSortOpen)} className="flex items-center gap-1.5 text-xs md:text-sm font-black tracking-widest hover:opacity-60 transition-opacity">
                 <Filter className="h-4 w-4" /> SORT
               </button>
               <AnimatePresence>
@@ -525,25 +525,25 @@ export function CommunityModerationPanel() {
                 ) : (
                   posts.map((item, idx) => (
                     <tr key={item.postId} className="border-b border-primary/5 hover:bg-primary/[0.02] transition-colors group">
-                      <td className="px-5 py-4 text-center font-mono text-[15px] font-medium text-primary/40">{page * pageSize + idx + 1}</td>
+                      <td className="px-5 py-4 text-center font-mono text-[15px] font-medium text-primary/70">{page * pageSize + idx + 1}</td>
                       <td className="px-5 py-4 text-center">
-                        <span className="text-[15px] font-medium text-primary/70">{categoryLabel(item.category)}</span>
+                        <span className="text-[15px] font-medium text-primary/95">{categoryLabel(item.category)}</span>
                       </td>
                       <td className="px-5 py-4">
-                        <Link href={`/admin/community/posts/${item.postId}`} className="text-lg font-normal text-primary hover:text-accent transition-colors line-clamp-1">
+                        <Link href={`/admin/community/posts/${item.postId}`} className="text-[17px] font-medium text-primary hover:text-accent transition-colors line-clamp-1">
                           {item.title}
                         </Link>
-                        <div className="flex items-center gap-3 mt-1 text-[11px] font-bold text-primary/30">
+                        <div className="flex items-center gap-3 mt-1 text-[11px] font-bold text-primary/60">
                           <span>조회 {item.viewCount}</span> · <span>좋아요 {item.likeCount}</span> · <span>댓글 {item.commentCount}</span>
                         </div>
                       </td>
-                      <td className="px-5 py-4 text-center text-[15px] font-medium text-primary/70">회원 #{item.authorUserId}</td>
-                      <td className="px-5 py-4 text-center text-sm font-normal text-primary/40">{item.createdAt.split("T")[0]}</td>
+                      <td className="px-5 py-4 text-center text-[15px] font-medium text-primary/95">회원 #{item.authorUserId}</td>
+                      <td className="px-5 py-4 text-center text-sm font-normal text-primary/70">{item.createdAt.split("T")[0]}</td>
                       <td className="px-5 py-4 text-center">
                         <button
                           disabled={isPending}
                           onClick={() => confirm("삭제하시겠습니까?") && handleDeletePost(item.postId)}
-                          className="p-2 text-primary/20 hover:text-destructive transition-colors"
+                          className="p-2 text-primary/50 hover:text-destructive transition-colors"
                           title="삭제"
                         >
                           <Trash2 className="size-4" />
@@ -558,22 +558,22 @@ export function CommunityModerationPanel() {
                 ) : (
                   comments.map((item, idx) => (
                     <tr key={item.commentId} className="border-b border-primary/5 hover:bg-primary/[0.02] transition-colors group">
-                      <td className="px-5 py-4 text-center font-mono text-[15px] font-medium text-primary/40">{page * pageSize + idx + 1}</td>
+                      <td className="px-5 py-4 text-center font-mono text-[15px] font-medium text-primary/70">{page * pageSize + idx + 1}</td>
                       <td className="px-5 py-4 max-w-[200px]">
-                        <p className="text-sm font-medium text-primary/40 truncate">{item.postTitle}</p>
+                        <p className="text-sm font-medium text-primary/70 truncate">{item.postTitle}</p>
                       </td>
                       <td className="px-5 py-4">
-                        <Link href={`/admin/community/comments/${item.commentId}`} className="text-lg font-normal text-primary hover:text-accent transition-colors line-clamp-1">
+                        <Link href={`/admin/community/comments/${item.commentId}`} className="text-[17px] font-medium text-primary hover:text-accent transition-colors line-clamp-1">
                           {item.content}
                         </Link>
-                        <p className="text-[11px] font-bold text-primary/30 mt-1">{item.createdAt.split("T")[0]}</p>
+                        <p className="text-[11px] font-bold text-primary/60 mt-1">{item.createdAt.split("T")[0]}</p>
                       </td>
-                      <td className="px-5 py-4 text-center text-[15px] font-medium text-primary/70">회원 #{item.authorUserId}</td>
+                      <td className="px-5 py-4 text-center text-[15px] font-medium text-primary/95">회원 #{item.authorUserId}</td>
                       <td className="px-5 py-4 text-center">
                         <button
                           disabled={isPending}
                           onClick={() => confirm("댓글을 삭제하시겠습니까?") && handleDeleteComment(item.commentId)}
-                          className="p-2 text-primary/20 hover:text-destructive transition-colors"
+                          className="p-2 text-primary/50 hover:text-destructive transition-colors"
                           title="삭제"
                         >
                           <Trash2 className="size-4" />

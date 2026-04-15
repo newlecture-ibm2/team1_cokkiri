@@ -49,7 +49,7 @@ export default async function AdminVocListPage({ searchParams }: { searchParams:
 
   return (
     <MotionEnter>
-      <div className="max-w-5xl">
+      <div className="max-w-[1400px] mx-auto">
         <header className="mb-12">
           <div className="flex flex-col gap-6">
             <div className="border-b border-primary/10 pb-8 space-y-4">

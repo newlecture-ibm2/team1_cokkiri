@@ -34,7 +34,7 @@ export function AdminCommunityPostActions({ postId }: Props) {
     setSuccess(null);
     startTransition(async () => {
       try {
-        const res = await fetch(`/api/community/posts/${postId}/comments`, {
+        const res = await fetch(`/api/posts/${postId}/comments`, {
           method: "POST",
           credentials: "include",
           headers: { "Content-Type": "application/json" },

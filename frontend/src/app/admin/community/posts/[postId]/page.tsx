@@ -45,6 +45,17 @@ export default async function AdminCommunityPostDetailPage({ params }: { params:
   if (!body.success || !body.data) notFound();
   const detail = body.data;
 
+  const commentsRes = await adminCommunityBffGet(`admin/comments?post_id=${id}&s=100`);
+  let comments: any[] = [];
+  if (commentsRes.ok) {
+    try {
+      const cBody = await commentsRes.json();
+      comments = cBody.data?.content ?? [];
+    } catch {
+      // Ignore
+    }
+  }
+
   return (
     <div className="pt-4 pb-32">
       <MotionEnter>
@@ -108,7 +119,7 @@ export default async function AdminCommunityPostDetailPage({ params }: { params:
                   {detail.links.map((link, idx) => (
                     <li key={`${link.url}-${idx}`}>
                       <a
-                        href={link.url ?? "#"}
+                         href={link.url ?? "#"}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="group inline-flex items-center gap-2 text-base font-medium text-stone-800 hover:text-accent transition-colors"
@@ -136,6 +147,26 @@ export default async function AdminCommunityPostDetailPage({ params }: { params:
                 <span className="text-[10px] font-black uppercase tracking-widest text-primary/30">Comments</span>
                 <span className="text-xl font-bold text-primary/80">{detail.commentCount}</span>
               </div>
+            </section>
+
+            {/* Comments List */}
+            <section className="space-y-6 pt-6 border-t border-primary/10">
+              <h3 className="text-sm md:text-base font-black uppercase tracking-[0.2em] text-stone-900">댓글 목록</h3>
+              {comments.length === 0 ? (
+                <p className="text-sm text-muted-foreground py-10 text-center">등록된 댓글이 없습니다.</p>
+              ) : (
+                <ul className="space-y-4">
+                  {comments.map((comment: any) => (
+                    <li key={comment.commentId} className="bg-white border border-primary/5 p-6 rounded-3xl shadow-sm">
+                      <div className="flex items-center justify-between mb-3">
+                        <span className="text-xs font-bold text-primary/60">회원 #{comment.authorUserId}</span>
+                        <time className="text-xs text-primary/30">{formatDateTimeKo(comment.createdAt)}</time>
+                      </div>
+                      <p className="text-base text-stone-900 whitespace-pre-wrap">{comment.content}</p>
+                    </li>
+                  ))}
+                </ul>
+              )}
             </section>
 
             <AdminCommunityPostActions postId={detail.postId} />

@@ -61,17 +61,20 @@ export default function DashboardPage() {
       className="max-w-[1400px] mx-auto"
     >
       {/* 페이지 헤더 */}
-      <div className="mb-12">
-        <p className="text-muted-foreground text-[10px] font-black tracking-[0.35em] uppercase">
-          Admin · Dashboard
-        </p>
-        <h1 className="text-[12vw] leading-[0.85] font-black tracking-tighter text-[#2C3424] uppercase md:text-[6vw] mt-4">
-          Dash<span className="text-[#768064]">board</span>
-        </h1>
-        <p className="max-w-2xl text-base font-medium tracking-tight text-balance text-[#4C583E] md:text-lg mt-5">
-          코리빙 시설 운영 현황을 한눈에 확인합니다
-        </p>
-      </div>
+      <header className="mb-12">
+        <div className="flex flex-col gap-6">
+          <div className="border-b border-primary/10 pb-8 space-y-4">
+            <p className="font-black text-[10px] uppercase tracking-[0.35em] text-muted-foreground">Admin · Dashboard</p>
+            <h1 className="text-5xl md:text-7xl font-black leading-tight tracking-tight uppercase whitespace-nowrap">
+              ADMIN <span className="underline underline-offset-4 decoration-accent">DASHBOARD.</span>
+              <span className="text-2xl md:text-4xl font-bold tracking-normal ml-2 align-bottom opacity-80">대시보드</span>
+            </h1>
+            <p className="font-medium tracking-tight text-foreground/70 text-sm md:text-base">
+              코리빙 시설의 전반적인 운영 지표와 실시간 현황을 한눈에 파악할 수 있는 요약 보드입니다.
+            </p>
+          </div>
+        </div>
+      </header>
 
       {/* ══════════════════════════════════════════════
           실시간 기기 현황 섹션

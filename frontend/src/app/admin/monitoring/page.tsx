@@ -70,39 +70,42 @@ export default function MonitoringPage() {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4 }}
-      className="max-w-[1200px] mx-auto px-6 md:px-12 py-8"
+      className="max-w-[1400px] mx-auto"
     >
       {/* 헤더 */}
-      <div className="mb-10">
-        <p className="text-muted-foreground text-[10px] font-black tracking-[0.35em] uppercase">
-          Admin · Monitoring
-        </p>
-        <h1 className="text-[12vw] leading-[0.85] font-black tracking-tighter text-[#2C3424] uppercase md:text-[6vw] mt-4">
-          Device <span className="text-[#768064]">Monitor</span>
-        </h1>
-        <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between mt-5">
-          <p className="max-w-2xl text-base font-medium tracking-tight text-balance text-muted md:text-lg">
-            기기 상태, 제어 빈도, 에러 이력을 한눈에 확인합니다
-          </p>
-          <div className="flex items-center gap-3 shrink-0">
-            {lastUpdated && (
-              <span className="text-[10px] text-muted-foreground">
-                {lastUpdated.toLocaleTimeString("ko-KR")} 갱신
-              </span>
-            )}
-            <button
-              onClick={() => setAutoRefresh(!autoRefresh)}
-              className={`text-xs px-3 py-1.5 rounded-full border transition-colors ${
-                autoRefresh
-                  ? "bg-accent text-white border-accent"
-                  : "bg-transparent text-muted-foreground border-border"
-              }`}
-            >
-              {autoRefresh ? "● 실시간" : "○ 수동"}
-            </button>
+      <header className="mb-12">
+        <div className="flex flex-col gap-6">
+          <div className="border-b border-primary/10 pb-8 space-y-4">
+            <p className="font-black text-[10px] uppercase tracking-[0.35em] text-muted-foreground">Admin · Monitoring</p>
+            <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+              <h1 className="text-5xl md:text-7xl font-black leading-tight tracking-tight uppercase whitespace-nowrap">
+                DEVICE <span className="underline underline-offset-4 decoration-accent">MONITOR.</span>
+                <span className="text-2xl md:text-4xl font-bold tracking-normal ml-2 align-bottom opacity-80">기기 모니터링</span>
+              </h1>
+              <div className="flex items-center gap-3 shrink-0">
+                {lastUpdated && (
+                  <span className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">
+                    {lastUpdated.toLocaleTimeString("ko-KR")} 갱신
+                  </span>
+                )}
+                <button
+                  onClick={() => setAutoRefresh(!autoRefresh)}
+                  className={`text-[10px] font-black uppercase tracking-widest px-4 py-2 rounded-full border transition-all ${
+                    autoRefresh
+                      ? "bg-accent text-white border-accent shadow-md"
+                      : "bg-primary/5 text-primary/40 border-primary/10 hover:bg-primary/10"
+                  }`}
+                >
+                  {autoRefresh ? "● LIVE" : "○ MANUAL"}
+                </button>
+              </div>
+            </div>
+            <p className="font-medium tracking-tight text-foreground/70 text-sm md:text-base">
+              전체 기기의 실시간 작동 상태, 제어 성공률 및 에러 로그를 분석하여 시스템의 안정성을 모니터링합니다.
+            </p>
           </div>
         </div>
-      </div>
+      </header>
 
       {/* 에러 표시 */}
       {error && (
