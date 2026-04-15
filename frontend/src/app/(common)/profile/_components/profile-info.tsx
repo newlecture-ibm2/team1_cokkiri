@@ -122,7 +122,7 @@ export default function ProfileInfo() {
           <p className="text-lg font-medium text-primary tracking-tight">{profile.birthDate}</p>
         </motion.div>
         <motion.div whileHover={{ x: 4 }} className="space-y-2 group">
-          <p className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground/70 group-hover:text-accent transition-colors">국적 (Nationality)</p>
+          <p className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground/70 group-hover:text-accent transition-colors">지역 (Location)</p>
           <p className="text-lg font-medium text-primary tracking-tight">{profile.nationality}</p>
         </motion.div>
       </div>
