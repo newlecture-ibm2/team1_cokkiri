@@ -29,12 +29,12 @@ import com.coliving.infra.iot.IotGatewayInfo;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Qualifier;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.reactive.function.client.WebClient;
+
 
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -50,8 +50,6 @@ public class AdminDeviceController {
     private final JwtTokenProvider jwtTokenProvider;
     private final IotClient iotClient;
     private final DeviceJpaRepository deviceJpaRepository;
-    @Qualifier("iotWebClient")
-    private final WebClient iotWebClient;
 
     /**
      * 기기 목록 조회 (ADM-DEV-01)
@@ -229,14 +227,13 @@ public class AdminDeviceController {
                 .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND));
         String macAddress = device.getMacAddress();
 
-        // Mock IoT 서버에 MAC 기반으로 에러 모드 전달
+        // IoT 서버에 MAC 기반으로 에러 모드 전달
         try {
-            iotWebClient.post()
-                    .uri("/api/devices/" + macAddress + "/error-mode")
-                    .bodyValue(Map.of("mode", requestDto.mode()))
-                    .retrieve()
-                    .bodyToMono(String.class)
-                    .block();
+            boolean success = iotClient.setErrorMode(macAddress, requestDto.mode());
+            if (!success) {
+                return ResponseEntity.status(HttpStatus.BAD_GATEWAY)
+                        .body(ApiResponse.error(ErrorCode.IOT_COMMUNICATION_FAIL));
+            }
 
             // DB 즉시 동기화: error/fault → ERROR, normal → ONLINE, timeout → 변경 없음(일시적 오류)
             String mode = requestDto.mode();

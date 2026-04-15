@@ -51,4 +51,13 @@ public interface IotClient {
      * @return 기기 정보 (없으면 null)
      */
     IotDeviceInfo getDeviceByMac(String macAddress);
+
+    /**
+     * IoT 기기의 에러 시뮬레이션 모드를 설정합니다.
+     *
+     * @param macAddress MAC 주소
+     * @param mode       에러 모드 ("normal" | "error" | "timeout" | "fault")
+     * @return 설정 성공 여부
+     */
+    boolean setErrorMode(String macAddress, String mode);
 }
