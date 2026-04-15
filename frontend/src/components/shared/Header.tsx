@@ -36,7 +36,6 @@ const navItems: NavItem[] = [
   {
     name: "My",
     children: [
-      { name: "프로필", path: "/profile" },
       {
         name: "히스토리",
         children: [
@@ -338,6 +337,9 @@ export function Header() {
                       <span className="text-[9px] font-black uppercase tracking-[0.25em] text-primary/40 -mb-0.5">{user?.role === 'USER' ? 'GUEST' : user?.role || ''}</span>
                       <span className="text-[15px] font-black tracking-tight text-primary transition-colors">{user?.name}님</span>
                     </div>
+                    <Link href="/profile" className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center text-primary transition-colors hover:bg-primary/15">
+                      <User className="w-4.5 h-4.5" />
+                    </Link>
                   </div>
                 ) : (
                   <div className="hidden md:flex items-center gap-2">
