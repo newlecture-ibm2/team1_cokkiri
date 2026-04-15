@@ -11,9 +11,9 @@ export const metadata = {
 export default function AdminCommunityPage() {
   return (
     <MotionEnter>
-      <div className="max-w-5xl">
-        <header className="mb-6">
-          <div className="flex flex-col gap-3">
+      <div className="max-w-[1400px] mx-auto">
+        <header className="mb-12">
+          <div className="flex flex-col gap-6">
             <div className="border-b border-primary/10 pb-8 space-y-4">
               <p className="font-black text-[10px] uppercase tracking-[0.35em] text-muted-foreground">Admin · Community</p>
               <h1 className="text-5xl md:text-7xl font-black leading-tight tracking-tight uppercase whitespace-nowrap">

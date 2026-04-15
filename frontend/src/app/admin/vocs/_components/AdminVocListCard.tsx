@@ -26,24 +26,24 @@ interface AdminVocListRowProps {
 export function AdminVocListRow({ item, rowNumber }: AdminVocListRowProps) {
   return (
     <tr className="border-b border-primary/5 hover:bg-primary/[0.03] transition-colors group">
-      <td className="px-5 py-4 text-center font-mono text-[15px] font-medium text-primary/50">
+      <td className="px-5 py-4 text-center font-mono text-[15px] font-medium text-primary/70">
         {rowNumber}
       </td>
       <td className="px-5 py-4 text-center">
-        <span className="text-[15px] font-medium text-primary/70">
+        <span className="text-[15px] font-medium text-primary/90">
           {adminVocCategoryLabel(item.category)}
         </span>
       </td>
       <td className="px-5 py-4">
         <Link
           href={`/admin/vocs/${item.vocId}`}
-          className="text-lg font-normal text-primary hover:text-accent transition-colors line-clamp-1"
+          className="text-[17px] font-medium text-primary hover:text-accent transition-colors line-clamp-1"
         >
           {item.title}
         </Link>
       </td>
       <td className="px-5 py-4 text-center">
-        <span className="text-[15px] font-medium text-primary/70">
+        <span className="text-[15px] font-medium text-primary/90">
           {item.userName || `회원 #${item.userId}`}
         </span>
       </td>
@@ -58,7 +58,7 @@ export function AdminVocListRow({ item, rowNumber }: AdminVocListRowProps) {
           {adminVocStatusLabel(item.status)}
         </span>
       </td>
-      <td className="px-5 py-4 text-center text-sm font-normal text-primary/50 tabular-nums" suppressHydrationWarning>
+      <td className="px-5 py-4 text-center text-sm font-normal text-primary/70 tabular-nums" suppressHydrationWarning>
         <time dateTime={item.createdAt}>
           {formatDateTimeKo(item.createdAt)}
         </time>

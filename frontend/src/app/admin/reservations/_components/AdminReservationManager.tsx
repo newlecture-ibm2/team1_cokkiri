@@ -212,35 +212,34 @@ export function AdminReservationManager() {
 
   return (
     <>
-      <div className="p-6 md:p-12 lg:px-24">
-        <header className="mb-12 flex flex-col gap-8 lg:flex-row lg:items-end lg:justify-between">
-          <div className="space-y-5">
-            <p className="text-muted-foreground text-[10px] font-black tracking-[0.35em] uppercase">
-              Admin · Reservation
-            </p>
-            <h1 className="text-[12vw] leading-[0.85] font-black tracking-tighter text-[#2C3424] uppercase md:text-[6vw]">
-              Reservation <span className="text-[#768064]">Control</span>
-            </h1>
-            <p className="max-w-2xl text-base font-medium tracking-tight text-balance text-[#4C583E] md:text-lg">
-              현재 페이지 데이터 안에서 빠르게 검색하고, 승인 대기 예약을 검토하거나 예약을 즉시
-              취소할 수 있는 관리자용 운영 보드입니다.
-            </p>
-          </div>
-
-          <div className="flex flex-wrap items-center gap-3">
-            <Button
-              variant="outline"
-              className="rounded-full px-5"
-              onClick={() => void handleRefresh()}
-              disabled={isReloading}
-            >
-              {isReloading ? (
-                <Loader2 className="size-4 animate-spin" />
-              ) : (
-                <RefreshCw className="size-4" />
-              )}
-              새로고침
-            </Button>
+      <div className="max-w-[1400px] mx-auto">
+        <header className="mb-12">
+          <div className="flex flex-col gap-6">
+            <div className="border-b border-primary/10 pb-8 space-y-4">
+              <p className="font-black text-[10px] uppercase tracking-[0.35em] text-muted-foreground">Admin · Reservation</p>
+              <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+                <h1 className="text-5xl md:text-7xl font-black leading-tight tracking-tight uppercase whitespace-nowrap">
+                  RESERVATION <span className="underline underline-offset-4 decoration-accent">CONTROL.</span>
+                  <span className="text-2xl md:text-4xl font-bold tracking-normal ml-2 align-bottom opacity-80">예약 관리</span>
+                </h1>
+                <Button
+                  variant="outline"
+                  className="rounded-full px-5 border-primary/20 hover:bg-primary/5 h-11"
+                  onClick={() => void handleRefresh()}
+                  disabled={isReloading}
+                >
+                  {isReloading ? (
+                    <Loader2 className="size-4 animate-spin" />
+                  ) : (
+                    <RefreshCw className="size-4" />
+                  )}
+                  새로고침
+                </Button>
+              </div>
+              <p className="font-medium tracking-tight text-foreground/70 text-sm md:text-base max-w-3xl">
+                현재 페이지 데이터 안에서 빠르게 검색하고, 승인 대기 예약을 검토하거나 예약을 즉시 취소할 수 있는 관리자용 운영 보드입니다.
+              </p>
+            </div>
           </div>
         </header>
 
