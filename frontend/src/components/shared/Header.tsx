@@ -245,7 +245,9 @@ export function Header() {
                               )}
                               variants={dropdownPanelShellVariants}
                             >
-                              {item.children.map((child) => (
+                              {item.children.map((child) => {
+                                if (!isLoggedIn && child.action === "logout") return null;
+                                return (
                                 <motion.div
                                   key={child.name}
                                   variants={dropdownLinkVariants}
@@ -311,7 +313,8 @@ export function Header() {
                                     </Link>
                                   ) : null}
                                 </motion.div>
-                              ))}
+                                );
+                              })}
                             </motion.div>
                           </motion.div>
                         )}
@@ -454,6 +457,7 @@ export function Header() {
                             >
                               <ul className="space-y-1.5 pb-5 pl-2">
                                 {item.children.map((child) => {
+                                  if (!isLoggedIn && child.action === "logout") return null;
                                   if (child.children) {
                                     const subOpen = openMobileSection === `sub-${child.name}`;
                                     return (

@@ -38,9 +38,13 @@ function OAuth2SuccessHandler() {
           login(userRes.data);
           
           // 3. Check for missing profile data (e.g. phone)
-          if (!userRes.data.phone) {
-            // New user missing phone. Naturally routing.
-            router.replace('/profile?notice=missing_phone');
+          const isNewUser = searchParams.get('isNewUser') === 'true';
+
+          if (isNewUser) {
+            // Force newly created social accounts to complete profile
+            router.replace('/profile/edit?notice=welcome');
+          } else if (!userRes.data.phone) {
+            router.replace('/profile/edit?notice=missing_phone');
           } else {
             router.replace('/');
           }

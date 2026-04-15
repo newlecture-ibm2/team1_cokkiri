@@ -65,7 +65,7 @@ public class AdminUserPersistenceAdapter implements AdminUserRepositoryPort {
     @Override
     public void updateUser(Long id, String name, String phone, String email) {
         UserEntity user = fetchUser(id);
-        user.updateProfile(name, phone, email, null);
+        user.updateProfile(name, phone, email, null, null, null, null);
         userJpaRepository.save(user);
     }
 
