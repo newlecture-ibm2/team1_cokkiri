@@ -19,6 +19,8 @@ import com.coliving.global.error.ErrorCode;
 import com.coliving.global.html.PlainTextHtmlSanitizer;
 import com.coliving.global.html.VocBodyHtmlSanitizer;
 import com.coliving.global.validation.PlainTextFieldValidation;
+import com.coliving.admin.user.application.port.out.AdminUserRepositoryPort;
+import com.coliving.admin.user.application.result.AdminUserResult;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -36,11 +38,14 @@ public class AdminVocService implements AdminVocUseCase {
 
     private final VocRepositoryPort vocRepositoryPort;
     private final CreateNotificationUseCase createNotificationUseCase;
+    private final AdminUserRepositoryPort adminUserRepositoryPort;
 
     public AdminVocService(VocRepositoryPort vocRepositoryPort,
-                           CreateNotificationUseCase createNotificationUseCase) {
+                           CreateNotificationUseCase createNotificationUseCase,
+                           AdminUserRepositoryPort adminUserRepositoryPort) {
         this.vocRepositoryPort = vocRepositoryPort;
         this.createNotificationUseCase = createNotificationUseCase;
+        this.adminUserRepositoryPort = adminUserRepositoryPort;
     }
 
     @Override
@@ -52,17 +57,35 @@ public class AdminVocService implements AdminVocUseCase {
                 ? PageRequest.of(safePage, safeSize)
                 : PageRequest.of(safePage, safeSize, parseSort(command.getSort()));
 
-        Page<Voc> page = vocRepositoryPort.findPageForAdmin(command.getStatus(), command.isPendingOnly(), pageRequest);
+        Page<Voc> page = vocRepositoryPort.findPageForAdmin(
+                command.getStatus(),
+                command.getCategory(),
+                command.getKeyword(),
+                command.getCreatedFrom(),
+                command.getCreatedTo(),
+                command.isPendingOnly(),
+                pageRequest
+        );
 
         List<AdminVocListItemResult> content = page.getContent().stream()
-                .map(v -> AdminVocListItemResult.builder()
-                        .vocId(v.getVocId())
-                        .userId(v.getUserId())
-                        .category(v.getCategory())
-                        .title(PlainTextHtmlSanitizer.sanitizeTitle(v.getTitle()))
-                        .status(v.getStatus())
-                        .createdAt(v.getCreatedAt())
-                        .build())
+                .map(v -> {
+                    String userName;
+                    try {
+                        AdminUserResult user = adminUserRepositoryPort.findUserById(v.getUserId());
+                        userName = user.getName();
+                    } catch (Exception e) {
+                        userName = "회원 #" + v.getUserId();
+                    }
+                    return AdminVocListItemResult.builder()
+                            .vocId(v.getVocId())
+                            .userId(v.getUserId())
+                            .userName(userName)
+                            .category(v.getCategory())
+                            .title(PlainTextHtmlSanitizer.sanitizeTitle(v.getTitle()))
+                            .status(v.getStatus())
+                            .createdAt(v.getCreatedAt())
+                            .build();
+                })
                 .toList();
 
         return AdminVocListResult.builder()
@@ -130,9 +153,17 @@ public class AdminVocService implements AdminVocUseCase {
     }
 
     private VocResult toVocResult(Voc v) {
+        String userName;
+        try {
+            AdminUserResult user = adminUserRepositoryPort.findUserById(v.getUserId());
+            userName = user.getName();
+        } catch (Exception e) {
+            userName = "회원 #" + v.getUserId();
+        }
         return VocResult.builder()
                 .vocId(v.getVocId())
                 .userId(v.getUserId())
+                .userName(userName)
                 .category(v.getCategory())
                 .title(PlainTextHtmlSanitizer.sanitizeTitle(v.getTitle()))
                 .content(VocBodyHtmlSanitizer.sanitize(v.getContent()))

@@ -79,7 +79,8 @@ export default function NotificationSseClient() {
     };
 
     eventSource.onerror = (err) => {
-      console.error("[SSE] Connection error or closed. EventSource will retry automatically.", err);
+      // transient connection issues are normal for SSE and handled by automatic retry
+      console.warn("[SSE] Connection error or closed. EventSource will retry automatically.", err);
     };
 
     const onNotification = (event: MessageEvent) => {

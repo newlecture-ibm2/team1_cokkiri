@@ -15,13 +15,16 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDate;
 import java.time.OffsetDateTime;
+import java.time.ZoneId;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
 @Component
 public class VocPersistenceAdapter implements VocRepositoryPort {
+    private static final ZoneId SEOUL = ZoneId.of("Asia/Seoul");
 
     private final VocJpaRepository vocJpaRepository;
     private final ObjectMapper objectMapper;
@@ -60,13 +63,46 @@ public class VocPersistenceAdapter implements VocRepositoryPort {
     }
 
     @Override
-    public Page<Voc> findPageForAdmin(VocStatus status, boolean pendingOnly, Pageable pageable) {
-        if (pendingOnly) {
+    public Page<Voc> findPageForAdmin(
+            VocStatus status,
+            VocCategory category,
+            String keyword,
+            LocalDate createdFrom,
+            LocalDate createdTo,
+            boolean pendingOnly,
+            Pageable pageable
+    ) {
+        if (pendingOnly && createdFrom == null && createdTo == null && category == null && (keyword == null || keyword.isBlank())) {
             return vocJpaRepository
                     .findPageByStatusInPendingOrder(List.of(VocStatus.OPEN, VocStatus.IN_PROGRESS), pageable)
                     .map(this::toModel);
         }
-        return vocJpaRepository.findPageByOptionalStatus(status, pageable).map(this::toModel);
+
+        org.springframework.data.jpa.domain.Specification<VocEntity> spec = org.springframework.data.jpa.domain.Specification.where(null);
+        if (pendingOnly) {
+            spec = spec.and((root, query, cb) -> root.get("status").in(VocStatus.OPEN, VocStatus.IN_PROGRESS));
+        } else if (status != null) {
+            spec = spec.and((root, query, cb) -> cb.equal(root.get("status"), status));
+        }
+        if (category != null) {
+            spec = spec.and((root, query, cb) -> cb.equal(root.get("category"), category));
+        }
+        if (keyword != null && !keyword.isBlank()) {
+            String pattern = "%" + keyword.trim().toLowerCase() + "%";
+            spec = spec.and((root, query, cb) -> cb.or(
+                    cb.like(cb.lower(root.get("title")), pattern),
+                    cb.like(cb.lower(root.get("content")), pattern)
+            ));
+        }
+        if (createdFrom != null) {
+            OffsetDateTime from = createdFrom.atStartOfDay(SEOUL).toOffsetDateTime();
+            spec = spec.and((root, query, cb) -> cb.greaterThanOrEqualTo(root.get("createdAt"), from));
+        }
+        if (createdTo != null) {
+            OffsetDateTime toExclusive = createdTo.plusDays(1).atStartOfDay(SEOUL).toOffsetDateTime();
+            spec = spec.and((root, query, cb) -> cb.lessThan(root.get("createdAt"), toExclusive));
+        }
+        return vocJpaRepository.findAll(spec, pageable).map(this::toModel);
     }
 
     @Override

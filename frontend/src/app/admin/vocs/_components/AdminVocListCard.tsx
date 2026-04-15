@@ -1,61 +1,68 @@
 import Link from "next/link";
-import { ClipboardList } from "lucide-react";
 import { adminVocCategoryLabel, adminVocStatusLabel, type AdminVocListItem } from "../_types/admin-vocs";
 import { formatDateTimeKo } from "@/lib/format-date";
 import { cn } from "@/lib/utils";
 
-function statusPillClass(status: string) {
+function statusBadgeClass(status: string) {
   switch (status) {
     case "OPEN":
-      return "border-secondary/50 bg-secondary/10 text-secondary";
+      return "bg-[#7F1D1D]/10 text-[#7F1D1D] border-[#7F1D1D]/20";
     case "IN_PROGRESS":
-      return "border-primary/30 bg-primary/10 text-primary";
+      return "bg-blue-50 text-blue-600 border-blue-400/30";
     case "RESOLVED":
-      return "border-border bg-muted/40 text-muted-foreground";
+      return "bg-accent/15 text-accent border-accent/30";
     case "CANCELLED":
-      return "border-muted text-muted-foreground opacity-80";
+      return "bg-gray-100 text-gray-500 border-gray-200";
     default:
-      return "border-border bg-muted/30 text-foreground";
+      return "bg-gray-100 text-gray-600 border-gray-200";
   }
 }
 
-export function AdminVocListCard({ item }: { item: AdminVocListItem }) {
+interface AdminVocListRowProps {
+  item: AdminVocListItem;
+  rowNumber: number;
+}
+
+export function AdminVocListRow({ item, rowNumber }: AdminVocListRowProps) {
   return (
-    <Link
-      href={`/admin/vocs/${item.vocId}`}
-      className="group block rounded-[2rem] border border-border bg-background/80 p-6 backdrop-blur-sm transition-transform duration-200 hover:-translate-y-0.5 hover:border-secondary/50 md:p-8"
-    >
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div className="flex min-w-0 flex-1 items-start gap-3">
-          <ClipboardList
-            className="mt-0.5 size-5 shrink-0 text-secondary opacity-80 group-hover:opacity-100"
-            strokeWidth={1.5}
-            aria-hidden
-          />
-          <div className="min-w-0 space-y-2">
-            <p className="font-black text-[10px] uppercase tracking-[0.25em] text-muted-foreground">
-              {adminVocCategoryLabel(item.category)} · 회원 ID {item.userId}
-            </p>
-            <h2 className="font-black text-lg tracking-tight text-balance text-foreground group-hover:text-secondary md:text-xl">
-              {item.title}
-            </h2>
-            <time
-              dateTime={item.createdAt}
-              className="block font-black text-[10px] uppercase tracking-[0.2em] text-muted-foreground"
-            >
-              {formatDateTimeKo(item.createdAt)}
-            </time>
-          </div>
-        </div>
+    <tr className="border-b border-primary/5 hover:bg-primary/[0.03] transition-colors group">
+      <td className="px-5 py-4 text-center font-mono text-[15px] font-medium text-primary/50">
+        {rowNumber}
+      </td>
+      <td className="px-5 py-4 text-center">
+        <span className="text-[15px] font-medium text-primary/70">
+          {adminVocCategoryLabel(item.category)}
+        </span>
+      </td>
+      <td className="px-5 py-4">
+        <Link
+          href={`/admin/vocs/${item.vocId}`}
+          className="text-lg font-normal text-primary hover:text-accent transition-colors line-clamp-1"
+        >
+          {item.title}
+        </Link>
+      </td>
+      <td className="px-5 py-4 text-center">
+        <span className="text-[15px] font-medium text-primary/70">
+          {item.userName || `회원 #${item.userId}`}
+        </span>
+      </td>
+      <td className="px-5 py-4 text-center">
         <span
           className={cn(
-            "shrink-0 rounded-full border px-3 py-1 text-[10px] font-black uppercase tracking-wider",
-            statusPillClass(item.status),
+            "inline-flex items-center px-3.5 py-1 rounded-full text-[13px] font-bold tracking-wide border",
+            statusBadgeClass(item.status),
           )}
+          suppressHydrationWarning
         >
           {adminVocStatusLabel(item.status)}
         </span>
-      </div>
-    </Link>
+      </td>
+      <td className="px-5 py-4 text-center text-sm font-normal text-primary/50 tabular-nums" suppressHydrationWarning>
+        <time dateTime={item.createdAt}>
+          {formatDateTimeKo(item.createdAt)}
+        </time>
+      </td>
+    </tr>
   );
 }

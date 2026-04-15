@@ -1,4 +1,7 @@
+"use client";
+
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { cn } from "@/lib/utils";
 
 const VOC_TYPES = [
@@ -12,6 +15,7 @@ const VOC_STATUSES = [
   { value: "OPEN", label: "접수" },
   { value: "IN_PROGRESS", label: "처리중" },
   { value: "RESOLVED", label: "완료" },
+  { value: "CANCELLED", label: "취소" },
 ] as const;
 
 type Props = {
@@ -19,18 +23,31 @@ type Props = {
   activeStatus?: string;
 };
 
-export function VocCategoryFilter({ activeCategory, activeStatus }: Props) {
+export function AdminVocFilter({ activeCategory, activeStatus }: Props) {
+  const searchParams = useSearchParams();
+
   const base =
-    "shrink-0 text-sm md:text-base font-bold uppercase tracking-wider transition-all whitespace-nowrap pb-2 border-b-2 border-transparent";
+    "shrink-0 text-center text-sm md:text-base font-bold uppercase tracking-wider transition-all whitespace-nowrap pb-2 border-b-2 border-transparent";
 
   function buildHref(overrides: { category?: string; status?: string }) {
-    const params = new URLSearchParams();
-    params.set("tab", "list");
-    const cat = "category" in overrides ? overrides.category : activeCategory;
-    const st = "status" in overrides ? overrides.status : activeStatus;
-    if (cat) params.set("category", cat);
-    if (st) params.set("status", st);
-    return `/vocs?${params.toString()}`;
+    const params = new URLSearchParams(searchParams.toString());
+    params.delete("p"); // Reset page on filter change
+    // Legacy scope params can override category/status behavior on backend.
+    // Remove them when user explicitly changes category/status filters.
+    params.delete("pending");
+    params.delete("all");
+    
+    if ("category" in overrides) {
+      if (overrides.category) params.set("category", overrides.category);
+      else params.delete("category");
+    }
+    
+    if ("status" in overrides) {
+      if (overrides.status) params.set("status", overrides.status);
+      else params.delete("status");
+    }
+    
+    return `/admin/vocs?${params.toString()}`;
   }
 
   return (

@@ -12,6 +12,7 @@ import java.time.OffsetDateTime;
 public class AdminVocListItemResult {
     private final Long vocId;
     private final Long userId;
+    private final String userName;
     private final VocCategory category;
     private final String title;
     private final VocStatus status;

@@ -79,7 +79,7 @@ export function PostCard({ post }: { post: PostListItem }) {
 
       {/* Bottom row: author (left) + stats (right) */}
       <div className="flex items-center justify-between gap-4 mt-3 pt-3 border-t border-primary/5">
-        <span className="text-xs text-muted-foreground font-medium">
+        <span className="text-xs text-muted-foreground font-medium" suppressHydrationWarning>
           {post.authorName || `사용자${post.authorUserId}`} · {formatDateTimeKo(post.createdAt)}
         </span>
         <div className="flex items-center gap-4">
