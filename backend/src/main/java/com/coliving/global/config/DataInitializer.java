@@ -470,7 +470,6 @@ public class DataInitializer implements ApplicationRunner {
     private void seedSpacesFromDevDataset() {
         RoomTypeEntity singleType = getOrCreateRoomType("SINGLE", "싱글룸");
         RoomTypeEntity doubleType = getOrCreateRoomType("DOUBLE", "더블룸");
-        RoomTypeEntity studioType = getOrCreateRoomType("STUDIO", "스튜디오");
         RoomTypeEntity suiteType = getOrCreateRoomType("SUITE", "스위트");
 
         // ═══════════ 1층 (101~103호) ═══════════
@@ -482,10 +481,7 @@ public class DataInitializer implements ApplicationRunner {
                 "102호", 1, new BigDecimal("26.00"), "[\"에어컨\",\"냉장고\",\"세탁기\"]", "1층 넓은 더블룸",
                 doubleType, 2, 1, "남향",
                 new BigDecimal("6000000"), new BigDecimal("580000"), new BigDecimal("50000"), true);
-        getOrCreatePrivateSpace(
-                "103호", 1, new BigDecimal("20.00"), "[\"에어컨\"]", "1층 스튜디오 (관리동 인접)",
-                studioType, 1, 1, "서향",
-                new BigDecimal("3500000"), new BigDecimal("380000"), new BigDecimal("38000"), false);
+
 
         // ═══════════ 2층 (201~203호) ═══════════
         getOrCreatePrivateSpace(
@@ -510,15 +506,12 @@ public class DataInitializer implements ApplicationRunner {
                 "302호", 3, new BigDecimal("30.00"), "[\"에어컨\",\"세탁기\",\"냉장고\"]", "복층 구조 더블룸",
                 doubleType, 2, 1, "동향",
                 new BigDecimal("8000000"), new BigDecimal("700000"), new BigDecimal("60000"), true);
-        getOrCreatePrivateSpace(
-                "303호", 3, new BigDecimal("22.00"), "[\"에어컨\",\"냉장고\"]", "3층 중앙 스튜디오",
-                studioType, 1, 1, "서향",
-                new BigDecimal("4200000"), new BigDecimal("430000"), new BigDecimal("42000"), false);
+
 
         // ═══════════ 4층 (401~403호) ═══════════
         getOrCreatePrivateSpace(
-                "401호", 4, new BigDecimal("20.00"), "[\"에어컨\"]", "깔끔한 스튜디오",
-                studioType, 1, 1, "서향",
+                "401호", 4, new BigDecimal("20.00"), "[\"에어컨\"]", "깔끔한 싱글룸",
+                singleType, 1, 1, "서향",
                 new BigDecimal("3000000"), new BigDecimal("400000"), new BigDecimal("40000"), false);
         getOrCreatePrivateSpace(
                 "402호", 4, new BigDecimal("28.00"), "[\"에어컨\",\"냉장고\",\"Wi-Fi\"]", "현재 입주 중인 방",
