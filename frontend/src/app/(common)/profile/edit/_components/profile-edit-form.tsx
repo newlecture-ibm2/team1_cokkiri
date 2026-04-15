@@ -215,8 +215,8 @@ export function ProfileEditForm() {
   };
 
   const getInputClasses = (hasError: boolean) =>
-    `w-full border-b bg-transparent px-0 py-3 text-lg font-medium text-primary outline-none transition-colors placeholder:text-primary/50 disabled:opacity-50 ${hasError ? 'border-red-500 focus:border-red-500' : 'border-primary/20 focus:border-accent'}`;
-  const labelClasses = "block text-[10px] font-black uppercase tracking-[0.3em] text-primary/80 mb-1";
+    `w-full bg-transparent border-b-2 text-lg md:text-xl font-bold tracking-tight text-primary px-0 py-3 outline-none transition-all placeholder:text-primary/20 disabled:opacity-50 ${hasError ? 'border-red-500 focus:border-red-500' : 'border-primary/20 hover:border-primary/40 focus:border-accent'}`;
+  const labelClasses = "block text-xs font-black uppercase tracking-[0.3em] text-primary/50 mb-1";
   
   const itemVariants = {
     hidden: { opacity: 0, y: 30 },
@@ -241,17 +241,9 @@ export function ProfileEditForm() {
 
   return (
     <>
-      <button 
-        onClick={() => router.back()}
-        className="flex items-center text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground hover:text-accent transition-colors mb-8"
-      >
-        <ArrowLeft className="w-4 h-4 mr-2" />
-        Back to Profile
-      </button>
-
       <form
         onSubmit={handleSubmit}
-        className="flex flex-col gap-6"
+        className="flex flex-col gap-8 md:gap-12"
         noValidate
       >
         <AnimatePresence>
@@ -276,23 +268,18 @@ export function ProfileEditForm() {
           )}
         </AnimatePresence>
 
-        <motion.div variants={itemVariants} className="space-y-6">
-          <div className="relative">
+        <motion.div variants={itemVariants} className="flex flex-col md:flex-row gap-8 pb-4">
+          <div>
             <label className={labelClasses}>LOGIN ID</label>
-            <input 
-              value={profile.loginId} 
-              disabled 
-              className={getInputClasses(false)} 
-            />
+            <div className="text-lg md:text-xl font-bold tracking-tight text-primary">{profile.loginId}</div>
           </div>
           
-          <div className="relative">
+          <div>
             <label className={labelClasses}>ROLE</label>
-            <input 
-              value={profile.role} 
-              disabled 
-              className={getInputClasses(false)} 
-            />
+            <div className="inline-flex items-center space-x-2">
+              <div className="w-1.5 h-1.5 rounded-full bg-accent animate-pulse" />
+              <div className="text-lg md:text-xl font-bold tracking-tight text-primary">{profile.role}</div>
+            </div>
           </div>
         </motion.div>
 
@@ -378,10 +365,10 @@ export function ProfileEditForm() {
                       className="px-5 py-3 cursor-pointer hover:bg-primary/5 transition-colors flex items-center justify-between group relative"
                     >
                       {nationality === item.code && <motion.div layoutId="nationality-active" className="absolute left-0 top-0 bottom-0 w-1 bg-accent" />}
-                      <span className={`font-black tracking-tight group-hover:tracking-widest transition-all duration-300 ${nationality === item.code ? 'text-accent' : 'text-primary'}`}>
+                      <span className={`text-lg md:text-xl font-bold tracking-tight group-hover:tracking-normal transition-all duration-300 ${nationality === item.code ? 'text-accent' : 'text-primary'}`}>
                         {item.nameEn.toUpperCase()}
                       </span>
-                      <span className="text-[10px] text-primary/60 font-bold uppercase tracking-[0.2em]">{item.nameNative}</span>
+                      <span className="text-xs text-primary/60 font-black uppercase tracking-[0.2em]">{item.nameNative}</span>
                     </div>
                   ))}
                 </motion.div>
@@ -421,16 +408,16 @@ export function ProfileEditForm() {
                       className="px-5 py-4 cursor-pointer hover:bg-primary/5 transition-colors flex items-center justify-between border-b border-primary/5 group relative"
                     >
                       {gender === 'MALE' && <motion.div layoutId="gender-active" className="absolute left-0 top-0 bottom-0 w-1 bg-accent" />}
-                      <span className="font-black tracking-tight text-primary group-hover:tracking-widest transition-all duration-300">MALE</span>
-                      <span className="text-[10px] text-primary/60 font-bold uppercase tracking-[0.2em]">남성</span>
+                      <span className="text-lg md:text-xl font-bold tracking-tight text-primary group-hover:tracking-normal transition-all duration-300">MALE</span>
+                      <span className="text-xs text-primary/60 font-black uppercase tracking-[0.2em]">남성</span>
                     </div>
                     <div
                       onClick={() => { setGender('FEMALE'); setIsGenderOpen(false); }}
                       className="px-5 py-4 cursor-pointer hover:bg-primary/5 transition-colors flex items-center justify-between group relative"
                     >
                       {gender === 'FEMALE' && <motion.div layoutId="gender-active" className="absolute left-0 top-0 bottom-0 w-1 bg-accent" />}
-                      <span className="font-black tracking-tight text-primary group-hover:tracking-widest transition-all duration-300">FEMALE</span>
-                      <span className="text-[10px] text-primary/60 font-bold uppercase tracking-[0.2em]">여성</span>
+                      <span className="text-lg md:text-xl font-bold tracking-tight text-primary group-hover:tracking-normal transition-all duration-300">FEMALE</span>
+                      <span className="text-xs text-primary/60 font-black uppercase tracking-[0.2em]">여성</span>
                     </div>
                   </motion.div>
                 )}
