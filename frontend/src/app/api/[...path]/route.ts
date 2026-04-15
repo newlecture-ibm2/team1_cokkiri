@@ -43,11 +43,21 @@ async function handler(req: NextRequest) {
     }
   }
 
-  const headers: HeadersInit = {
-    'x-forwarded-host': req.nextUrl.host,
-    'x-forwarded-proto': req.nextUrl.protocol.replace(':', ''),
-    'x-forwarded-port': req.nextUrl.port || (req.nextUrl.protocol === 'https:' ? '443' : '80'),
-  };
+  const headers: HeadersInit = {};
+
+  let xForwardedHost = req.headers.get('x-forwarded-host');
+  const xForwardedProto = req.headers.get('x-forwarded-proto');
+
+  // 배포 환경(HTTPS)에서만 x-forwarded 헤더를 주입하여 도메인을 생성하게 합니다.
+  // 로컬 환경에서는 헤더를 넘기지 않아 Spring Boot가 원래대로 8080으로 생성하도록 복원합니다.
+  if (xForwardedProto === 'https') {
+    if (xForwardedHost) {
+      headers['x-forwarded-host'] = xForwardedHost.replace(/:\d+$/, '');
+    }
+    headers['x-forwarded-proto'] = 'https';
+    headers['x-forwarded-port'] = '443';
+  }
+
   const contentType = req.headers.get('Content-Type');
   if (contentType) headers['Content-Type'] = contentType;
 

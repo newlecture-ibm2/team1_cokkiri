@@ -488,29 +488,29 @@ export default function ContractApplyForm() {
     <div className="max-w-[900px] mx-auto">
       {/* Editorial Step Tracker */}
       {step < 5 && (
-        <div className={`flex flex-col md:flex-row md:items-center ${isReadOnly ? "justify-start" : "justify-between"} mb-12 gap-8`}>
+        <div className="flex flex-col items-start mb-12 gap-6">
           {formData.status !== "DRAFT" && (
-            <div className="flex items-center gap-2 px-4 py-2 bg-accent/10 border border-accent/20 rounded-full shrink-0">
-              <ShieldCheck className="w-3.5 h-3.5 text-accent" />
-              <span className="text-[9px] font-black tracking-[0.2em] text-accent uppercase">
+            <div className="flex items-center gap-4 px-6 py-3 bg-accent/10 border border-accent/20 rounded-full shrink-0">
+              <ShieldCheck className="w-4 h-4 text-accent" />
+              <span className="text-[10px] font-black tracking-[0.2em] text-accent uppercase">
                 {isReadOnly ? "FINALIZED SUBMISSION" : "VIEWING/EDITING SUBMISSION"} - {formData.status}
               </span>
             </div>
           )}
           {!isReadOnly && (
-            <div className="flex items-center gap-10 overflow-x-auto pb-4 md:pb-0 scrollbar-hide">
+            <div className="flex items-center justify-between w-full gap-4 overflow-x-auto pb-4 md:pb-0 scrollbar-hide">
               {steps.map((s, i) => (
-                <div key={i} className="flex items-center gap-4 group">
-                  <span className={`text-[10px] font-black tracking-[0.3em] transition-colors ${step >= i + 1 ? "text-primary" : "text-primary/20"
+                <div key={i} className="flex items-center gap-6 group">
+                  <span className={`text-[12px] font-black tracking-[0.3em] transition-colors ${step >= i + 1 ? "text-primary" : "text-primary/20"
                     }`}>
                     {String(i + 1).padStart(2, '0')}
                   </span>
-                  <span className={`text-[10px] font-black tracking-[0.2em] transition-all whitespace-nowrap ${step === i + 1 ? "text-accent" : "text-primary/10"
+                  <span className={`text-[12px] font-black tracking-[0.2em] transition-all whitespace-nowrap ${step === i + 1 ? "text-accent" : "text-primary/10"
                     }`}>
                     {s.title}
                   </span>
                   {i < steps.length - 1 && (
-                    <div className={`w-8 h-[1px] ${step > i + 1 ? "bg-accent" : "bg-primary/5"}`} />
+                    <div className={`w-12 h-[1px] ${step > i + 1 ? "bg-accent" : "bg-primary/5"}`} />
                   )}
                 </div>
               ))}

@@ -236,13 +236,7 @@ export default function AnnotationTypeManager() {
                 {/* 아이콘 이름 표시 */}
                 <span className="text-[10px] font-mono opacity-40">{at.iconName}</span>
 
-                {/* 시스템 기본 뱃지 */}
-                {at.isSystemDefault && (
-                  <span className="flex items-center gap-1 px-2 py-0.5 bg-blue-100 text-blue-600 text-[10px] font-black rounded-full">
-                    <Shield size={10} />
-                    기본
-                  </span>
-                )}
+
               </div>
 
               {/* 액션 버튼 */}
@@ -255,8 +249,7 @@ export default function AnnotationTypeManager() {
                   >
                     <Pencil size={14} />
                   </button>
-                  {!at.isSystemDefault && (
-                    deletingId === at.annotationTypeId ? (
+                  {deletingId === at.annotationTypeId ? (
                       <div className="flex items-center gap-1">
                         <button
                           onClick={() => handleDelete(at.annotationTypeId)}
@@ -279,8 +272,7 @@ export default function AnnotationTypeManager() {
                       >
                         <Trash2 size={14} />
                       </button>
-                    )
-                  )}
+                    )}
                 </div>
               )}
             </motion.div>
