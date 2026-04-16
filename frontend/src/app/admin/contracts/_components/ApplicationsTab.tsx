@@ -91,7 +91,12 @@ export function ApplicationsTab({ refreshKey, onRefresh }: Props) {
     try {
       const res = await fetch("/api/admin/contracts/applications");
       const result = await res.json();
-      if (result.success) setContracts(result.data);
+      if (result.success) {
+        const sorted = [...result.data].sort((a: PendingContract, b: PendingContract) =>
+          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        );
+        setContracts(sorted);
+      }
     } catch (err) {
       console.error(err);
     } finally {

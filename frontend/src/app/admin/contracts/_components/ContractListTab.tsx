@@ -125,7 +125,12 @@ export function ContractListTab({ refreshKey, onRefresh }: Props) {
       const query = statusFilter !== "ALL" ? `?status=${statusFilter}` : "";
       const res = await fetch(`/api/admin/contracts${query}`);
       const result = await res.json();
-      if (result.success) setContracts(result.data);
+      if (result.success) {
+        const sorted = [...result.data].sort((a: Contract, b: Contract) =>
+          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        );
+        setContracts(sorted);
+      }
     } catch (err) {
       console.error(err);
     } finally {
