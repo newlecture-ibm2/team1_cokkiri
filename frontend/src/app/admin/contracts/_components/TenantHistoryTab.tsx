@@ -295,7 +295,7 @@ export function TenantHistoryTab({ refreshKey }: Props) {
                 {/* ── Space Header (Accordion) ── */}
                 <button
                   onClick={() => toggleExpand(group.spaceId)}
-                  className="w-full flex items-center justify-between p-6 md:p-8 hover:bg-background/50 transition-colors text-left"
+                  className="w-full flex items-center justify-between p-6 md:p-8 hover:bg-primary/[0.02] transition-colors text-left"
                 >
                   <div className="flex items-center gap-5">
                     <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 ${

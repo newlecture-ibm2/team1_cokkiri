@@ -93,7 +93,7 @@ export default function SpacesPage() {
                 </button>
               )}
             </div>
-            <p className="font-medium tracking-tight text-foreground/70 text-sm md:text-base">
+            <p className="font-medium tracking-tight text-primary/70 text-sm md:text-base">
               시설 내 모든 공간(개인/공용)의 정보를 등록하고 관리하며, 도면 배치 및 유형 설정을 수행합니다.
             </p>
           </div>
@@ -108,8 +108,8 @@ export default function SpacesPage() {
             onClick={() => setActiveTab(tab.key)}
             className={`flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-bold tracking-tight transition-all duration-200
               ${activeTab === tab.key
-                ? 'bg-[var(--foreground)] text-[var(--background)] shadow-lg'
-                : 'bg-black/5 hover:bg-black/10'
+                ? 'bg-primary text-white shadow-lg'
+                : 'bg-primary/[0.05] text-primary/60 hover:bg-primary/[0.08]'
               }`}
           >
             {tab.icon}
@@ -129,8 +129,8 @@ export default function SpacesPage() {
                 onClick={() => { setFilterType(type as any); if (type !== 'PRIVATE') setFilterStatus('ALL'); }}
                 className={`px-4 py-2 rounded-full text-xs font-bold tracking-widest uppercase transition-all
                   ${filterType === type 
-                    ? 'bg-[var(--color-accent)] text-white shadow-md' 
-                    : 'bg-black/5 text-foreground hover:bg-black/10'
+                    ? 'bg-accent text-white shadow-md' 
+                    : 'bg-primary/[0.05] text-primary/60 hover:bg-primary/[0.08]'
                   }`}
               >
                 {type === 'ALL' ? '전체 보기' : type}
@@ -147,8 +147,8 @@ export default function SpacesPage() {
                 onClick={() => setFilterStatus(st)}
                 className={`px-4 py-2 rounded-full text-xs font-bold tracking-tight transition-all
                   ${filterStatus === st
-                    ? 'bg-[var(--foreground)] text-[var(--background)] shadow-md'
-                    : 'bg-black/5 text-foreground hover:bg-black/10'
+                    ? 'bg-primary text-white shadow-md'
+                    : 'bg-primary/[0.05] text-primary/60 hover:bg-primary/[0.08]'
                   }`}
               >
                 {st === 'ALL' ? '전체' : st === 'AVAILABLE' ? '입주 가능' : '입주 중'}
@@ -162,13 +162,13 @@ export default function SpacesPage() {
           <div ref={sortRef} className="relative inline-block mb-6">
             <button
               onClick={() => setIsSortOpen(!isSortOpen)}
-              className="flex items-center gap-2 px-4 py-2 rounded-full text-xs font-bold tracking-tight bg-black/5 hover:bg-black/10 transition"
+              className="flex items-center gap-2 px-4 py-2 rounded-full text-xs font-bold tracking-tight bg-primary/[0.05] text-primary/60 hover:bg-primary/[0.08] transition"
             >
               <ArrowUpDown size={14} />
               {sortOption === 'name,asc' ? '이름순 (ㄱ→ㅎ)' : sortOption === 'name,desc' ? '이름순 (ㅎ→ㄱ)' : '최신 등록순'}
             </button>
             {isSortOpen && (
-              <div className="absolute left-0 top-full mt-2 w-44 bg-[var(--background)] border border-foreground/10 rounded-2xl shadow-2xl overflow-hidden z-50">
+              <div className="absolute left-0 top-full mt-2 w-44 bg-white border border-primary/10 rounded-2xl shadow-2xl overflow-hidden z-50">
                 {[
                   { value: 'name,asc', label: '이름순 (ㄱ→ㅎ)' },
                   { value: 'name,desc', label: '이름순 (ㅎ→ㄱ)' },
@@ -177,7 +177,7 @@ export default function SpacesPage() {
                   <button
                     key={opt.value}
                     onClick={() => { setSortOption(opt.value); setIsSortOpen(false); }}
-                    className={`w-full flex items-center justify-between px-4 py-3 text-xs font-bold tracking-tight hover:bg-black/5 transition cursor-pointer ${
+                    className={`w-full flex items-center justify-between px-4 py-3 text-xs font-bold tracking-tight hover:bg-primary/[0.03] transition cursor-pointer ${
                       sortOption === opt.value ? 'text-[var(--color-accent)]' : ''
                     }`}
                   >
@@ -199,12 +199,12 @@ export default function SpacesPage() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.05 * idx }}
-                className="group relative bg-black/5 p-6 rounded-[2rem] hover:bg-black/10 transition cursor-pointer"
+                className="group relative bg-white border border-primary/5 p-6 rounded-[2rem] hover:bg-primary/[0.02] transition cursor-pointer shadow-sm"
                 onClick={() => setEditingSpace(space)}
               >
                 {/* 수정 아이콘 (hover 시 표출) */}
                 <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition">
-                  <div className="p-2 bg-[var(--foreground)] text-[var(--background)] rounded-full">
+                  <div className="p-2 bg-primary text-white rounded-full">
                     <Pencil size={14} />
                   </div>
                 </div>
@@ -236,7 +236,7 @@ export default function SpacesPage() {
                     <img src={thumbnailUrl} alt={space.name} className="w-full h-full object-cover" />
                   </div>
                 ) : (
-                  <div className="mt-4 w-full h-32 rounded-2xl bg-black/10 flex items-center justify-center font-bold tracking-tighter text-black/30">
+                  <div className="mt-4 w-full h-32 rounded-2xl bg-primary/[0.05] flex items-center justify-center font-bold tracking-tighter text-primary/30">
                     NO IMAGE
                   </div>
                 )}

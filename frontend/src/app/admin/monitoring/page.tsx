@@ -109,7 +109,7 @@ export default function MonitoringPage() {
 
       {/* 에러 표시 */}
       {error && (
-        <div className="bg-red-50 text-red-600 rounded-[2rem] p-4 mb-6 text-sm">
+        <div className="bg-destructive/5 text-destructive rounded-[2rem] border border-destructive/10 p-4 mb-6 text-sm font-medium">
           ⚠ {error}
         </div>
       )}
@@ -122,25 +122,25 @@ export default function MonitoringPage() {
           transition={{ delay: 0.05 }}
           className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8"
         >
-          <div className="border-border bg-background rounded-[2rem] border p-5 text-center shadow-sm">
-            <p className="text-3xl font-black text-foreground">
+          <div className="border-primary/5 bg-white rounded-[2rem] border p-5 text-center shadow-sm">
+            <p className="text-3xl font-black text-primary">
               {energyData.statusSummary.totalDevices}
             </p>
             <p className="text-xs text-muted-foreground uppercase tracking-wider mt-1">전체 기기</p>
           </div>
-          <div className="border-border bg-background rounded-[2rem] border p-5 text-center shadow-sm">
+          <div className="border-primary/5 bg-white rounded-[2rem] border p-5 text-center shadow-sm">
             <p className="text-3xl font-black text-[#768064]">
               {energyData.statusSummary.onlineCount}
             </p>
             <p className="text-xs text-muted-foreground uppercase tracking-wider mt-1">정상 (ONLINE)</p>
           </div>
-          <div className="border-border bg-background rounded-[2rem] border p-5 text-center shadow-sm">
+          <div className="border-primary/5 bg-white rounded-[2rem] border p-5 text-center shadow-sm">
             <p className="text-3xl font-black text-[#959581]">
               {energyData.statusSummary.offlineCount}
             </p>
             <p className="text-xs text-muted-foreground uppercase tracking-wider mt-1">오프라인 (OFFLINE)</p>
           </div>
-          <div className="border-border bg-background rounded-[2rem] border p-5 text-center shadow-sm">
+          <div className="border-primary/5 bg-white rounded-[2rem] border p-5 text-center shadow-sm">
             <p className="text-3xl font-black text-red-500">
               {energyData.statusSummary.errorCount}
             </p>
@@ -154,9 +154,9 @@ export default function MonitoringPage() {
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.1 }}
-        className="border-border bg-background rounded-[2rem] border p-6 shadow-sm mb-8"
+        className="border-primary/5 bg-white rounded-[2rem] border p-6 shadow-sm mb-8"
       >
-        <h2 className="text-lg font-black tracking-tighter text-foreground mb-1">
+        <h2 className="text-lg font-black tracking-tighter text-primary mb-1">
           공간별 기기 상태 현황
         </h2>
         <p className="text-xs text-muted-foreground mb-4">
@@ -174,9 +174,9 @@ export default function MonitoringPage() {
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.15 }}
-        className="border-border bg-background rounded-[2rem] border p-6 shadow-sm mb-8"
+        className="border-primary/5 bg-white rounded-[2rem] border p-6 shadow-sm mb-8"
       >
-        <h2 className="text-lg font-black tracking-tighter text-foreground mb-1">
+        <h2 className="text-lg font-black tracking-tighter text-primary mb-1">
           기기 종류별 명령 제어 빈도
         </h2>
         <p className="text-xs text-muted-foreground mb-4">
@@ -194,9 +194,9 @@ export default function MonitoringPage() {
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.2 }}
-        className="border-border bg-background rounded-[2rem] border p-6 shadow-sm mb-8"
+        className="border-primary/5 bg-white rounded-[2rem] border p-6 shadow-sm mb-8"
       >
-        <h2 className="text-lg font-black tracking-tighter text-foreground mb-1">
+        <h2 className="text-lg font-black tracking-tighter text-primary mb-1">
           공간별 제어 빈도
         </h2>
         <p className="text-xs text-muted-foreground mb-4">
@@ -214,9 +214,9 @@ export default function MonitoringPage() {
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.3 }}
-        className="border-border bg-background rounded-[2rem] border p-6 shadow-sm mb-8"
+        className="border-primary/5 bg-white rounded-[2rem] border p-6 shadow-sm mb-8"
       >
-        <h2 className="text-lg font-black tracking-tighter text-foreground mb-4">
+        <h2 className="text-lg font-black tracking-tighter text-primary mb-4">
           제어 추이
         </h2>
         {energyData ? (
@@ -231,9 +231,9 @@ export default function MonitoringPage() {
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.35 }}
-        className="border-border bg-background rounded-[2rem] border p-6 shadow-sm mb-8"
+        className="border-primary/5 bg-white rounded-[2rem] border p-6 shadow-sm mb-8"
       >
-        <h2 className="text-lg font-black tracking-tighter text-foreground mb-4">
+        <h2 className="text-lg font-black tracking-tighter text-primary mb-4">
           에러 추이
           <span className="ml-2 text-sm font-normal text-muted-foreground">
             FAILURE 결과 일별 빈도
@@ -251,9 +251,9 @@ export default function MonitoringPage() {
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.4 }}
-        className="border-border bg-background rounded-[2rem] border p-6 shadow-sm mb-8"
+        className="border-primary/5 bg-white rounded-[2rem] border p-6 shadow-sm mb-8"
       >
-        <h2 className="text-lg font-black tracking-tighter text-foreground mb-1">
+        <h2 className="text-lg font-black tracking-tighter text-primary mb-1">
           기기별 제어 성공률
         </h2>
         <p className="text-xs text-muted-foreground mb-4">
@@ -271,9 +271,9 @@ export default function MonitoringPage() {
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.45 }}
-        className="border-border bg-background rounded-[2rem] border p-6 shadow-sm"
+        className="border-primary/5 bg-white rounded-[2rem] border p-6 shadow-sm"
       >
-        <h2 className="text-lg font-black tracking-tighter text-foreground mb-4">
+        <h2 className="text-lg font-black tracking-tighter text-primary mb-4">
           장애·에러 빈발 기기
           {errors.length > 0 && (
             <span className="ml-2 text-sm font-normal text-muted-foreground">
@@ -289,9 +289,9 @@ export default function MonitoringPage() {
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.5 }}
-        className="border-border bg-background rounded-[2rem] border p-6 shadow-sm mt-8"
+        className="border-primary/5 bg-white rounded-[2rem] border p-6 shadow-sm mt-8"
       >
-        <h2 className="text-lg font-black tracking-tighter text-foreground mb-1">
+        <h2 className="text-lg font-black tracking-tighter text-primary mb-1">
           기기 제어 이력
         </h2>
         <p className="text-xs text-muted-foreground mb-4">

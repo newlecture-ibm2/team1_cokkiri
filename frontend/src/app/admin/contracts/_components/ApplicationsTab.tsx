@@ -215,7 +215,7 @@ export function ApplicationsTab({ refreshKey, onRefresh }: Props) {
                 contracts.map((contract) => (
                   <tr
                     key={contract.contractId}
-                    className="group border-b border-primary/5 hover:bg-background/50 transition-colors"
+                    className="group border-b border-primary/5 hover:bg-primary/[0.02] transition-colors"
                   >
                     <td className="p-5">
                       <span className="text-sm font-black opacity-60">
@@ -307,7 +307,7 @@ export function ApplicationsTab({ refreshKey, onRefresh }: Props) {
                     setModalType(null);
                     setSelectedId(null);
                   }}
-                  className="w-10 h-10 rounded-full hover:bg-muted/30 flex items-center justify-center transition-colors"
+                  className="w-10 h-10 rounded-full hover:bg-primary/[0.05] flex items-center justify-center transition-colors"
                 >
                   <X className="w-5 h-5" />
                 </button>

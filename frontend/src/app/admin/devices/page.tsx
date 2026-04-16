@@ -31,7 +31,7 @@ export default function DevicesPage() {
                 </Link>
               </div>
             </div>
-            <p className="font-medium tracking-tight text-foreground/70 text-sm md:text-base">
+            <p className="font-medium tracking-tight text-primary/70 text-sm md:text-base">
               시설 내 설치된 모든 IoT 기기(도어락, 조명, 에어컨 등)를 조회하고 원격 제어 및 상태를 모니터링합니다.
             </p>
           </div>

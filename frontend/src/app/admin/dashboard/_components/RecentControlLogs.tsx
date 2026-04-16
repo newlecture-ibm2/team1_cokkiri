@@ -21,23 +21,23 @@ export default function RecentControlLogs({ logs, isLoading }: Props) {
 
   return (
     <div>
-      <div className="overflow-x-auto rounded-xl border border-border">
+      <div className="overflow-x-auto rounded-[2rem] border border-primary/5 bg-white shadow-sm">
         <table className="w-full text-sm">
           <thead>
-            <tr className="bg-muted/20 text-left">
-              <th className="px-4 py-2.5 font-semibold text-foreground text-xs">
+            <tr className="bg-primary/[0.03] border-b border-primary/10">
+              <th className="px-4 py-2.5 text-[13px] font-black uppercase tracking-widest text-primary/60">
                 일시
               </th>
-              <th className="px-4 py-2.5 font-semibold text-foreground text-xs">
+              <th className="px-4 py-2.5 text-[13px] font-black uppercase tracking-widest text-primary/60">
                 공간
               </th>
-              <th className="px-4 py-2.5 font-semibold text-foreground text-xs">
+              <th className="px-4 py-2.5 text-[13px] font-black uppercase tracking-widest text-primary/60">
                 기기
               </th>
-              <th className="px-4 py-2.5 font-semibold text-foreground text-xs">
+              <th className="px-4 py-2.5 text-[13px] font-black uppercase tracking-widest text-primary/60">
                 명령
               </th>
-              <th className="px-4 py-2.5 font-semibold text-foreground text-xs">
+              <th className="px-4 py-2.5 text-[13px] font-black uppercase tracking-widest text-primary/60">
                 결과
               </th>
             </tr>
@@ -45,7 +45,7 @@ export default function RecentControlLogs({ logs, isLoading }: Props) {
           <tbody>
             {isLoading ? (
               Array.from({ length: 5 }).map((_, i) => (
-                <tr key={i} className="border-t border-border/40">
+                <tr key={i} className="border-t border-primary/5">
                   {Array.from({ length: 5 }).map((_, j) => (
                     <td key={j} className="px-4 py-2.5">
                       <div className="animate-pulse h-3.5 bg-muted/20 rounded" />
@@ -66,21 +66,21 @@ export default function RecentControlLogs({ logs, isLoading }: Props) {
               logs.map((log) => (
                 <tr
                   key={log.controlLogId}
-                  className="border-t border-border/40 hover:bg-muted/10 transition-colors"
+                  className="border-t border-primary/5 hover:bg-primary/[0.02] transition-colors"
                 >
-                  <td className="px-4 py-2.5 text-muted-foreground text-xs whitespace-nowrap">
+                  <td className="px-4 py-2.5 text-primary/60 text-xs whitespace-nowrap">
                     {formatTime(log.createdAt)}
                   </td>
-                  <td className="px-4 py-2.5 text-foreground text-xs font-medium">
+                  <td className="px-4 py-2.5 text-primary/95 text-xs font-medium">
                     {log.spaceName}
                   </td>
                   <td className="px-4 py-2.5 text-xs">
-                    <span className="text-foreground">
+                    <span className="text-primary/95">
                       {log.deviceName}
                     </span>
                   </td>
                   <td className="px-4 py-2.5">
-                    <span className="inline-block px-1.5 py-0.5 rounded bg-background text-[10px] font-mono font-semibold text-foreground">
+                    <span className="inline-block px-1.5 py-0.5 rounded bg-primary/[0.03] text-[10px] font-mono font-semibold text-primary/95">
                       {log.command}
                     </span>
                   </td>

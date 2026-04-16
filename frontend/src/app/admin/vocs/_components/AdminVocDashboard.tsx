@@ -64,14 +64,14 @@ export async function AdminVocDashboard() {
         return (
           <div
             key={stat.label}
-            className="group relative overflow-hidden rounded-[2rem] border border-primary/20 bg-transparent p-6 transition-all hover:bg-white/50"
+            className="group relative overflow-hidden rounded-[2rem] border border-primary/5 bg-white p-6 shadow-sm transition-all hover:bg-primary/[0.02]"
           >
             <div className="flex items-start justify-between">
               <div className="space-y-1">
-                <p className="text-xs md:text-sm font-bold uppercase tracking-wider text-muted-foreground/80">
+                <p className="text-xs md:text-sm font-bold uppercase tracking-wider text-primary/50">
                   {stat.label}
                 </p>
-                <p className="text-3xl font-black tracking-tighter text-foreground">
+                <p className="text-3xl font-black tracking-tighter text-primary">
                   {stat.value.toLocaleString()}
                 </p>
               </div>

@@ -38,20 +38,20 @@ export default function ErrorDeviceTable({ data, isLoading }: ErrorDeviceTablePr
     <div className="overflow-x-auto">
       <table className="w-full text-sm">
         <thead>
-          <tr className="border-b border-border">
-            <th className="text-left py-3 px-4 text-xs font-black uppercase tracking-[0.2em] text-muted-foreground">
+          <tr className="bg-primary/[0.03] border-b border-primary/10">
+            <th className="text-left py-3 px-4 text-[13px] font-black uppercase tracking-widest text-primary/60">
               기기명
             </th>
-            <th className="text-left py-3 px-4 text-xs font-black uppercase tracking-[0.2em] text-muted-foreground">
+            <th className="text-left py-3 px-4 text-[13px] font-black uppercase tracking-widest text-primary/60">
               종류
             </th>
-            <th className="text-left py-3 px-4 text-xs font-black uppercase tracking-[0.2em] text-muted-foreground">
+            <th className="text-left py-3 px-4 text-[13px] font-black uppercase tracking-widest text-primary/60">
               설치 공간
             </th>
-            <th className="text-center py-3 px-4 text-xs font-black uppercase tracking-[0.2em] text-muted-foreground">
+            <th className="text-center py-3 px-4 text-[13px] font-black uppercase tracking-widest text-primary/60">
               상태
             </th>
-            <th className="text-center py-3 px-4 text-xs font-black uppercase tracking-[0.2em] text-muted-foreground">
+            <th className="text-center py-3 px-4 text-[13px] font-black uppercase tracking-widest text-primary/60">
               에러 횟수
             </th>
           </tr>
@@ -62,15 +62,15 @@ export default function ErrorDeviceTable({ data, isLoading }: ErrorDeviceTablePr
             return (
               <tr
                 key={device.deviceId}
-                className="border-b border-border/40 hover:bg-muted/10 transition-colors"
+                className="border-b border-primary/5 hover:bg-primary/[0.02] transition-colors"
               >
-                <td className="py-3 px-4 font-semibold text-foreground">
+                <td className="py-3 px-4 font-semibold text-primary/95">
                   {device.deviceName}
                 </td>
-                <td className="py-3 px-4 text-muted-foreground">
+                <td className="py-3 px-4 text-primary/60">
                   {device.deviceTypeName}
                 </td>
-                <td className="py-3 px-4 text-muted-foreground">
+                <td className="py-3 px-4 text-primary/60">
                   {device.spaceName}
                 </td>
                 <td className="py-3 px-4 text-center">

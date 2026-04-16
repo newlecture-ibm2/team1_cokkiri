@@ -28,8 +28,8 @@ export function AdminVocStatusFilter({ pending, all, status }: Props) {
         className={cn(
           base,
           pending
-            ? "border-secondary bg-primary text-primary-foreground shadow-sm"
-            : "border-border bg-background text-foreground hover:border-secondary/60",
+            ? "border-primary bg-primary text-white shadow-sm"
+            : "border-primary/10 bg-white text-primary/50 hover:border-accent/40",
         )}
       >
         미처리
@@ -39,8 +39,8 @@ export function AdminVocStatusFilter({ pending, all, status }: Props) {
         className={cn(
           base,
           all
-            ? "border-secondary bg-primary text-primary-foreground shadow-sm"
-            : "border-border bg-background text-foreground hover:border-secondary/60",
+            ? "border-primary bg-primary text-white shadow-sm"
+            : "border-primary/10 bg-white text-primary/50 hover:border-accent/40",
         )}
       >
         전체
@@ -54,8 +54,8 @@ export function AdminVocStatusFilter({ pending, all, status }: Props) {
             className={cn(
               base,
               active
-                ? "border-secondary bg-primary text-primary-foreground shadow-sm"
-                : "border-border bg-background text-foreground hover:border-secondary/60",
+                ? "border-primary bg-primary text-white shadow-sm"
+                : "border-primary/10 bg-white text-primary/50 hover:border-accent/40",
             )}
           >
             {t.label}

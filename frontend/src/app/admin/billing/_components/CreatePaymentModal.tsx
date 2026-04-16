@@ -123,7 +123,7 @@ export function CreatePaymentModal({ isOpen, onClose, onSuccess }: Props) {
               </div>
               <button
                 onClick={() => { resetForm(); onClose(); }}
-                className="w-10 h-10 rounded-full hover:bg-muted/30 flex items-center justify-center transition-colors"
+                className="w-10 h-10 rounded-full hover:bg-primary/[0.05] flex items-center justify-center transition-colors"
               >
                 <X className="w-5 h-5" />
               </button>

@@ -96,7 +96,7 @@ export default function DashboardPage() {
         {/* ROW 1: 운영 요약 카드 */}
         <div className="flex items-center gap-2 mb-4">
           <div className="w-2 h-2 rounded-full bg-[#768064] animate-pulse" />
-          <h2 className="text-lg font-black tracking-tighter text-foreground">
+          <h2 className="text-lg font-black tracking-tighter text-primary">
             운영 현황 요약
           </h2>
         </div>
@@ -112,7 +112,7 @@ export default function DashboardPage() {
         {/* ROW 2: 기기 요약 카드 */}
         <div className="flex items-center gap-2 mb-4">
           <div className="w-2 h-2 rounded-full bg-[#768064] animate-pulse" />
-          <h2 className="text-lg font-black tracking-tighter text-foreground">
+          <h2 className="text-lg font-black tracking-tighter text-primary">
             실시간 기기 현황
           </h2>
         </div>
@@ -130,9 +130,9 @@ export default function DashboardPage() {
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3 }}
-          className="border-border bg-background rounded-[2rem] border p-6 shadow-sm"
+          className="border-primary/5 bg-white rounded-[2rem] border p-6 shadow-sm"
         >
-          <h3 className="text-sm font-black tracking-tight text-foreground mb-3">
+          <h3 className="text-sm font-black tracking-tight text-primary mb-3">
             최근 기기 제어 이력
             <span className="ml-2 text-xs font-normal text-muted-foreground">
               최신 30건

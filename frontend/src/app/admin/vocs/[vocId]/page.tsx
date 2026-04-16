@@ -97,15 +97,15 @@ export default async function AdminVocDetailPage({ params }: { params: Params })
               </div>
             </div>
 
-            <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground mt-6">
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-primary/50 mt-6">
               <span className={cn("rounded-full border px-3 py-1 text-xs font-bold tracking-tight", statusPillClass(d.status))}>
                 {adminVocStatusLabel(d.status)}
               </span>
-              <span className="text-muted-foreground/30">·</span>
+              <span className="text-primary/20">·</span>
               <span className="font-bold text-primary/80 uppercase tracking-wider">{adminVocCategoryLabel(d.category)}</span>
-              <span className="text-muted-foreground/30">·</span>
+              <span className="text-primary/20">·</span>
               <span className="font-medium text-primary/70">{d.userName || `회원 #${d.userId}`}</span>
-              <span className="text-muted-foreground/30">·</span>
+              <span className="text-primary/20">·</span>
               <time className="font-medium text-primary/40" suppressHydrationWarning>{formatDateTimeKo(d.createdAt)}</time>
             </div>
           </header>

@@ -33,8 +33,8 @@ export function FloorSelector({ floors, selectedFloor, onSelectFloor }: FloorSel
           className={`
             px-4 py-2 rounded-full text-sm font-bold tracking-tight transition-all duration-200
             ${selectedFloor === floor
-              ? 'bg-[var(--foreground)] text-[var(--background)] shadow-lg scale-105'
-              : 'bg-black/5 hover:bg-black/10'
+              ? 'bg-primary text-white shadow-lg scale-105'
+              : 'bg-primary/[0.05] text-primary/60 hover:bg-primary/[0.08]'
             }
           `}
         >

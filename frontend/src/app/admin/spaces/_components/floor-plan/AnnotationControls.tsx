@@ -66,7 +66,7 @@ export function AnnotationControls({ onAddAnnotation }: AnnotationControlsProps)
 
   if (loading) {
     return (
-      <div className="flex items-center gap-4 py-2 border-b border-border mb-4">
+      <div className="flex items-center gap-4 py-2 border-b border-primary/10 mb-4">
         <h3 className="text-sm font-bold uppercase tracking-widest text-[var(--foreground)] w-24">
           요소 추가
         </h3>
@@ -76,7 +76,7 @@ export function AnnotationControls({ onAddAnnotation }: AnnotationControlsProps)
   }
 
   return (
-    <div className="flex flex-wrap items-center gap-4 py-2 border-b border-border mb-4">
+    <div className="flex flex-wrap items-center gap-4 py-2 border-b border-primary/10 mb-4">
       <h3 className="text-sm font-bold uppercase tracking-widest text-[var(--foreground)] w-24">
         요소 추가
       </h3>
@@ -85,7 +85,7 @@ export function AnnotationControls({ onAddAnnotation }: AnnotationControlsProps)
         <select
           value={selectedType?.code || ''}
           onChange={(e) => handleTypeChange(e.target.value)}
-          className="h-9 px-3 border border-border rounded-lg text-sm bg-[var(--background)] text-[var(--foreground)] outline-none"
+          className="h-9 px-3 border border-primary/10 rounded-lg text-sm bg-[var(--background)] text-[var(--foreground)] outline-none"
         >
           {annotationTypes.map((t) => (
             <option key={t.code} value={t.code}>
@@ -99,7 +99,7 @@ export function AnnotationControls({ onAddAnnotation }: AnnotationControlsProps)
           placeholder="라벨 (선택)"
           value={labelText}
           onChange={(e) => setLabelText(e.target.value)}
-          className="h-9 px-3 border border-border rounded-lg text-sm bg-[var(--background)] text-[var(--foreground)] outline-none w-28"
+          className="h-9 px-3 border border-primary/10 rounded-lg text-sm bg-[var(--background)] text-[var(--foreground)] outline-none w-28"
           maxLength={10}
         />
         

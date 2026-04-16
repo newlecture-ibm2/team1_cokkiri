@@ -63,7 +63,7 @@ export default function SummaryStatusCards({ data, isLoading }: Props) {
            initial={{ opacity: 0, y: 10 }}
            animate={{ opacity: 1, y: 0 }}
            transition={{ delay: 0.1 * idx }}
-           className="bg-white rounded-[2rem] border border-border p-6 shadow-sm hover:shadow-md transition-shadow"
+           className="bg-white rounded-[2rem] border border-primary/5 p-6 shadow-sm hover:shadow-md transition-shadow"
         >
           {isLoading ? (
             <div className="animate-pulse space-y-4">
@@ -89,7 +89,7 @@ export default function SummaryStatusCards({ data, isLoading }: Props) {
 
               <div className="mb-6">
                 <div className="flex items-baseline gap-1">
-                  <span className="text-4xl font-black tracking-tight text-foreground">
+                  <span className="text-4xl font-black tracking-tight text-primary">
                     {section.mainValue}
                   </span>
                   <span className="text-sm font-medium text-muted-foreground">
@@ -101,13 +101,13 @@ export default function SummaryStatusCards({ data, isLoading }: Props) {
                 </p>
               </div>
 
-              <div className="grid grid-cols-2 gap-3 pt-4 border-t border-dashed border-border">
+              <div className="grid grid-cols-2 gap-3 pt-4 border-t border-dashed border-primary/10">
                 {section.items.map((item) => (
                   <div key={item.label}>
                     <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1">
                       {item.label}
                     </p>
-                    <p className="text-sm font-black text-foreground">
+                    <p className="text-sm font-black text-primary">
                       {item.value}
                     </p>
                   </div>
