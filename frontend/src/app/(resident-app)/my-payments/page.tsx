@@ -19,11 +19,11 @@ export default async function MyPaymentsPage() {
     <div className="mx-auto max-w-5xl">
       <header className="mb-[clamp(2rem,5vw,5rem)]">
         <div className="flex flex-col gap-[clamp(0.75rem,1.5vw,1.5rem)]">
-          <div className="flex flex-col md:flex-row md:items-end justify-between gap-[clamp(1rem,2vw,2rem)] border-b border-primary/10 pb-[clamp(1rem,2vw,2rem)]">
-            <div className="min-w-0 space-y-4">
-              <h1 className="text-5xl md:text-7xl font-black leading-tight tracking-tight uppercase whitespace-nowrap text-primary">
+          <div className="flex items-end justify-between gap-4 border-b border-primary/10 pb-[clamp(1rem,2vw,2rem)]">
+            <div className="min-w-0">
+              <h1 className="text-[clamp(2.25rem,7vw,5.5rem)] font-black leading-none tracking-tight uppercase whitespace-nowrap text-primary">
                 PAYMENT<span className="underline underline-offset-4 decoration-[var(--color-accent)]">S.</span>
-                <span className="text-2xl md:text-4xl font-bold tracking-normal ml-2 align-bottom opacity-80">결제 내역</span>
+                <span className="text-[clamp(1rem,3vw,2.5rem)] font-bold tracking-normal ml-3 align-baseline opacity-80">결제 내역</span>
               </h1>
             </div>
           </div>
