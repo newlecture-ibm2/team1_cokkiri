@@ -129,6 +129,7 @@ export function Header() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [openMobileSection, setOpenMobileSection] = useState<string | null>(null);
+  const [openMobileSubSection, setOpenMobileSubSection] = useState<string | null>(null);
   const [desktopOpenMenu, setDesktopOpenMenu] = useState<string | null>(null);
   const [desktopOpenSubMenu, setDesktopOpenSubMenu] = useState<string | null>(null);
   const { scrollY } = useScroll();
@@ -140,6 +141,7 @@ export function Header() {
   useEffect(() => {
     setIsMobileMenuOpen(false);
     setOpenMobileSection(null);
+    setOpenMobileSubSection(null);
     setDesktopOpenMenu(null);
     setDesktopOpenSubMenu(null);
   }, [pathname]);
@@ -469,12 +471,12 @@ export function Header() {
                                 {item.children.map((child) => {
                                   if (!isLoggedIn && child.action === "logout") return null;
                                   if (child.children) {
-                                    const subOpen = openMobileSection === `sub-${child.name}`;
+                                    const subOpen = openMobileSubSection === child.name;
                                     return (
                                       <li key={child.name} className="py-1">
                                         <button
                                           type="button"
-                                          onClick={() => setOpenMobileSection(subOpen ? null : `sub-${child.name}`)}
+                                          onClick={() => setOpenMobileSubSection(subOpen ? null : child.name)}
                                           className="flex w-full items-center justify-between px-5 py-3 text-sm font-black text-primary/40 uppercase tracking-[0.18em]"
                                         >
                                           {child.name}

@@ -83,29 +83,29 @@ export default function ReservationHistoryPage() {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.45 }}
-      className="mx-auto max-w-[1200px] px-6 py-10 text-primary md:px-12 md:py-16 lg:px-24"
+      className="mx-auto max-w-5xl text-primary"
     >
-      <section className="border-b border-primary/12 pb-10 md:pb-14">
-        <div className="flex flex-col gap-8 lg:flex-row lg:items-end lg:justify-between">
-          <div className="space-y-4">
-            <span className="text-[10px] font-black tracking-[0.4em] text-accent uppercase">
-              My History / Reservation
-            </span>
-            <h1 className="text-[14vw] font-black leading-[0.85] tracking-tighter uppercase md:text-[10vw] lg:text-[6vw]">
-              MY
-              <br />
-              RESERVATIONS
-            </h1>
-            <p className="max-w-2xl border-l-2 border-accent pl-6 text-base font-medium tracking-tight text-muted md:text-lg">
-              공용시설 예약 내역을 시간순으로 확인하고, 현재 상태를 빠르게 파악할 수 있는 이용자 전용 보드입니다.
-            </p>
+      {/* Editorial Header */}
+      <header className="mb-[clamp(2rem,5vw,4rem)]">
+        <div className="flex flex-col gap-[clamp(0.75rem,1.5vw,1.5rem)]">
+          <div className="flex items-end justify-between gap-4 border-b border-primary/10 pb-[clamp(1rem,2vw,2rem)]">
+            <div className="min-w-0">
+              <h1 className="text-[clamp(2.25rem,7vw,5.5rem)] font-black leading-none tracking-tight uppercase whitespace-nowrap text-primary">
+                RESERVATIO<span className="underline underline-offset-4 decoration-[var(--color-accent)]">NS.</span>
+                <span className="text-[clamp(1rem,3vw,2.5rem)] font-bold tracking-normal ml-3 align-baseline opacity-80">예약 이력</span>
+              </h1>
+            </div>
           </div>
+        </div>
+      </header>
 
+      <section className="pb-10 md:pb-14">
+        <div className="flex flex-col gap-8 lg:flex-row lg:items-end lg:justify-between">
           <div className="rounded-[2rem] border border-primary/10 bg-primary/5 p-6 md:min-w-[280px]">
             <p className="text-[10px] font-black tracking-[0.28em] text-primary/45 uppercase">
               Total Reservations
             </p>
-            <p className="mt-3 text-5xl font-black tracking-tighter">
+            <p className="mt-3 text-[clamp(2rem,5vw,3rem)] font-black tracking-tighter">
               {String(reservations.length).padStart(2, "0")}
             </p>
             <p className="mt-3 flex items-center gap-2 text-sm font-semibold text-muted">

@@ -91,30 +91,30 @@ export default async function VocsPage({ searchParams }: { searchParams: SearchP
   return (
     <div className="mx-auto max-w-5xl">
       {/* Editorial Header */}
-      <header className="mb-16">
-        <div className="flex flex-col gap-4">
-          <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-primary/10 pb-6">
-            <div className="min-w-0">
-              <h1 className="text-5xl md:text-7xl font-black leading-tight tracking-tight uppercase whitespace-nowrap">
-                RESIDENTS&apos; <span className="underline underline-offset-4 decoration-[var(--color-accent)]">VOICE.</span>
-                <span className="text-2xl md:text-4xl font-bold tracking-normal ml-2 align-bottom opacity-80">민원</span>
+      <header className="mb-[clamp(2rem,5vw,5rem)]">
+        <div className="flex flex-col gap-[clamp(0.75rem,1.5vw,1.5rem)]">
+          <div className="flex flex-row flex-wrap items-end justify-between gap-x-8 gap-y-4 border-b border-primary/10 pb-[clamp(1rem,2vw,2rem)]">
+            <div className="flex-shrink-0">
+              <h1 className="text-[clamp(2.25rem,7vw,5.5rem)] font-black leading-none tracking-tight uppercase whitespace-nowrap">
+                VOIC<span className="underline underline-offset-4 decoration-[var(--color-accent)]">E.</span>
+                <span className="text-[clamp(1rem,3vw,2.5rem)] font-bold tracking-normal ml-3 align-baseline opacity-80">나의 민원</span>
               </h1>
             </div>
-            <div className="flex items-center shrink-0 self-end pb-0.5">
+            <div className="flex items-center justify-end shrink-0 pb-1 ml-auto">
               {showList ? (
                 <Link
                   href="/vocs"
-                  className="inline-flex shrink-0 h-14 px-10 bg-primary text-white rounded-xl items-center gap-3 text-base font-bold tracking-tight transition-all hover:bg-primary/95 hover:-translate-y-1 shadow-xl shadow-primary/20"
+                  className="inline-flex shrink-0 h-[clamp(2.5rem,5vw,3.5rem)] px-[clamp(1rem,3vw,2.5rem)] bg-primary text-white rounded-xl items-center gap-2 text-[clamp(0.75rem,1.5vw,1.125rem)] font-bold tracking-tight transition-all hover:bg-primary/95 hover:-translate-y-1 shadow-xl shadow-primary/20"
                 >
-                  <Plus className="w-5 h-5" />
+                  <Plus className="w-[clamp(1rem,2vw,1.25rem)] h-[clamp(1rem,2vw,1.25rem)]" />
                   민원 등록
                 </Link>
               ) : (
                 <Link
                   href="/vocs?tab=list"
-                  className="inline-flex shrink-0 h-14 px-10 bg-primary text-white rounded-xl items-center gap-3 text-base font-bold tracking-tight transition-all hover:bg-primary/95 hover:-translate-y-1 shadow-xl shadow-primary/20"
+                  className="inline-flex shrink-0 h-[clamp(2.5rem,5vw,3.5rem)] px-[clamp(1rem,3vw,2.5rem)] bg-primary text-white rounded-xl items-center gap-2 text-[clamp(0.75rem,1.5vw,1.125rem)] font-bold tracking-tight transition-all hover:bg-primary/95 hover:-translate-y-1 shadow-xl shadow-primary/20"
                 >
-                  <ClipboardList className="w-5 h-5" />
+                  <ClipboardList className="w-[clamp(1rem,2vw,1.25rem)] h-[clamp(1rem,2vw,1.25rem)]" />
                   나의 민원보기
                 </Link>
               )}
