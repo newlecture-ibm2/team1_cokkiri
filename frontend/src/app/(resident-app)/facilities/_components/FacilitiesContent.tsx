@@ -42,7 +42,7 @@ export default function FacilitiesContent() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [initialSpaceId]);
 
   useEffect(() => {
     loadFacilities();
@@ -56,14 +56,14 @@ export default function FacilitiesContent() {
         animate={{ opacity: 1, y: 0 }}
         className="space-y-6"
       >
-        <p className="text-xs md:text-sm font-black uppercase tracking-[0.3em] text-muted-foreground opacity-60">
-          Facilities
+        <p className="font-black text-xs uppercase tracking-[0.3em] text-muted-foreground">
+          Reservation
         </p>
-        <h1 className="text-6xl md:text-8xl lg:text-[10rem] font-black tracking-tighter leading-[0.85] text-primary break-keep">
-          공용시설 예약
+        <h1 className="text-6xl font-black tracking-tighter leading-[0.85] uppercase text-primary md:text-8xl lg:text-[10rem]">
+          RESERVATION.
         </h1>
-        <p className="text-sm md:text-2xl leading-tight font-medium tracking-tight text-muted-foreground opacity-70 text-balance">
-          시설을 선택하고 원하는 시간대를 예약하세요.
+        <p className="text-sm font-medium tracking-tight text-muted-foreground text-balance">
+          Select a facility and reserve your preferred time slot.
         </p>
       </motion.header>
 
