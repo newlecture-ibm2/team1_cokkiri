@@ -149,13 +149,13 @@ export default function SpaceEditModal({ isOpen, space, onClose, onUpdated }: Sp
         >
           <motion.div
             initial={{ opacity: 0, scale: 0.95, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: 20 }}
-            className="bg-[var(--background)] w-full max-w-xl rounded-[2rem] p-8 shadow-2xl overflow-y-auto max-h-[90vh]"
+            className="bg-white w-full max-w-xl rounded-[2rem] p-8 shadow-2xl overflow-y-auto max-h-[90vh]"
             onClick={(e: React.MouseEvent) => e.stopPropagation()}
           >
             {/* Header */}
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-2xl font-black tracking-tighter">공간 수정</h2>
-              <button onClick={onClose} className="p-2 hover:bg-black/10 rounded-full transition">
+              <button onClick={onClose} className="p-2 hover:bg-primary/[0.05] rounded-full transition">
                 <X size={20} />
               </button>
             </div>
@@ -170,7 +170,7 @@ export default function SpaceEditModal({ isOpen, space, onClose, onUpdated }: Sp
             {/* 유형 (읽기 전용) */}
             <div className="mb-4">
               <label className="block text-sm font-bold mb-2">유형 (변경 불가)</label>
-              <div className="w-full px-4 py-3 rounded-2xl bg-[var(--color-muted)] text-[var(--foreground)] opacity-60">
+              <div className="w-full px-4 py-3 rounded-2xl bg-primary/[0.05] text-primary opacity-60">
                 {space.type === 'PRIVATE' ? '개인 공간 (PRIVATE)' : '공용 공간 (COMMON)'}
               </div>
             </div>
@@ -184,7 +184,7 @@ export default function SpaceEditModal({ isOpen, space, onClose, onUpdated }: Sp
                   onClick={() => setFormData({ ...formData, isReservable: !formData.isReservable })}
                   className={`w-full px-4 py-3 rounded-2xl font-bold tracking-tight transition-all duration-300 border ${formData.isReservable
                       ? 'bg-[var(--color-accent)] text-white border-[var(--color-accent)]'
-                      : 'bg-[var(--color-muted)] text-[var(--foreground)]/60 border-transparent'
+                      : 'bg-primary/[0.05] text-primary/60 border-transparent'
                     }`}
                 >
                   {formData.isReservable ? '✓ 예약제 (시설 예약 필요)' : '자유 이용 (예약 불필요)'}
@@ -197,7 +197,7 @@ export default function SpaceEditModal({ isOpen, space, onClose, onUpdated }: Sp
               <label className="block text-sm font-bold mb-2">공간 이름</label>
               <input
                 type="text"
-                className="w-full px-4 py-3 rounded-2xl bg-[var(--color-muted)] text-[var(--foreground)] outline-none"
+                className="w-full px-4 py-3 rounded-2xl bg-primary/[0.05] text-primary outline-none"
                 value={formData.name || ''}
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFormData({ ...formData, name: e.target.value })}
               />
@@ -207,7 +207,7 @@ export default function SpaceEditModal({ isOpen, space, onClose, onUpdated }: Sp
             <div className="mb-4">
               <label className="block text-sm font-bold mb-2">상태</label>
               <select
-                className="w-full px-4 py-3 rounded-2xl bg-[var(--color-muted)] text-[var(--foreground)] outline-none"
+                className="w-full px-4 py-3 rounded-2xl bg-primary/[0.05] text-primary outline-none"
                 value={formData.status || 'AVAILABLE'}
                 onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setFormData({ ...formData, status: e.target.value as 'AVAILABLE' | 'OCCUPIED' | 'MAINTENANCE' })}
                 disabled={isOccupied}
@@ -224,7 +224,7 @@ export default function SpaceEditModal({ isOpen, space, onClose, onUpdated }: Sp
                 <label className="block text-sm font-bold mb-2">층수</label>
                 <input
                   type="number"
-                  className="w-full px-4 py-3 rounded-2xl bg-[var(--color-muted)] text-[var(--foreground)] outline-none"
+                  className="w-full px-4 py-3 rounded-2xl bg-primary/[0.05] text-primary outline-none"
                   value={formData.floor ?? ''}
                   onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFormData({ ...formData, floor: e.target.value ? Number(e.target.value) : undefined })}
                 />
@@ -234,7 +234,7 @@ export default function SpaceEditModal({ isOpen, space, onClose, onUpdated }: Sp
                 <input
                   type="number"
                   step="0.1"
-                  className="w-full px-4 py-3 rounded-2xl bg-[var(--color-muted)] text-[var(--foreground)] outline-none"
+                  className="w-full px-4 py-3 rounded-2xl bg-primary/[0.05] text-primary outline-none"
                   value={formData.area ?? ''}
                   onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFormData({ ...formData, area: e.target.value ? Number(e.target.value) : undefined })}
                 />
@@ -245,7 +245,7 @@ export default function SpaceEditModal({ isOpen, space, onClose, onUpdated }: Sp
             <div className="mb-4">
               <label className="block text-sm font-bold mb-2">설명</label>
               <textarea
-                className="w-full px-4 py-3 rounded-2xl bg-[var(--color-muted)] text-[var(--foreground)] outline-none resize-none h-20"
+                className="w-full px-4 py-3 rounded-2xl bg-primary/[0.05] text-primary outline-none resize-none h-20"
                 value={formData.description || ''}
                 onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setFormData({ ...formData, description: e.target.value })}
               />
@@ -269,7 +269,7 @@ export default function SpaceEditModal({ isOpen, space, onClose, onUpdated }: Sp
               </div>
               <div className="flex flex-wrap gap-2">
                 {formData.amenities?.map((am, i) => (
-                  <span key={i} className="flex items-center gap-1 bg-black/10 px-3 py-1 rounded-full text-sm font-bold tracking-tight">
+                  <span key={i} className="flex items-center gap-1 bg-primary/[0.08] px-3 py-1 rounded-full text-sm font-bold tracking-tight">
                     {am} <button type="button" onClick={() => removeAmenity(i)}><X size={12} /></button>
                   </span>
                 ))}
@@ -278,7 +278,7 @@ export default function SpaceEditModal({ isOpen, space, onClose, onUpdated }: Sp
 
             {/* PRIVATE 상세 */}
             {space.type === 'PRIVATE' && (
-              <div className="mb-4 p-4 bg-black/5 rounded-2xl space-y-3">
+              <div className="mb-4 p-4 bg-primary/[0.03] rounded-2xl space-y-3">
                 <h3 className="text-sm font-black tracking-tighter mb-2">개인 공간 상세</h3>
                 {/* 방 유형 드롭다운 */}
                 {roomTypes.length > 0 && (
@@ -319,7 +319,7 @@ export default function SpaceEditModal({ isOpen, space, onClose, onUpdated }: Sp
 
             {/* COMMON 상세 */}
             {space.type === 'COMMON' && (
-              <div className="mb-4 p-4 bg-black/5 rounded-2xl space-y-3">
+              <div className="mb-4 p-4 bg-primary/[0.03] rounded-2xl space-y-3">
                 <h3 className="text-sm font-black tracking-tighter mb-2">공용 공간 상세</h3>
                 <div className="grid grid-cols-2 gap-3">
                   <div>
@@ -348,7 +348,7 @@ export default function SpaceEditModal({ isOpen, space, onClose, onUpdated }: Sp
                   <p className="text-xs font-bold mb-2 opacity-60">기존 업로드된 이미지 (삭제 시 즉시 반영됩니다)</p>
                   <div className="flex flex-wrap gap-3">
                     {formData.images.map((img, i) => (
-                      <div key={i} className="relative w-20 h-20 rounded-2xl bg-black/10 flex items-center justify-center overflow-hidden group">
+                      <div key={i} className="relative w-20 h-20 rounded-2xl bg-primary/[0.08] flex items-center justify-center overflow-hidden group">
                         {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img src={img.imageUrl} alt="Space image" className="w-full h-full object-cover" />
                         <button onClick={(e) => { e.stopPropagation(); handleRemoveExistingImage(img.spaceImageId); }} className="absolute bg-red-500 text-white p-1 rounded-full top-1 right-1 opacity-0 group-hover:opacity-100 transition cursor-pointer">
@@ -368,7 +368,7 @@ export default function SpaceEditModal({ isOpen, space, onClose, onUpdated }: Sp
                 onDragOver={handleDragOver}
                 onDrop={handleDrop}
                 onClick={() => fileInputRef.current?.click()}
-                className="w-full h-32 border-2 border-dashed border-[var(--color-border)] rounded-3xl flex flex-col items-center justify-center text-[var(--color-secondary)] hover:bg-black/5 transition cursor-pointer mb-4"
+                className="w-full h-32 border-2 border-dashed border-primary/20 rounded-3xl flex flex-col items-center justify-center text-primary/40 hover:bg-primary/[0.03] transition cursor-pointer mb-4"
               >
                 <UploadCloud size={32} className="mb-2" />
                 <p className="text-sm font-bold tracking-tighter cursor-pointer">여기를 클릭하거나 파일을 끌어다 놓아 새 이미지를 추가하세요</p>
@@ -414,7 +414,7 @@ export default function SpaceEditModal({ isOpen, space, onClose, onUpdated }: Sp
                   </button>
                   <button
                     onClick={() => setShowDeleteConfirm(false)}
-                    className="px-4 py-3 rounded-full text-sm font-bold hover:bg-black/10 transition"
+                    className="px-4 py-3 rounded-full text-sm font-bold hover:bg-primary/[0.05] transition"
                   >
                     취소
                   </button>
@@ -425,7 +425,7 @@ export default function SpaceEditModal({ isOpen, space, onClose, onUpdated }: Sp
               <button
                 onClick={handleUpdate}
                 disabled={isSubmitting || !formData.name?.trim()}
-                className="flex items-center gap-2 px-6 py-3 rounded-full bg-[var(--foreground)] text-[var(--background)] font-black tracking-tighter hover:scale-105 transition disabled:opacity-50 disabled:hover:scale-100"
+                className="flex items-center gap-2 px-6 py-3 rounded-full bg-primary text-white font-black tracking-tighter hover:scale-105 transition disabled:opacity-50 disabled:hover:scale-100"
               >
                 <Save size={16} />
                 {isSubmitting ? '저장 중...' : '저장'}

@@ -153,7 +153,7 @@ export default function RoomTypeManager() {
           </AnimatePresence>
           <button
             onClick={() => { setShowCreateForm(true); setEditingId(null); setDeletingId(null); }}
-            className="flex items-center gap-2 bg-[var(--foreground)] text-[var(--background)] px-5 py-3 rounded-full font-black tracking-tighter hover:scale-105 transition shadow-xl text-sm"
+            className="flex items-center gap-2 bg-primary text-white px-5 py-3 rounded-full font-black tracking-tighter hover:scale-105 transition shadow-xl text-sm"
           >
             <Plus size={16} />
             <span className="hidden sm:inline">유형 추가</span>
@@ -170,7 +170,7 @@ export default function RoomTypeManager() {
             exit={{ opacity: 0, height: 0 }}
             className="overflow-hidden mb-6"
           >
-            <div className="p-6 bg-black/5 rounded-[2rem] space-y-4">
+            <div className="p-6 bg-primary/[0.03] rounded-[2rem] space-y-4">
               <h3 className="text-sm font-black tracking-tighter">새 방 유형 등록</h3>
               <div className="grid grid-cols-2 gap-4">
                 <div>
@@ -180,7 +180,7 @@ export default function RoomTypeManager() {
                     value={newCode}
                     onChange={(e) => setNewCode(e.target.value.toUpperCase())}
                     placeholder="예: PREMIUM"
-                    className="w-full px-4 py-3 rounded-xl bg-[var(--color-muted)] text-[var(--foreground)] outline-none text-sm"
+                    className="w-full px-4 py-3 rounded-xl bg-primary/[0.05] text-primary outline-none text-sm"
                   />
                 </div>
                 <div>
@@ -190,21 +190,21 @@ export default function RoomTypeManager() {
                     value={newName}
                     onChange={(e) => setNewName(e.target.value)}
                     placeholder="예: 프리미엄"
-                    className="w-full px-4 py-3 rounded-xl bg-[var(--color-muted)] text-[var(--foreground)] outline-none text-sm"
+                    className="w-full px-4 py-3 rounded-xl bg-primary/[0.05] text-primary outline-none text-sm"
                   />
                 </div>
               </div>
               <div className="flex gap-3 justify-end">
                 <button
                   onClick={() => { setShowCreateForm(false); setNewCode(''); setNewName(''); }}
-                  className="px-4 py-2 rounded-full text-sm font-bold hover:bg-black/10 transition"
+                  className="px-4 py-2 rounded-full text-sm font-bold hover:bg-primary/[0.05] transition"
                 >
                   취소
                 </button>
                 <button
                   onClick={handleCreate}
                   disabled={isCreating || !newCode.trim() || !newName.trim()}
-                  className="px-5 py-2 rounded-full bg-[var(--foreground)] text-[var(--background)] text-sm font-bold hover:scale-105 transition disabled:opacity-50"
+                  className="px-5 py-2 rounded-full bg-primary text-white text-sm font-bold hover:scale-105 transition disabled:opacity-50"
                 >
                   {isCreating ? '등록 중...' : '등록'}
                 </button>
@@ -218,7 +218,7 @@ export default function RoomTypeManager() {
       {loading ? (
         <div className="space-y-3">
           {[...Array(4)].map((_, i) => (
-            <div key={i} className="h-16 bg-black/5 rounded-2xl animate-pulse" />
+            <div key={i} className="h-16 bg-primary/[0.05] rounded-2xl animate-pulse" />
           ))}
         </div>
       ) : roomTypes.length === 0 ? (
@@ -244,14 +244,14 @@ export default function RoomTypeManager() {
                       <div
                         ref={provided.innerRef}
                         {...provided.draggableProps}
-                        className={`flex items-center justify-between p-5 bg-black/5 rounded-2xl hover:bg-black/10 transition group ${
-                          snapshot.isDragging ? 'shadow-2xl ring-2 ring-[var(--color-accent)] bg-[var(--background)]' : ''
+                        className={`flex items-center justify-between p-5 bg-white border border-primary/5 rounded-2xl hover:bg-primary/[0.02] transition group ${
+                          snapshot.isDragging ? 'shadow-2xl ring-2 ring-accent bg-white' : ''
                         }`}
                       >
                         {/* 드래그 핸들 */}
                         <div
                           {...provided.dragHandleProps}
-                          className="mr-3 cursor-grab active:cursor-grabbing p-1 hover:bg-black/10 rounded-lg transition opacity-40 hover:opacity-100"
+                          className="mr-3 cursor-grab active:cursor-grabbing p-1 hover:bg-primary/[0.05] rounded-lg transition opacity-40 hover:opacity-100"
                           title="드래그하여 순서 변경"
                         >
                           <GripVertical size={16} />
@@ -282,7 +282,7 @@ export default function RoomTypeManager() {
                               </button>
                               <button
                                 onClick={() => setEditingId(null)}
-                                className="p-1.5 hover:bg-black/10 rounded-full transition"
+                                className="p-1.5 hover:bg-primary/[0.05] rounded-full transition"
                               >
                                 <X size={14} />
                               </button>
@@ -299,7 +299,7 @@ export default function RoomTypeManager() {
                           <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition">
                             <button
                               onClick={() => startEdit(rt)}
-                              className="p-2 hover:bg-black/10 rounded-full transition"
+                              className="p-2 hover:bg-primary/[0.05] rounded-full transition"
                               title="수정"
                             >
                               <Pencil size={14} />
@@ -314,7 +314,7 @@ export default function RoomTypeManager() {
                                   </button>
                                   <button
                                     onClick={() => setDeletingId(null)}
-                                    className="px-3 py-1.5 text-xs font-bold hover:bg-black/10 rounded-full transition"
+                                    className="px-3 py-1.5 text-xs font-bold hover:bg-primary/[0.05] rounded-full transition"
                                   >
                                     취소
                                   </button>

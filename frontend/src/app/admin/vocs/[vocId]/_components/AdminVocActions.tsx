@@ -11,7 +11,7 @@ const labelClass =
   "block font-black text-sm md:text-base uppercase tracking-[0.2em] text-stone-900";
 
 const fieldClass =
-  "mt-3 w-full rounded-xl border border-input bg-surface px-4 py-4 font-medium tracking-tight text-lg text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring";
+  "mt-3 w-full rounded-xl border border-primary/10 bg-white px-4 py-4 font-medium tracking-tight text-lg text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring";
 
 type Props = {
   vocId: number;
@@ -84,7 +84,7 @@ export function AdminVocActions({ vocId, status }: Props) {
   }
 
   return (
-    <div className="mt-10 space-y-8 border-t border-border pt-10">
+    <div className="mt-10 space-y-8 border-t border-primary/10 pt-10">
       {canReply && (
         <form onSubmit={submitReply} className="space-y-4">
           <div>
@@ -118,7 +118,7 @@ export function AdminVocActions({ vocId, status }: Props) {
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
               className={cn(
-                "inline-flex items-center gap-2 rounded-xl bg-stone-950 px-6 py-3 text-sm font-black uppercase tracking-wider text-white",
+                "inline-flex items-center gap-2 rounded-xl bg-primary px-6 py-3 text-sm font-black uppercase tracking-wider text-white",
                 (pending || !reply.trim()) && "opacity-60",
               )}
             >

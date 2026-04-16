@@ -58,7 +58,7 @@ export default async function AdminVocListPage({ searchParams }: { searchParams:
                 ADMIN VOC <span className="underline underline-offset-4 decoration-accent">LIST.</span>
                 <span className="text-2xl md:text-4xl font-bold tracking-normal ml-2 align-bottom opacity-80">민원 관리</span>
               </h1>
-              <p className="font-medium tracking-tight text-foreground/70 text-sm md:text-base">
+              <p className="font-medium tracking-tight text-primary/70 text-sm md:text-base">
                 기본 화면은 미처리(접수·처리 중) 안건입니다. 답변 등록 시 해당 건은 처리 완료로 반영됩니다.
               </p>
             </div>
@@ -68,7 +68,7 @@ export default async function AdminVocListPage({ searchParams }: { searchParams:
         {/* Dashboard Stats */}
         <AdminVocDashboard />
 
-        <section className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-foreground/10 pb-4">
+        <section className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-primary/10 pb-4">
           <div className="flex flex-col gap-3">
             <AdminVocFilter activeCategory={category} activeStatus={status} />
             <AdminVocDateFilter />
