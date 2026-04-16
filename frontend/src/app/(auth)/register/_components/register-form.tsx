@@ -55,6 +55,11 @@ export default function RegisterForm() {
         if (isMounted && res.data) {
           const sortedList = [...res.data].sort((a, b) => a.nameEn.localeCompare(b.nameEn));
           setNationalityList(sortedList);
+          
+          const defaultNationality = sortedList.find(item => item.code === 'KR');
+          if (defaultNationality) {
+            setFormData(prev => ({ ...prev, nationality: defaultNationality.code }));
+          }
         }
       } catch (err) {
         console.error("Failed to fetch nationalities", err);

@@ -247,12 +247,12 @@ export function AdminReservationManager() {
           {summaryItems.map((item) => (
             <div
               key={item.label}
-              className="border-border bg-background rounded-[2rem] border p-6 shadow-sm"
+              className="border-primary/5 bg-white rounded-[2rem] border p-6 shadow-sm"
             >
               <p className="text-muted-foreground text-[10px] font-black tracking-[0.24em] uppercase">
                 {item.label}
               </p>
-              <p className="text-foreground mt-4 text-4xl font-black tracking-tighter">
+              <p className="text-primary mt-4 text-4xl font-black tracking-tighter">
                 {item.value}
               </p>
               <p className="text-muted-foreground mt-3 text-sm font-medium tracking-tight">
@@ -262,7 +262,7 @@ export function AdminReservationManager() {
           ))}
         </section>
 
-        <section className="border-border bg-background mt-10 rounded-[2rem] border p-6 shadow-sm">
+        <section className="border-primary/5 bg-white mt-10 rounded-[2rem] border p-6 shadow-sm">
           <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
             <div className="flex flex-wrap items-center gap-2">
               {STATUS_FILTERS.map((filter) => (
@@ -273,7 +273,7 @@ export function AdminReservationManager() {
                   className={`rounded-full px-4 py-2 text-[10px] font-black tracking-[0.18em] uppercase transition-all ${
                     statusFilter === filter.value
                       ? 'bg-primary text-primary-foreground'
-                      : 'border-border bg-background text-muted-foreground hover:border-primary/20 hover:text-foreground border'
+                      : 'border-primary/10 bg-white text-primary/50 hover:border-primary/20 hover:text-primary border'
                   }`}
                 >
                   {filter.label}
@@ -281,13 +281,13 @@ export function AdminReservationManager() {
               ))}
             </div>
 
-            <div className="border-border bg-muted/20 focus-within:border-primary/25 flex w-full max-w-md items-center gap-3 rounded-full border px-4 py-3 xl:w-[360px]">
+            <div className="border-primary/10 bg-white focus-within:border-primary/25 flex w-full max-w-md items-center gap-3 rounded-full border px-4 py-3 xl:w-[360px]">
               <Search className="text-muted-foreground size-4" />
               <input
                 value={searchTerm}
                 onChange={(event) => setSearchTerm(event.target.value)}
                 placeholder="현재 페이지에서 예약 ID, 신청자, 시설명 검색"
-                className="text-foreground placeholder:text-muted-foreground w-full bg-transparent text-sm font-medium outline-none"
+                className="text-primary placeholder:text-primary/40 w-full bg-transparent text-sm font-medium outline-none"
               />
             </div>
           </div>
@@ -324,18 +324,18 @@ export function AdminReservationManager() {
           ) : null}
         </AnimatePresence>
 
-        <section className="border-border bg-background mt-8 overflow-hidden rounded-[2rem] border shadow-sm">
+        <section className="border-primary/5 bg-white mt-8 overflow-hidden rounded-[2rem] border shadow-sm">
           <div className="overflow-x-auto">
             <table className="w-full min-w-[980px] text-left text-sm">
               <thead>
-                <tr className="border-border bg-muted/20 border-b">
+                <tr className="border-primary/10 bg-primary/[0.03] border-b">
                   <th className="text-muted-foreground px-6 py-4 text-[10px] font-black tracking-[0.28em] uppercase">
                     <button
                       type="button"
                       onClick={() =>
                         setIdSortOrder((current) => (current === 'asc' ? 'desc' : 'asc'))
                       }
-                      className="hover:text-foreground flex items-center gap-2 transition"
+                      className="hover:text-primary flex items-center gap-2 transition"
                     >
                       예약 ID
                       <ChevronsUpDown className="size-3.5" />
@@ -382,7 +382,7 @@ export function AdminReservationManager() {
                     <td colSpan={6} className="px-6 py-24">
                       <div className="flex flex-col items-center justify-center gap-4 text-center">
                         <SearchX className="text-primary/60 size-10" />
-                        <p className="text-foreground text-2xl font-black tracking-tighter">
+                        <p className="text-primary text-2xl font-black tracking-tighter">
                           {deferredSearchTerm
                             ? '현재 페이지 검색 결과가 없습니다'
                             : '표시할 예약이 없습니다'}
@@ -402,10 +402,10 @@ export function AdminReservationManager() {
                     return (
                       <tr
                         key={reservation.id}
-                        className="border-border/70 hover:bg-muted/10 border-b last:border-b-0"
+                        className="border-primary/5 hover:bg-primary/[0.02] border-b last:border-b-0"
                       >
                         <td className="px-6 py-5 align-top">
-                          <div className="text-foreground font-black tracking-tight">
+                          <div className="text-primary font-black tracking-tight">
                             #{reservation.id}
                           </div>
                           <div className="text-muted-foreground mt-1 text-xs font-medium">
@@ -413,12 +413,12 @@ export function AdminReservationManager() {
                           </div>
                         </td>
                         <td className="px-6 py-5 align-top">
-                          <div className="text-foreground font-black tracking-tight">
+                          <div className="text-primary font-black tracking-tight">
                             {reservation.userName}
                           </div>
                         </td>
                         <td className="px-6 py-5 align-top">
-                          <div className="text-foreground font-black tracking-tight">
+                          <div className="text-primary font-black tracking-tight">
                             {reservation.spaceName}
                           </div>
                           <div className="text-muted-foreground mt-1 text-xs font-medium">
@@ -431,7 +431,7 @@ export function AdminReservationManager() {
                               <CalendarDays className="size-4" />
                             </div>
                             <div>
-                              <div className="text-foreground font-black tracking-tight">
+                              <div className="text-primary font-black tracking-tight">
                                 {reservation.reservationDate}
                               </div>
                               <div className="text-muted-foreground mt-1 text-xs font-medium">
@@ -481,7 +481,7 @@ export function AdminReservationManager() {
             </table>
           </div>
 
-          <div className="border-border bg-muted/10 flex flex-col gap-4 border-t px-6 py-5 md:flex-row md:items-center md:justify-between">
+          <div className="border-primary/10 bg-primary/[0.03] flex flex-col gap-4 border-t px-6 py-5 md:flex-row md:items-center md:justify-between">
             <p className="text-muted-foreground text-sm font-medium">
               검색은 현재 페이지에 로드된 예약만 대상으로 동작합니다.
             </p>
@@ -495,7 +495,7 @@ export function AdminReservationManager() {
                 <ChevronLeft className="size-4" />
                 이전
               </Button>
-              <div className="text-foreground min-w-24 text-center text-sm font-black tracking-tight">
+              <div className="text-primary min-w-24 text-center text-sm font-black tracking-tight">
                 {pageData
                   ? `${pageData.number + 1} / ${Math.max(pageData.totalPages, 1)}`
                   : '1 / 1'}

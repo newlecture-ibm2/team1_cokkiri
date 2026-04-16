@@ -20,7 +20,7 @@ export default function DeviceTypesPage() {
         </p>
       </header>
 
-      <div className="rounded-[2rem] border border-border bg-surface p-6 md:p-10">
+      <div className="rounded-[2rem] border border-primary/5 bg-white p-6 md:p-10">
         <DeviceTypeManager />
       </div>
     </div>

@@ -176,11 +176,11 @@ export default function PaymentTable({
       </div>
 
       {/* ── Table ── */}
-      <div className="overflow-hidden rounded-2xl border border-border/40 shadow-sm">
+      <div className="overflow-hidden rounded-[2rem] border border-primary/5 bg-white shadow-sm">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="bg-primary text-background uppercase text-[10px] font-black tracking-widest">
+              <tr className="bg-primary/[0.03] border-b border-primary/10 text-left uppercase text-[13px] font-black tracking-widest text-primary/60">
                 <th className="px-5 py-4 w-16">No.</th>
                 <th className="px-5 py-4 min-w-[140px]">사용자</th>
                 <th className="px-5 py-4 w-28">유형</th>
@@ -208,7 +208,7 @@ export default function PaymentTable({
                 <th className="px-5 py-4 w-24 text-center">관리</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-border/20">
+            <tbody className="divide-y divide-primary/5">
               {filtered.map((payment, idx) => (
                 <motion.tr
                   key={payment.paymentId}
@@ -238,7 +238,7 @@ export default function PaymentTable({
                   <td className="px-5 py-4">
                     <Badge
                       variant="outline"
-                      className="bg-background text-[10px] font-black uppercase tracking-widest"
+                      className="bg-primary/[0.03] text-[10px] font-black uppercase tracking-widest"
                     >
                       {TYPE_LABELS[payment.type] || payment.type}
                     </Badge>

@@ -120,11 +120,11 @@ export default function SpaceCreateModal({
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95 }}
-          className="bg-[var(--background)] text-[var(--foreground)] w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-3xl p-8 shadow-2xl space-y-6"
+          className="bg-white text-primary w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-3xl p-8 shadow-2xl space-y-6"
         >
           <div className="flex justify-between items-center mb-6">
             <h2 className="text-3xl font-black tracking-tighter">새로운 공간 등록</h2>
-            <button onClick={onClose} className="p-2 hover:bg-black/5 rounded-full transition">
+            <button onClick={onClose} className="p-2 hover:bg-primary/[0.05] rounded-full transition">
               <X size={24} />
             </button>
           </div>
@@ -135,7 +135,7 @@ export default function SpaceCreateModal({
               <label className="block text-sm font-bold mb-2">공간 이름</label>
               <input
                 type="text"
-                className="w-full px-4 py-3 rounded-2xl bg-[var(--color-muted)] text-[var(--foreground)] outline-none border border-transparent focus:border-[var(--color-accent)] transition"
+                className="w-full px-4 py-3 rounded-2xl bg-primary/[0.05] text-primary outline-none border border-transparent focus:border-accent transition"
                 placeholder="예: 301호"
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
               />
@@ -144,7 +144,7 @@ export default function SpaceCreateModal({
             <div className="col-span-2 sm:col-span-1">
               <label className="block text-sm font-bold mb-2">유형</label>
               <select
-                className="w-full px-4 py-3 rounded-2xl bg-[var(--color-muted)] text-[var(--foreground)] outline-none"
+                className="w-full px-4 py-3 rounded-2xl bg-primary/[0.05] text-primary outline-none"
                 onChange={(e) => setFormData({ ...formData, type: e.target.value as 'PRIVATE' | 'COMMON' })}
                 value={formData.type}
               >
@@ -158,7 +158,7 @@ export default function SpaceCreateModal({
               <div className="col-span-2 sm:col-span-1">
                 <label className="block text-sm font-bold mb-2">방 유형</label>
                 <select
-                  className="w-full px-4 py-3 rounded-2xl bg-[var(--color-muted)] text-[var(--foreground)] outline-none border border-transparent focus:border-[var(--color-accent)] transition"
+                  className="w-full px-4 py-3 rounded-2xl bg-primary/[0.05] text-primary outline-none border border-transparent focus:border-accent transition"
                   value={formData.roomTypeId || ''}
                   onChange={(e) => setFormData({ ...formData, roomTypeId: e.target.value ? Number(e.target.value) : undefined })}
                 >
@@ -222,7 +222,7 @@ export default function SpaceCreateModal({
                     onClick={() => setFormData({ ...formData, isReservable: !formData.isReservable })}
                     className={`w-full px-4 py-3 rounded-2xl font-bold tracking-tight transition-all duration-300 border ${formData.isReservable
                         ? 'bg-[var(--color-accent)] text-white border-[var(--color-accent)]'
-                        : 'bg-[var(--color-muted)] text-[var(--foreground)]/60 border-transparent'
+                        : 'bg-primary/[0.05] text-primary/60 border-transparent'
                       }`}
                   >
                     {formData.isReservable ? '✓ 예약제 (시설 예약 필요)' : '자유 이용 (예약 불필요)'}
@@ -277,7 +277,7 @@ export default function SpaceCreateModal({
               </div>
               <div className="flex flex-wrap gap-2">
                 {formData.amenities?.map((am, i) => (
-                  <span key={i} className="flex items-center gap-1 bg-black/10 px-3 py-1 rounded-full text-sm font-bold tracking-tight">
+                  <span key={i} className="flex items-center gap-1 bg-primary/[0.08] px-3 py-1 rounded-full text-sm font-bold tracking-tight">
                     {am} <button onClick={() => removeAmenity(i)}><X size={12} /></button>
                   </span>
                 ))}
@@ -290,7 +290,7 @@ export default function SpaceCreateModal({
                 onDragOver={handleDragOver}
                 onDrop={handleDrop}
                 onClick={() => fileInputRef.current?.click()}
-                className="w-full h-32 border-2 border-dashed border-[var(--color-border)] rounded-3xl flex flex-col items-center justify-center text-[var(--color-secondary)] hover:bg-black/5 transition cursor-pointer"
+                className="w-full h-32 border-2 border-dashed border-primary/20 rounded-3xl flex flex-col items-center justify-center text-primary/40 hover:bg-primary/[0.03] transition cursor-pointer"
               >
                 <UploadCloud size={32} className="mb-2" />
                 <p className="text-sm font-bold tracking-tighter cursor-pointer">사진을 이곳에 놓거나 클릭하세요</p>
@@ -299,7 +299,7 @@ export default function SpaceCreateModal({
               {files.length > 0 && (
                 <div className="mt-4 flex flex-wrap gap-3">
                   {files.map((f, i) => (
-                    <div key={i} className="relative w-20 h-20 rounded-2xl bg-black/10 flex items-center justify-center overflow-hidden group">
+                    <div key={i} className="relative w-20 h-20 rounded-2xl bg-primary/[0.08] flex items-center justify-center overflow-hidden group">
                       {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img src={URL.createObjectURL(f)} alt="Preview" className="w-full h-full object-cover" />
                       <button onClick={(e) => { e.stopPropagation(); removeFile(i); }} className="absolute bg-red-500 text-white p-1 rounded-full top-1 right-1 opacity-0 group-hover:opacity-100 transition">
@@ -317,7 +317,7 @@ export default function SpaceCreateModal({
               type="button"
               onClick={handleCreate}
               disabled={isSubmitting || !formData.name}
-              className="group relative px-6 py-3 rounded-2xl text-[var(--background)] bg-[var(--foreground)] hover:bg-[var(--foreground)]/90 font-black tracking-tighter disabled:opacity-50 transition overflow-hidden"
+              className="group relative px-6 py-3 rounded-2xl text-white bg-primary hover:bg-primary/90 font-black tracking-tighter disabled:opacity-50 transition overflow-hidden"
             >
               {isSubmitting ? '진행 중...' : '공간 등록 완료'}
             </button>

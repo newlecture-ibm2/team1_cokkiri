@@ -22,7 +22,7 @@ export default function DeviceRegisterPage() {
       </header>
 
       {/* 등록 폼 카드 */}
-      <div className="rounded-[2rem] border border-border bg-surface p-6 md:p-10">
+      <div className="rounded-[2rem] border border-primary/5 bg-white p-6 md:p-10">
         <DeviceRegisterForm />
       </div>
     </div>

@@ -124,7 +124,7 @@ export default function ControlLogTable() {
       )}
 
       {/* 필터 바 */}
-      <div className="rounded-xl border border-border bg-surface p-4 mb-4 space-y-3">
+      <div className="rounded-[2rem] border border-primary/5 bg-white p-4 mb-4 space-y-3">
         {/* 날짜 범위 */}
         <div className="flex items-center gap-2 flex-wrap">
           <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mr-1">기간</span>
@@ -132,14 +132,14 @@ export default function ControlLogTable() {
             type="date"
             value={startDate}
             onChange={(e) => handleStartDateChange(e.target.value)}
-            className="px-2.5 py-1.5 rounded-lg border border-border bg-background text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-accent/40"
+            className="px-2.5 py-1.5 rounded-lg border border-primary/10 bg-white text-xs text-primary/95 focus:outline-none focus:ring-1 focus:ring-accent/40"
           />
-          <span className="text-muted-foreground text-xs font-bold">—</span>
+          <span className="text-primary/60 text-xs font-bold">—</span>
           <input
             type="date"
             value={endDate}
             onChange={(e) => handleEndDateChange(e.target.value)}
-            className="px-2.5 py-1.5 rounded-lg border border-border bg-background text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-accent/40"
+            className="px-2.5 py-1.5 rounded-lg border border-primary/10 bg-white text-xs text-primary/95 focus:outline-none focus:ring-1 focus:ring-accent/40"
           />
         </div>
 
@@ -148,7 +148,7 @@ export default function ControlLogTable() {
           <select
             value={spaceId ?? ""}
             onChange={(e) => handleSpaceChange(e.target.value)}
-            className="px-3 py-2 rounded-xl border border-border bg-background text-sm text-foreground focus:ring-2 focus:ring-accent/30 focus:outline-none min-w-[180px]"
+            className="px-3 py-2 rounded-xl border border-primary/10 bg-white text-sm text-primary/95 focus:ring-2 focus:ring-accent/30 focus:outline-none min-w-[180px]"
           >
             <option value="">전체 공간</option>
             <optgroup label="개인 공간">
@@ -170,7 +170,7 @@ export default function ControlLogTable() {
           <select
             value={deviceTypeId ?? ""}
             onChange={(e) => handleDeviceTypeChange(e.target.value)}
-            className="px-3 py-2 rounded-xl border border-border bg-background text-sm text-foreground focus:ring-2 focus:ring-accent/30 focus:outline-none min-w-[140px]"
+            className="px-3 py-2 rounded-xl border border-primary/10 bg-white text-sm text-primary/95 focus:ring-2 focus:ring-accent/30 focus:outline-none min-w-[140px]"
           >
             <option value="">전체 기기 타입</option>
             {deviceTypes.map((dt) => (
@@ -181,7 +181,7 @@ export default function ControlLogTable() {
           <select
             value={resultFilter ?? ""}
             onChange={(e) => handleResultChange(e.target.value)}
-            className="px-3 py-2 rounded-xl border border-border bg-background text-sm text-foreground focus:ring-2 focus:ring-accent/30 focus:outline-none"
+            className="px-3 py-2 rounded-xl border border-primary/10 bg-white text-sm text-primary/95 focus:ring-2 focus:ring-accent/30 focus:outline-none"
           >
             <option value="">전체 결과</option>
             <option value="SUCCESS">성공</option>
@@ -195,22 +195,22 @@ export default function ControlLogTable() {
       </div>
 
       {/* 테이블 */}
-      <div className="overflow-x-auto rounded-xl border border-border">
+      <div className="overflow-x-auto rounded-[2rem] border border-primary/5 bg-white shadow-sm">
         <table className="w-full text-sm">
           <thead>
-            <tr className="bg-muted/20 text-left">
-              <th className="px-4 py-3 font-semibold text-foreground">일시</th>
-              <th className="px-4 py-3 font-semibold text-foreground">공간</th>
-              <th className="px-4 py-3 font-semibold text-foreground">기기</th>
-              <th className="px-4 py-3 font-semibold text-foreground">명령</th>
-              <th className="px-4 py-3 font-semibold text-foreground">실행자</th>
-              <th className="px-4 py-3 font-semibold text-foreground">결과</th>
+          <tr className="bg-primary/[0.03] border-b border-primary/10">
+              <th className="px-4 py-3 text-left text-[13px] font-black uppercase tracking-widest text-primary/60">일시</th>
+              <th className="px-4 py-3 text-left text-[13px] font-black uppercase tracking-widest text-primary/60">공간</th>
+              <th className="px-4 py-3 text-left text-[13px] font-black uppercase tracking-widest text-primary/60">기기</th>
+              <th className="px-4 py-3 text-left text-[13px] font-black uppercase tracking-widest text-primary/60">명령</th>
+              <th className="px-4 py-3 text-left text-[13px] font-black uppercase tracking-widest text-primary/60">실행자</th>
+              <th className="px-4 py-3 text-center text-[13px] font-black uppercase tracking-widest text-primary/60">결과</th>
             </tr>
           </thead>
           <tbody>
             {isLoading ? (
               Array.from({ length: 5 }).map((_, i) => (
-                <tr key={i} className="border-t border-border/40">
+                <tr key={i} className="border-t border-primary/5">
                   {Array.from({ length: 6 }).map((_, j) => (
                     <td key={j} className="px-4 py-3">
                       <div className="animate-pulse h-4 bg-muted/20 rounded" />
@@ -230,31 +230,31 @@ export default function ControlLogTable() {
                 return (
                 <tr
                   key={log.controlLogId}
-                  className={`border-t hover:bg-muted/10 transition-colors ${
-                    log.result === "FAILURE" ? "border-red-200/40 bg-red-50/20" : "border-border/40"
+                  className={`border-t hover:bg-primary/[0.02] transition-colors ${
+                    log.result === "FAILURE" ? "border-destructive/20 bg-destructive/[0.02]" : "border-primary/5"
                   }`}
                 >
-                  <td className="px-4 py-3 text-muted-foreground whitespace-nowrap">
+                  <td className="px-4 py-3 text-primary/60 whitespace-nowrap">
                     {formatDate(log.createdAt)}
                   </td>
-                  <td className="px-4 py-3 text-foreground font-medium">
+                  <td className="px-4 py-3 text-primary/95 font-medium">
                     {log.spaceName}
                   </td>
                   <td className="px-4 py-3">
-                    <div className="text-foreground">{log.deviceName}</div>
-                    <div className="text-xs text-muted-foreground">{log.deviceTypeName}</div>
+                    <div className="text-primary/95">{log.deviceName}</div>
+                    <div className="text-xs text-primary/60">{log.deviceTypeName}</div>
                   </td>
                   <td className="px-4 py-3">
-                    <span className="inline-block px-2 py-0.5 rounded-lg bg-background text-xs font-semibold text-foreground">
+                    <span className="inline-block px-2 py-0.5 rounded-lg bg-primary/[0.03] text-xs font-semibold text-primary/95">
                       {log.commandLabel || log.command}
                     </span>
                     {paramText && (
-                      <div className="mt-0.5 text-[10px] text-muted-foreground font-mono">
+                      <div className="mt-0.5 text-[10px] text-primary/50 font-mono">
                         {paramText}
                       </div>
                     )}
                   </td>
-                  <td className="px-4 py-3 text-muted-foreground">
+                  <td className="px-4 py-3 text-primary/70">
                     <span className={`text-xs font-medium px-1.5 py-0.5 rounded ${
                       log.actorType === "ADMIN"
                         ? "bg-accent/10 text-accent"
@@ -300,17 +300,17 @@ export default function ControlLogTable() {
           <button
             onClick={() => setPage((p) => Math.max(0, p - 1))}
             disabled={page === 0}
-            className="px-3 py-1.5 rounded-lg text-sm border border-border bg-background text-foreground disabled:opacity-30 hover:bg-muted/10 transition-colors"
+            className="px-3 py-1.5 rounded-lg text-sm border border-primary/10 bg-white text-primary/70 disabled:opacity-30 hover:bg-primary/[0.02] transition-colors"
           >
             이전
           </button>
-          <span className="text-sm text-muted-foreground">
+          <span className="text-sm text-primary/60">
             {page + 1} / {totalPages}
           </span>
           <button
             onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
             disabled={page >= totalPages - 1}
-            className="px-3 py-1.5 rounded-lg text-sm border border-border bg-background text-foreground disabled:opacity-30 hover:bg-muted/10 transition-colors"
+            className="px-3 py-1.5 rounded-lg text-sm border border-primary/10 bg-white text-primary/70 disabled:opacity-30 hover:bg-primary/[0.02] transition-colors"
           >
             다음
           </button>

@@ -33,7 +33,7 @@ public class AdminRoomTypeService implements AdminRoomTypeUseCase {
     @Override
     public AdminRoomTypeResult createRoomType(CreateRoomTypeCommand command) {
         if (adminRoomTypeRepositoryPort.existsByCode(command.getCode())) {
-            throw new BusinessException(ErrorCode.VALIDATION_ERROR); // Todo: DUPLICATE_ROOM_TYPE_CODE
+            throw new BusinessException(ErrorCode.VALIDATION_ERROR, "이미 동일한 코드의 방 유형이 존재합니다: " + command.getCode());
         }
 
         AdminRoomType model = AdminRoomType.builder()
@@ -68,7 +68,7 @@ public class AdminRoomTypeService implements AdminRoomTypeUseCase {
                 .orElseThrow(() -> new BusinessException(ErrorCode.ROOM_TYPE_NOT_FOUND));
 
         if (adminRoomTypeRepositoryPort.isUsedInSpaces(roomTypeId)) {
-            throw new BusinessException(ErrorCode.INVALID_STATUS); // "사용 중인 방 유형은 삭제할 수 없습니다."
+            throw new BusinessException(ErrorCode.INVALID_STATUS, "이 방 유형을 사용 중인 공간이 있어 삭제할 수 없습니다. 해당 공간의 유형을 먼저 변경해 주세요.");
         }
 
         adminRoomTypeRepositoryPort.delete(roomTypeId);
