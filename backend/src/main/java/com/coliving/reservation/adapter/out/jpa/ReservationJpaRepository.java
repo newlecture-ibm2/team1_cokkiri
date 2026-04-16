@@ -65,6 +65,9 @@ public interface ReservationJpaRepository extends JpaRepository<ReservationEntit
     /** 특정 시설의 특정 날짜 전체 예약 목록 조회 */
     List<ReservationEntity> findBySpace_SpaceIdAndReservationDate(Long spaceId, LocalDate reservationDate);
 
+    /** 특정 시설에 예약이 존재하는지 확인 (관리자 공간 삭제 방어 등) */
+    boolean existsBySpace_SpaceId(Long spaceId);
+
     // ── 비즈니스 규칙 검증 쿼리 ──
 
     /**

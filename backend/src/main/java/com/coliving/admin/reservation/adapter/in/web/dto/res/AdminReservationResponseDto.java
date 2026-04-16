@@ -51,12 +51,15 @@ public class AdminReservationResponseDto {
     private Long approvedBy;
 
     public static AdminReservationResponseDto fromEntity(ReservationEntity entity) {
+        String userName = entity.getUserName();
+        String spaceName = entity.getSpaceName();
+
         return AdminReservationResponseDto.builder()
                 .id(entity.getId())
                 .userId(entity.getUserId())
-                .userName(entity.getUserName())
+                .userName(userName != null ? userName : "삭제된 사용자")
                 .spaceId(entity.getSpaceId())
-                .spaceName(entity.getSpaceName())
+                .spaceName(spaceName != null ? spaceName : "삭제된 시설")
                 .status(entity.getStatus())
                 .reservationDate(entity.getReservationDate())
                 .startTime(entity.getStartTime())
