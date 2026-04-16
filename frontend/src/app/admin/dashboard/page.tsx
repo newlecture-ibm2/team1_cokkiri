@@ -3,19 +3,23 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import DeviceStatusCards from "./_components/DeviceStatusCards";
+import SummaryStatusCards from "./_components/SummaryStatusCards";
 import RecentControlLogs from "./_components/RecentControlLogs";
 import {
   fetchDashboardEnergy,
   fetchDashboardRecentLogs,
+  fetchDashboardSummary,
 } from "./_api";
 import type {
   DashboardDeviceStatus,
   DashboardControlLog,
+  DashboardSummary,
 } from "./_api";
 
 export default function DashboardPage() {
   const [statusSummary, setStatusSummary] =
     useState<DashboardDeviceStatus | null>(null);
+  const [dashboardSummary, setDashboardSummary] = useState<DashboardSummary | null>(null);
   const [recentLogs, setRecentLogs] = useState<DashboardControlLog[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -33,6 +37,15 @@ export default function DashboardPage() {
         }
       } catch (_e) {
         // 에너지 API 실패 시 빈 상태 유지
+      }
+
+      try {
+        const summary = await fetchDashboardSummary();
+        if (mounted && summary) {
+          setDashboardSummary(summary);
+        }
+      } catch (_e) {
+        // 요약 API 실패 시 빈 상태 유지
       }
 
       try {
@@ -77,27 +90,42 @@ export default function DashboardPage() {
       </header>
 
       {/* ══════════════════════════════════════════════
-          실시간 기기 현황 섹션
+          운영 현황 및 기기 상태 섹션
           ══════════════════════════════════════════════ */}
       <section>
+        {/* ROW 1: 운영 요약 카드 */}
+        <div className="flex items-center gap-2 mb-4">
+          <div className="w-2 h-2 rounded-full bg-[#768064] animate-pulse" />
+          <h2 className="text-lg font-black tracking-tighter text-foreground">
+            운영 현황 요약
+          </h2>
+        </div>
+        <motion.div
+           initial={{ opacity: 0, y: 10 }}
+           animate={{ opacity: 1, y: 0 }}
+           transition={{ delay: 0.1 }}
+           className="mb-12"
+        >
+           <SummaryStatusCards data={dashboardSummary} isLoading={isLoading} />
+        </motion.div>
+
+        {/* ROW 2: 기기 요약 카드 */}
         <div className="flex items-center gap-2 mb-4">
           <div className="w-2 h-2 rounded-full bg-[#768064] animate-pulse" />
           <h2 className="text-lg font-black tracking-tighter text-foreground">
             실시간 기기 현황
           </h2>
         </div>
-
-        {/* ROW 1: 기기 요약 카드 */}
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-          className="mb-6"
+          transition={{ delay: 0.2 }}
+          className="mb-12"
         >
           <DeviceStatusCards data={statusSummary} isLoading={isLoading} />
         </motion.div>
 
-        {/* ROW 2: 최근 제어 이력 */}
+        {/* ROW 3: 최근 제어 이력 */}
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}

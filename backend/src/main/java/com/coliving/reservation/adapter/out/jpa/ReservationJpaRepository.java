@@ -24,6 +24,11 @@ import java.util.List;
  * └──────────────────────────────────────────────────────────────────┘
  */
 public interface ReservationJpaRepository extends JpaRepository<ReservationEntity, Long> {
+    
+    long countByReservationDate(LocalDate date);
+
+    long countByStatus(ReservationStatus status);
+
 
     /** 모든 예약 목록 조회 (최신순 정렬) - 관리자용 */
     List<ReservationEntity> findAllByOrderByReservationDateDescStartTimeDesc();
