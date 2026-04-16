@@ -151,7 +151,7 @@ export function CommunityRichTextEditor({ value, onChange, placeholder, id }: Pr
     <div className="space-y-2">
       <LoginRequiredModal isOpen={showLoginModal} onClose={() => setShowLoginModal(false)} />
       <div
-        className="community-quill [&_.ql-toolbar]:rounded-t-xl [&_.ql-toolbar]:border-border [&_.ql-toolbar]:bg-surface [&_.ql-container]:rounded-b-xl [&_.ql-container]:border-border [&_.ql-container]:font-sans [&_.ql-editor]:min-h-[240px] [&_.ql-editor]:px-4 [&_.ql-editor]:py-3 [&_.ql-editor]:font-medium [&_.ql-editor]:text-base [&_.ql-editor]:text-foreground [&_.ql-stroke]:stroke-muted-foreground [&_.ql-fill]:fill-muted-foreground [&_.ql-editor.ql-blank::before]:pointer-events-none [&_.ql-editor.ql-blank::before]:!left-4 [&_.ql-editor.ql-blank::before]:!right-4 [&_.ql-editor.ql-blank::before]:!top-3 [&_.ql-editor:not(.ql-blank)::before]:hidden"
+        className="community-quill [&_.ql-toolbar]:rounded-t-xl [&_.ql-toolbar]:border-border [&_.ql-toolbar]:bg-surface [&_.ql-container]:rounded-b-xl [&_.ql-container]:border-border [&_.ql-container]:font-sans [&_.ql-editor]:min-h-[240px] [&_.ql-editor]:px-4 [&_.ql-editor]:py-3 [&_.ql-editor]:font-medium [&_.ql-editor]:text-base [&_.ql-editor]:text-foreground [&_.ql-stroke]:stroke-muted-foreground [&_.ql-fill]:fill-muted-foreground [&_.ql-editor.ql-blank::before]:pointer-events-none [&_.ql-editor.ql-blank::before]:text-primary/30 [&_.ql-editor.ql-blank::before]:!left-4 [&_.ql-editor.ql-blank::before]:!top-3 [&_.ql-editor:not(.ql-blank)::before]:hidden [&_.ql-editor:focus.ql-blank::before]:!opacity-0"
         ref={wrapperRef}
       />
       {uploadError ? (
