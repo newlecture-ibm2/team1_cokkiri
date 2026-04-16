@@ -20,6 +20,7 @@ export default function SpacesPage() {
 
   // 필터 상태
   const [filterType, setFilterType] = useState<'ALL' | 'PRIVATE' | 'COMMON'>('ALL');
+  const [filterStatus, setFilterStatus] = useState<'ALL' | 'AVAILABLE' | 'OCCUPIED'>('ALL');
   const [sortOption, setSortOption] = useState('name,asc');
   const [isSortOpen, setIsSortOpen] = useState(false);
   const sortRef = React.useRef<HTMLDivElement>(null);
@@ -37,7 +38,7 @@ export default function SpacesPage() {
 
   const loadSpaces = async () => {
     try {
-      const res = await fetchSpaces({ type: filterType, sort: sortOption });
+      const res = await fetchSpaces({ type: filterType, status: filterStatus, sort: sortOption });
       setSpaces(res.data?.content || []);
     } catch (e) {
       console.error(e);
@@ -46,7 +47,7 @@ export default function SpacesPage() {
 
   useEffect(() => {
     loadSpaces();
-  }, [filterType, sortOption]);
+  }, [filterType, filterStatus, sortOption]);
 
   const getStatusDisplay = (space: SpaceDTO) => {
     if (space.type === 'PRIVATE') {
@@ -125,7 +126,7 @@ export default function SpacesPage() {
             {['ALL', 'PRIVATE', 'COMMON'].map((type) => (
               <button
                 key={type}
-                onClick={() => setFilterType(type as any)}
+                onClick={() => { setFilterType(type as any); if (type !== 'PRIVATE') setFilterStatus('ALL'); }}
                 className={`px-4 py-2 rounded-full text-xs font-bold tracking-widest uppercase transition-all
                   ${filterType === type 
                     ? 'bg-[var(--color-accent)] text-white shadow-md' 
@@ -136,6 +137,26 @@ export default function SpacesPage() {
               </button>
             ))}
           </div>
+
+          {/* 상태 필터 칩 (PRIVATE 선택 시에만 노출) */}
+          {filterType === 'PRIVATE' && (
+          <div className="flex gap-2 mb-6">
+            {(['ALL', 'AVAILABLE', 'OCCUPIED'] as const).map((st) => (
+              <button
+                key={st}
+                onClick={() => setFilterStatus(st)}
+                className={`px-4 py-2 rounded-full text-xs font-bold tracking-tight transition-all
+                  ${filterStatus === st
+                    ? 'bg-[var(--foreground)] text-[var(--background)] shadow-md'
+                    : 'bg-black/5 text-foreground hover:bg-black/10'
+                  }`}
+              >
+                {st === 'ALL' ? '전체' : st === 'AVAILABLE' ? '입주 가능' : '입주 중'}
+              </button>
+            ))}
+          </div>
+          )}
+
 
           {/* 정렬 드롭다운 */}
           <div ref={sortRef} className="relative inline-block mb-6">

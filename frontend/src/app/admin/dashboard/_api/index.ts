@@ -51,7 +51,13 @@ export interface DashboardSummary {
   };
 }
 
+export interface DashboardEnergyData {
+  statusSummary: DashboardDeviceStatus;
+  deviceStatusBySpace: DashboardSpaceDeviceStatus[];
+}
+
 export async function fetchDashboardEnergy() {
+
   const res = await apiFetch<DashboardEnergyData>("/admin/monitoring/energy");
   return res.data;
 }
