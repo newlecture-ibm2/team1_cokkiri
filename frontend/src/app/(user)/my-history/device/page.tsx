@@ -90,19 +90,20 @@ export default function DeviceHistoryPage() {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4 }}
-      className="space-y-8 px-6 pt-16 md:px-12 md:pt-32"
+      className="mx-auto max-w-5xl text-primary"
     >
-      {/* ── 헤더 (my-devices 스타일) ── */}
-      <header className="space-y-2">
-        <p className="font-black text-xs uppercase tracking-[0.3em] text-muted-foreground">
-          Control Logs
-        </p>
-        <h1 className="text-3xl font-black tracking-tighter text-primary md:text-4xl">
-          기기 제어 이력
-        </h1>
-        <p className="text-sm font-medium tracking-tight text-muted-foreground text-balance">
-          내 기기 제어 기록을 시간순으로 확인하세요.
-        </p>
+      {/* Editorial Header */}
+      <header className="mb-[clamp(2rem,5vw,5rem)]">
+        <div className="flex flex-col gap-[clamp(0.75rem,1.5vw,1.5rem)]">
+          <div className="flex items-end justify-between gap-4 border-b border-primary/10 pb-[clamp(1rem,2vw,2rem)]">
+            <div className="min-w-0">
+              <h1 className="text-[clamp(2.25rem,7vw,5.5rem)] font-black leading-none tracking-tight uppercase whitespace-nowrap text-primary">
+                CONTRO<span className="underline underline-offset-4 decoration-[var(--color-accent)]">L.</span>
+                <span className="text-[clamp(1rem,3vw,2.5rem)] font-bold tracking-normal ml-3 align-baseline opacity-80">기기 제어 이력</span>
+              </h1>
+            </div>
+          </div>
+        </div>
       </header>
 
       {/* ── 통계 카드 ── */}

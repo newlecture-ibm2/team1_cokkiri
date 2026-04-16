@@ -108,24 +108,23 @@ export default function MyContractsPage() {
 
   return (
     <div className="mx-auto max-w-5xl">
-      {/* Editorial Header Section */}
       <header className="mb-[clamp(2rem,5vw,5rem)]">
         <div className="flex flex-col gap-[clamp(0.75rem,1.5vw,1.5rem)]">
-          <div className="flex flex-col md:flex-row md:items-end justify-between gap-[clamp(1rem,2vw,2rem)] border-b border-primary/10 pb-[clamp(1rem,2vw,2rem)]">
-            <div className="min-w-0 space-y-4">
-              <h1 className="text-5xl md:text-7xl font-black leading-tight tracking-tight uppercase whitespace-nowrap text-primary">
+          <div className="flex flex-row flex-wrap items-end justify-between gap-x-8 gap-y-4 border-b border-primary/10 pb-[clamp(1rem,2vw,2rem)]">
+            <div className="flex-shrink-0">
+              <h1 className="text-[clamp(2.25rem,7vw,5.5rem)] font-black leading-none tracking-tight uppercase whitespace-nowrap text-primary">
                 CONTRACT<span className="underline underline-offset-4 decoration-[var(--color-accent)]">S.</span>
-                <span className="text-2xl md:text-4xl font-bold tracking-normal ml-2 align-bottom opacity-80">계약 내역</span>
+                <span className="text-[clamp(1rem,3vw,2.5rem)] font-bold tracking-normal ml-3 align-baseline opacity-80">계약 내역</span>
               </h1>
             </div>
-            <div className="flex items-center shrink-0 self-end pb-1">
+            <div className="flex items-center justify-end shrink-0 pb-1 ml-auto">
               <Link href="/rooms" className="group">
                 <motion.div
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
-                  className="px-8 py-4 bg-primary text-background rounded-xl font-bold tracking-tight text-sm transition-all hover:bg-primary/95 shadow-xl shadow-primary/20 flex items-center gap-3"
+                  className="px-[clamp(1rem,3vw,2rem)] h-[clamp(2.5rem,5vw,3.5rem)] bg-primary text-background rounded-xl font-bold tracking-tight text-[clamp(0.75rem,1.5vw,1rem)] transition-all hover:bg-primary/95 shadow-xl shadow-primary/20 flex items-center gap-2"
                 >
-                  <Plus className="w-5 h-5" />
+                  <Plus className="w-[clamp(1rem,2vw,1.25rem)] h-[clamp(1rem,2vw,1.25rem)]" />
                   신규 신청
                 </motion.div>
               </Link>

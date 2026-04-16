@@ -87,19 +87,20 @@ export default function MyHistoryPage() {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
-      className="flex flex-col gap-10"
+      className="mx-auto max-w-5xl flex flex-col gap-10"
     >
-      {/* ── 헤더 ── */}
-      <header className="border-b-2 border-primary pb-8">
-        <p className="text-[10px] font-black tracking-[0.3em] uppercase text-accent mb-2">
-          My Activity
-        </p>
-        <h1 className="text-[10vw] md:text-[6vw] font-black tracking-tighter leading-[0.85] uppercase">
-          활동 <span className="underline underline-offset-[1vw] decoration-accent">이력</span>
-        </h1>
-        <p className="mt-4 text-sm font-medium tracking-tight text-muted text-balance max-w-xl">
-          계약, 신청, 게시글, 댓글 등 나의 활동 기록을 한눈에 확인하세요.
-        </p>
+      {/* Editorial Header */}
+      <header className="mb-[clamp(2rem,5vw,5rem)]">
+        <div className="flex flex-col gap-[clamp(0.75rem,1.5vw,1.5rem)]">
+          <div className="flex items-end justify-between gap-4 border-b border-primary/10 pb-[clamp(1rem,2vw,2rem)]">
+            <div className="min-w-0">
+              <h1 className="text-[clamp(2.25rem,7vw,5.5rem)] font-black leading-none tracking-tight uppercase whitespace-nowrap text-primary">
+                ACTIVIT<span className="underline underline-offset-4 decoration-[var(--color-accent)]">Y.</span>
+                <span className="text-[clamp(1rem,3vw,2.5rem)] font-bold tracking-normal ml-3 align-baseline opacity-80">활동 이력</span>
+              </h1>
+            </div>
+          </div>
+        </div>
       </header>
 
       {/* ── 기기 / 예약 이력 바로가기 ── */}
