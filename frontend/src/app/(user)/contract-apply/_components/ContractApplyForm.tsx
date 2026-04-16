@@ -118,6 +118,8 @@ export default function ContractApplyForm() {
   const [showToast, setShowToast] = useState(false);
   const [bankAccountError, setBankAccountError] = useState<string | null>(null);
   const [bankAccountTouched, setBankAccountTouched] = useState(false);
+  const [addressError, setAddressError] = useState<string | null>(null);
+  const [addressTouched, setAddressTouched] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [userProfile, setUserProfile] = useState<{
     name?: string; phone?: string; email?: string;
@@ -337,15 +339,30 @@ export default function ContractApplyForm() {
 
   // Throttled Auto-save (skip for read-only contracts or when viewing a specific submission)
   useEffect(() => {
-    if (step > 4 || isLoading || isReadOnly) return;
+    if (step > 3 || isLoading || isReadOnly) return;
     const handler = setTimeout(() => {
       saveDraft(formData, false);
     }, 2000);
     return () => clearTimeout(handler);
   }, [formData, saveDraft, step, isLoading, isReadOnly]);
 
-  const nextStep = () => setStep(s => Math.min(s + 1, 4));
+  const nextStep = () => setStep(s => Math.min(s + 1, 3));
   const prevStep = () => setStep(s => Math.max(s - 1, 1));
+
+  // 주소 유효성 검사
+  const validateAddress = (address: string): string | null => {
+    const trimmed = address.trim();
+    if (!trimmed) return "주소를 입력해주세요.";
+    if (trimmed.length < 5) return "주소가 너무 짧습니다. 최소 5자 이상 입력해주세요.";
+    // 시/도 단위 키워드 포함 여부
+    const regionKeywords = ["서울", "부산", "대구", "인천", "광주", "대전", "울산", "세종", "경기", "강원", "충북", "충남", "전북", "전남", "경북", "경남", "제주"];
+    const hasRegion = regionKeywords.some(k => trimmed.includes(k));
+    if (!hasRegion) return "시/도(예: 서울, 경기, 부산 등)를 포함한 정확한 주소를 입력해주세요.";
+    // 구/시/군/읍/면/동 단위 포함 여부
+    const districtPattern = /(구|시|군|읍|면|동|로|길)/;
+    if (!districtPattern.test(trimmed)) return "구/동/로 등 상세 주소를 포함해주세요.";
+    return null;
+  };
 
   // 계좌번호 유효성 검사 (은행별 자릿수 기반)
   const validateBankAccount = (bankName: string, rawDigits: string): string | null => {
@@ -403,7 +420,17 @@ export default function ContractApplyForm() {
     // Validate required fields before submission
     if (!formData.address || !formData.bankName || !formData.bankAccount || !formData.usagePurpose) {
       setError("주소, 은행 및 계좌 정보, 입주 목적을 모두 입력해주세요.");
-      setStep(4);
+      setStep(3);
+      return;
+    }
+
+    // 주소 유효성 재검증
+    const addrError = validateAddress(formData.address);
+    if (addrError) {
+      setError(addrError);
+      setAddressError(addrError);
+      setAddressTouched(true);
+      setStep(2);
       return;
     }
 
@@ -413,15 +440,11 @@ export default function ContractApplyForm() {
       setError(bankError);
       setBankAccountError(bankError);
       setBankAccountTouched(true);
-      setStep(4);
-      return;
-    }
-
-    if (!formData.privacyAgreed || !formData.termsAgreed) {
-      setError("모든 필수 약관에 동의해주세요.");
       setStep(3);
       return;
     }
+
+
 
     if (!paymentComplete) {
       setError("결제를 완료해주세요.");
@@ -469,7 +492,7 @@ export default function ContractApplyForm() {
       }
 
       localStorage.removeItem(`contract_draft_${spaceId}`);
-      setStep(5);
+      setStep(4);
     } catch (err: any) {
       setError(err.message || "신청 도중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.");
     } finally {
@@ -480,14 +503,13 @@ export default function ContractApplyForm() {
   const steps = [
     { title: "SCHEDULE", icon: Calendar },
     { title: "DETAILS", icon: Home },
-    { title: "AGREEMENT", icon: ShieldCheck },
     { title: "PAYMENT", icon: CreditCard }
   ];
 
   return (
     <div className="max-w-[900px] mx-auto">
       {/* Editorial Step Tracker */}
-      {step < 5 && (
+      {step < 4 && (
         <div className="flex flex-col items-start mb-12 gap-6">
           {formData.status !== "DRAFT" && (
             <div className="flex items-center gap-4 px-6 py-3 bg-accent/10 border border-accent/20 rounded-full shrink-0">
@@ -501,11 +523,11 @@ export default function ContractApplyForm() {
             <div className="flex items-center justify-between w-full gap-4 overflow-x-auto pb-4 md:pb-0 scrollbar-hide">
               {steps.map((s, i) => (
                 <div key={i} className="flex items-center gap-6 group">
-                  <span className={`text-[12px] font-black tracking-[0.3em] transition-colors ${step >= i + 1 ? "text-primary" : "text-primary/50"
+                  <span className={`text-[12px] font-black tracking-[0.3em] transition-colors ${step >= i + 1 ? "text-primary" : "text-primary/70"
                     }`}>
                     {String(i + 1).padStart(2, '0')}
                   </span>
-                  <span className={`text-[12px] font-black tracking-[0.2em] transition-all whitespace-nowrap ${step === i + 1 ? "text-accent" : "text-primary/40"
+                  <span className={`text-[12px] font-black tracking-[0.2em] transition-all whitespace-nowrap ${step === i + 1 ? "text-accent" : "text-primary/60"
                     }`}>
                     {s.title}
                   </span>
@@ -523,7 +545,7 @@ export default function ContractApplyForm() {
       <div className="relative">
         <div className="bg-white rounded-[3rem] border border-primary/5 shadow-2xl shadow-primary/5 p-10 md:p-20 relative overflow-hidden">
           {/* Top Right Save & Exit Buttons */}
-          {step < 5 && (
+          {step < 4 && (
             <div className="absolute top-8 right-8 z-10 flex items-center gap-2">
               <button
                 type="button"
@@ -552,7 +574,7 @@ export default function ContractApplyForm() {
 
           {/* Editorial Background Element */}
           {/* Editorial Background Element */}
-          {step < 5 && (
+          {step < 4 && (
             <span className="absolute -top-10 -right-10 text-[20vw] font-black text-primary/[0.02] select-none pointer-events-none">
               {String(step).padStart(2, '0')}
             </span>
@@ -574,14 +596,14 @@ export default function ContractApplyForm() {
                     <h2 className="text-5xl font-black text-primary tracking-tighter uppercase leading-[0.85]">
                       SELECT YOUR<br />SCHEDULE
                     </h2>
-                    <p className="text-lg font-medium tracking-tight opacity-50 max-w-md">
+                    <p className="text-lg font-medium tracking-tight opacity-80 max-w-md">
                       코끼리 하우스에서의 생활이 시작되는 시점과 기간을 선택해주세요.
                     </p>
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-12 pt-8">
                     <div className="space-y-4">
-                      <label className="text-[10px] font-black tracking-[0.3em] uppercase text-primary/40 block">
+                      <label className="text-[10px] font-black tracking-[0.3em] uppercase text-primary/70 block">
                         START DATE
                       </label>
                       <input
@@ -602,7 +624,7 @@ export default function ContractApplyForm() {
                     </div>
 
                     <div className="space-y-4">
-                      <label className="text-[10px] font-black tracking-[0.3em] uppercase text-primary/40 block">
+                      <label className="text-[10px] font-black tracking-[0.3em] uppercase text-primary/70 block">
                         DURATION (MONTHS)
                       </label>
                       <select
@@ -643,7 +665,7 @@ export default function ContractApplyForm() {
                     <h2 className="text-5xl font-black text-primary tracking-tighter uppercase leading-[0.85]">
                       RESIDENT<br />PROFILE
                     </h2>
-                    <p className="text-lg font-medium tracking-tight opacity-50">
+                    <p className="text-lg font-medium tracking-tight opacity-80">
                       우리는 거주자 한 분 한 분의 이야기를 소중히 생각합니다.
                     </p>
                   </div>
@@ -665,7 +687,7 @@ export default function ContractApplyForm() {
                           { label: "BIRTH DATE", value: userProfile.birthDate },
                         ].filter(item => item.value).map((item) => (
                           <div key={item.label} className="space-y-1">
-                            <span className="text-[9px] font-black tracking-[0.3em] uppercase text-primary/30 block">{item.label}</span>
+                            <span className="text-[9px] font-black tracking-[0.3em] uppercase text-primary/50 block">{item.label}</span>
                             <p className="text-sm font-bold tracking-tight text-primary">{item.value}</p>
                           </div>
                         ))}
@@ -675,22 +697,49 @@ export default function ContractApplyForm() {
 
                   <div className="space-y-10 pt-4">
                     <div className="space-y-4">
-                      <label className="text-[10px] font-black tracking-[0.3em] uppercase text-primary/40 block">
+                      <label className="text-[10px] font-black tracking-[0.3em] uppercase text-primary/70 block">
                         CURRENT ADDRESS
                       </label>
                       <input
                         type="text"
                         name="address"
                         value={formData.address}
-                        onChange={handleInputChange}
+                        onChange={(e) => {
+                          handleInputChange(e);
+                          if (addressTouched) {
+                            setAddressError(validateAddress(e.target.value));
+                          }
+                        }}
+                        onBlur={() => {
+                          setAddressTouched(true);
+                          setAddressError(validateAddress(formData.address));
+                        }}
                         disabled={isReadOnly}
-                        placeholder="심사용 서류에 기재될 현재 주소를 입력하세요."
-                        className="w-full bg-primary/5 border-none p-6 rounded-2xl text-lg font-bold focus:ring-2 focus:ring-accent transition-all disabled:opacity-50"
+                        placeholder="예: 서울특별시 강남구 테헤란로 123"
+                        className={`w-full bg-primary/5 p-6 rounded-2xl text-lg font-bold focus:ring-2 transition-all disabled:opacity-50 ${
+                          addressTouched && addressError
+                            ? "border-2 border-red-400 focus:ring-red-300"
+                            : addressTouched && !addressError && formData.address
+                              ? "border-2 border-green-400 focus:ring-green-300"
+                              : "border-none focus:ring-accent"
+                        }`}
                       />
+                      {addressTouched && addressError && (
+                        <div className="flex items-center gap-2 text-red-500">
+                          <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+                          <span className="text-xs font-bold">{addressError}</span>
+                        </div>
+                      )}
+                      {addressTouched && !addressError && formData.address && (
+                        <div className="flex items-center gap-2 text-green-600">
+                          <CheckCircle2 className="w-3.5 h-3.5 shrink-0" />
+                          <span className="text-xs font-bold">유효한 주소 형식입니다</span>
+                        </div>
+                      )}
                     </div>
 
                     <div className="space-y-4">
-                      <label className="text-[10px] font-black tracking-[0.3em] uppercase text-primary/40 block">
+                      <label className="text-[10px] font-black tracking-[0.3em] uppercase text-primary/70 block">
                         USAGE PURPOSE
                       </label>
                       <input
@@ -705,7 +754,7 @@ export default function ContractApplyForm() {
                     </div>
 
                     <div className="space-y-4">
-                      <label className="text-[10px] font-black tracking-[0.3em] uppercase text-primary/40 block">
+                      <label className="text-[10px] font-black tracking-[0.3em] uppercase text-primary/70 block">
                         ADDITIONAL NOTES
                       </label>
                       <textarea
@@ -739,60 +788,6 @@ export default function ContractApplyForm() {
                   className="space-y-12"
                 >
                   <div className="space-y-4">
-                    <span className="text-[10px] font-black uppercase tracking-[0.4em] text-accent">STEP 03</span>
-                    <h2 className="text-5xl font-black text-primary tracking-tighter uppercase leading-[0.85]">
-                      REVIEW &<br />AGREEMENT
-                    </h2>
-                    <p className="text-lg font-medium tracking-tight opacity-50">
-                      원활한 입주를 위해 아래 약관 및 서약서 내용을 확인해 주세요.
-                    </p>
-                  </div>
-
-                  <div className="space-y-4 pt-4">
-                    <label className="flex items-center gap-6 p-8 bg-primary/5 rounded-[2rem] cursor-pointer group transition-all hover:bg-primary/10">
-                      <input
-                        type="checkbox"
-                        name="privacyAgreed"
-                        checked={formData.privacyAgreed}
-                        onChange={handleInputChange}
-                        disabled={isReadOnly}
-                        className="w-8 h-8 rounded-full border-primary/20 text-accent focus:ring-0 disabled:opacity-50"
-                      />
-                      <span className="text-[10px] font-black tracking-[0.3em] uppercase">개인정보 수집 및 이용 동의 (필수)</span>
-                    </label>
-                    <label className="flex items-center gap-6 p-8 bg-primary/5 rounded-[2rem] cursor-pointer group transition-all hover:bg-primary/10">
-                      <input
-                        type="checkbox"
-                        name="termsAgreed"
-                        checked={formData.termsAgreed}
-                        onChange={handleInputChange}
-                        disabled={isReadOnly}
-                        className="w-8 h-8 rounded-full border-primary/20 text-accent focus:ring-0 disabled:opacity-50"
-                      />
-                      <span className="text-[10px] font-black tracking-[0.3em] uppercase">주의사항 확인 및 입주 서약 (필수)</span>
-                    </label>
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <button type="button" onClick={prevStep} className="py-8 border-2 border-primary/10 text-primary rounded-full font-black tracking-[0.2em] transition-all hover:bg-primary/5">
-                      GO BACK
-                    </button>
-                    <button type="button" onClick={nextStep} disabled={!formData.privacyAgreed || !formData.termsAgreed} className="py-8 bg-primary hover:bg-accent text-background rounded-full font-black tracking-[0.2em] transition-all disabled:opacity-20">
-                      NEXT STEP
-                    </button>
-                  </div>
-                </motion.div>
-              )}
-
-              {step === 4 && (
-                <motion.div
-                  key="step4"
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -20 }}
-                  className="space-y-12"
-                >
-                  <div className="space-y-4">
                     <span className="text-[10px] font-black uppercase tracking-[0.4em] text-accent">FINAL STEP</span>
                     <h2 className="text-5xl font-black text-primary tracking-tighter uppercase leading-[0.85]">
                       BILLING &<br />PAYMENT
@@ -800,20 +795,20 @@ export default function ContractApplyForm() {
                   </div>
 
                   <div className="p-8 bg-primary/5 rounded-[2rem] border-l-4 border-accent space-y-4">
-                    <p className="text-sm font-bold tracking-tight opacity-70">
+                    <p className="text-sm font-bold tracking-tight opacity-80">
                       입력하신 계좌 정보는 입주 심사 승인 및 계약 진행 시 대조용으로 활용되며,
                       퇴거 시 보증금 반환 계좌로 우선 사용됩니다.
                     </p>
                   </div>
 
                   <div className="space-y-6">
-                    <label className="text-[10px] font-black tracking-[0.3em] uppercase text-primary/40 block">
+                    <label className="text-[10px] font-black tracking-[0.3em] uppercase text-primary/70 block">
                       BANK ACCOUNT INFO (보증금 반환 계좌)
                     </label>
 
                     {/* Bank Selection */}
                     <div className="space-y-2">
-                      <span className="text-[9px] font-black tracking-[0.3em] uppercase text-primary/30 block">
+                      <span className="text-[9px] font-black tracking-[0.3em] uppercase text-primary/50 block">
                         BANK
                       </span>
                       <select
@@ -839,7 +834,7 @@ export default function ContractApplyForm() {
                         className="space-y-2"
                       >
                         <div className="flex items-center justify-between">
-                          <span className="text-[9px] font-black tracking-[0.3em] uppercase text-primary/30">
+                          <span className="text-[9px] font-black tracking-[0.3em] uppercase text-primary/50">
                             ACCOUNT NUMBER
                           </span>
                           {BANK_FORMATS[formData.bankName] && (
@@ -887,12 +882,12 @@ export default function ContractApplyForm() {
                         {/* Digit counter */}
                         {BANK_FORMATS[formData.bankName] && (
                           <div className="flex items-center justify-between">
-                            <p className="text-[10px] font-bold text-primary/30 tracking-tight">
+                            <p className="text-[10px] font-bold text-primary/50 tracking-tight">
                               숫자만 입력하세요 — 하이픈은 자동 삽입됩니다
                             </p>
                             <span className={`text-[10px] font-black tracking-wider ${
                               stripNonDigits(formData.bankAccount).length === BANK_FORMATS[formData.bankName].totalDigits
-                                ? "text-green-600" : "text-primary/30"
+                                ? "text-green-600" : "text-primary/50"
                             }`}>
                               {stripNonDigits(formData.bankAccount).length}/{BANK_FORMATS[formData.bankName].totalDigits}
                             </span>
@@ -904,7 +899,7 @@ export default function ContractApplyForm() {
 
                   {/* Payment Method Selection */}
                   <div className="space-y-6">
-                    <label className="text-[10px] font-black tracking-[0.3em] uppercase text-primary/40 block">
+                    <label className="text-[10px] font-black tracking-[0.3em] uppercase text-primary/70 block">
                       PAYMENT METHOD (보증금 납부 방법)
                     </label>
                     <div className="grid grid-cols-2 gap-4">
@@ -916,9 +911,9 @@ export default function ContractApplyForm() {
                             : "border-primary/10 hover:border-accent/40 bg-primary/[0.02]"
                           }`}
                       >
-                        <CreditCard className={`w-8 h-8 ${paymentMethod === "card" ? "text-accent" : "text-primary/40"}`} />
+                        <CreditCard className={`w-8 h-8 ${paymentMethod === "card" ? "text-accent" : "text-primary/60"}`} />
                         <span className="text-[10px] font-black tracking-[0.2em] uppercase">CREDIT CARD</span>
-                        <span className="text-[9px] font-bold tracking-tight opacity-50">신용/체크카드 결제</span>
+                        <span className="text-[9px] font-bold tracking-tight opacity-70">신용/체크카드 결제</span>
                       </button>
                       <button
                         type="button"
@@ -935,9 +930,9 @@ export default function ContractApplyForm() {
                             : "border-primary/10 hover:border-accent/40 bg-primary/[0.02]"
                           }`}
                       >
-                        <Building className={`w-8 h-8 ${paymentMethod === "transfer" ? "text-accent" : "text-primary/40"}`} />
+                        <Building className={`w-8 h-8 ${paymentMethod === "transfer" ? "text-accent" : "text-primary/60"}`} />
                         <span className="text-[10px] font-black tracking-[0.2em] uppercase">BANK TRANSFER</span>
-                        <span className="text-[9px] font-bold tracking-tight opacity-50">가상계좌 이체</span>
+                        <span className="text-[9px] font-bold tracking-tight opacity-70">가상계좌 이체</span>
                       </button>
                     </div>
                   </div>
@@ -959,10 +954,10 @@ export default function ContractApplyForm() {
 
                           <div className="p-6 bg-accent/5 rounded-2xl space-y-3">
                             <div className="flex items-center justify-between">
-                              <span className="text-[10px] font-black tracking-[0.2em] uppercase text-primary/40">결제 금액</span>
+                              <span className="text-[10px] font-black tracking-[0.2em] uppercase text-primary/60">결제 금액</span>
                               <span className="text-2xl font-black tracking-tight text-primary">₩{(roomDeposit || 0).toLocaleString()}</span>
                             </div>
-                            <p className="text-[10px] font-bold tracking-tight opacity-50">
+                            <p className="text-[10px] font-bold tracking-tight opacity-70">
                               해당 방의 보증금 금액입니다. 결제 완료 후 계약 신청이 제출됩니다.
                             </p>
                           </div>
@@ -1004,7 +999,7 @@ export default function ContractApplyForm() {
                               { label: "예금주", value: virtualAccount.holder },
                             ].map((item) => (
                               <div key={item.label} className="flex items-center justify-between">
-                                <span className="text-[10px] font-black tracking-[0.2em] uppercase text-primary/40">{item.label}</span>
+                                <span className="text-[10px] font-black tracking-[0.2em] uppercase text-primary/60">{item.label}</span>
                                 <span className="text-sm font-black tracking-tight text-primary">{item.value}</span>
                               </div>
                             ))}
@@ -1030,7 +1025,7 @@ export default function ContractApplyForm() {
                       >
                         <CheckCircle2 className="w-12 h-12 text-accent mx-auto" />
                         <h3 className="text-lg font-black tracking-tighter uppercase">Payment Confirmed</h3>
-                        <p className="text-sm font-bold tracking-tight opacity-60">
+                        <p className="text-sm font-bold tracking-tight opacity-80">
                           {paymentMethod === "card" ? "카드 결제가 완료되었습니다." : "입금 확인이 완료되었습니다."}
                         </p>
                       </motion.div>
@@ -1049,7 +1044,7 @@ export default function ContractApplyForm() {
                     </button>
                     <button
                       type="submit"
-                      disabled={isReadOnly || isSubmitting || !formData.privacyAgreed || !formData.termsAgreed || (paymentMethod !== null && !paymentComplete)}
+                      disabled={isReadOnly || isSubmitting || (paymentMethod !== null && !paymentComplete)}
                       className="py-8 bg-primary hover:bg-accent text-background rounded-full font-black tracking-[0.2em] transition-all flex justify-center items-center gap-4 disabled:opacity-20 shadow-xl shadow-primary/10"
                     >
                       {isSubmitting ? (
@@ -1064,7 +1059,7 @@ export default function ContractApplyForm() {
                 </motion.div>
               )}
 
-              {step === 5 && (
+              {step === 4 && (
                 <motion.div
                   key="success"
                   initial={{ opacity: 0, scale: 0.9 }}
@@ -1079,7 +1074,7 @@ export default function ContractApplyForm() {
                     <h2 className="text-5xl font-black text-primary tracking-tighter uppercase leading-[0.85]">
                       SUCCESSFULLY<br />SUBMITTED
                     </h2>
-                    <p className="text-xl font-medium tracking-tight opacity-50 max-w-sm mx-auto whitespace-pre-wrap">
+                    <p className="text-xl font-medium tracking-tight opacity-80 max-w-sm mx-auto whitespace-pre-wrap">
                       심사 결과는 1-2일 내로 전달됩니다.{"\n"}대시보드에서 상태를 확인하세요.
                     </p>
                   </div>
