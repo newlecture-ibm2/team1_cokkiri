@@ -36,3 +36,17 @@ export const fetchPublicRoomTypes = async () => {
     name: rt.name,
   }));
 };
+
+export const fetchPriceRanges = async () => {
+  const res = await fetch('/api/price-ranges');
+  if (!res.ok) return [];
+  const data = await res.json();
+  const ranges = data.data || [];
+  return ranges.map((pr: any) => ({
+    priceRangePresetId: pr.priceRangePresetId,
+    label: pr.label,
+    minRent: pr.minRent,
+    maxRent: pr.maxRent,
+    sortOrder: pr.sortOrder,
+  }));
+};

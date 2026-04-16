@@ -26,6 +26,9 @@ export default function RoomsPage() {
     setSortOption,
     keyword,
     setKeyword,
+    priceRanges,
+    selectedPriceRangeId,
+    setSelectedPriceRangeId,
   } = useRooms();
 
   const containerRef = useRef<HTMLDivElement>(null);
@@ -81,6 +84,9 @@ export default function RoomsPage() {
             roomTypes={roomTypes}
             selectedTypeId={selectedTypeId}
             onSelectType={setSelectedTypeId}
+            priceRanges={priceRanges}
+            selectedPriceRangeId={selectedPriceRangeId}
+            onSelectPriceRange={setSelectedPriceRangeId}
             sortOption={sortOption}
             onSortChange={setSortOption}
             keyword={keyword}

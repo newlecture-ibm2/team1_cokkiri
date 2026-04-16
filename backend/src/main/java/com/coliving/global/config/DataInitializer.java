@@ -90,6 +90,7 @@ public class DataInitializer implements ApplicationRunner {
     private final CommonSpaceDetailJpaRepository commonSpaceDetailJpaRepository;
     private final RoomTypeJpaRepository roomTypeJpaRepository;
     private final AnnotationTypeJpaRepository annotationTypeJpaRepository;
+    private final com.coliving.admin.pricerange.adapter.out.jpa.PriceRangePresetJpaRepository priceRangePresetJpaRepository;
 
     private final PostLikeJpaRepository postLikeJpaRepository;
     private final PostJpaRepository postJpaRepository;
@@ -115,6 +116,7 @@ public class DataInitializer implements ApplicationRunner {
         // ── 인프라 시드 (항상 idempotent 실행) ──
         seedNationalities();
         seedDefaultAnnotationTypes();
+        seedPriceRangePresets();
         seedSpacesFromDevDataset();
 
         // ── 콘텐츠 시드 (조건부) ──
@@ -187,6 +189,16 @@ public class DataInitializer implements ApplicationRunner {
 
 
 
+
+    private void seedPriceRangePresets() {
+        if (priceRangePresetJpaRepository.count() > 0) return;
+
+        priceRangePresetJpaRepository.save(new com.coliving.admin.pricerange.adapter.out.jpa.PriceRangePresetEntity("~ 50만 원", null, 500000, 0, true));
+        priceRangePresetJpaRepository.save(new com.coliving.admin.pricerange.adapter.out.jpa.PriceRangePresetEntity("50만 원 ~ 80만 원", 500000, 800000, 1, true));
+        priceRangePresetJpaRepository.save(new com.coliving.admin.pricerange.adapter.out.jpa.PriceRangePresetEntity("80만 원 ~ 100만 원", 800000, 1000000, 2, true));
+        priceRangePresetJpaRepository.save(new com.coliving.admin.pricerange.adapter.out.jpa.PriceRangePresetEntity("100만 원 ~ 150만 원", 1000000, 1500000, 3, true));
+        priceRangePresetJpaRepository.save(new com.coliving.admin.pricerange.adapter.out.jpa.PriceRangePresetEntity("150만 원 ~", 1500000, null, 4, true));
+    }
 
     private void seedCommunityVocNotification(UserEntity admin, UserEntity user) {
         PostEntity notice = findPostByTitle("[시드] 공용 공간 이용 가이드")

@@ -3,13 +3,16 @@
 import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Search, X, ArrowUpDown, Check } from 'lucide-react';
-import type { RoomTypeOption } from '../_types';
+import type { RoomTypeOption, PriceRangePreset } from '../_types';
 import type { SortOption } from '../_hooks/useRooms';
 
 interface FilterChipsProps {
   roomTypes: RoomTypeOption[];
   selectedTypeId: number | null;
   onSelectType: (typeId: number | null) => void;
+  priceRanges: PriceRangePreset[];
+  selectedPriceRangeId: number | null;
+  onSelectPriceRange: (id: number | null) => void;
   sortOption: SortOption;
   onSortChange: (sort: SortOption) => void;
   keyword: string;
@@ -20,9 +23,15 @@ const SORT_OPTIONS: { value: SortOption; label: string }[] = [
   { value: 'name,asc', label: '이름순 (ㄱ→ㅎ)' },
   { value: 'name,desc', label: '이름순 (ㅎ→ㄱ)' },
   { value: 'spaceId,desc', label: '최신 등록순' },
+  { value: 'monthlyRent,asc', label: '월세 낮은순' },
+  { value: 'monthlyRent,desc', label: '월세 높은순' },
 ];
 
-export function FilterChips({ roomTypes, selectedTypeId, onSelectType, sortOption, onSortChange, keyword, onSearch }: FilterChipsProps) {
+export function FilterChips({ 
+  roomTypes, selectedTypeId, onSelectType, 
+  priceRanges, selectedPriceRangeId, onSelectPriceRange,
+  sortOption, onSortChange, keyword, onSearch 
+}: FilterChipsProps) {
   const [isSearchOpen, setIsSearchOpen] = useState(!!keyword);
   const [searchQuery, setSearchQuery] = useState(keyword || '');
   const [isSortOpen, setIsSortOpen] = useState(false);
@@ -45,9 +54,10 @@ export function FilterChips({ roomTypes, selectedTypeId, onSelectType, sortOptio
   }, []);
 
   return (
-    <div className="flex flex-col md:flex-row justify-between items-stretch md:items-center gap-6">
-      {/* Filter Chips — editorial uppercase */}
-      <div className="grid grid-cols-2 gap-2 md:flex md:flex-wrap md:gap-3">
+    <div className="flex flex-col gap-6">
+      <div className="flex flex-col md:flex-row justify-between items-stretch md:items-center gap-6">
+        {/* Filter Chips — editorial uppercase */}
+        <div className="grid grid-cols-2 gap-2 md:flex md:flex-wrap md:gap-3">
         {/* All 칩 */}
         <button
           onClick={() => onSelectType(null)}
@@ -158,6 +168,34 @@ export function FilterChips({ roomTypes, selectedTypeId, onSelectType, sortOptio
             )}
           </AnimatePresence>
         </div>
+      </div>
+      </div>
+
+      {/* Price Range Chips */}
+      <div className="flex flex-wrap gap-2 md:gap-3">
+        <button
+          onClick={() => onSelectPriceRange(null)}
+          className={`px-3 md:px-6 py-2 md:py-2.5 rounded-full text-[10px] md:text-xs font-black tracking-widest transition-all duration-500 border cursor-pointer ${
+            selectedPriceRangeId === null
+              ? 'bg-[var(--color-accent)] text-white border-[var(--color-accent)]'
+              : 'bg-transparent text-foreground/70 border-foreground/20 hover:border-foreground/40'
+          }`}
+        >
+          가격 전체
+        </button>
+        {priceRanges.map((pr) => (
+          <button
+            key={pr.priceRangePresetId}
+            onClick={() => onSelectPriceRange(pr.priceRangePresetId)}
+            className={`px-3 md:px-6 py-2 md:py-2.5 rounded-full text-[10px] md:text-xs font-black tracking-widest transition-all duration-500 border cursor-pointer ${
+              selectedPriceRangeId === pr.priceRangePresetId
+                ? 'bg-[var(--color-accent)] text-white border-[var(--color-accent)]'
+                : 'bg-transparent text-foreground/70 border-foreground/20 hover:border-foreground/40'
+            }`}
+          >
+            {pr.label}
+          </button>
+        ))}
       </div>
     </div>
   );

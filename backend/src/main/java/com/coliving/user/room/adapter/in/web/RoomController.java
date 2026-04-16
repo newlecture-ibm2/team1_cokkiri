@@ -6,6 +6,8 @@ import com.coliving.user.room.application.command.RoomListCommand;
 import com.coliving.user.room.application.port.in.RoomUseCase;
 import com.coliving.user.room.model.Room;
 import com.coliving.admin.space.adapter.out.jpa.RoomTypeJpaRepository;
+import com.coliving.admin.pricerange.adapter.out.jpa.PriceRangePresetJpaRepository;
+import com.coliving.user.room.adapter.in.web.dto.PublicPriceRangeResponseDto;
 
 import com.coliving.global.dto.ApiResponse;
 import com.coliving.global.error.BusinessException;
@@ -29,6 +31,7 @@ public class RoomController {
 
     private final RoomUseCase roomUseCase;
     private final RoomTypeJpaRepository roomTypeJpaRepository;
+    private final PriceRangePresetJpaRepository priceRangePresetJpaRepository;
 
     @Operation(summary = "방 유형 목록 조회 (Public, sort_order 정렬)")
     @GetMapping("/api/room-types")
@@ -38,6 +41,17 @@ public class RoomController {
                         org.springframework.data.domain.Sort.Direction.ASC, "sortOrder", "id"))
                 .stream()
                 .map(RoomTypeResponseDto::from)
+                .toList();
+        return ApiResponse.ok(result);
+    }
+
+    @Operation(summary = "가격대 필터 프리셋 목록 조회 (Public)")
+    @GetMapping("/api/price-ranges")
+    public ApiResponse<List<PublicPriceRangeResponseDto>> getPriceRanges() {
+        List<PublicPriceRangeResponseDto> result = priceRangePresetJpaRepository
+                .findAllByIsActiveTrueOrderBySortOrderAsc()
+                .stream()
+                .map(PublicPriceRangeResponseDto::from)
                 .toList();
         return ApiResponse.ok(result);
     }
