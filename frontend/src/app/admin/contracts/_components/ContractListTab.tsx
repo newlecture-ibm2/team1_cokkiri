@@ -433,7 +433,7 @@ export function ContractListTab({ refreshKey, onRefresh }: Props) {
                 filtered.map((c) => (
                   <tr
                     key={c.contractId}
-                    className="border-b border-primary/5 hover:bg-background/50 transition-colors group"
+                    className="border-b border-primary/5 hover:bg-primary/[0.02] transition-colors group"
                   >
                     <td className="p-5">
                       <span className="text-xs font-black opacity-30">#{c.contractId}</span>
@@ -646,7 +646,7 @@ export function ContractListTab({ refreshKey, onRefresh }: Props) {
                   <p className="text-[10px] font-black tracking-widest uppercase text-accent mb-1">Modify #CTR-{editId}</p>
                   <h2 className="text-2xl font-black uppercase tracking-tighter">Edit Contract</h2>
                 </div>
-                <button onClick={() => setEditId(null)} className="w-10 h-10 rounded-full hover:bg-muted/30 flex items-center justify-center">
+                <button onClick={() => setEditId(null)} className="w-10 h-10 rounded-full hover:bg-primary/[0.05] flex items-center justify-center">
                   <X className="w-5 h-5" />
                 </button>
               </div>
@@ -855,7 +855,7 @@ export function ContractListTab({ refreshKey, onRefresh }: Props) {
                   <p className="text-[10px] font-black tracking-widest uppercase text-accent mb-1">Approve Application</p>
                   <h2 className="text-2xl font-black uppercase tracking-tighter">신청 승인</h2>
                 </div>
-                <button onClick={() => setApproveModal(null)} className="w-10 h-10 rounded-full hover:bg-muted/30 flex items-center justify-center">
+                <button onClick={() => setApproveModal(null)} className="w-10 h-10 rounded-full hover:bg-primary/[0.05] flex items-center justify-center">
                   <X className="w-5 h-5" />
                 </button>
               </div>

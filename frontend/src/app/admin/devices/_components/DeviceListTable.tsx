@@ -232,7 +232,7 @@ export function DeviceListTable() {
 
       {/* 빈 상태 */}
       {devices.length === 0 ? (
-        <div className="rounded-[2rem] border border-border bg-surface p-12 text-center">
+        <div className="rounded-[2rem] border border-primary/5 bg-white p-12 text-center shadow-sm">
           <p className="text-sm font-medium text-muted-foreground">
             등록된 기기가 없습니다. 새 기기를 등록해 보세요.
           </p>
@@ -246,56 +246,56 @@ export function DeviceListTable() {
               return (
                 <div
                   key={opt.value}
-                  className="flex items-center gap-2 rounded-xl border border-border bg-surface px-4 py-2"
+                  className="flex items-center gap-2 rounded-[2rem] border border-primary/5 bg-white px-5 py-3 shadow-sm"
                 >
                   <span className={`inline-block h-2.5 w-2.5 rounded-full ${opt.color}`} />
-                  <span className="text-xs font-semibold text-primary">{opt.label}</span>
-                  <span className="text-xs font-black text-primary">{count}</span>
+                  <span className="text-xs font-semibold text-primary/95">{opt.label}</span>
+                  <span className="text-xs font-black text-primary/95">{count}</span>
                 </div>
               );
             })}
           </div>
 
           {/* 테이블 */}
-          <div className="overflow-hidden rounded-[2rem] border border-border bg-surface">
+          <div className="overflow-hidden rounded-[2rem] border border-primary/5 bg-white shadow-sm">
             <div className="overflow-x-auto">
-              <table className="w-full text-left text-sm">
+              <table className="w-full text-center text-sm">
                 <thead>
-                  <tr className="border-b border-border bg-muted/20">
+                  <tr className="bg-primary/[0.03] border-b border-primary/10">
                     <th
-                      className="px-5 py-3 font-black text-[10px] uppercase tracking-[0.3em] text-muted-foreground cursor-pointer select-none hover:text-primary transition-colors"
+                      className="px-5 py-3 font-black text-[13px] uppercase tracking-widest text-primary/60 cursor-pointer select-none hover:text-primary transition-colors whitespace-nowrap"
                       onClick={() => handleSort("name")}
                     >
                       기기명{sortIndicator("name")}
                     </th>
                     <th
-                      className="px-5 py-3 font-black text-[10px] uppercase tracking-[0.3em] text-muted-foreground cursor-pointer select-none hover:text-primary transition-colors"
+                      className="px-5 py-3 font-black text-[13px] uppercase tracking-widest text-primary/60 cursor-pointer select-none hover:text-primary transition-colors whitespace-nowrap"
                       onClick={() => handleSort("deviceTypeName")}
                     >
                       종류{sortIndicator("deviceTypeName")}
                     </th>
                     <th
-                      className="px-5 py-3 font-black text-[10px] uppercase tracking-[0.3em] text-muted-foreground cursor-pointer select-none hover:text-primary transition-colors"
+                      className="px-5 py-3 font-black text-[13px] uppercase tracking-widest text-primary/60 cursor-pointer select-none hover:text-primary transition-colors whitespace-nowrap"
                       onClick={() => handleSort("spaceName")}
                     >
                       설치 위치{sortIndicator("spaceName")}
                     </th>
                     <th
-                      className="px-5 py-3 font-black text-[10px] uppercase tracking-[0.3em] text-muted-foreground cursor-pointer select-none hover:text-primary transition-colors"
+                      className="px-5 py-3 font-black text-[13px] uppercase tracking-widest text-primary/60 cursor-pointer select-none hover:text-primary transition-colors whitespace-nowrap"
                       onClick={() => handleSort("status")}
                     >
                       상태{sortIndicator("status")}
                     </th>
-                    <th className="px-5 py-3 font-black text-[10px] uppercase tracking-[0.3em] text-muted-foreground">
+                    <th className="px-5 py-3 font-black text-[13px] uppercase tracking-widest text-primary/60 whitespace-nowrap">
                       제어
                     </th>
-                    <th className="px-5 py-3 font-black text-[10px] uppercase tracking-[0.3em] text-muted-foreground">
+                    <th className="px-5 py-3 font-black text-[13px] uppercase tracking-widest text-primary/60 whitespace-nowrap">
                       활성화
                     </th>
-                    <th className="px-5 py-3 font-black text-[10px] uppercase tracking-[0.3em] text-muted-foreground">
+                    <th className="px-5 py-3 font-black text-[13px] uppercase tracking-widest text-primary/60 whitespace-nowrap">
                       MAC
                     </th>
-                    <th className="px-5 py-3 font-black text-[10px] uppercase tracking-[0.3em] text-muted-foreground">
+                    <th className="px-5 py-3 font-black text-[13px] uppercase tracking-widest text-primary/60 whitespace-nowrap">
                       관리
                     </th>
                   </tr>
@@ -327,42 +327,40 @@ export function DeviceListTable() {
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         transition={{ delay: idx * 0.03 }}
-                        className={`border-b border-border/50 transition-colors hover:bg-muted/10
+                        className={`border-b border-primary/5 transition-colors hover:bg-primary/[0.02]
                           ${!device.isActive ? "opacity-50" : ""}
-                          ${isErrorRetry ? "bg-red-50/30" : ""}`}
+                          ${isErrorRetry ? "bg-destructive/[0.02]" : ""}`}
                       >
                         {/* 기기명 */}
                         <td className="px-5 py-3">
-                          <div className="flex items-center gap-2">
-                            <div>
-                              <span className="font-semibold text-primary">{device.name}</span>
-                              {device.modelName && (
-                                <span className="ml-2 text-xs text-muted-foreground">
-                                  {device.modelName}
-                                </span>
-                              )}
-                            </div>
+                          <div className="flex flex-col items-center">
+                            <span className="font-semibold text-primary/95 whitespace-nowrap">{device.name}</span>
+                            {device.modelName && (
+                              <span className="text-[11px] text-primary/50 whitespace-nowrap">
+                                {device.modelName}
+                              </span>
+                            )}
                           </div>
                         </td>
 
                         {/* 종류 */}
                         <td className="px-5 py-3">
-                          <span className="rounded-lg bg-primary/10 px-2 py-1 font-mono text-xs font-bold text-primary">
+                          <span className="inline-block whitespace-nowrap rounded-lg bg-primary/[0.05] px-2 py-1 font-mono text-xs font-bold text-primary/95">
                             {device.deviceTypeName}
                           </span>
                         </td>
 
                         {/* 설치 공간 */}
-                        <td className="px-5 py-3 text-sm">
-                          <span className="font-semibold text-primary">{device.spaceName ?? "알 수 없음"}</span>
-                          <span className="ml-1 text-xs text-muted-foreground">({device.spaceFloor ?? "-"}층)</span>
+                        <td className="px-5 py-3 text-sm whitespace-nowrap">
+                          <span className="font-semibold text-primary/95">{device.spaceName ?? "알 수 없음"}</span>
+                          <span className="ml-1 text-xs text-primary/50">({device.spaceFloor ?? "-"}층)</span>
                         </td>
 
                         {/* 상태 표시 (시스템 자동 관리) */}
                         <td className="px-5 py-3">
-                          <div className="flex items-center gap-2">
+                          <div className="flex items-center justify-center gap-2 whitespace-nowrap">
                             <span className={`inline-block h-2 w-2 rounded-full ${badge.color}`} />
-                            <span className="text-xs font-medium text-primary">
+                            <span className="text-xs font-medium text-primary/95">
                               {badge.label}
                             </span>
                           </div>
@@ -388,7 +386,7 @@ export function DeviceListTable() {
                               />
                             </div>
                           ) : (
-                            <span className="text-[10px] font-medium text-muted-foreground">
+                            <span className="text-[10px] font-medium text-primary/50">
                               {!device.isActive ? "비활성" : "오프라인"}
                             </span>
                           )}
@@ -396,38 +394,40 @@ export function DeviceListTable() {
 
                         {/* 활성화 토글 */}
                         <td className="px-5 py-3">
-                          <button
-                            onClick={() => handleActiveToggle(device)}
-                            className={`relative h-6 w-11 rounded-full transition-colors duration-200
-                              ${device.isActive ? "bg-accent" : "bg-muted/40"}`}
-                          >
-                            <span
-                              className={`absolute top-0.5 left-0.5 h-5 w-5 rounded-full bg-white shadow
-                                transition-transform duration-200
-                                ${device.isActive ? "translate-x-5" : "translate-x-0"}`}
-                            />
-                          </button>
+                          <div className="flex justify-center">
+                            <button
+                              onClick={() => handleActiveToggle(device)}
+                              className={`relative h-6 w-11 rounded-full transition-colors duration-200
+                                ${device.isActive ? "bg-accent" : "bg-muted/40"}`}
+                            >
+                              <span
+                                className={`absolute top-0.5 left-0.5 h-5 w-5 rounded-full bg-white shadow
+                                  transition-transform duration-200
+                                  ${device.isActive ? "translate-x-5" : "translate-x-0"}`}
+                              />
+                            </button>
+                          </div>
                         </td>
 
                         {/* MAC */}
-                        <td className="px-5 py-3 font-mono text-xs text-muted-foreground">
+                        <td className="px-5 py-3 font-mono text-xs text-primary/50 whitespace-nowrap">
                           {device.macAddress || "—"}
                         </td>
 
                         {/* 수정 + 삭제 */}
                         <td className="px-5 py-3">
-                          <div className="flex gap-2">
+                          <div className="flex justify-center gap-2">
                             <button
                               onClick={() => setEditing(device)}
-                              className="rounded-lg border border-border px-3 py-1 text-xs
-                                font-semibold text-primary transition-colors hover:bg-muted/20"
+                              className="rounded-lg border border-primary/10 px-3 py-1 text-xs
+                                font-semibold text-primary/70 transition-colors hover:bg-primary/[0.02] whitespace-nowrap"
                             >
                               수정
                             </button>
                             <button
                               onClick={() => handleDelete(device)}
                               className="rounded-lg border border-destructive/30 px-3 py-1 text-xs
-                                font-semibold text-destructive transition-colors hover:bg-destructive/10"
+                                font-semibold text-destructive transition-colors hover:bg-destructive/10 whitespace-nowrap"
                             >
                               삭제
                             </button>
@@ -511,7 +511,7 @@ function EditDeviceModal({
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
-        className="w-full max-w-md rounded-[2rem] border border-border bg-background p-8 shadow-xl"
+        className="w-full max-w-md rounded-[2rem] border border-primary/5 bg-white p-8 shadow-xl"
       >
         <h3 className="mb-1 text-lg font-black tracking-tight text-primary">기기 수정</h3>
         <p className="mb-6 text-xs text-muted-foreground">
@@ -521,25 +521,25 @@ function EditDeviceModal({
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <label className="block">
-            <span className="text-xs font-bold text-primary">기기명 *</span>
+            <span className="text-xs font-bold text-primary/95">기기명 *</span>
             <input
               value={name}
               onChange={(e) => setName(e.target.value)}
               required
               maxLength={100}
-              className="mt-1 w-full rounded-xl border border-border bg-surface px-3 py-2
-                text-sm text-primary focus:outline-none focus:ring-2 focus:ring-ring/40"
+              className="mt-1 w-full rounded-xl border border-primary/10 bg-white px-3 py-2
+                text-sm text-primary/95 focus:outline-none focus:ring-2 focus:ring-accent/40"
             />
           </label>
 
           <label className="block">
-            <span className="text-xs font-bold text-primary">설치 공간 *</span>
+            <span className="text-xs font-bold text-primary/95">설치 공간 *</span>
             <select
               value={spaceId}
               onChange={(e) => setSpaceId(Number(e.target.value))}
               required
-              className="mt-1 w-full rounded-xl border border-border bg-surface px-3 py-2
-                text-sm text-primary focus:outline-none focus:ring-2 focus:ring-ring/40"
+              className="mt-1 w-full rounded-xl border border-primary/10 bg-white px-3 py-2
+                text-sm text-primary/95 focus:outline-none focus:ring-2 focus:ring-accent/40"
             >
               <option value={0} disabled>공간을 선택하세요</option>
               {privateSpaces.length > 0 && (
@@ -564,29 +564,29 @@ function EditDeviceModal({
           </label>
 
           <label className="block">
-            <span className="text-xs font-bold text-primary">모델명</span>
+            <span className="text-xs font-bold text-primary/95">모델명</span>
             <input
               value={modelName}
               onChange={(e) => setModelName(e.target.value)}
               maxLength={100}
-              className="mt-1 w-full rounded-xl border border-border bg-surface px-3 py-2
-                text-sm text-primary focus:outline-none focus:ring-2 focus:ring-ring/40"
+              className="mt-1 w-full rounded-xl border border-primary/10 bg-white px-3 py-2
+                text-sm text-primary/95 focus:outline-none focus:ring-2 focus:ring-accent/40"
             />
           </label>
 
           <label className="block">
-            <span className="text-xs font-bold text-primary">MAC 주소</span>
+            <span className="text-xs font-bold text-primary/95">MAC 주소</span>
             <input
               value={macAddress}
               onChange={(e) => setMacAddress(e.target.value)}
               maxLength={50}
-              className="mt-1 w-full rounded-xl border border-border bg-surface px-3 py-2
-                text-sm text-primary focus:outline-none focus:ring-2 focus:ring-ring/40"
+              className="mt-1 w-full rounded-xl border border-primary/10 bg-white px-3 py-2
+                text-sm text-primary/95 focus:outline-none focus:ring-2 focus:ring-accent/40"
             />
           </label>
 
           <div className="space-y-2">
-            <span className="text-xs font-bold text-primary">IoT 에러 모드</span>
+            <span className="text-xs font-bold text-primary/95">IoT 에러 모드</span>
             <div className="flex gap-2 flex-wrap">
               {(["normal", "error", "timeout", "fault"] as ErrorMode[]).map((mode) => {
                 const labels: Record<ErrorMode, { icon: string; text: string }> = {
@@ -606,7 +606,7 @@ function EditDeviceModal({
                     className={`rounded-xl border px-3 py-1.5 text-xs font-bold transition-all
                       ${isActive
                         ? "border-accent bg-accent/20 text-accent ring-1 ring-accent/40"
-                        : "border-border text-muted-foreground hover:border-secondary"
+                        : "border-primary/10 text-primary/50 hover:border-accent/40"
                       } ${errorModeLoading ? "opacity-50 cursor-not-allowed" : ""}`}
                   >
                     {icon} {text}
@@ -626,8 +626,8 @@ function EditDeviceModal({
             <button
               type="button"
               onClick={onClose}
-              className="rounded-xl border border-border px-4 py-2 text-xs font-bold text-muted-foreground
-                transition-colors hover:bg-muted/20"
+              className="rounded-xl border border-primary/10 px-4 py-2 text-xs font-bold text-primary/50
+                transition-colors hover:bg-primary/[0.02]"
             >
               취소
             </button>

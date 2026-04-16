@@ -71,7 +71,7 @@ export async function AdminVocDashboard() {
                 <p className="text-xs md:text-sm font-bold uppercase tracking-wider text-muted-foreground/80">
                   {stat.label}
                 </p>
-                <p className="text-3xl font-black tracking-tighter text-foreground">
+                <p className="text-3xl font-black tracking-tighter text-primary">
                   {stat.value.toLocaleString()}
                 </p>
               </div>

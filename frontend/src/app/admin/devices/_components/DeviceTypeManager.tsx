@@ -282,7 +282,7 @@ export function DeviceTypeManager() {
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
-            className="overflow-hidden rounded-xl border border-border bg-surface p-5 space-y-5"
+            className="overflow-hidden rounded-xl border border-primary/10 bg-surface p-5 space-y-5"
           >
             <p className="text-sm font-bold text-primary">
               {editingId ? "기기 종류 수정" : "새 기기 종류 등록"}
@@ -300,7 +300,7 @@ export function DeviceTypeManager() {
                   placeholder="ex: AIR_CONDITIONER"
                   value={form.code}
                   onChange={(e) => setForm({ ...form, code: e.target.value })}
-                  className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm font-mono
+                  className="w-full rounded-xl border border-primary/10 bg-background px-3 py-2 text-sm font-mono
                     text-primary placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-ring/40"
                 />
               </div>
@@ -315,7 +315,7 @@ export function DeviceTypeManager() {
                   placeholder="ex: 에어컨"
                   value={form.name}
                   onChange={(e) => setForm({ ...form, name: e.target.value })}
-                  className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm
+                  className="w-full rounded-xl border border-primary/10 bg-background px-3 py-2 text-sm
                     text-primary placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-ring/40"
                 />
               </div>
@@ -359,7 +359,7 @@ export function DeviceTypeManager() {
               </div>
 
               {form.commands.length === 0 && (
-                <p className="rounded-lg border border-dashed border-border p-4 text-center text-xs text-muted-foreground">
+                <p className="rounded-lg border border-dashed border-primary/10 p-4 text-center text-xs text-muted-foreground">
                   명령어가 없습니다. 기기 등록 시 IoT 서버에서 자동 병합되거나, 직접 추가할 수 있습니다.
                 </p>
               )}
@@ -424,7 +424,7 @@ export function DeviceTypeManager() {
                                 placeholder="ex: 전원, 잠금, 동작"
                                 value={onCmd.label}
                                 onChange={(e) => updateTogglePairShared([onIdx, offIdx], "label", e.target.value)}
-                                className="w-full rounded-lg border border-border bg-surface px-2 py-1.5 text-sm
+                                className="w-full rounded-lg border border-primary/10 bg-surface px-2 py-1.5 text-sm
                                   text-primary placeholder:text-muted-foreground/40 focus:outline-none focus:ring-1 focus:ring-ring/40"
                               />
                               <p className="text-[9px] text-muted-foreground/60">스위치 옆에 표시되는 이름</p>
@@ -438,7 +438,7 @@ export function DeviceTypeManager() {
                                 placeholder="ex: power, locked"
                                 value={onCmd.stateKey}
                                 onChange={(e) => updateTogglePairShared([onIdx, offIdx], "stateKey", e.target.value)}
-                                className="w-full rounded-lg border border-border bg-surface px-2 py-1.5 text-sm font-mono
+                                className="w-full rounded-lg border border-primary/10 bg-surface px-2 py-1.5 text-sm font-mono
                                   text-primary placeholder:text-muted-foreground/40 focus:outline-none focus:ring-1 focus:ring-ring/40"
                               />
                               <p className="text-[9px] text-muted-foreground/60">같은 키 = 하나의 제어로 묶임</p>
@@ -456,7 +456,7 @@ export function DeviceTypeManager() {
                                   placeholder="ex: ON, UNLOCK"
                                   value={onCmd.command}
                                   onChange={(e) => updateCommand(onIdx, "command", e.target.value.toUpperCase())}
-                                  className="w-full rounded-lg border border-border bg-surface px-2 py-1.5 text-sm font-mono
+                                  className="w-full rounded-lg border border-primary/10 bg-surface px-2 py-1.5 text-sm font-mono
                                     text-primary placeholder:text-muted-foreground/40 focus:outline-none focus:ring-1 focus:ring-ring/40"
                                 />
                               </div>
@@ -467,12 +467,12 @@ export function DeviceTypeManager() {
                                   placeholder="ex: true"
                                   value={onCmd.stateValue != null ? String(onCmd.stateValue) : ""}
                                   onChange={(e) => updateCommand(onIdx, "stateValue", parseStateVal(e.target.value))}
-                                  className="w-full rounded-lg border border-border bg-surface px-2 py-1.5 text-sm font-mono
+                                  className="w-full rounded-lg border border-primary/10 bg-surface px-2 py-1.5 text-sm font-mono
                                     text-primary placeholder:text-muted-foreground/40 focus:outline-none focus:ring-1 focus:ring-ring/40"
                                 />
                               </div>
                             </div>
-                            <div className="rounded-lg border border-border bg-background p-3 space-y-2">
+                            <div className="rounded-lg border border-primary/10 bg-background p-3 space-y-2">
                               <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">스위치 OFF일 때</p>
                               <div className="space-y-1">
                                 <label className="text-[9px] font-semibold text-muted-foreground">명령어</label>
@@ -481,7 +481,7 @@ export function DeviceTypeManager() {
                                   placeholder="ex: OFF, LOCK"
                                   value={offCmd.command}
                                   onChange={(e) => updateCommand(offIdx, "command", e.target.value.toUpperCase())}
-                                  className="w-full rounded-lg border border-border bg-surface px-2 py-1.5 text-sm font-mono
+                                  className="w-full rounded-lg border border-primary/10 bg-surface px-2 py-1.5 text-sm font-mono
                                     text-primary placeholder:text-muted-foreground/40 focus:outline-none focus:ring-1 focus:ring-ring/40"
                                 />
                               </div>
@@ -492,7 +492,7 @@ export function DeviceTypeManager() {
                                   placeholder="ex: false"
                                   value={offCmd.stateValue != null ? String(offCmd.stateValue) : ""}
                                   onChange={(e) => updateCommand(offIdx, "stateValue", parseStateVal(e.target.value))}
-                                  className="w-full rounded-lg border border-border bg-surface px-2 py-1.5 text-sm font-mono
+                                  className="w-full rounded-lg border border-primary/10 bg-surface px-2 py-1.5 text-sm font-mono
                                     text-primary placeholder:text-muted-foreground/40 focus:outline-none focus:ring-1 focus:ring-ring/40"
                                 />
                               </div>
@@ -523,7 +523,7 @@ export function DeviceTypeManager() {
                       key={idx}
                       initial={{ opacity: 0, y: 8 }}
                       animate={{ opacity: 1, y: 0 }}
-                      className={`rounded-xl border border-border bg-background p-4 space-y-3 border-l-4 ${groupColor}`}
+                      className={`rounded-xl border border-primary/10 bg-background p-4 space-y-3 border-l-4 ${groupColor}`}
                     >
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
@@ -554,7 +554,7 @@ export function DeviceTypeManager() {
                             placeholder="ex: SET_TEMP, RESTART"
                             value={cmd.command}
                             onChange={(e) => updateCommand(idx, "command", e.target.value.toUpperCase())}
-                            className="w-full rounded-lg border border-border bg-surface px-2 py-1.5 text-sm font-mono
+                            className="w-full rounded-lg border border-primary/10 bg-surface px-2 py-1.5 text-sm font-mono
                               text-primary placeholder:text-muted-foreground/40 focus:outline-none focus:ring-1 focus:ring-ring/40"
                           />
                           <p className="text-[9px] text-muted-foreground/60">IoT 기기에 전송되는 명령 코드</p>
@@ -569,7 +569,7 @@ export function DeviceTypeManager() {
                             placeholder="ex: 온도 설정, 재시작"
                             value={cmd.label}
                             onChange={(e) => updateCommand(idx, "label", e.target.value)}
-                            className="w-full rounded-lg border border-border bg-surface px-2 py-1.5 text-sm
+                            className="w-full rounded-lg border border-primary/10 bg-surface px-2 py-1.5 text-sm
                               text-primary placeholder:text-muted-foreground/40 focus:outline-none focus:ring-1 focus:ring-ring/40"
                           />
                           <p className="text-[9px] text-muted-foreground/60">사용자 화면에 표시되는 이름</p>
@@ -582,7 +582,7 @@ export function DeviceTypeManager() {
                           <select
                             value={cmd.uiType}
                             onChange={(e) => updateCommand(idx, "uiType", e.target.value)}
-                            className="w-full rounded-lg border border-border bg-surface px-2 py-1.5 text-sm
+                            className="w-full rounded-lg border border-primary/10 bg-surface px-2 py-1.5 text-sm
                               text-primary focus:outline-none focus:ring-1 focus:ring-ring/40"
                           >
                             {UI_TYPE_OPTIONS.map((opt) => (
@@ -600,7 +600,7 @@ export function DeviceTypeManager() {
                             placeholder="ex: temperature, mode"
                             value={cmd.stateKey}
                             onChange={(e) => updateCommand(idx, "stateKey", e.target.value)}
-                            className="w-full rounded-lg border border-border bg-surface px-2 py-1.5 text-sm font-mono
+                            className="w-full rounded-lg border border-primary/10 bg-surface px-2 py-1.5 text-sm font-mono
                               text-primary placeholder:text-muted-foreground/40 focus:outline-none focus:ring-1 focus:ring-ring/40"
                           />
                           <p className="text-[9px] text-muted-foreground/60">같은 키 = 하나의 제어로 묶임</p>
@@ -623,7 +623,7 @@ export function DeviceTypeManager() {
                                 else if (!isNaN(Number(v)) && v.trim() !== "") updateCommand(idx, "stateValue", Number(v));
                                 else updateCommand(idx, "stateValue", v);
                               }}
-                              className="w-full rounded-lg border border-border bg-surface px-2 py-1.5 text-sm font-mono
+                              className="w-full rounded-lg border border-primary/10 bg-surface px-2 py-1.5 text-sm font-mono
                                 text-primary placeholder:text-muted-foreground/40 focus:outline-none focus:ring-1 focus:ring-ring/40"
                             />
                             <p className="text-[9px] text-muted-foreground/60">명령 실행 시 상태 키에 저장되는 값</p>
@@ -640,7 +640,7 @@ export function DeviceTypeManager() {
                               placeholder="ex: 0"
                               value={cmd.min ?? ""}
                               onChange={(e) => updateCommand(idx, "min", e.target.value ? Number(e.target.value) : undefined)}
-                              className="w-full rounded-lg border border-border bg-surface px-2 py-1.5 text-sm font-mono
+                              className="w-full rounded-lg border border-primary/10 bg-surface px-2 py-1.5 text-sm font-mono
                                 text-primary focus:outline-none focus:ring-1 focus:ring-ring/40"
                             />
                           </div>
@@ -651,7 +651,7 @@ export function DeviceTypeManager() {
                               placeholder="ex: 100"
                               value={cmd.max ?? ""}
                               onChange={(e) => updateCommand(idx, "max", e.target.value ? Number(e.target.value) : undefined)}
-                              className="w-full rounded-lg border border-border bg-surface px-2 py-1.5 text-sm font-mono
+                              className="w-full rounded-lg border border-primary/10 bg-surface px-2 py-1.5 text-sm font-mono
                                 text-primary focus:outline-none focus:ring-1 focus:ring-ring/40"
                             />
                           </div>
@@ -662,7 +662,7 @@ export function DeviceTypeManager() {
                               placeholder="ex: ℃, %"
                               value={cmd.unit ?? ""}
                               onChange={(e) => updateCommand(idx, "unit", e.target.value)}
-                              className="w-full rounded-lg border border-border bg-surface px-2 py-1.5 text-sm
+                              className="w-full rounded-lg border border-primary/10 bg-surface px-2 py-1.5 text-sm
                                 text-primary placeholder:text-muted-foreground/40 focus:outline-none focus:ring-1 focus:ring-ring/40"
                             />
                           </div>
@@ -679,7 +679,7 @@ export function DeviceTypeManager() {
                             onBlur={(e) =>
                               updateCommand(idx, "options", e.target.value.split(",").map((s) => s.trim()).filter(Boolean))
                             }
-                            className="w-full rounded-lg border border-border bg-surface px-2 py-1.5 text-sm font-mono
+                            className="w-full rounded-lg border border-primary/10 bg-surface px-2 py-1.5 text-sm font-mono
                               text-primary placeholder:text-muted-foreground/40 focus:outline-none focus:ring-1 focus:ring-ring/40"
                           />
                           <p className="text-[9px] text-muted-foreground/60">쉴표(,)로 구분. 입력 후 바깥을 클릭하면 적용.</p>
@@ -705,7 +705,7 @@ export function DeviceTypeManager() {
               <button
                 type="button"
                 onClick={resetForm}
-                className="rounded-xl border border-border px-5 py-2 text-xs font-bold uppercase tracking-[0.2em]
+                className="rounded-xl border border-primary/10 px-5 py-2 text-xs font-bold uppercase tracking-[0.2em]
                   text-primary transition-colors hover:bg-muted"
               >
                 취소
@@ -723,7 +723,7 @@ export function DeviceTypeManager() {
           ))}
         </div>
       ) : types.length === 0 ? (
-        <div className="rounded-xl border border-border bg-surface p-8 text-center">
+        <div className="rounded-xl border border-primary/10 bg-surface p-8 text-center">
           <p className="text-sm font-medium text-muted-foreground">
             등록된 기기 종류가 없습니다. 종류를 추가해 보세요.
           </p>
@@ -738,7 +738,7 @@ export function DeviceTypeManager() {
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: idx * 0.05 }}
-                className="rounded-xl border border-border bg-surface px-5 py-3
+                className="rounded-xl border border-primary/10 bg-surface px-5 py-3
                   transition-colors hover:border-secondary"
               >
                 <div className="flex items-center justify-between">
@@ -759,7 +759,7 @@ export function DeviceTypeManager() {
                   <div className="flex gap-2">
                     <button
                       onClick={() => handleEdit(type)}
-                      className="rounded-lg border border-border px-3 py-1 text-xs font-semibold
+                      className="rounded-lg border border-primary/10 px-3 py-1 text-xs font-semibold
                         text-primary transition-colors hover:bg-muted"
                     >
                       수정

@@ -29,7 +29,7 @@ export function AdminVocStatusFilter({ pending, all, status }: Props) {
           base,
           pending
             ? "border-secondary bg-primary text-primary-foreground shadow-sm"
-            : "border-border bg-background text-foreground hover:border-secondary/60",
+            : "border-primary/10 bg-white text-primary/50 hover:border-accent/40",
         )}
       >
         미처리
@@ -40,7 +40,7 @@ export function AdminVocStatusFilter({ pending, all, status }: Props) {
           base,
           all
             ? "border-secondary bg-primary text-primary-foreground shadow-sm"
-            : "border-border bg-background text-foreground hover:border-secondary/60",
+            : "border-primary/10 bg-white text-primary/50 hover:border-accent/40",
         )}
       >
         전체
@@ -55,7 +55,7 @@ export function AdminVocStatusFilter({ pending, all, status }: Props) {
               base,
               active
                 ? "border-secondary bg-primary text-primary-foreground shadow-sm"
-                : "border-border bg-background text-foreground hover:border-secondary/60",
+                : "border-primary/10 bg-white text-primary/50 hover:border-accent/40",
             )}
           >
             {t.label}
