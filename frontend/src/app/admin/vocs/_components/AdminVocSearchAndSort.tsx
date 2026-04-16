@@ -258,16 +258,16 @@ export function AdminVocDateFilter() {
       <button
         type="button"
         onClick={() => openPicker("from")}
-        className="inline-flex h-10 items-center justify-center gap-2 rounded-full border border-stone-200 bg-white px-4 text-center text-sm font-semibold text-foreground/80 shadow-sm transition-colors hover:border-primary/40"
+        className="inline-flex h-10 items-center justify-center gap-2 rounded-full border border-stone-200 bg-white px-4 text-center text-sm font-semibold text-primary/60 shadow-sm transition-colors hover:border-primary/40"
       >
         <CalendarDays className="h-4 w-4 text-stone-400" />
         {createdFrom || "시작일"}
       </button>
-      <span className="text-foreground/30 text-sm md:text-base">~</span>
+      <span className="text-primary/30 text-sm md:text-base">~</span>
       <button
         type="button"
         onClick={() => openPicker("to")}
-        className="inline-flex h-10 items-center justify-center gap-2 rounded-full border border-stone-200 bg-white px-4 text-center text-sm font-semibold text-foreground/80 shadow-sm transition-colors hover:border-primary/40"
+        className="inline-flex h-10 items-center justify-center gap-2 rounded-full border border-stone-200 bg-white px-4 text-center text-sm font-semibold text-primary/60 shadow-sm transition-colors hover:border-primary/40"
       >
         <CalendarDays className="h-4 w-4 text-stone-400" />
         {createdTo || "종료일"}

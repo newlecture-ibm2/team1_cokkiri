@@ -409,7 +409,7 @@ export function DeviceRegisterForm() {
                 className={`cursor-pointer rounded-xl border px-4 py-3 transition-all duration-200
                   ${selectedGateway?.host === gw.host
                     ? "border-accent bg-accent/10 ring-2 ring-accent/30"
-                    : "border-border bg-surface hover:border-secondary"
+                    : "border-primary/10 bg-surface hover:border-secondary"
                   }`}
               >
                 <p className="text-sm font-semibold text-primary font-mono">{gw.host}</p>
@@ -470,10 +470,10 @@ export function DeviceRegisterForm() {
                       onClick={() => handleSelectDevice(device)}
                       className={`rounded-xl border px-4 py-3 transition-all duration-200
                         ${isRegistered
-                          ? "border-border/50 bg-muted/10 opacity-60 cursor-not-allowed"
+                          ? "border-primary/5 bg-muted/10 opacity-60 cursor-not-allowed"
                           : selectedDevice?.macAddress === device.macAddress
                             ? "border-accent bg-accent/10 ring-2 ring-accent/30 cursor-pointer"
-                            : "border-border bg-surface hover:border-secondary cursor-pointer"
+                            : "border-primary/10 bg-surface hover:border-secondary cursor-pointer"
                         }`}
                     >
                       <div className="flex items-center justify-between">
@@ -570,7 +570,7 @@ export function DeviceRegisterForm() {
                   className={`w-full rounded-xl border px-4 py-3 text-sm font-medium text-primary
                     bg-surface placeholder:text-muted-foreground/50 transition-all duration-200
                     focus:outline-none focus:ring-2 focus:ring-ring/40
-                    ${errors.name ? "border-destructive ring-1 ring-destructive/30" : "border-border hover:border-secondary"}`}
+                    ${errors.name ? "border-destructive ring-1 ring-destructive/30" : "border-primary/10 hover:border-secondary"}`}
                 />
                 <p className="text-xs text-muted-foreground pl-1">관리자가 부여하는 기기 식별 이름입니다</p>
                 {errors.name && <p className="text-xs font-medium text-destructive pl-1">{errors.name}</p>}
@@ -588,7 +588,7 @@ export function DeviceRegisterForm() {
                   className={`w-full rounded-xl border px-4 py-3 text-sm font-medium text-primary
                     bg-surface transition-all duration-200
                     focus:outline-none focus:ring-2 focus:ring-ring/40
-                    ${errors.deviceTypeId ? "border-destructive ring-1 ring-destructive/30" : "border-border hover:border-secondary"}`}
+                    ${errors.deviceTypeId ? "border-destructive ring-1 ring-destructive/30" : "border-primary/10 hover:border-secondary"}`}
                 >
                   <option value={0} disabled>종류를 선택하세요</option>
                   {deviceTypes.map((dt) => (
@@ -612,7 +612,7 @@ export function DeviceRegisterForm() {
                   className={`w-full rounded-xl border px-4 py-3 text-sm font-medium text-primary
                     bg-surface transition-all duration-200
                     focus:outline-none focus:ring-2 focus:ring-ring/40
-                    ${errors.spaceId ? "border-destructive ring-1 ring-destructive/30" : "border-border hover:border-secondary"}`}
+                    ${errors.spaceId ? "border-destructive ring-1 ring-destructive/30" : "border-primary/10 hover:border-secondary"}`}
                 >
                   <option value={0} disabled>공간을 선택하세요</option>
                   {privateSpaces.length > 0 && (
@@ -672,7 +672,7 @@ export function DeviceRegisterForm() {
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
               onClick={(e) => e.stopPropagation()}
-              className="w-full max-w-lg rounded-2xl border border-border bg-background p-6 shadow-2xl max-h-[80vh] overflow-y-auto"
+              className="w-full max-w-lg rounded-2xl border border-primary/10 bg-white p-6 shadow-2xl max-h-[80vh] overflow-y-auto"
             >
               <h3 className="font-black text-sm uppercase tracking-[0.2em] text-primary mb-2">
                 새로운 동작 발견
@@ -709,7 +709,7 @@ export function DeviceRegisterForm() {
                               i === idx ? { ...en, uiType: e.target.value as NewCapEntry["uiType"] } : en
                             ));
                           }}
-                          className="w-full rounded-lg border border-border bg-surface px-3 py-1.5 text-xs font-medium text-primary focus:outline-none focus:ring-1 focus:ring-ring/40"
+                          className="w-full rounded-lg border border-primary/10 bg-surface px-3 py-1.5 text-xs font-medium text-primary focus:outline-none focus:ring-1 focus:ring-ring/40"
                         >
                           <option value="toggle">토글 (Toggle)</option>
                           <option value="slider">슬라이더 (Slider)</option>
@@ -728,7 +728,7 @@ export function DeviceRegisterForm() {
                             ));
                           }}
                           placeholder="예: 전원, 밝기, 온도"
-                          className="w-full rounded-lg border border-border bg-surface px-3 py-1.5 text-xs font-medium text-primary placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-ring/40"
+                          className="w-full rounded-lg border border-primary/10 bg-surface px-3 py-1.5 text-xs font-medium text-primary placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-ring/40"
                         />
                       </div>
                     </div>
@@ -753,7 +753,7 @@ export function DeviceRegisterForm() {
                   whileTap={{ scale: 0.98 }}
                   disabled={pendingSubmit}
                   onClick={handleSkipNewCaps}
-                  className="flex-1 rounded-xl border border-border bg-surface py-3 text-xs font-bold uppercase tracking-wider text-muted-foreground hover:bg-muted/10 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="flex-1 rounded-xl border border-primary/10 bg-surface py-3 text-xs font-bold uppercase tracking-wider text-muted-foreground hover:bg-muted/10 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   건너뛰고 등록
                 </motion.button>

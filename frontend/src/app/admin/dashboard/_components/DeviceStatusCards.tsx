@@ -44,7 +44,7 @@ export default function DeviceStatusCards({ data, isLoading }: Props) {
         <div
           key={card.label}
           onClick={() => router.push("/admin/monitoring")}
-          className="bg-background rounded-[2rem] border-2 p-5 shadow-sm 
+          className="bg-white rounded-[2rem] border-2 p-5 shadow-sm 
                      hover:shadow-lg hover:scale-[1.02] transition-all duration-300 cursor-pointer"
           style={{ borderColor: card.borderColor }}
         >

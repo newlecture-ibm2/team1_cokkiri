@@ -28,7 +28,7 @@ export function BlueprintControls({
   };
 
   return (
-    <div className="flex items-center gap-4 py-2 border-b border-border mb-4">
+    <div className="flex items-center gap-4 py-2 border-b border-primary/10 mb-4">
       <h3 className="text-sm font-bold uppercase tracking-widest text-[var(--foreground)] w-24">
         배경 도면
       </h3>

@@ -342,7 +342,7 @@ export function BillingListTab({ refreshKey, onRefresh, onApproveRequest }: Prop
                   return (
                     <tr
                       key={payment.paymentId}
-                      className="border-b border-primary/5 hover:bg-background/50 transition-colors group"
+                      className="border-b border-primary/5 hover:bg-primary/[0.02] transition-colors group"
                     >
                       <td className="p-5">
                         <span className="text-sm font-black opacity-60">
@@ -367,7 +367,7 @@ export function BillingListTab({ refreshKey, onRefresh, onApproveRequest }: Prop
                       <td className="p-5">
                         <Badge
                           variant="outline"
-                          className="bg-background text-xs font-black uppercase tracking-widest"
+                          className="bg-primary/[0.03] text-[10px] font-black uppercase tracking-widest"
                         >
                           {TYPE_LABELS[payment.type] || payment.type}
                         </Badge>
