@@ -135,7 +135,16 @@ export function NewPostForm() {
   return (
     <form onSubmit={submit} className="mx-auto max-w-5xl space-y-6">
       <LoginRequiredModal isOpen={showLoginModal} onClose={() => setShowLoginModal(false)} />
-      <AccessDeniedModal isOpen={showAccessDenied} onClose={() => setShowAccessDenied(false)} />
+      <AccessDeniedModal
+        isOpen={showAccessDenied}
+        onClose={() => setShowAccessDenied(false)}
+        title={category === "NOTICE" ? "관리자 전용 기능입니다" : "입주자 전용 기능입니다"}
+        description={
+          category === "NOTICE"
+            ? "공지사항 등록 및 수정은 관리자 권한을 가진 계정으로만 가능합니다."
+            : "게시글·댓글·민원 등록은 입주 계약을 완료한 입주자만 이용할 수 있습니다.\n입주 신청 후 계약이 체결되면 자동으로 권한이 부여됩니다."
+        }
+      />
 
       {submitError ? (
         <p
