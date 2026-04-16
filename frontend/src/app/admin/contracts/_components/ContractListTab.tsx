@@ -330,7 +330,7 @@ export function ContractListTab({ refreshKey, onRefresh }: Props) {
           { label: "만료/해지", value: contracts.filter((c) => c.status === "EXPIRED" || c.status === "TERMINATED").length, color: "text-red-600" },
         ].map((s) => (
           <div key={s.label} className="p-6 bg-white rounded-2xl border border-primary/5 shadow-sm">
-            <p className="text-[10px] font-black tracking-[0.2em] uppercase text-muted mb-2">{s.label}</p>
+            <p className="text-xs font-black tracking-[0.2em] uppercase text-muted mb-2">{s.label}</p>
             <p className={`text-3xl font-black tracking-tighter ${s.color}`}>
               {s.value.toString().padStart(2, "0")}
             </p>
@@ -346,7 +346,7 @@ export function ContractListTab({ refreshKey, onRefresh }: Props) {
             <button
               key={s}
               onClick={() => setStatusFilter(s)}
-              className={`px-4 py-2 rounded-full text-[10px] font-black uppercase tracking-[0.15em] transition-all ${statusFilter === s
+              className={`px-4 py-2 rounded-full text-xs font-black uppercase tracking-[0.15em] transition-all ${statusFilter === s
                   ? "bg-primary text-background"
                   : "bg-primary/5 text-primary/60 hover:bg-primary/10"
                 }`}
@@ -364,19 +364,19 @@ export function ContractListTab({ refreshKey, onRefresh }: Props) {
               type="date"
               value={dateFrom}
               onChange={(e) => setDateFrom(e.target.value)}
-              className="bg-white px-3 py-2.5 rounded-xl text-xs font-bold border border-primary/10 focus:ring-2 ring-accent outline-none"
+              className="bg-white px-3 py-2.5 rounded-xl text-sm font-bold border border-primary/10 focus:ring-2 ring-accent outline-none"
             />
             <span className="text-xs font-bold text-muted">~</span>
             <input
               type="date"
               value={dateTo}
               onChange={(e) => setDateTo(e.target.value)}
-              className="bg-white px-3 py-2.5 rounded-xl text-xs font-bold border border-primary/10 focus:ring-2 ring-accent outline-none"
+              className="bg-white px-3 py-2.5 rounded-xl text-sm font-bold border border-primary/10 focus:ring-2 ring-accent outline-none"
             />
             {(dateFrom || dateTo) && (
               <button
                 onClick={() => { setDateFrom(""); setDateTo(""); }}
-                className="text-[10px] font-black text-red-500 uppercase tracking-widest hover:underline"
+                className="text-xs font-black text-red-500 uppercase tracking-widest hover:underline"
               >
                 초기화
               </button>
@@ -389,7 +389,7 @@ export function ContractListTab({ refreshKey, onRefresh }: Props) {
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               placeholder="이름 또는 호실 검색..."
-              className="bg-transparent text-xs font-bold placeholder:text-muted/40 focus:outline-none w-40"
+              className="bg-transparent text-sm font-bold placeholder:text-muted/40 focus:outline-none w-40"
             />
           </div>
         </div>
@@ -402,11 +402,11 @@ export function ContractListTab({ refreshKey, onRefresh }: Props) {
         className="bg-white rounded-[2rem] border border-primary/5 shadow-sm overflow-hidden"
       >
         <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse">
+          <table className="w-full text-center border-collapse">
             <thead>
               <tr className="bg-primary/[0.03] border-b border-primary/5">
                 {["ID", "사용자", "호실", "상태", "유형", "계약기간", "월세", ""].map((h) => (
-                  <th key={h} className="p-5 text-[10px] font-black uppercase tracking-widest text-muted">
+                  <th key={h} className="p-5 text-xs font-black uppercase tracking-widest text-primary/70">
                     {h}
                   </th>
                 ))}
@@ -418,7 +418,7 @@ export function ContractListTab({ refreshKey, onRefresh }: Props) {
                   <td colSpan={8} className="p-20 text-center">
                     <div className="flex flex-col items-center gap-3">
                       <Loader2 className="w-10 h-10 text-accent animate-spin" />
-                      <p className="text-[10px] font-black tracking-widest uppercase text-muted">Loading contracts...</p>
+                      <p className="text-xs font-black tracking-widest uppercase text-muted">Loading contracts...</p>
                     </div>
                   </td>
                 </tr>
@@ -436,75 +436,75 @@ export function ContractListTab({ refreshKey, onRefresh }: Props) {
                     className="border-b border-primary/5 hover:bg-background/50 transition-colors group"
                   >
                     <td className="p-5">
-                      <span className="text-xs font-black opacity-30">#{c.contractId}</span>
+                      <span className="text-sm font-black opacity-60">#{c.contractId}</span>
                     </td>
                     <td className="p-5">
-                      <div className="flex items-center gap-2.5">
+                      <div className="flex items-center justify-center gap-2.5">
                         <div className="w-7 h-7 rounded-full bg-accent/10 flex items-center justify-center text-accent">
                           <User className="w-3.5 h-3.5" />
                         </div>
-                        <span className="text-sm font-black">{c.userName}</span>
+                        <span className="text-base font-black text-primary">{c.userName}</span>
                       </div>
                     </td>
                     <td className="p-5">
-                      <div className="flex items-center gap-2">
-                        <Home className="w-3.5 h-3.5 text-muted" />
-                        <span className="text-sm font-bold">{c.spaceName}</span>
+                      <div className="flex items-center justify-center gap-2">
+                        <Home className="w-3.5 h-3.5 text-primary/50" />
+                        <span className="text-base font-bold text-primary">{c.spaceName}</span>
                       </div>
                     </td>
                     <td className="p-5">
                       <span
-                        className={`text-[10px] font-black tracking-[0.15em] uppercase px-3 py-1.5 rounded-full ${STATUS_COLORS[c.status] || "bg-gray-100 text-gray-600"
+                        className={`text-xs font-black tracking-[0.15em] uppercase px-3 py-1.5 rounded-full ${STATUS_COLORS[c.status] || "bg-gray-100 text-gray-600"
                           }`}
                       >
                         {STATUS_LABELS[c.status] || c.status}
                       </span>
                     </td>
                     <td className="p-5">
-                      <span className="text-[10px] font-bold uppercase text-muted">
+                      <span className="text-xs font-bold uppercase text-primary/60">
                         {c.origin === "ADMIN_INITIATED" ? "관리자" : "신청"}
                       </span>
                     </td>
                     <td className="p-5">
                       {c.startDate && c.endDate ? (
-                        <div className="flex items-center gap-1.5">
-                          <Calendar className="w-3.5 h-3.5 text-muted" />
-                          <span className="text-xs font-bold">
+                        <div className="flex items-center justify-center gap-1.5">
+                          <Calendar className="w-3.5 h-3.5 text-primary/50" />
+                          <span className="text-sm font-bold text-primary">
                             {c.startDate} ~ {c.endDate}
                           </span>
                         </div>
                       ) : c.desiredStartDate ? (
-                        <div className="flex items-center gap-1.5">
+                        <div className="flex items-center justify-center gap-1.5">
                           <Calendar className="w-3.5 h-3.5 text-blue-400" />
                           <div>
-                            <span className="text-xs font-bold text-blue-600">
+                            <span className="text-sm font-bold text-blue-600">
                               {c.desiredStartDate}
                             </span>
                             {c.desiredDurationMonths && (
-                              <span className="text-[10px] font-bold text-muted ml-1">
+                              <span className="text-xs font-bold text-primary/50 ml-1">
                                 ({c.desiredDurationMonths}개월)
                               </span>
                             )}
-                            <span className="ml-1 text-[9px] font-black tracking-wider uppercase text-blue-400">
+                            <span className="ml-1 text-[10px] font-black tracking-wider uppercase text-blue-400">
                               희망
                             </span>
                           </div>
                         </div>
                       ) : (
-                        <span className="text-xs text-muted/50">—</span>
+                        <span className="text-sm text-primary/30">—</span>
                       )}
                     </td>
                     <td className="p-5">
                       {c.monthlyRent ? (
-                        <span className="text-xs font-black">
+                        <span className="text-sm font-black text-primary">
                           ₩{Number(c.monthlyRent).toLocaleString()}
                         </span>
                       ) : (
-                        <span className="text-xs text-muted/50">—</span>
+                        <span className="text-sm text-primary/30">—</span>
                       )}
                     </td>
                     <td className="p-5">
-                      <div className="flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <div className="flex items-center justify-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
                         {c.status !== "TERMINATED" && c.status !== "CANCELLED" && (
                           <button
                             onClick={() => openEdit(c)}

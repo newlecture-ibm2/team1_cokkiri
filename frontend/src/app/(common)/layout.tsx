@@ -14,7 +14,7 @@ export default function CommonLayout({
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <Header />
-      <main className="flex-1 w-full px-6 pt-20 md:px-12 md:pt-24 lg:px-24 lg:pt-24 pb-24 md:pb-32">
+      <main className="flex-1 w-full px-6 pt-14 md:px-12 md:pt-16 lg:px-24 lg:pt-16 pb-24 md:pb-32">
         <div className="mx-auto max-w-[1400px]">
           <MotionEnter>{children}</MotionEnter>
         </div>

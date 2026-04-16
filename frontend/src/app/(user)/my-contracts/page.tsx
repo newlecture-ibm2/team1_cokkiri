@@ -107,42 +107,31 @@ export default function MyContractsPage() {
   };
 
   return (
-    <div className="text-primary selection:bg-primary selection:text-background pb-32">
-      {/* Editorial Header Section */}
-      <section className="pb-12">
-        <div className="border-b-2 border-primary pb-12">
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
-          >
-            <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-8">
-              <div className="space-y-4">
-                <span className="text-[14px] font-black uppercase tracking-[0.4em] text-accent">
-                  DASHBOARD / 01
-                </span>
-                <h1 className="text-[10vw] md:text-[8vw] lg:text-[6vw] font-black leading-[0.85] tracking-tighter uppercase whitespace-nowrap">
-                  MY<br />CONTRACTS
-                </h1>
-                <p className="max-w-xl text-lg font-medium tracking-tight opacity-70 border-l-2 border-accent pl-6 mt-8">
-                  관리 중인 계약 내역과 진행 중인 입주 신청을 한눈에 확인하고 제어하세요.
-                </p>
-              </div>
-
+    <div className="mx-auto max-w-5xl">
+      <header className="mb-[clamp(2rem,5vw,5rem)]">
+        <div className="flex flex-col gap-[clamp(0.75rem,1.5vw,1.5rem)]">
+          <div className="flex flex-row flex-wrap items-end justify-between gap-x-8 gap-y-4 border-b border-primary/10 pb-[clamp(1rem,2vw,2rem)]">
+            <div className="flex-shrink-0">
+              <h1 className="text-[clamp(2.25rem,7vw,5.5rem)] font-black leading-none tracking-tight uppercase whitespace-nowrap text-primary">
+                CONTRACT<span className="underline underline-offset-4 decoration-[var(--color-accent)]">S.</span>
+                <span className="text-[clamp(1rem,3vw,2.5rem)] font-bold tracking-normal ml-3 align-baseline opacity-80">계약 내역</span>
+              </h1>
+            </div>
+            <div className="flex items-center justify-end shrink-0 pb-1 ml-auto">
               <Link href="/rooms" className="group">
                 <motion.div
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
-                  className="px-10 py-6 bg-primary text-background rounded-full font-black tracking-widest uppercase text-sm flex items-center gap-4 transition-all"
+                  className="px-[clamp(1rem,3vw,2rem)] h-[clamp(2.5rem,5vw,3.5rem)] bg-primary text-background rounded-xl font-bold tracking-tight text-[clamp(0.75rem,1.5vw,1rem)] transition-all hover:bg-primary/95 shadow-xl shadow-primary/20 flex items-center gap-2"
                 >
-                  <Plus className="w-5 h-5" />
-                  APPLY NEW SPACE
+                  <Plus className="w-[clamp(1rem,2vw,1.25rem)] h-[clamp(1rem,2vw,1.25rem)]" />
+                  신규 신청
                 </motion.div>
               </Link>
             </div>
-          </motion.div>
+          </div>
         </div>
-      </section>
+      </header>
 
       <main className="pt-12 md:pt-20">
         {/* Editorial Stats Grid */}
@@ -277,7 +266,7 @@ export default function MyContractsPage() {
                     >
                       <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
                         <div className="space-y-3">
-                          <p className="text-[14px] font-black uppercase tracking-widest opacity-40">Contract Period</p>
+                          <p className="text-[14px] font-black uppercase tracking-widest opacity-40 h-11">Contract Period</p>
                           <div className="flex flex-col text-sm font-black tracking-tight leading-tight md:text-base">
                             <span>{contract.startDate || '—'}</span>
                             <span className="text-[14px] opacity-40 mt-1 mb-1 font-medium tracking-widest">TO</span>
@@ -292,13 +281,13 @@ export default function MyContractsPage() {
                           </p>
                         </div>
                         <div className="space-y-3">
-                          <p className="text-[14px] font-black uppercase tracking-widest opacity-40">Deposit</p>
+                          <p className="text-[14px] font-black uppercase tracking-widest opacity-40">Deposit<br />&nbsp;</p>
                           <p className="text-sm font-black tracking-tight md:text-base">
                             ₩{(contract.deposit || 0).toLocaleString()}
                           </p>
                         </div>
                         <div className="space-y-3">
-                          <p className="text-[14px] font-black uppercase tracking-widest opacity-40">Remaining</p>
+                          <p className="text-[14px] font-black uppercase tracking-widest opacity-40">Remaining<br />&nbsp;</p>
                           <p className="text-sm font-black tracking-tight md:text-base">
                             {Math.max(0, contract.desiredDurationMonths)} Months
                           </p>

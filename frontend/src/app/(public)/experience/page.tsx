@@ -33,7 +33,7 @@ export default function ExperiencePage() {
             initial={{ opacity: 0, y: 40 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 1, ease: [0.22, 1, 0.36, 1] }}
-            className="flex flex-col items-end justify-between gap-12 border-b border-foreground/10 pb-8 md:flex-row"
+            className="flex flex-col items-start justify-between gap-12 border-b border-foreground/10 pb-8 md:flex-row md:items-end"
           >
             <div className="max-w-2xl space-y-6">
               <h1 className="text-6xl md:text-8xl lg:text-[10rem] font-black tracking-tighter leading-[0.85] uppercase">

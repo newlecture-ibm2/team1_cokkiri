@@ -128,6 +128,7 @@ export function Header() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [openMobileSection, setOpenMobileSection] = useState<string | null>(null);
+  const [openMobileSubSection, setOpenMobileSubSection] = useState<string | null>(null);
   const [desktopOpenMenu, setDesktopOpenMenu] = useState<string | null>(null);
   const [desktopOpenSubMenu, setDesktopOpenSubMenu] = useState<string | null>(null);
   const { scrollY } = useScroll();
@@ -139,6 +140,7 @@ export function Header() {
   useEffect(() => {
     setIsMobileMenuOpen(false);
     setOpenMobileSection(null);
+    setOpenMobileSubSection(null);
     setDesktopOpenMenu(null);
     setDesktopOpenSubMenu(null);
   }, [pathname]);
@@ -468,12 +470,12 @@ export function Header() {
                                 {item.children.map((child) => {
                                   if (!isLoggedIn && child.action === "logout") return null;
                                   if (child.children) {
-                                    const subOpen = openMobileSection === `sub-${child.name}`;
+                                    const subOpen = openMobileSubSection === child.name;
                                     return (
                                       <li key={child.name} className="py-1">
                                         <button
                                           type="button"
-                                          onClick={() => setOpenMobileSection(subOpen ? null : `sub-${child.name}`)}
+                                          onClick={() => setOpenMobileSubSection(subOpen ? null : child.name)}
                                           className="flex w-full items-center justify-between px-5 py-3 text-sm font-black text-primary/40 uppercase tracking-[0.18em]"
                                         >
                                           {child.name}
@@ -571,6 +573,56 @@ export function Header() {
                     </motion.div>
                   );
                 })}
+
+                {!isLoading && (
+                  isLoggedIn ? (
+                    <motion.div
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: navItems.length * 0.06, duration: 0.35 }}
+                      className="mt-6 flex items-center justify-between px-2 pt-2 pb-4"
+                    >
+                      <div className="flex flex-col">
+                        <span className="text-[10px] font-black uppercase tracking-[0.25em] text-primary/40 -mb-0.5">
+                          {user?.role === 'USER' ? 'GUEST' : user?.role || ''}
+                        </span>
+                        <span className="text-base font-black tracking-tight text-primary">
+                          {user?.name}님
+                        </span>
+                      </div>
+                      <Link
+                        href="/profile"
+                        onClick={() => setIsMobileMenuOpen(false)}
+                        className="flex h-11 w-11 items-center justify-center rounded-full bg-primary/10 text-primary transition-colors hover:bg-primary/15"
+                      >
+                        <User className="h-5 w-5" />
+                      </Link>
+                    </motion.div>
+                  ) : (
+                    <motion.div
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: navItems.length * 0.06, duration: 0.35 }}
+                      className="mt-6 flex flex-col gap-3 pt-2 pb-4"
+                    >
+                      <Link href="/login" onClick={() => setIsMobileMenuOpen(false)} className="w-full">
+                        <Button
+                          variant="ghost"
+                          className="h-12 w-full rounded-xl bg-primary/5 text-primary hover:bg-primary/10 font-black uppercase tracking-[0.2em] text-[13px]"
+                        >
+                          Login
+                        </Button>
+                      </Link>
+                      <Link href="/register" onClick={() => setIsMobileMenuOpen(false)} className="w-full">
+                        <Button
+                          className="h-12 w-full rounded-xl border border-primary/20 bg-primary font-black text-background uppercase tracking-[0.2em] text-[13px] shadow-sm hover:bg-primary/90"
+                        >
+                          Sign up
+                        </Button>
+                      </Link>
+                    </motion.div>
+                  )
+                )}
               </div>
             </motion.nav>
           </motion.div>
