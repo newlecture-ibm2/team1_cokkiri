@@ -367,11 +367,7 @@ export function BillingListTab({ refreshKey, onRefresh, onApproveRequest }: Prop
                       <td className="p-5">
                         <Badge
                           variant="outline"
-<<<<<<< HEAD
                           className="bg-primary/[0.03] text-[10px] font-black uppercase tracking-widest"
-=======
-                          className="bg-background text-xs font-black uppercase tracking-widest"
->>>>>>> 34d6aa54bded970f416597a9c9b8e2ed0ff28b94
                         >
                           {TYPE_LABELS[payment.type] || payment.type}
                         </Badge>
