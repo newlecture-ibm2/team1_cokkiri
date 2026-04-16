@@ -58,6 +58,7 @@ public enum ErrorCode {
     OCCUPIED_SPACE_MODIFICATION(HttpStatus.CONFLICT, "입주 중이거나 사용 중인 공간은 구조를 변경할 수 없습니다"),
     FILE_SIZE_EXCEEDED(HttpStatus.PAYLOAD_TOO_LARGE, "파일 업로드 용량을 초과했습니다"),
     SPACE_IMAGE_NOT_FOUND(HttpStatus.NOT_FOUND, "공간 이미지를 찾을 수 없습니다"),
+    SPACE_DELETE_BLOCKED_BY_RESERVATION(HttpStatus.CONFLICT, "예약이 존재하여 공간을 삭제할 수 없습니다"),
     
     // ── 공통 충돌 및 시스템 ──
     CONCURRENCY_ERROR(HttpStatus.CONFLICT, "다른 사용자가 이미 수정 중인 데이터입니다. 새로고침 후 다시 시도해주세요.");

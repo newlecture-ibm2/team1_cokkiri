@@ -11,6 +11,7 @@ import com.coliving.global.error.BusinessException;
 import com.coliving.global.error.ErrorCode;
 import com.coliving.admin.space.model.SpaceStatus;
 import com.coliving.admin.space.model.SpaceType;
+import com.coliving.reservation.adapter.out.jpa.ReservationJpaRepository;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -27,6 +28,8 @@ public class AdminSpaceService implements AdminSpaceUseCase {
 
     private final AdminSpaceRepositoryPort adminSpaceRepositoryPort;
     private final com.coliving.admin.space.application.port.out.FileStoragePort fileStoragePort;
+    // 04-domain-collaboration §1: 타 도메인 JpaRepository 조회 전용 허용
+    private final ReservationJpaRepository reservationJpaRepository;
 
     @Override
     public AdminSpaceResult createSpace(CreateSpaceCommand command) {
@@ -145,6 +148,10 @@ public class AdminSpaceService implements AdminSpaceUseCase {
 
         if (existing.getStatus() == SpaceStatus.OCCUPIED) {
             throw new BusinessException(ErrorCode.OCCUPIED_SPACE_MODIFICATION);
+        }
+
+        if (reservationJpaRepository.existsBySpace_SpaceId(spaceId)) {
+            throw new BusinessException(ErrorCode.SPACE_DELETE_BLOCKED_BY_RESERVATION);
         }
 
         adminSpaceRepositoryPort.softDelete(spaceId);

@@ -9,6 +9,8 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.NotFound;
+import org.hibernate.annotations.NotFoundAction;
 import org.hibernate.annotations.SQLRestriction;
 
 import java.time.LocalDate;
@@ -40,14 +42,24 @@ public class ReservationEntity extends BaseEntity {
     @Column(name = "reservation_id")
     private Long id;
 
+    // FK 컬럼 값은 연관 엔티티가 soft-delete 되어도 유지되어야 하므로 별도 보관
+    // (Admin 예약 조회 등에서 deleted_at 필터로 인해 연관 엔티티를 찾지 못하는 경우 대비)
+    @Column(name = "user_id", insertable = false, updatable = false)
+    private Long userId;
+
     // USR-1.1 머지 완료 → @ManyToOne 전환
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
+    @NotFound(action = NotFoundAction.IGNORE)
     private UserEntity user;
+
+    @Column(name = "space_id", insertable = false, updatable = false)
+    private Long spaceId;
 
     // SPC-2.1 머지 완료 → @ManyToOne 전환
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "space_id", nullable = false)
+    @NotFound(action = NotFoundAction.IGNORE)
     private SpaceEntity space;
 
     @Enumerated(EnumType.STRING)
@@ -64,8 +76,12 @@ public class ReservationEntity extends BaseEntity {
     private LocalTime endTime;
 
     // 승인자 (관리자) 참조 — 직접 승인 정책에서는 null일 수 있음
+    @Column(name = "approved_by", insertable = false, updatable = false)
+    private Long approvedById;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "approved_by")
+    @NotFound(action = NotFoundAction.IGNORE)
     private UserEntity approvedBy;
 
     @Builder
@@ -81,7 +97,7 @@ public class ReservationEntity extends BaseEntity {
 
     /** 예약자 ID 편의 getter */
     public Long getUserId() {
-        return this.user != null ? this.user.getUserId() : null;
+        return this.user != null ? this.user.getUserId() : this.userId;
     }
 
     /** 예약자 이름 편의 getter */
@@ -91,7 +107,7 @@ public class ReservationEntity extends BaseEntity {
 
     /** 시설 ID 편의 getter */
     public Long getSpaceId() {
-        return this.space != null ? this.space.getSpaceId() : null;
+        return this.space != null ? this.space.getSpaceId() : this.spaceId;
     }
 
     /** 시설 이름 편의 getter */
@@ -101,7 +117,7 @@ public class ReservationEntity extends BaseEntity {
 
     /** 승인자 ID 편의 getter */
     public Long getApprovedById() {
-        return this.approvedBy != null ? this.approvedBy.getUserId() : null;
+        return this.approvedBy != null ? this.approvedBy.getUserId() : this.approvedById;
     }
 
     // ── 상태 전환 비즈니스 메서드 ──
