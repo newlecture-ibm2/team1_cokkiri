@@ -1,6 +1,6 @@
-package com.coliving.admin.pricerange.application.result;
+package com.coliving.admin.space.application.result;
 
-import com.coliving.admin.pricerange.model.AdminPriceRange;
+import com.coliving.admin.space.model.AdminPriceRange;
 import lombok.Builder;
 import lombok.Getter;
 

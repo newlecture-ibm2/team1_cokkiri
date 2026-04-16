@@ -1,11 +1,11 @@
-package com.coliving.admin.pricerange.application.service;
+package com.coliving.admin.space.application.service;
 
-import com.coliving.admin.pricerange.application.command.CreatePriceRangeCommand;
-import com.coliving.admin.pricerange.application.command.UpdatePriceRangeCommand;
-import com.coliving.admin.pricerange.application.port.in.AdminPriceRangeUseCase;
-import com.coliving.admin.pricerange.application.port.out.AdminPriceRangeRepositoryPort;
-import com.coliving.admin.pricerange.application.result.AdminPriceRangeResult;
-import com.coliving.admin.pricerange.model.AdminPriceRange;
+import com.coliving.admin.space.application.command.CreatePriceRangeCommand;
+import com.coliving.admin.space.application.command.UpdatePriceRangeCommand;
+import com.coliving.admin.space.application.port.in.AdminPriceRangeUseCase;
+import com.coliving.admin.space.application.port.out.AdminPriceRangeRepositoryPort;
+import com.coliving.admin.space.application.result.AdminPriceRangeResult;
+import com.coliving.admin.space.model.AdminPriceRange;
 import com.coliving.global.error.BusinessException;
 import com.coliving.global.error.ErrorCode;
 import lombok.RequiredArgsConstructor;

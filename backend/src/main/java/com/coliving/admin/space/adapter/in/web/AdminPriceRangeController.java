@@ -1,12 +1,12 @@
-package com.coliving.admin.pricerange.adapter.in.web;
+package com.coliving.admin.space.adapter.in.web;
 
-import com.coliving.admin.pricerange.adapter.in.web.dto.req.CreatePriceRangeRequestDto;
-import com.coliving.admin.pricerange.adapter.in.web.dto.req.UpdatePriceRangeOrderRequestDto;
-import com.coliving.admin.pricerange.adapter.in.web.dto.req.UpdatePriceRangeRequestDto;
-import com.coliving.admin.pricerange.adapter.in.web.dto.res.AdminPriceRangeResponseDto;
-import com.coliving.admin.pricerange.application.command.CreatePriceRangeCommand;
-import com.coliving.admin.pricerange.application.command.UpdatePriceRangeCommand;
-import com.coliving.admin.pricerange.application.port.in.AdminPriceRangeUseCase;
+import com.coliving.admin.space.adapter.in.web.dto.req.CreatePriceRangeRequestDto;
+import com.coliving.admin.space.adapter.in.web.dto.req.UpdatePriceRangeOrderRequestDto;
+import com.coliving.admin.space.adapter.in.web.dto.req.UpdatePriceRangeRequestDto;
+import com.coliving.admin.space.adapter.in.web.dto.res.AdminPriceRangeResponseDto;
+import com.coliving.admin.space.application.command.CreatePriceRangeCommand;
+import com.coliving.admin.space.application.command.UpdatePriceRangeCommand;
+import com.coliving.admin.space.application.port.in.AdminPriceRangeUseCase;
 import com.coliving.global.dto.ApiResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;

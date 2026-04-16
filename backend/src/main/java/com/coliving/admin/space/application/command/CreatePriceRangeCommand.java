@@ -1,15 +1,13 @@
-package com.coliving.admin.pricerange.model;
+package com.coliving.admin.space.application.command;
 
 import lombok.Builder;
 import lombok.Getter;
 
 @Getter
 @Builder
-public class AdminPriceRange {
-    private final Long priceRangePresetId;
+public class CreatePriceRangeCommand {
     private final String label;
     private final Integer minRent;
     private final Integer maxRent;
-    private final Integer sortOrder;
     private final Boolean isActive;
 }

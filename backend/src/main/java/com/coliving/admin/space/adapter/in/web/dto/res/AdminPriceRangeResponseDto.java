@@ -1,6 +1,6 @@
-package com.coliving.admin.pricerange.adapter.in.web.dto.res;
+package com.coliving.admin.space.adapter.in.web.dto.res;
 
-import com.coliving.admin.pricerange.application.result.AdminPriceRangeResult;
+import com.coliving.admin.space.application.result.AdminPriceRangeResult;
 import lombok.Builder;
 import lombok.Getter;
 

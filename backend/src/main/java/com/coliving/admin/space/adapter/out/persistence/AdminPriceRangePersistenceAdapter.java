@@ -1,9 +1,9 @@
-package com.coliving.admin.pricerange.adapter.out.persistence;
+package com.coliving.admin.space.adapter.out.persistence;
 
-import com.coliving.admin.pricerange.adapter.out.jpa.PriceRangePresetEntity;
-import com.coliving.admin.pricerange.adapter.out.jpa.PriceRangePresetJpaRepository;
-import com.coliving.admin.pricerange.application.port.out.AdminPriceRangeRepositoryPort;
-import com.coliving.admin.pricerange.model.AdminPriceRange;
+import com.coliving.admin.space.adapter.out.jpa.PriceRangePresetEntity;
+import com.coliving.admin.space.adapter.out.jpa.PriceRangePresetJpaRepository;
+import com.coliving.admin.space.application.port.out.AdminPriceRangeRepositoryPort;
+import com.coliving.admin.space.model.AdminPriceRange;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;

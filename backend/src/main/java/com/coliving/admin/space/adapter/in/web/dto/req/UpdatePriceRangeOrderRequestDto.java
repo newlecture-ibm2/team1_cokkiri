@@ -1,4 +1,4 @@
-package com.coliving.admin.pricerange.adapter.in.web.dto.req;
+package com.coliving.admin.space.adapter.in.web.dto.req;
 
 import jakarta.validation.constraints.NotEmpty;
 import lombok.Getter;

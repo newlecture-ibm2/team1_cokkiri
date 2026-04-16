@@ -6,8 +6,8 @@ import com.coliving.user.room.application.command.RoomListCommand;
 import com.coliving.user.room.application.port.in.RoomUseCase;
 import com.coliving.user.room.model.Room;
 import com.coliving.admin.space.adapter.out.jpa.RoomTypeJpaRepository;
-import com.coliving.admin.pricerange.adapter.out.jpa.PriceRangePresetJpaRepository;
-import com.coliving.user.room.adapter.in.web.dto.PublicPriceRangeResponseDto;
+import com.coliving.admin.space.adapter.out.jpa.PriceRangePresetJpaRepository;
+import com.coliving.user.room.adapter.in.web.dto.PriceRangeResponseDto;
 
 import com.coliving.global.dto.ApiResponse;
 import com.coliving.global.error.BusinessException;
@@ -47,11 +47,11 @@ public class RoomController {
 
     @Operation(summary = "가격대 필터 프리셋 목록 조회 (Public)")
     @GetMapping("/api/price-ranges")
-    public ApiResponse<List<PublicPriceRangeResponseDto>> getPriceRanges() {
-        List<PublicPriceRangeResponseDto> result = priceRangePresetJpaRepository
+    public ApiResponse<List<PriceRangeResponseDto>> getPriceRanges() {
+        List<PriceRangeResponseDto> result = priceRangePresetJpaRepository
                 .findAllByIsActiveTrueOrderBySortOrderAsc()
                 .stream()
-                .map(PublicPriceRangeResponseDto::from)
+                .map(PriceRangeResponseDto::from)
                 .toList();
         return ApiResponse.ok(result);
     }

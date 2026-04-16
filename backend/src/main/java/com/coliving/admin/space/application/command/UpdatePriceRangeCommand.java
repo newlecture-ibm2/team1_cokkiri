@@ -1,4 +1,4 @@
-package com.coliving.admin.pricerange.application.command;
+package com.coliving.admin.space.application.command;
 
 import lombok.Builder;
 import lombok.Getter;

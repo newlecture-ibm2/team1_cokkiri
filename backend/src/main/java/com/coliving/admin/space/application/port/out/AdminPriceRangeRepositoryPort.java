@@ -1,6 +1,6 @@
-package com.coliving.admin.pricerange.application.port.out;
+package com.coliving.admin.space.application.port.out;
 
-import com.coliving.admin.pricerange.model.AdminPriceRange;
+import com.coliving.admin.space.model.AdminPriceRange;
 
 import java.util.List;
 import java.util.Optional;
