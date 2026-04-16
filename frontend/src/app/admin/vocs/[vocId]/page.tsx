@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { ArrowLeft, ArrowRight } from "lucide-react";
 import { adminBffGet } from "../_api/admin-bff-server";
 import type { AdminVocDetail, ApiResponse } from "../_types/admin-vocs";
 import { adminVocCategoryLabel, adminVocStatusLabel } from "../_types/admin-vocs";
@@ -21,15 +22,13 @@ export async function generateMetadata({ params }: { params: Params }) {
 function statusPillClass(status: string) {
   switch (status) {
     case "OPEN":
-      return "border-secondary/50 bg-secondary/10 text-secondary";
+      return "bg-[#7F1D1D]/5 text-[#7F1D1D] border-[#7F1D1D]/20";
     case "IN_PROGRESS":
-      return "border-primary/30 bg-primary/10 text-primary";
+      return "bg-blue-600/5 text-blue-600/80 border-blue-600/20";
     case "RESOLVED":
-      return "border-border bg-muted/40 text-muted-foreground";
-    case "CANCELLED":
-      return "border-muted text-muted-foreground opacity-80";
+      return "bg-[#4A7C6F]/5 text-[#4A7C6F]/80 border-[#4A7C6F]/20";
     default:
-      return "border-border bg-muted/30 text-foreground";
+      return "bg-stone-50 text-stone-400 border-stone-200";
   }
 }
 
@@ -44,46 +43,18 @@ export default async function AdminVocDetailPage({ params }: { params: Params })
   if (res.status === 401) {
     return (
       <MotionEnter>
-        <div className="mx-auto max-w-3xl space-y-4 text-center">
-          <p className="font-medium text-destructive" role="alert">
-            관리자 로그인이 필요합니다.
-          </p>
-          <Link
-            href="/login"
-            className="inline-block font-black text-sm uppercase tracking-wider text-secondary underline underline-offset-4"
-          >
-            로그인으로 이동
-          </Link>
+        <div className="mx-auto max-w-3xl space-y-4 text-center pt-20">
+          <p className="font-medium text-destructive" role="alert">관리자 로그인이 필요합니다.</p>
+          <Link href="/login" className="inline-block font-black text-sm uppercase tracking-wider text-secondary underline underline-offset-4">로그인으로 이동</Link>
         </div>
       </MotionEnter>
     );
   }
-  if (res.status === 403) {
-    return (
-      <MotionEnter>
-        <div className="mx-auto max-w-3xl space-y-4 text-center">
-          <p className="font-medium text-destructive" role="alert">
-            관리자만 이 민원을 열람할 수 있습니다.
-          </p>
-          <p className="text-sm text-muted-foreground">
-            일반 회원 계정으로는 관리자 전용 경로에 접근할 수 없습니다.
-          </p>
-          <Link
-            href="/admin"
-            className="inline-block font-black text-sm uppercase tracking-wider text-secondary underline underline-offset-4"
-          >
-            관리자 홈
-          </Link>
-        </div>
-      </MotionEnter>
-    );
-  }
+  
   if (!res.ok) {
     return (
       <MotionEnter>
-        <p className="mx-auto max-w-3xl text-center font-medium text-destructive" role="alert">
-          민원을 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.
-        </p>
+        <p className="mx-auto max-w-3xl text-center font-medium text-destructive pt-20" role="alert">민원을 불러오지 못했습니다.</p>
       </MotionEnter>
     );
   }
@@ -94,103 +65,115 @@ export default async function AdminVocDetailPage({ params }: { params: Params })
   const d = body.data;
 
   return (
-    <MotionEnter>
-      <article className="max-w-3xl">
-          <Link
-            href="/admin/vocs"
-            className="group inline-flex items-center gap-2 font-black text-xs uppercase tracking-[0.3em] text-secondary transition-colors hover:text-foreground"
-          >
-            ← 목록
-          </Link>
-
-          <header className="mt-8 space-y-4 border-b border-border pb-10">
-            <p className="font-black text-[10px] uppercase tracking-[0.35em] text-muted-foreground">Admin · VoC · #{d.vocId}</p>
-            <div className="flex flex-wrap items-center gap-3">
-              <span className="font-black text-[10px] uppercase tracking-[0.25em] text-muted-foreground">
-                {adminVocCategoryLabel(d.category)}
-              </span>
-              <span
-                className={cn(
-                  "rounded-full border px-3 py-1 text-[10px] font-black uppercase tracking-wider",
-                  statusPillClass(d.status),
-                )}
+    <div className="pt-4 pb-32">
+      <MotionEnter>
+        <div className="mx-auto max-w-5xl">
+          {/* Header Area */}
+          <header className="mb-12">
+            <div className="flex flex-col gap-6">
+              <Link
+                href="/admin/vocs"
+                className="group inline-flex items-center gap-3 text-sm font-bold tracking-tight text-primary/60 hover:text-accent transition-colors w-fit"
               >
+                <span className="flex items-center justify-center w-8 h-8 rounded-full bg-primary/5 group-hover:bg-accent/10 transition-colors">
+                  <ArrowLeft className="w-4 h-4" />
+                </span>
+                민원 목록으로 돌아가기
+              </Link>
+
+              <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-12 border-b border-primary/10 pb-8">
+                <div className="max-w-2xl">
+                  <h1 className="text-5xl md:text-7xl font-black leading-tight tracking-tight uppercase whitespace-nowrap">
+                    ADMIN <span className="underline underline-offset-4 decoration-accent">VOC.</span>
+                    <span className="text-2xl md:text-4xl font-bold tracking-normal ml-2 align-bottom opacity-80">민원 관리</span>
+                  </h1>
+                </div>
+              </div>
+
+              <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-4 border-b border-primary/10 pb-6">
+                <h2 className="text-3xl md:text-5xl tracking-tight leading-snug text-primary min-w-0">
+                  <span className="font-medium">{d.title}</span>
+                </h2>
+              </div>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground mt-6">
+              <span className={cn("rounded-full border px-3 py-1 text-xs font-bold tracking-tight", statusPillClass(d.status))}>
                 {adminVocStatusLabel(d.status)}
               </span>
-              <span className="font-black text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
-                사용자 #{d.userId}
-              </span>
+              <span className="text-muted-foreground/30">·</span>
+              <span className="font-bold text-primary/80 uppercase tracking-wider">{adminVocCategoryLabel(d.category)}</span>
+              <span className="text-muted-foreground/30">·</span>
+              <span className="font-medium text-primary/70">{d.userName || `회원 #${d.userId}`}</span>
+              <span className="text-muted-foreground/30">·</span>
+              <time className="font-medium text-primary/40" suppressHydrationWarning>{formatDateTimeKo(d.createdAt)}</time>
             </div>
-            <h1 className="text-3xl font-black tracking-tight text-balance text-foreground md:text-4xl">{d.title}</h1>
-            <time
-              dateTime={d.createdAt}
-              className="block font-black text-[10px] uppercase tracking-[0.2em] text-muted-foreground"
-            >
-              접수 {formatDateTimeKo(d.createdAt)}
-            </time>
           </header>
 
-          <div className="mt-10">
-            <p className="font-black text-[10px] uppercase tracking-[0.3em] text-muted-foreground">민원 내용</p>
-            {isRichTextBodyHtml(d.content) ? (
-              <div
-                className={cn(
-                  "mt-4 font-medium leading-relaxed tracking-tight text-balance text-foreground md:text-lg",
-                  VOC_RICH_BODY_CLASSNAME,
-                )}
-                dangerouslySetInnerHTML={{ __html: prepareVocBodyForDisplay(d.content) }}
-              />
-            ) : (
-              <p className="mt-4 whitespace-pre-wrap font-medium tracking-tight text-balance text-foreground md:text-lg">
-                {d.content}
-              </p>
+          {/* Content Body */}
+          <article className="space-y-12">
+            <section className="space-y-4">
+              <h3 className="text-sm md:text-base font-black uppercase tracking-[0.2em] text-stone-900">민원 내용</h3>
+              <div className="bg-white p-8 md:p-12 rounded-[2rem] border border-primary/5 shadow-sm">
+                <div className={cn("post-html font-normal leading-[1.8] tracking-tight text-stone-900 text-lg md:text-xl", VOC_RICH_BODY_CLASSNAME)}>
+                  {isRichTextBodyHtml(d.content) ? (
+                    <div dangerouslySetInnerHTML={{ __html: prepareVocBodyForDisplay(d.content) }} />
+                  ) : (
+                    <div className="whitespace-pre-wrap">{d.content}</div>
+                  )}
+                </div>
+              </div>
+            </section>
+
+            {/* Attachments */}
+            {d.attachments && d.attachments.length > 0 && (
+              <section className="space-y-4">
+                <h3 className="text-sm md:text-base font-black uppercase tracking-[0.2em] text-stone-900">첨부 파일</h3>
+                <ul className="space-y-3">
+                  {d.attachments.map((a, i) => (
+                    <li key={`${a.fileUrl}-${i}`}>
+                      <a
+                        href={apiFileUrlToBffPath(a.fileUrl)}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="group inline-flex items-center gap-2 text-base font-medium text-stone-800 hover:text-accent transition-colors"
+                      >
+                        <ArrowRight className="size-4 shrink-0" />
+                        <span className="underline underline-offset-4 decoration-accent/30">{a.fileName}</span>
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              </section>
             )}
-          </div>
 
-          {d.attachments?.length ? (
-            <div className="mt-10">
-              <p className="font-black text-[10px] uppercase tracking-[0.3em] text-muted-foreground">첨부</p>
-              <ul className="mt-4 space-y-2">
-                {d.attachments.map((a, i) => (
-                  <li key={`${a.fileUrl}-${i}`}>
-                    <a
-                      href={apiFileUrlToBffPath(a.fileUrl)}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-sm font-medium text-secondary underline-offset-4 hover:underline"
-                    >
-                      {a.fileName}
-                    </a>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ) : null}
-
-          <section className="mt-12 rounded-[2rem] border border-border bg-muted/20 p-6 md:p-8">
-            <p className="font-black text-[10px] uppercase tracking-[0.3em] text-secondary">등록된 답변</p>
-            {d.repliedAt ? (
-              <time
-                dateTime={d.repliedAt}
-                className="mt-2 block font-black text-[10px] uppercase tracking-[0.2em] text-muted-foreground"
-              >
-                {formatDateTimeKo(d.repliedAt)}
-              </time>
-            ) : null}
-            {d.adminReply && isRichTextBodyHtml(d.adminReply) ? (
-              <div
-                className={cn("mt-4 font-medium tracking-tight text-foreground", VOC_RICH_BODY_CLASSNAME)}
-                dangerouslySetInnerHTML={{ __html: prepareVocBodyForDisplay(d.adminReply) }}
-              />
-            ) : (
-              <p className="mt-4 whitespace-pre-wrap font-medium tracking-tight text-foreground">
-                {d.adminReply ?? "아직 등록된 답변이 없습니다."}
-              </p>
+            {/* Answer Section */}
+            {d.adminReply && (
+              <section className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-sm md:text-base font-black uppercase tracking-[0.2em] text-stone-900">작성된 답변</h3>
+                  {d.repliedAt && (
+                    <time className="text-xs font-medium text-stone-400">{formatDateTimeKo(d.repliedAt)}</time>
+                  )}
+                </div>
+                <div className="bg-stone-50 p-8 md:p-12 rounded-[2rem] border border-stone-200">
+                  {isRichTextBodyHtml(d.adminReply) ? (
+                    <div
+                      className={cn("font-normal leading-[1.8] tracking-tight text-stone-900 text-lg md:text-xl", VOC_RICH_BODY_CLASSNAME)}
+                      dangerouslySetInnerHTML={{ __html: prepareVocBodyForDisplay(d.adminReply) }}
+                    />
+                  ) : (
+                    <p className="font-normal leading-[1.8] tracking-tight text-stone-900 text-lg md:text-xl whitespace-pre-wrap">{d.adminReply}</p>
+                  )}
+                </div>
+              </section>
             )}
-          </section>
 
-          <AdminVocActions vocId={d.vocId} status={d.status} />
-      </article>
-    </MotionEnter>
+            {/* Actions */}
+            <AdminVocActions vocId={d.vocId} status={d.status} />
+          </article>
+        </div>
+      </MotionEnter>
+    </div>
   );
 }

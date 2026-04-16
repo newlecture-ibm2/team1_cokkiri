@@ -20,6 +20,7 @@ import com.coliving.global.error.ErrorCode;
 import jakarta.validation.Valid;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -27,6 +28,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @RestController
@@ -41,6 +43,10 @@ public class AdminVocController {
     @GetMapping("/api/admin/vocs")
     public ApiResponse<AdminVocListResponseDto> listVocs(
             @RequestParam(required = false) String status,
+            @RequestParam(required = false) String category,
+            @RequestParam(required = false) String q,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate createdFrom,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate createdTo,
             @RequestParam(required = false) Boolean pending,
             @RequestParam(value = "p", defaultValue = "0") int page,
             @RequestParam(value = "s", defaultValue = "20") int size,
@@ -48,9 +54,15 @@ public class AdminVocController {
     ) {
         boolean pendingOnly = Boolean.TRUE.equals(pending);
         VocStatus statusFilter = pendingOnly ? null : parseStatusOrNull(status);
+        com.coliving.common.voc.model.VocCategory categoryFilter = parseCategoryOrNull(category);
+        String keyword = (q != null && !q.isBlank()) ? q.trim() : null;
 
         ListAdminVocsCommand command = ListAdminVocsCommand.builder()
                 .status(statusFilter)
+                .category(categoryFilter)
+                .keyword(keyword)
+                .createdFrom(createdFrom)
+                .createdTo(createdTo)
                 .pendingOnly(pendingOnly)
                 .page(page)
                 .size(size)
@@ -115,6 +127,17 @@ public class AdminVocController {
             return VocStatus.valueOf(status.trim());
         } catch (IllegalArgumentException e) {
             throw new BusinessException(ErrorCode.VALIDATION_ERROR);
+        }
+    }
+
+    private com.coliving.common.voc.model.VocCategory parseCategoryOrNull(String category) {
+        if (category == null || category.isBlank()) {
+            return null;
+        }
+        try {
+            return com.coliving.common.voc.model.VocCategory.valueOf(category.trim());
+        } catch (IllegalArgumentException e) {
+            return null;
         }
     }
 

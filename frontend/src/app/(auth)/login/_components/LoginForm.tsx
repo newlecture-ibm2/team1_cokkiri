@@ -34,8 +34,12 @@ export default function LoginForm() {
         const { role } = response.data.user;
         login(response.data.user);
         
-        // Redirect to main page after success
-        router.push('/');
+        // 역할별 리디렉트: ADMIN → 관리자 대시보드, 그 외 → 메인
+        if (role === 'ADMIN') {
+          router.push('/admin/dashboard');
+        } else {
+          router.push('/');
+        }
         router.refresh();
       }
     } catch (err) {

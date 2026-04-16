@@ -17,6 +17,9 @@ import java.util.Optional;
  * USERS 테이블 JPA Repository
  */
 public interface UserJpaRepository extends JpaRepository<UserEntity, Long> {
+    
+    long countByRoleAndStatus(UserRole role, UserStatus status);
+
 
     /**
      * 공지 알림 등 역할·상태만으로 회원 목록을 가져올 때 사용합니다.

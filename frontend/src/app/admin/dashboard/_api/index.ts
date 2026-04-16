@@ -31,13 +31,33 @@ export interface DashboardControlLogPage {
   totalElements: number;
 }
 
-export interface DashboardEnergyData {
-  statusSummary: DashboardDeviceStatus;
-  deviceStatusBySpace: DashboardSpaceDeviceStatus[];
+export interface DashboardSummary {
+  contract: {
+    total: number;
+    pending: number;
+    active: number;
+    expired: number;
+  };
+  reservation: {
+    today: number;
+    pending: number;
+    total: number;
+  };
+  resident: {
+    total: number;
+  };
+  visitor: {
+    today: number;
+  };
 }
 
 export async function fetchDashboardEnergy() {
   const res = await apiFetch<DashboardEnergyData>("/admin/monitoring/energy");
+  return res.data;
+}
+
+export async function fetchDashboardSummary() {
+  const res = await apiFetch<DashboardSummary>("/admin/dashboard/summary");
   return res.data;
 }
 

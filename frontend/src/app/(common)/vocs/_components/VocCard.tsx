@@ -6,15 +6,15 @@ import { cn } from "@/lib/utils";
 function statusStyles(status: string) {
   switch (status) {
     case "OPEN":
-      return "bg-accent/10 text-accent";
+      return "bg-[#4A7C6F] text-white";
     case "IN_PROGRESS":
-      return "bg-primary/10 text-primary";
+      return "bg-primary text-white";
     case "RESOLVED":
-      return "bg-primary/5 text-primary/50";
+      return "bg-stone-100 text-stone-500 border border-stone-200";
     case "CANCELLED":
-      return "bg-destructive/10 text-destructive/70";
+      return "bg-destructive/10 text-destructive border border-destructive/20";
     default:
-      return "bg-primary/5 text-primary/50";
+      return "bg-stone-50 text-stone-400";
   }
 }
 
@@ -32,37 +32,37 @@ export function VocCard({ item }: { item: VocListItem }) {
       )}
     >
       <div className="flex items-start justify-between gap-4 relative z-10">
-        <div className="space-y-2 min-w-0">
+        <div className="space-y-2.5 min-w-0">
           {/* 메타: 상태 배지 + 카테고리 + 번호 */}
           <div className="flex flex-wrap items-center gap-2">
             <span
               className={cn(
-                "inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-base font-bold tracking-tight",
+                "inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold tracking-tight",
                 statusStyles(item.status),
               )}
             >
               {item.status === "OPEN" && (
-                <span className="size-2 rounded-full bg-accent animate-pulse" aria-hidden />
+                <span className="size-1.5 rounded-full bg-white animate-pulse" aria-hidden />
               )}
               {vocStatusLabel(item.status)}
             </span>
-            <span className="text-base font-medium tracking-tight text-primary/50">
+            <span className="text-xs font-bold tracking-tight text-primary/40 uppercase">
               {vocCategoryLabel(item.category)}
             </span>
-            <span className="text-base font-normal tracking-tight text-primary/30">
+            <span className="text-xs font-medium tracking-tight text-primary/20">
               #{item.vocId}
             </span>
           </div>
           <h2
             className={cn(
-              "text-xl md:text-2xl font-semibold tracking-tight leading-snug transition-colors line-clamp-2",
+              "text-lg md:text-xl font-medium tracking-tight leading-snug transition-colors line-clamp-2",
               isResolved ? "text-primary/70" : "text-primary group-hover:text-accent",
             )}
           >
             {item.title}
           </h2>
         </div>
-        <span className="shrink-0 text-base font-medium tracking-tight text-primary/40 whitespace-nowrap pt-1">
+        <span className="shrink-0 text-xs font-medium tracking-tight text-primary/30 whitespace-nowrap pt-1" suppressHydrationWarning>
           {formatDateTimeKo(item.createdAt)}
         </span>
       </div>

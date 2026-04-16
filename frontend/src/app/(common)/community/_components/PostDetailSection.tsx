@@ -97,7 +97,7 @@ export function PostDetailSection({
           <div className="flex items-center gap-x-3 text-xs text-muted-foreground">
             <span className="font-bold text-primary/80">{detail.author?.name ?? `사용자${detail.author?.userId}`}</span>
             <span className="text-muted-foreground/30">·</span>
-            <time className="font-medium text-primary/70">{formatDateTimeKo(detail.createdAt)}</time>
+            <time className="font-medium text-primary/70" suppressHydrationWarning>{formatDateTimeKo(detail.createdAt)}</time>
           </div>
 
           <div className="flex items-center gap-4 text-xs font-semibold">

@@ -91,30 +91,30 @@ export default async function VocsPage({ searchParams }: { searchParams: SearchP
   return (
     <div className="mx-auto max-w-5xl">
       {/* Editorial Header */}
-      <header className="mb-8">
+      <header className="mb-16">
         <div className="flex flex-col gap-4">
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-primary/10 pb-6">
             <div className="min-w-0">
-              <h1 className="text-[clamp(1.4rem,5vw,5.5rem)] font-black leading-[0.85] tracking-tighter uppercase whitespace-nowrap">
-                RESIDENTS&apos; <span className="underline underline-offset-[1vw] decoration-[var(--color-accent)]">VOICE.</span>
-                <span className="text-[clamp(1rem,2vw,2.5rem)] font-bold tracking-normal ml-[clamp(0.25rem,0.5vw,0.5rem)] align-bottom opacity-80">민원</span>
+              <h1 className="text-5xl md:text-7xl font-black leading-tight tracking-tight uppercase whitespace-nowrap">
+                RESIDENTS&apos; <span className="underline underline-offset-4 decoration-[var(--color-accent)]">VOICE.</span>
+                <span className="text-2xl md:text-4xl font-bold tracking-normal ml-2 align-bottom opacity-80">민원</span>
               </h1>
             </div>
             <div className="flex items-center shrink-0 self-end pb-0.5">
               {showList ? (
                 <Link
                   href="/vocs"
-                  className="inline-flex shrink-0 h-10 px-5 bg-primary text-white rounded-xl items-center gap-2 text-sm font-semibold tracking-tight transition-all hover:bg-primary/90 shadow-lg shadow-primary/10"
+                  className="inline-flex shrink-0 h-14 px-10 bg-primary text-white rounded-xl items-center gap-3 text-base font-bold tracking-tight transition-all hover:bg-primary/95 hover:-translate-y-1 shadow-xl shadow-primary/20"
                 >
-                  <Plus className="w-4 h-4" />
+                  <Plus className="w-5 h-5" />
                   민원 등록
                 </Link>
               ) : (
                 <Link
                   href="/vocs?tab=list"
-                  className="inline-flex shrink-0 h-10 px-5 bg-accent text-white rounded-xl items-center gap-2 text-sm font-semibold tracking-tight transition-all hover:bg-accent/90 shadow-lg shadow-accent/10"
+                  className="inline-flex shrink-0 h-14 px-10 bg-primary text-white rounded-xl items-center gap-3 text-base font-bold tracking-tight transition-all hover:bg-primary/95 hover:-translate-y-1 shadow-xl shadow-primary/20"
                 >
-                  <ClipboardList className="w-4 h-4" />
+                  <ClipboardList className="w-5 h-5" />
                   나의 민원보기
                 </Link>
               )}

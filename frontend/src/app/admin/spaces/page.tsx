@@ -71,28 +71,33 @@ export default function SpacesPage() {
   ];
 
   return (
-    <div className="relative min-h-screen bg-[var(--background)] text-[var(--foreground)] p-12 lg:p-24">
+    <div className="max-w-[1400px] mx-auto">
       {/* 헤더 + 탭 */}
-      <div className="flex items-end justify-between mb-8">
-        <div>
-          <motion.h1 
-            initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} 
-            className="text-[12vw] md:text-[8vw] lg:text-[5vw] font-black tracking-tighter leading-[0.85] uppercase"
-          >
-            SPACES
-          </motion.h1>
+      <header className="mb-12">
+        <div className="flex flex-col gap-6">
+          <div className="border-b border-primary/10 pb-8 space-y-4">
+            <p className="font-black text-[10px] uppercase tracking-[0.35em] text-muted-foreground">Admin · Spaces</p>
+            <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+              <h1 className="text-5xl md:text-7xl font-black leading-tight tracking-tight uppercase whitespace-nowrap">
+                ADMIN <span className="underline underline-offset-4 decoration-accent">SPACES.</span>
+                <span className="text-2xl md:text-4xl font-bold tracking-normal ml-2 align-bottom opacity-80">공간 관리</span>
+              </h1>
+              {activeTab === 'spaces' && (
+                <button 
+                  onClick={() => setIsCreateModalOpen(true)}
+                  className="flex items-center gap-2 bg-primary text-white px-6 py-3 rounded-full font-black tracking-tight hover:scale-105 transition shadow-lg w-fit h-12"
+                >
+                  <Plus size={18} />
+                  <span>새 공간 생성</span>
+                </button>
+              )}
+            </div>
+            <p className="font-medium tracking-tight text-foreground/70 text-sm md:text-base">
+              시설 내 모든 공간(개인/공용)의 정보를 등록하고 관리하며, 도면 배치 및 유형 설정을 수행합니다.
+            </p>
+          </div>
         </div>
-        
-        {activeTab === 'spaces' && (
-          <button 
-            onClick={() => setIsCreateModalOpen(true)}
-            className="flex items-center gap-2 bg-[var(--foreground)] text-[var(--background)] px-6 py-4 rounded-full font-black tracking-tighter hover:scale-105 transition shadow-xl"
-          >
-            <Plus />
-            <span className="hidden sm:inline">새 공간 생성</span>
-          </button>
-        )}
-      </div>
+      </header>
 
       {/* 탭 전환 */}
       <div className="flex gap-2 mb-10">

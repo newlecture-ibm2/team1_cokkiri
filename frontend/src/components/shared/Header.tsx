@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion, useScroll, useMotionValueEvent, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { User, Menu, X, ChevronDown } from "lucide-react";
+import { User, Menu, X, ChevronDown, Shield } from "lucide-react";
 import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { useAuthStore } from "@/store/useAuthStore";
@@ -333,6 +333,16 @@ export function Header() {
             </nav>
 
             <div className="flex items-center gap-4 border-l border-primary/10 pl-4 md:gap-5 md:pl-5">
+              {/* ADMIN 전용: 관리자 페이지 이동 버튼 */}
+              {!isLoading && isLoggedIn && user?.role === 'ADMIN' && (
+                <Link
+                  href="/admin/dashboard"
+                  className="hidden items-center gap-1.5 rounded-lg px-3 py-2 text-xs font-black uppercase tracking-[0.15em] text-secondary transition-colors hover:bg-primary/5 hover:text-primary sm:inline-flex"
+                >
+                  <Shield className="size-3.5" aria-hidden />
+                  관리자
+                </Link>
+              )}
               {!isLoading && (
                 isLoggedIn ? (
                   <div className="hidden md:flex items-center gap-3 group">

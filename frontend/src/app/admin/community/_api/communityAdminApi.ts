@@ -9,6 +9,7 @@ export async function fetchAdminPosts(params: {
   p?: number;
   s?: number;
   sort?: string;
+  category?: string;
   keyword?: string;
   createdFrom?: string;
   createdTo?: string;
@@ -17,6 +18,7 @@ export async function fetchAdminPosts(params: {
   qs.set("p", String(params.p ?? 0));
   qs.set("s", String(params.s ?? 20));
   qs.set("sort", params.sort ?? "createdAt,desc");
+  if (params.category) qs.set("category", params.category);
   if (params.keyword) qs.set("keyword", params.keyword);
   if (params.createdFrom) qs.set("created_from", params.createdFrom);
   if (params.createdTo) qs.set("created_to", params.createdTo);

@@ -50,4 +50,6 @@ public interface ContractJpaRepository extends JpaRepository<ContractEntity, Lon
      * 특정 상태의 모든 계약 목록 조회 (관리자용)
      */
     List<ContractEntity> findByStatus(ContractStatus status);
+
+    long countByStatus(ContractStatus status);
 }
