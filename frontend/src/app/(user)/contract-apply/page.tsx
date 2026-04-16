@@ -22,14 +22,11 @@ export default function ContractApplyPage() {
             className="flex flex-col lg:flex-row lg:items-end justify-between gap-12"
           >
             <div className="space-y-4">
-              <span className="text-[10px] font-black uppercase tracking-[0.4em] text-accent">
-                APPLICATION / STEP 01-04
-              </span>
-              <h1 className="text-[10vw] md:text-[8vw] lg:text-[6vw] font-black leading-[0.85] tracking-tighter uppercase">
-                CO-LIVING<br />APPLICATION
+              <h1 className="text-6xl md:text-8xl lg:text-[10rem] font-black leading-[0.85] tracking-tighter uppercase">
+                CONTRACTS.
               </h1>
               <p className="max-w-xl text-lg font-medium tracking-tight opacity-70 border-l-2 border-accent pl-6 mt-8">
-                코끼리 하우스는 단순한 거주 공간 이상의 가치를 지향합니다. 
+                코끼리 하우스는 단순한 거주 공간 이상의 가치를 지향합니다.
                 당신의 새로운 라이프스타일을 위한 신청을 시작하세요.
               </p>
             </div>
