@@ -157,11 +157,11 @@ export function BillingListTab({ refreshKey, onRefresh, onApproveRequest }: Prop
           { label: STATUS_LABELS.UNPAID, value: summary.unpaidCount, amount: summary.unpaidAmount, color: 'text-red-600' },
         ].map((s) => (
           <div key={s.label} className="p-6 bg-white rounded-2xl border border-primary/5 shadow-sm">
-            <p className="text-[10px] font-black tracking-[0.2em] uppercase text-muted mb-2">{s.label}</p>
+            <p className="text-xs font-black tracking-[0.2em] uppercase text-muted mb-2">{s.label}</p>
             <p className={`text-3xl font-black tracking-tighter ${s.color}`}>
               {s.value.toString().padStart(2, '0')}
             </p>
-            <p className="mt-2 text-xs font-bold text-muted flex items-center gap-1">
+            <p className="mt-2 text-sm font-bold text-muted flex items-center gap-1">
               <Banknote className="w-3 h-3" />
               {s.amount.toLocaleString()}원
             </p>
@@ -177,7 +177,7 @@ export function BillingListTab({ refreshKey, onRefresh, onApproveRequest }: Prop
             <button
               key={s}
               onClick={() => setStatusFilter(s)}
-              className={`px-4 py-2 rounded-full text-[10px] font-black uppercase tracking-[0.15em] transition-all ${
+              className={`px-4 py-2 rounded-full text-xs font-black uppercase tracking-[0.15em] transition-all ${
                 statusFilter === s
                   ? 'bg-primary text-background'
                   : 'bg-primary/5 text-primary/60 hover:bg-primary/10'
@@ -192,7 +192,7 @@ export function BillingListTab({ refreshKey, onRefresh, onApproveRequest }: Prop
             <select
               value={typeFilter}
               onChange={(e) => setTypeFilter(e.target.value as PaymentType | 'ALL')}
-              className="appearance-none pl-4 pr-10 py-2 rounded-full bg-primary/5 border border-primary/10 text-[10px] font-black uppercase tracking-widest cursor-pointer focus:ring-2 ring-accent outline-none"
+              className="appearance-none pl-4 pr-10 py-2 rounded-full bg-primary/5 border border-primary/10 text-xs font-black uppercase tracking-widest cursor-pointer focus:ring-2 ring-accent outline-none"
             >
               <option value="ALL">전체 유형</option>
               <option value="RENT">{TYPE_LABELS.RENT}</option>
@@ -209,7 +209,7 @@ export function BillingListTab({ refreshKey, onRefresh, onApproveRequest }: Prop
                 setTypeFilter('ALL');
                 setQuery('');
               }}
-              className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-red-50 text-red-600 text-[10px] font-black uppercase tracking-widest hover:bg-red-100 transition-colors"
+              className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-red-50 text-red-600 text-xs font-black uppercase tracking-widest hover:bg-red-100 transition-colors"
             >
               <X className="w-3 h-3" />
               초기화
@@ -226,10 +226,10 @@ export function BillingListTab({ refreshKey, onRefresh, onApproveRequest }: Prop
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="이름·아이디·번호 검색..."
-              className="bg-transparent text-xs font-bold placeholder:text-muted/40 focus:outline-none w-48"
+              className="bg-transparent text-sm font-bold placeholder:text-muted/40 focus:outline-none w-48"
             />
           </div>
-          <span className="text-[10px] font-black uppercase tracking-[0.3em] text-muted">
+          <span className="text-xs font-black uppercase tracking-[0.3em] text-muted">
             <Filter className="inline w-3 h-3 mr-1 -mt-0.5" />
             {filtered.length} / {payments.length}건
           </span>
@@ -243,7 +243,7 @@ export function BillingListTab({ refreshKey, onRefresh, onApproveRequest }: Prop
         className="bg-white rounded-[2rem] border border-primary/5 shadow-sm overflow-hidden"
       >
         <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse">
+          <table className="w-full text-center border-collapse">
             <thead>
               <tr className="bg-primary/[0.03] border-b border-primary/5">
                 {['No.', '사용자', '유형', '', '상태', '결제 수단', '', '', ''].map(
@@ -253,7 +253,7 @@ export function BillingListTab({ refreshKey, onRefresh, onApproveRequest }: Prop
                       return (
                         <th
                           key="amount"
-                          className="p-5 text-[10px] font-black uppercase tracking-widest text-muted cursor-pointer select-none hover:text-primary transition-colors"
+                          className="p-5 text-xs font-black uppercase tracking-widest text-primary/70 cursor-pointer select-none hover:text-primary transition-colors"
                           onClick={() => toggleSort('amount')}
                         >
                           <span className="flex items-center gap-1">
@@ -266,7 +266,7 @@ export function BillingListTab({ refreshKey, onRefresh, onApproveRequest }: Prop
                       return (
                         <th
                           key="billingDate"
-                          className="p-5 text-[10px] font-black uppercase tracking-widest text-muted cursor-pointer select-none hover:text-primary transition-colors"
+                          className="p-5 text-xs font-black uppercase tracking-widest text-primary/70 cursor-pointer select-none hover:text-primary transition-colors"
                           onClick={() => toggleSort('billingDate')}
                         >
                           <span className="flex items-center gap-1">
@@ -277,18 +277,18 @@ export function BillingListTab({ refreshKey, onRefresh, onApproveRequest }: Prop
                       );
                     if (i === 7)
                       return (
-                        <th key="paidDate" className="p-5 text-[10px] font-black uppercase tracking-widest text-muted">
+                        <th key="paidDate" className="p-5 text-xs font-black uppercase tracking-widest text-primary/70">
                           납부일
                         </th>
                       );
                     if (i === 8)
                       return (
-                        <th key="action" className="p-5 text-[10px] font-black uppercase tracking-widest text-muted text-center">
+                        <th key="action" className="p-5 text-xs font-black uppercase tracking-widest text-primary/70 text-center">
                           관리
                         </th>
                       );
                     return (
-                      <th key={h || `col-${i}`} className="p-5 text-[10px] font-black uppercase tracking-widest text-muted">
+                      <th key={h || `col-${i}`} className="p-5 text-xs font-black uppercase tracking-widest text-primary/70">
                         {h}
                       </th>
                     );
@@ -302,7 +302,7 @@ export function BillingListTab({ refreshKey, onRefresh, onApproveRequest }: Prop
                   <td colSpan={9} className="p-20 text-center">
                     <div className="flex flex-col items-center gap-3">
                       <Loader2 className="w-10 h-10 text-accent animate-spin" />
-                      <p className="text-[10px] font-black tracking-widest uppercase text-muted">
+                      <p className="text-xs font-black tracking-widest uppercase text-muted">
                         Loading payments...
                       </p>
                     </div>
@@ -318,7 +318,7 @@ export function BillingListTab({ refreshKey, onRefresh, onApproveRequest }: Prop
                       <p className="text-red-600 font-bold text-center">{error}</p>
                       <button
                         onClick={fetchPayments}
-                        className="px-8 py-3 rounded-full bg-primary text-background font-black uppercase tracking-widest text-[10px] hover:bg-accent transition-colors"
+                        className="px-8 py-3 rounded-full bg-primary text-background font-black uppercase tracking-widest text-xs hover:bg-accent transition-colors"
                       >
                         다시 시도하기
                       </button>
@@ -345,20 +345,20 @@ export function BillingListTab({ refreshKey, onRefresh, onApproveRequest }: Prop
                       className="border-b border-primary/5 hover:bg-background/50 transition-colors group"
                     >
                       <td className="p-5">
-                        <span className="text-xs font-black opacity-30">
+                        <span className="text-sm font-black opacity-60">
                           #{payment.paymentId}
                         </span>
                       </td>
                       <td className="p-5">
-                        <div className="flex items-center gap-2.5">
+                        <div className="flex items-center justify-center gap-2.5">
                           <div className="w-7 h-7 rounded-full bg-accent/10 flex items-center justify-center text-accent">
                             <User className="w-3.5 h-3.5" />
                           </div>
                           <div>
-                            <span className="text-sm font-black">
+                            <span className="text-base font-black text-primary">
                               {payment.userName || '-'}
                             </span>
-                            <p className="text-[10px] text-muted tracking-wide">
+                            <p className="text-xs text-primary/50 tracking-wide">
                               {payment.loginId || '-'}
                             </p>
                           </div>
@@ -367,20 +367,20 @@ export function BillingListTab({ refreshKey, onRefresh, onApproveRequest }: Prop
                       <td className="p-5">
                         <Badge
                           variant="outline"
-                          className="bg-background text-[10px] font-black uppercase tracking-widest"
+                          className="bg-background text-xs font-black uppercase tracking-widest"
                         >
                           {TYPE_LABELS[payment.type] || payment.type}
                         </Badge>
                       </td>
                       <td className="p-5">
-                        <span className="text-sm font-black">
+                        <span className="text-base font-black text-primary">
                           {Number(payment.amount || 0).toLocaleString()}
-                          <span className="text-[10px] font-bold text-muted ml-0.5">원</span>
+                          <span className="text-xs font-bold text-primary/50 ml-0.5">원</span>
                         </span>
                       </td>
                       <td className="p-5">
                         <span
-                          className={`inline-flex items-center gap-1.5 text-[10px] font-black tracking-[0.15em] uppercase px-3 py-1.5 rounded-full ${
+                          className={`inline-flex items-center gap-1.5 text-xs font-black tracking-[0.15em] uppercase px-3 py-1.5 rounded-full ${
                             STATUS_COLORS[payment.status] || 'bg-gray-100 text-gray-600'
                           }`}
                         >
@@ -388,15 +388,15 @@ export function BillingListTab({ refreshKey, onRefresh, onApproveRequest }: Prop
                           {STATUS_LABELS[payment.status] || payment.status}
                         </span>
                       </td>
-                      <td className="p-5 text-sm text-muted">
+                      <td className="p-5 text-sm text-primary/60">
                         {payment.paymentMethod
                           ? METHOD_LABELS[payment.paymentMethod] || payment.paymentMethod
                           : '-'}
                       </td>
-                      <td className="p-5 text-sm text-muted tabular-nums">
+                      <td className="p-5 text-sm text-primary/60 tabular-nums">
                         {payment.billingDate || '-'}
                       </td>
-                      <td className="p-5 text-sm text-muted tabular-nums">
+                      <td className="p-5 text-sm text-primary/60 tabular-nums">
                         {payment.paidDate || '-'}
                       </td>
                       <td className="p-5 text-center">
@@ -404,14 +404,14 @@ export function BillingListTab({ refreshKey, onRefresh, onApproveRequest }: Prop
                           <div className="opacity-0 group-hover:opacity-100 transition-opacity">
                             <button
                               onClick={() => onApproveRequest(payment)}
-                              className="inline-flex items-center gap-1.5 px-4 py-2 bg-primary text-background rounded-full text-[10px] font-black uppercase tracking-widest hover:bg-accent transition-colors shadow-sm"
+                              className="inline-flex items-center gap-1.5 px-4 py-2 bg-primary text-background rounded-full text-xs font-black uppercase tracking-widest hover:bg-accent transition-colors shadow-sm"
                             >
                               <CheckCircle2 className="w-3 h-3" />
                               승인
                             </button>
                           </div>
                         ) : (
-                          <span className="text-[10px] font-black uppercase tracking-widest text-accent">
+                          <span className="text-xs font-black uppercase tracking-widest text-accent">
                             처리 완료
                           </span>
                         )}
