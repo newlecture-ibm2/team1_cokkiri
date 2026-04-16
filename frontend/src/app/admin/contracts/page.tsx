@@ -33,7 +33,7 @@ export default function AdminContractsPage() {
       {/* ── Header ── */}
       <section className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-8 border-b-2 border-primary">
         <div className="flex flex-col gap-2">
-          <p className="text-[10px] font-black tracking-[0.3em] uppercase text-accent">
+          <p className="text-xs font-black tracking-[0.3em] uppercase text-accent">
             Admin / Contract Management
           </p>
           <h1 className="text-[10vw] md:text-[6vw] font-black tracking-tighter leading-[0.85] uppercase">
@@ -44,7 +44,7 @@ export default function AdminContractsPage() {
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
           onClick={() => setShowCreateModal(true)}
-          className="px-8 py-5 bg-primary text-background rounded-full font-black tracking-widest uppercase text-[10px] flex items-center gap-3 transition-all hover:bg-accent shadow-lg"
+          className="px-8 py-5 bg-primary text-background rounded-full font-black tracking-widest uppercase text-xs flex items-center gap-3 transition-all hover:bg-accent shadow-lg"
         >
           <Plus className="w-4 h-4" />
           직접 등록
@@ -57,13 +57,13 @@ export default function AdminContractsPage() {
           <button
             key={tab.key}
             onClick={() => setActiveTab(tab.key)}
-            className={`flex items-center gap-2.5 px-6 py-3 rounded-full text-[10px] font-black uppercase tracking-[0.2em] transition-all ${
+            className={`flex items-center gap-2.5 px-6 py-3 rounded-full text-xs font-black uppercase tracking-[0.2em] transition-all ${
               activeTab === tab.key
                 ? "bg-primary text-background shadow-md"
                 : "text-primary/60 hover:text-primary hover:bg-primary/5"
             }`}
           >
-            <tab.icon className="w-3.5 h-3.5" />
+            <tab.icon className="w-4 h-4" />
             {tab.label}
           </button>
         ))}
