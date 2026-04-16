@@ -576,10 +576,10 @@ export function Header() {
                 {!isLoading && (
                   isLoggedIn ? (
                     <motion.div
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
                       transition={{ delay: navItems.length * 0.06, duration: 0.35 }}
-                      className="mt-6 flex items-center justify-between border-t border-primary/10 px-2 pt-6 pb-4"
+                      className="mt-6 flex items-center justify-between px-2 pt-2 pb-4"
                     >
                       <div className="flex flex-col">
                         <span className="text-[10px] font-black uppercase tracking-[0.25em] text-primary/40 -mb-0.5">
@@ -599,10 +599,10 @@ export function Header() {
                     </motion.div>
                   ) : (
                     <motion.div
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
                       transition={{ delay: navItems.length * 0.06, duration: 0.35 }}
-                      className="mt-6 flex flex-col gap-3 border-t border-primary/10 pt-6 pb-4"
+                      className="mt-6 flex flex-col gap-3 pt-2 pb-4"
                     >
                       <Link href="/login" onClick={() => setIsMobileMenuOpen(false)} className="w-full">
                         <Button
