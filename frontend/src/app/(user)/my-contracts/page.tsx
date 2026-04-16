@@ -107,42 +107,32 @@ export default function MyContractsPage() {
   };
 
   return (
-    <div className="text-primary selection:bg-primary selection:text-background pb-32">
+    <div className="mx-auto max-w-5xl">
       {/* Editorial Header Section */}
-      <section className="pb-12">
-        <div className="border-b-2 border-primary pb-12">
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
-          >
-            <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-8">
-              <div className="space-y-4">
-                <span className="text-[14px] font-black uppercase tracking-[0.4em] text-accent">
-                  DASHBOARD / 01
-                </span>
-                <h1 className="text-[10vw] md:text-[8vw] lg:text-[6vw] font-black leading-[0.85] tracking-tighter uppercase whitespace-nowrap">
-                  MY<br />CONTRACTS
-                </h1>
-                <p className="max-w-xl text-lg font-medium tracking-tight opacity-70 border-l-2 border-accent pl-6 mt-8">
-                  관리 중인 계약 내역과 진행 중인 입주 신청을 한눈에 확인하고 제어하세요.
-                </p>
-              </div>
-
+      <header className="mb-[clamp(2rem,5vw,5rem)]">
+        <div className="flex flex-col gap-[clamp(0.75rem,1.5vw,1.5rem)]">
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-[clamp(1rem,2vw,2rem)] border-b border-primary/10 pb-[clamp(1rem,2vw,2rem)]">
+            <div className="min-w-0 space-y-4">
+              <h1 className="text-5xl md:text-7xl font-black leading-tight tracking-tight uppercase whitespace-nowrap text-primary">
+                CONTRACT<span className="underline underline-offset-4 decoration-[var(--color-accent)]">S.</span>
+                <span className="text-2xl md:text-4xl font-bold tracking-normal ml-2 align-bottom opacity-80">계약 내역</span>
+              </h1>
+            </div>
+            <div className="flex items-center shrink-0 self-end pb-1">
               <Link href="/rooms" className="group">
                 <motion.div
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
-                  className="px-10 py-6 bg-primary text-background rounded-full font-black tracking-widest uppercase text-sm flex items-center gap-4 transition-all"
+                  className="px-8 py-4 bg-primary text-background rounded-xl font-bold tracking-tight text-sm transition-all hover:bg-primary/95 shadow-xl shadow-primary/20 flex items-center gap-3"
                 >
                   <Plus className="w-5 h-5" />
-                  APPLY NEW SPACE
+                  신규 신청
                 </motion.div>
               </Link>
             </div>
-          </motion.div>
+          </div>
         </div>
-      </section>
+      </header>
 
       <main className="pt-12 md:pt-20">
         {/* Editorial Stats Grid */}

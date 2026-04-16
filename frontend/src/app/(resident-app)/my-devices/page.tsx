@@ -7,17 +7,18 @@ export const metadata = {
 
 export default function MyDevicesPage() {
   return (
-    <div className="space-y-8 px-6 pt-16 md:px-12 md:pt-32">
-      <header className="space-y-2">
-        <p className="font-black text-xs uppercase tracking-[0.3em] text-muted-foreground">
-          My Devices
-        </p>
-        <h1 className="text-3xl font-black tracking-tighter text-primary md:text-4xl">
-          내 기기 제어
-        </h1>
-        <p className="text-sm font-medium tracking-tight text-muted-foreground text-balance">
-          방에 설치된 스마트 기기를 확인하고 제어하세요.
-        </p>
+    <div className="mx-auto max-w-5xl">
+      <header className="mb-[clamp(2rem,5vw,5rem)]">
+        <div className="flex flex-col gap-[clamp(0.75rem,1.5vw,1.5rem)]">
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-[clamp(1rem,2vw,2rem)] border-b border-primary/10 pb-[clamp(1rem,2vw,2rem)]">
+            <div className="min-w-0 space-y-4">
+              <h1 className="text-5xl md:text-7xl font-black leading-tight tracking-tight uppercase whitespace-nowrap text-primary">
+                DEVICE<span className="underline underline-offset-4 decoration-[var(--color-accent)]">S.</span>
+                <span className="text-2xl md:text-4xl font-bold tracking-normal ml-2 align-bottom opacity-80">내 기기 제어</span>
+              </h1>
+            </div>
+          </div>
+        </div>
       </header>
 
       <DeviceGrid />
