@@ -266,7 +266,7 @@ export default function MyContractsPage() {
                     >
                       <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
                         <div className="space-y-3">
-                          <p className="text-[14px] font-black uppercase tracking-widest opacity-40">Contract Period</p>
+                          <p className="text-[14px] font-black uppercase tracking-widest opacity-40 h-11">Contract Period</p>
                           <div className="flex flex-col text-sm font-black tracking-tight leading-tight md:text-base">
                             <span>{contract.startDate || '—'}</span>
                             <span className="text-[14px] opacity-40 mt-1 mb-1 font-medium tracking-widest">TO</span>
@@ -281,13 +281,13 @@ export default function MyContractsPage() {
                           </p>
                         </div>
                         <div className="space-y-3">
-                          <p className="text-[14px] font-black uppercase tracking-widest opacity-40">Deposit</p>
+                          <p className="text-[14px] font-black uppercase tracking-widest opacity-40">Deposit<br />&nbsp;</p>
                           <p className="text-sm font-black tracking-tight md:text-base">
                             ₩{(contract.deposit || 0).toLocaleString()}
                           </p>
                         </div>
                         <div className="space-y-3">
-                          <p className="text-[14px] font-black uppercase tracking-widest opacity-40">Remaining</p>
+                          <p className="text-[14px] font-black uppercase tracking-widest opacity-40">Remaining<br />&nbsp;</p>
                           <p className="text-sm font-black tracking-tight md:text-base">
                             {Math.max(0, contract.desiredDurationMonths)} Months
                           </p>
