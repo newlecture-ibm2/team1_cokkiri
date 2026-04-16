@@ -28,7 +28,7 @@ export function AdminVocStatusFilter({ pending, all, status }: Props) {
         className={cn(
           base,
           pending
-            ? "border-secondary bg-primary text-primary-foreground shadow-sm"
+            ? "border-primary bg-primary text-white shadow-sm"
             : "border-primary/10 bg-white text-primary/50 hover:border-accent/40",
         )}
       >
@@ -39,7 +39,7 @@ export function AdminVocStatusFilter({ pending, all, status }: Props) {
         className={cn(
           base,
           all
-            ? "border-secondary bg-primary text-primary-foreground shadow-sm"
+            ? "border-primary bg-primary text-white shadow-sm"
             : "border-primary/10 bg-white text-primary/50 hover:border-accent/40",
         )}
       >
@@ -54,7 +54,7 @@ export function AdminVocStatusFilter({ pending, all, status }: Props) {
             className={cn(
               base,
               active
-                ? "border-secondary bg-primary text-primary-foreground shadow-sm"
+                ? "border-primary bg-primary text-white shadow-sm"
                 : "border-primary/10 bg-white text-primary/50 hover:border-accent/40",
             )}
           >
