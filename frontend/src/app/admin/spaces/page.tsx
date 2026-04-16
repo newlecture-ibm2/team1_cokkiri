@@ -5,12 +5,13 @@ import { fetchSpaces, SpaceDTO } from './_api/spaceAdminApi';
 import SpaceCreateModal from './_components/SpaceCreateModal';
 import SpaceEditModal from './_components/SpaceEditModal';
 import RoomTypeManager from './_components/RoomTypeManager';
+import PriceRangeManager from './_components/PriceRangeManager';
 import AnnotationTypeManager from './_components/AnnotationTypeManager';
 import { FloorPlanEditor } from './_components/floor-plan/FloorPlanEditor';
 import { motion } from 'framer-motion';
-import { Plus, Pencil, LayoutGrid, Tag, Map, Shapes, ArrowUpDown, Check } from 'lucide-react';
+import { Plus, Pencil, LayoutGrid, Tag, Map, Shapes, ArrowUpDown, Check, CircleDollarSign } from 'lucide-react';
 
-type Tab = 'spaces' | 'room-types' | 'floor-plan' | 'annotation-types';
+type Tab = 'spaces' | 'room-types' | 'price-ranges' | 'floor-plan' | 'annotation-types';
 
 export default function SpacesPage() {
   const [activeTab, setActiveTab] = useState<Tab>('spaces');
@@ -67,6 +68,7 @@ export default function SpacesPage() {
   const tabs: { key: Tab; label: string; icon: React.ReactNode }[] = [
     { key: 'spaces', label: '공간 관리', icon: <LayoutGrid size={16} /> },
     { key: 'room-types', label: '방 유형 관리', icon: <Tag size={16} /> },
+    { key: 'price-ranges', label: '가격대 관리', icon: <CircleDollarSign size={16} /> },
     { key: 'floor-plan', label: '배치 관리', icon: <Map size={16} /> },
     { key: 'annotation-types', label: '배치 요소 관리', icon: <Shapes size={16} /> },
   ];
@@ -250,6 +252,11 @@ export default function SpacesPage() {
       {/* 방 유형 관리 탭 */}
       {activeTab === 'room-types' && (
         <RoomTypeManager />
+      )}
+
+      {/* 가격대 관리 탭 */}
+      {activeTab === 'price-ranges' && (
+        <PriceRangeManager />
       )}
 
       {/* 배치 관리 탭 */}

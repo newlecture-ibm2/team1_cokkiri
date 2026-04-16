@@ -187,6 +187,48 @@ export const updateRoomTypeOrder = async (orderedIds: number[]) => {
   });
 };
 
+// ===== Price Range Preset (가격대 필터) API =====
+
+export interface PriceRangePresetDTO {
+  priceRangePresetId: number;
+  label: string;
+  minRent: number | null;
+  maxRent: number | null;
+  sortOrder: number;
+  isActive: boolean;
+}
+
+export const fetchAdminPriceRanges = async (): Promise<ApiResponse<PriceRangePresetDTO[]>> => {
+  return await apiFetch<PriceRangePresetDTO[]>('/admin/price-ranges');
+};
+
+export const createPriceRange = async (data: { label: string; minRent: number | null; maxRent: number | null; isActive: boolean }) => {
+  return await apiFetch<any>('/admin/price-ranges', {
+    method: 'POST',
+    body: JSON.stringify(data),
+  });
+};
+
+export const updatePriceRange = async (id: number, data: { label: string; minRent: number | null; maxRent: number | null; isActive: boolean }) => {
+  return await apiFetch<any>(`/admin/price-ranges/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify(data),
+  });
+};
+
+export const deletePriceRange = async (id: number) => {
+  return await apiFetch<any>(`/admin/price-ranges/${id}`, {
+    method: 'DELETE',
+  });
+};
+
+export const updatePriceRangeOrder = async (orderedIds: number[]) => {
+  return await apiFetch<any>('/admin/price-ranges/order', {
+    method: 'PUT',
+    body: JSON.stringify({ orderedIds }),
+  });
+};
+
 // ===== Floor Plan (평면도 배경/어노테이션) API =====
 
 import type { FloorPlanData, FloorAnnotation } from '../_types/layout';

@@ -1,10 +1,10 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
-import { fetchRooms, fetchPublicRoomTypes } from '../_api/roomApi';
-import type { RoomDTO, RoomFilterParams, RoomTypeOption } from '../_types';
+import { fetchRooms, fetchPublicRoomTypes, fetchPriceRanges } from '../_api/roomApi';
+import type { RoomDTO, RoomFilterParams, RoomTypeOption, PriceRangePreset } from '../_types';
 
-export type SortOption = 'name,asc' | 'spaceId,desc' | 'name,desc';
+export type SortOption = 'name,asc' | 'spaceId,desc' | 'name,desc' | 'monthlyRent,asc' | 'monthlyRent,desc';
 
 export function useRooms() {
   const [rooms, setRooms] = useState<RoomDTO[]>([]);
@@ -14,6 +14,8 @@ export function useRooms() {
   const [totalPages, setTotalPages] = useState(0);
   const [totalElements, setTotalElements] = useState(0);
   const [roomTypes, setRoomTypes] = useState<RoomTypeOption[]>([]);
+  const [priceRanges, setPriceRanges] = useState<PriceRangePreset[]>([]);
+  const [selectedPriceRangeId, setSelectedPriceRangeId] = useState<number | null>(null);
   const [sortOption, setSortOption] = useState<SortOption>('name,asc');
   const [keyword, setKeyword] = useState<string>('');
 
@@ -22,14 +24,22 @@ export function useRooms() {
     fetchPublicRoomTypes()
       .then(setRoomTypes)
       .catch(console.error);
+      
+    fetchPriceRanges()
+      .then(setPriceRanges)
+      .catch(console.error);
   }, []);
 
   const loadRooms = useCallback(async () => {
     setLoading(true);
     try {
+      const selectedPriceRange = priceRanges.find(p => p.priceRangePresetId === selectedPriceRangeId);
+      
       const params: RoomFilterParams = {
         keyword: keyword || undefined,
         roomTypeId: selectedTypeId ?? undefined,
+        minRent: selectedPriceRange?.minRent ?? undefined,
+        maxRent: selectedPriceRange?.maxRent ?? undefined,
         page: currentPage,
         size: 12,
         sort: sortOption,
@@ -45,7 +55,7 @@ export function useRooms() {
     } finally {
       setLoading(false);
     }
-  }, [selectedTypeId, currentPage, sortOption, keyword]);
+  }, [selectedTypeId, selectedPriceRangeId, priceRanges, currentPage, sortOption, keyword]);
 
   useEffect(() => {
     loadRooms();
@@ -54,7 +64,7 @@ export function useRooms() {
   // 필터 변경 시 페이지 리셋
   useEffect(() => {
     setCurrentPage(0);
-  }, [selectedTypeId, sortOption, keyword]);
+  }, [selectedTypeId, selectedPriceRangeId, sortOption, keyword]);
 
   return {
     rooms,
@@ -70,5 +80,8 @@ export function useRooms() {
     setSortOption,
     keyword,
     setKeyword,
+    priceRanges,
+    selectedPriceRangeId,
+    setSelectedPriceRangeId,
   };
 }

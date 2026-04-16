@@ -52,3 +52,11 @@ export interface RoomTypeOption {
   code: string;
   name: string;
 }
+
+export interface PriceRangePreset {
+  priceRangePresetId: number;
+  label: string;
+  minRent: number | null;
+  maxRent: number | null;
+  sortOrder: number;
+}
