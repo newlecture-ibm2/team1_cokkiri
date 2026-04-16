@@ -501,16 +501,16 @@ export default function ContractApplyForm() {
             <div className="flex items-center justify-between w-full gap-4 overflow-x-auto pb-4 md:pb-0 scrollbar-hide">
               {steps.map((s, i) => (
                 <div key={i} className="flex items-center gap-6 group">
-                  <span className={`text-[12px] font-black tracking-[0.3em] transition-colors ${step >= i + 1 ? "text-primary" : "text-primary/20"
+                  <span className={`text-[12px] font-black tracking-[0.3em] transition-colors ${step >= i + 1 ? "text-primary" : "text-primary/50"
                     }`}>
                     {String(i + 1).padStart(2, '0')}
                   </span>
-                  <span className={`text-[12px] font-black tracking-[0.2em] transition-all whitespace-nowrap ${step === i + 1 ? "text-accent" : "text-primary/10"
+                  <span className={`text-[12px] font-black tracking-[0.2em] transition-all whitespace-nowrap ${step === i + 1 ? "text-accent" : "text-primary/40"
                     }`}>
                     {s.title}
                   </span>
                   {i < steps.length - 1 && (
-                    <div className={`w-12 h-[1px] ${step > i + 1 ? "bg-accent" : "bg-primary/5"}`} />
+                    <div className={`w-12 h-[1px] ${step > i + 1 ? "bg-accent" : "bg-primary/20"}`} />
                   )}
                 </div>
               ))}

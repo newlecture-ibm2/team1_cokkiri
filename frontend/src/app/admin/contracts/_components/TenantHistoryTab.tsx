@@ -189,7 +189,7 @@ export function TenantHistoryTab({ refreshKey }: Props) {
           { label: "공실", value: totalSpaces - occupiedSpaces, color: "text-muted" },
         ].map((s) => (
           <div key={s.label} className="p-6 bg-white rounded-2xl border border-primary/5 shadow-sm">
-            <p className="text-[10px] font-black tracking-[0.2em] uppercase text-muted mb-2">{s.label}</p>
+            <p className="text-xs font-black tracking-[0.2em] uppercase text-muted mb-2">{s.label}</p>
             <p className={`text-3xl font-black tracking-tighter ${s.color}`}>
               {s.value.toString().padStart(2, "0")}
             </p>
@@ -207,7 +207,7 @@ export function TenantHistoryTab({ refreshKey }: Props) {
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             placeholder="방 이름 또는 입주자 검색..."
-            className="bg-transparent text-xs font-bold placeholder:text-muted/40 focus:outline-none w-48"
+            className="bg-transparent text-sm font-bold placeholder:text-muted/40 focus:outline-none w-48"
           />
         </div>
 
@@ -218,19 +218,19 @@ export function TenantHistoryTab({ refreshKey }: Props) {
             type="date"
             value={dateFrom}
             onChange={(e) => setDateFrom(e.target.value)}
-            className="bg-white px-3 py-2 rounded-xl text-xs font-bold border border-primary/10 focus:ring-2 ring-accent outline-none"
+            className="bg-white px-3 py-2 rounded-xl text-sm font-bold border border-primary/10 focus:ring-2 ring-accent outline-none"
           />
           <span className="text-xs font-bold text-muted">~</span>
           <input
             type="date"
             value={dateTo}
             onChange={(e) => setDateTo(e.target.value)}
-            className="bg-white px-3 py-2 rounded-xl text-xs font-bold border border-primary/10 focus:ring-2 ring-accent outline-none"
+            className="bg-white px-3 py-2 rounded-xl text-sm font-bold border border-primary/10 focus:ring-2 ring-accent outline-none"
           />
           {(dateFrom || dateTo) && (
             <button
               onClick={() => { setDateFrom(""); setDateTo(""); }}
-              className="text-[10px] font-black text-red-500 uppercase tracking-widest hover:underline"
+              className="text-xs font-black text-red-500 uppercase tracking-widest hover:underline"
             >
               초기화
             </button>
@@ -241,13 +241,13 @@ export function TenantHistoryTab({ refreshKey }: Props) {
         <div className="flex items-center gap-2 ml-auto">
           <button
             onClick={expandAll}
-            className="px-4 py-2 bg-primary/5 text-[10px] font-black uppercase tracking-widest rounded-full hover:bg-primary/10 transition-colors"
+            className="px-4 py-2 bg-primary/5 text-xs font-black uppercase tracking-widest rounded-full hover:bg-primary/10 transition-colors"
           >
             모두 펼치기
           </button>
           <button
             onClick={collapseAll}
-            className="px-4 py-2 bg-primary/5 text-[10px] font-black uppercase tracking-widest rounded-full hover:bg-primary/10 transition-colors"
+            className="px-4 py-2 bg-primary/5 text-xs font-black uppercase tracking-widest rounded-full hover:bg-primary/10 transition-colors"
           >
             모두 접기
           </button>
@@ -258,7 +258,7 @@ export function TenantHistoryTab({ refreshKey }: Props) {
       {isLoading ? (
         <div className="py-20 flex flex-col items-center justify-center gap-4">
           <Loader2 className="w-10 h-10 text-accent animate-spin" />
-          <p className="text-[10px] font-black tracking-widest uppercase text-muted">
+          <p className="text-xs font-black tracking-widest uppercase text-muted">
             Grouping contracts by space...
           </p>
         </div>
@@ -268,7 +268,7 @@ export function TenantHistoryTab({ refreshKey }: Props) {
           <p className="text-lg font-black tracking-tighter">{error}</p>
           <button
             onClick={fetchAllContracts}
-            className="px-8 py-4 bg-primary text-background rounded-full text-[10px] font-black tracking-widest uppercase"
+            className="px-8 py-4 bg-primary text-background rounded-full text-xs font-black tracking-widest uppercase"
           >
             Retry
           </button>
@@ -308,11 +308,11 @@ export function TenantHistoryTab({ refreshKey }: Props) {
                         {group.spaceName}
                       </h3>
                       <div className="flex items-center gap-3">
-                        <span className="text-[10px] font-black tracking-widest uppercase text-muted">
+                        <span className="text-xs font-black tracking-widest uppercase text-primary/50">
                           {group.totalCount}건의 계약 이력
                         </span>
                         {group.activeCount > 0 && (
-                          <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-accent/15 text-accent rounded-full text-[9px] font-black uppercase tracking-widest">
+                          <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-accent/15 text-accent rounded-full text-[10px] font-black uppercase tracking-widest">
                             <CheckCircle2 className="w-3 h-3" />
                             입주 중
                           </span>
@@ -367,19 +367,19 @@ export function TenantHistoryTab({ refreshKey }: Props) {
                                         <User className="w-4 h-4" />
                                       </div>
                                       <div>
-                                        <span className="text-sm font-black">{contract.userName}</span>
-                                        <span className="text-[10px] font-bold text-muted ml-2">
+                                        <span className="text-base font-black text-primary">{contract.userName}</span>
+                                        <span className="text-xs font-bold text-primary/50 ml-2">
                                           #{contract.contractId}
                                         </span>
                                       </div>
                                     </div>
 
                                     <div className="flex items-center gap-2">
-                                      <span className={`inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-[9px] font-black tracking-[0.15em] uppercase border ${cfg.bgColor} ${cfg.color}`}>
+                                      <span className={`inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-[10px] font-black tracking-[0.15em] uppercase border ${cfg.bgColor} ${cfg.color}`}>
                                         <StatusIcon className="w-3 h-3" />
                                         {cfg.label}
                                       </span>
-                                      <span className="text-[9px] font-bold text-muted uppercase">
+                                      <span className="text-[10px] font-bold text-primary/50 uppercase">
                                         {contract.origin === "ADMIN_INITIATED" ? "관리자" : "신청"}
                                       </span>
                                     </div>
@@ -387,34 +387,34 @@ export function TenantHistoryTab({ refreshKey }: Props) {
 
                                   <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                                     <div>
-                                      <p className="text-[9px] font-black tracking-widest text-muted uppercase mb-0.5">기간</p>
+                                      <p className="text-[10px] font-black tracking-widest text-primary/50 uppercase mb-0.5">기간</p>
                                       {contract.startDate && contract.endDate ? (
-                                        <p className="text-xs font-bold">
+                                        <p className="text-sm font-bold text-primary">
                                           {contract.startDate} ~ {contract.endDate}
                                         </p>
                                       ) : contract.desiredStartDate ? (
-                                        <p className="text-xs font-medium text-muted italic">
+                                        <p className="text-sm font-medium text-primary/50 italic">
                                           희망: {contract.desiredStartDate}
                                         </p>
                                       ) : (
-                                        <p className="text-xs text-muted/40">—</p>
+                                        <p className="text-sm text-primary/30">—</p>
                                       )}
                                     </div>
                                     <div>
                                       <p className="text-[9px] font-black tracking-widest text-muted uppercase mb-0.5">월세</p>
-                                      <p className="text-xs font-bold">
+                                      <p className="text-sm font-bold text-primary">
                                         {contract.monthlyRent ? `₩${Number(contract.monthlyRent).toLocaleString()}` : "—"}
                                       </p>
                                     </div>
                                     <div>
                                       <p className="text-[9px] font-black tracking-widest text-muted uppercase mb-0.5">보증금</p>
-                                      <p className="text-xs font-bold">
+                                      <p className="text-sm font-bold text-primary">
                                         {contract.deposit ? `₩${Number(contract.deposit).toLocaleString()}` : "—"}
                                       </p>
                                     </div>
                                     <div>
                                       <p className="text-[9px] font-black tracking-widest text-muted uppercase mb-0.5">신청일</p>
-                                      <p className="text-xs font-medium text-muted">
+                                      <p className="text-sm font-medium text-primary/50">
                                         {new Date(contract.createdAt).toLocaleDateString("ko-KR")}
                                       </p>
                                     </div>
@@ -422,8 +422,8 @@ export function TenantHistoryTab({ refreshKey }: Props) {
 
                                   {contract.specialTerms && (
                                     <div className="mt-3 p-3 bg-primary/[0.03] rounded-xl">
-                                      <p className="text-[9px] font-black text-accent uppercase tracking-widest mb-0.5">특약</p>
-                                      <p className="text-xs font-medium opacity-70">{contract.specialTerms}</p>
+                                      <p className="text-[10px] font-black text-accent uppercase tracking-widest mb-0.5">특약</p>
+                                      <p className="text-sm font-medium text-primary/70">{contract.specialTerms}</p>
                                     </div>
                                   )}
                                 </div>

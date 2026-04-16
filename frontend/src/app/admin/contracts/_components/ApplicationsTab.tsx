@@ -161,7 +161,7 @@ export function ApplicationsTab({ refreshKey, onRefresh }: Props) {
       {/* ── Stats ── */}
       <div className="flex items-center gap-6 mb-8">
         <div className="px-6 py-4 bg-blue-50 rounded-2xl border border-blue-100">
-          <p className="text-[10px] font-black tracking-[0.2em] uppercase text-blue-500 mb-1">
+          <p className="text-xs font-black tracking-[0.2em] uppercase text-blue-500 mb-1">
             Pending
           </p>
           <p className="text-3xl font-black tracking-tighter text-blue-700">
@@ -180,11 +180,11 @@ export function ApplicationsTab({ refreshKey, onRefresh }: Props) {
         className="bg-white rounded-[2rem] border border-primary/5 shadow-sm overflow-hidden"
       >
         <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse">
+          <table className="w-full text-center border-collapse">
             <thead>
               <tr className="bg-primary/[0.03] border-b border-primary/5">
                 {["ID", "신청자", "호실", "희망 시작일", "기간", "신청일", ""].map((h) => (
-                  <th key={h} className="p-5 text-[10px] font-black uppercase tracking-widest text-muted">
+                  <th key={h} className="p-5 text-xs font-black uppercase tracking-widest text-primary/70">
                     {h}
                   </th>
                 ))}
@@ -196,7 +196,7 @@ export function ApplicationsTab({ refreshKey, onRefresh }: Props) {
                   <td colSpan={7} className="p-20 text-center">
                     <div className="flex flex-col items-center gap-3">
                       <Loader2 className="w-10 h-10 text-accent animate-spin" />
-                      <p className="text-[10px] font-black tracking-widest uppercase text-muted">
+                      <p className="text-xs font-black tracking-widest uppercase text-muted">
                         Analyzing applications...
                       </p>
                     </div>
@@ -218,37 +218,37 @@ export function ApplicationsTab({ refreshKey, onRefresh }: Props) {
                     className="group border-b border-primary/5 hover:bg-primary/[0.02] transition-colors"
                   >
                     <td className="p-5">
-                      <span className="text-xs font-black opacity-30">
+                      <span className="text-sm font-black opacity-60">
                         #{contract.contractId}
                       </span>
                     </td>
                     <td className="p-5">
-                      <div className="flex items-center gap-2.5">
+                      <div className="flex items-center justify-center gap-2.5">
                         <div className="w-7 h-7 rounded-full bg-accent/10 flex items-center justify-center text-accent">
                           <User className="w-3.5 h-3.5" />
                         </div>
-                        <span className="text-sm font-black">{contract.userName}</span>
+                        <span className="text-base font-black text-primary">{contract.userName}</span>
                       </div>
                     </td>
                     <td className="p-5">
-                      <div className="flex items-center gap-2">
-                        <Home className="w-3.5 h-3.5 text-muted" />
-                        <span className="text-sm font-bold">{contract.spaceName}</span>
+                      <div className="flex items-center justify-center gap-2">
+                        <Home className="w-3.5 h-3.5 text-primary/50" />
+                        <span className="text-base font-bold text-primary">{contract.spaceName}</span>
                       </div>
                     </td>
                     <td className="p-5">
-                      <div className="flex items-center gap-1.5">
-                        <Calendar className="w-3.5 h-3.5 text-muted" />
-                        <span className="text-xs font-bold">
+                      <div className="flex items-center justify-center gap-1.5">
+                        <Calendar className="w-3.5 h-3.5 text-primary/50" />
+                        <span className="text-sm font-bold text-primary">
                           {new Date(contract.desiredStartDate).toLocaleDateString()}
                         </span>
                       </div>
                     </td>
                     <td className="p-5">
-                      <span className="text-xs font-bold">{contract.desiredDurationMonths}개월</span>
+                      <span className="text-sm font-bold text-primary">{contract.desiredDurationMonths}개월</span>
                     </td>
                     <td className="p-5">
-                      <span className="text-xs font-medium text-muted">
+                      <span className="text-sm font-medium text-primary/60">
                         {new Date(contract.createdAt).toLocaleDateString()}
                       </span>
                     </td>
@@ -259,7 +259,7 @@ export function ApplicationsTab({ refreshKey, onRefresh }: Props) {
                             setSelectedId(contract.contractId);
                             setModalType("approve");
                           }}
-                          className="px-4 py-2 bg-primary text-white text-[10px] font-black uppercase tracking-widest rounded-full hover:bg-accent transition-colors"
+                          className="px-4 py-2 bg-primary text-white text-xs font-black uppercase tracking-widest rounded-full hover:bg-accent transition-colors"
                         >
                           승인
                         </button>
@@ -268,7 +268,7 @@ export function ApplicationsTab({ refreshKey, onRefresh }: Props) {
                             setSelectedId(contract.contractId);
                             setModalType("reject");
                           }}
-                          className="px-4 py-2 bg-red-50 text-red-600 text-[10px] font-black uppercase tracking-widest rounded-full hover:bg-red-100 transition-colors"
+                          className="px-4 py-2 bg-red-50 text-red-600 text-xs font-black uppercase tracking-widest rounded-full hover:bg-red-100 transition-colors"
                         >
                           반려
                         </button>
