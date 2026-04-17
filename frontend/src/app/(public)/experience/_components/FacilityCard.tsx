@@ -10,14 +10,8 @@ export function FacilityCard({ space, index }: { space: CommonSpaceDto; index: n
 
   return (
     <Link
-      href={`/facilities?spaceId=${space.spaceId}`}
+      href={`/experience/${space.spaceId}`}
       className="block"
-      onClick={(e) => {
-        if (!space.isReservable) {
-          e.preventDefault();
-          window.alert("예약이 필요 없는 공용 시설입니다.");
-        }
-      }}
     >
       <motion.article
         initial={{ opacity: 0, y: 40 }}
