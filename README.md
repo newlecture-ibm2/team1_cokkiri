@@ -1,6 +1,6 @@
-# 🐘 Moss & Aloe | Co-living Platform (ibm_cokkiri)
+# 🐘 cokkiri | Co-living Platform (ibm_cokkiri)
 
-**Moss & Aloe**는 입주민과 운영자 모두에게 최상의 경험을 제공하는 **프리미엄 코리빙 관리 플랫폼**입니다. 
+**co-kkiri**는 입주민과 운영자 모두에게 최상의 경험을 제공하는 **프리미엄 코리빙 관리 플랫폼**입니다. 
 세련된 디자인 시스템과 더불어, IoT 연동, 실시간 알림, 커뮤니티 및 VOC 통합 관리 등 최신 기술이 집약된 주거 관리 솔루션을 지향합니다.
 
 ---
